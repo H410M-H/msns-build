@@ -6,9 +6,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Button } from '~/components/ui/button' // Changed import source
 import EventsTable from '~/components/tables/EventsTable'
 
-export default async function TeacherDashboard() {
+export default async function PrincipalDashboard() {
   const breadcrumbs = [
-    { href: "/teacher", label: "Dashboard", current: true },
+    { href: "/principal", label: "Dashboard", current: true },
   ]
 
   return (
@@ -16,7 +16,7 @@ export default async function TeacherDashboard() {
       <PageHeader breadcrumbs={breadcrumbs} />
       <div className="pt-8 px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-3xl font-bold tracking-tight">Teacher Dashboard</h2>
+          <h2 className="text-3xl font-bold tracking-tight">Principal Dashboard</h2>
           <Dialog>
             <DialogTrigger asChild>
               {/* Now using your custom Button component */}
