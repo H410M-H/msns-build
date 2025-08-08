@@ -55,7 +55,7 @@ const data: NavigationConfig = {
     },
     {
       title: "Profile",
-      url: "/admin/profile",
+      url: "/admin/users/account/settings",
       icon: User,
     },
     {
@@ -67,7 +67,7 @@ const data: NavigationConfig = {
   HEAD: [
     {
       title: "Overview",
-      url: "/clerk",
+      url: "/head",
       icon: Home,
     },
     {
@@ -125,22 +125,22 @@ const data: NavigationConfig = {
     },
     {
       title: "Students",
-      url: "#",
+      url: "/admin/users/student/view",
       icon: User,
       items: [
         {
           title: "All Students",
-          url: "/principal/student",
+          url: "/admin/users/student/view",
         },
         {
           title: "Create Student",
-          url: "/principal/student/create",
+          url: "/users/student/create",
         },
       ],
     },
     {
       title: "Profile",
-      url: "/principal/profile",
+      url: "/users/account/settings",
       icon: User,
     },
     {
