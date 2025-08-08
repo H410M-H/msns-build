@@ -145,7 +145,7 @@ const data: NavigationConfig = {
     },
     {
       title: "Setting",
-      url: "/principal/setting",
+      url: "/admin/users/account/settings",
       icon: Settings,
     },
   ],
