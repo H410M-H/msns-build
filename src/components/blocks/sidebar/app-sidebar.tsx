@@ -71,55 +71,17 @@ const data: NavigationConfig = {
       icon: Home,
     },
     {
-      title: "Tour",
-      url: "#",
-      icon: Package,
-      items: [
-        {
-          title: "All Tours",
-          url: "/safari/tour",
-        },
-        {
-          title: "Create Tour",
-          url: "/safari/tour/create",
-        },
-      ],
-    },
-    {
-      title: "Booking",
-      url: "/safari/booking",
-      icon: List,
-    },
-    {
-      title: "Profile",
-      url: "/safari/profile",
-      icon: User,
-    },
-    {
-      title: "Setting",
-      url: "/safari/setting",
-      icon: Settings,
-    },
-  ],
-  NONE: [],
-  PRINCIPAL: [
-    {
-      title: "Overview",
-      url: "/clerk",
-      icon: Home,
-    },
-    {
-      title: "Classes",
-      url: "#",
+      title: "Session",
+      url: "/admin/sessions",
       icon: ListOrdered,
       items: [
         {
           title: "All Classes",
-          url: "/principal/class",
+          url: "/admin/session/class",
         },
         {
-          title: "Create Class",
-          url: "/principal/class/create",
+          title: "Class Details",
+          url: "/admin/sessions/fee",
         },
       ],
     },
@@ -134,17 +96,95 @@ const data: NavigationConfig = {
         },
         {
           title: "Create Student",
-          url: "/users/student/create",
+          url: "/admin/users/student/create",
+        },
+      ],
+    },
+    {
+      title: "Faculty",
+      url: "/admin/users/faculty/view",
+      icon: User,
+      items: [
+        {
+          title: "All Employees",
+          url: "/admin/users/faculty/view",
+        },
+        {
+          title: "Create Student",
+          url: "/admin/users/faculty/create",
         },
       ],
     },
     {
       title: "Profile",
-      url: "/users/account/settings",
+      url: "/admin/users/account/settings",
       icon: User,
     },
     {
-      title: "Setting",
+      title: "Settings",
+      url: "/admin/users/account/settings",
+      icon: Settings,
+    },
+  ],
+  NONE: [],
+  PRINCIPAL: [
+    {
+      title: "Overview",
+      url: "/clerk",
+      icon: Home,
+    },
+    {
+      title: "Session",
+      url: "/admin/sessions",
+      icon: ListOrdered,
+      items: [
+        {
+          title: "All Classes",
+          url: "/admin/session/class",
+        },
+        {
+          title: "Class Details",
+          url: "/admin/sessions/fee",
+        },
+      ],
+    },
+    {
+      title: "Students",
+      url: "/admin/users/student/view",
+      icon: User,
+      items: [
+        {
+          title: "All Students",
+          url: "/admin/users/student/view",
+        },
+        {
+          title: "Create Student",
+          url: "/admin/users/student/create",
+        },
+      ],
+    },
+    {
+      title: "Faculty",
+      url: "/admin/users/faculty/view",
+      icon: User,
+      items: [
+        {
+          title: "All Employees",
+          url: "/admin/users/faculty/view",
+        },
+        {
+          title: "Create Student",
+          url: "/admin/users/faculty/create",
+        },
+      ],
+    },
+    {
+      title: "Profile",
+      url: "/admin/users/account/settings",
+      icon: User,
+    },
+    {
+      title: "Settings",
       url: "/admin/users/account/settings",
       icon: Settings,
     },
