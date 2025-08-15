@@ -42,7 +42,7 @@ export default function ProfilePage() {
   
   const breadcrumbs = [
     { href: "/admin", label: "Dashboard" },
-    { href: "/users/account/profile", label: "Profile", current: true },
+    { href: "/admin/users/account/settings", label: "Profile", current: true },
   ];
 
   const form = useForm<ProfileFormValues>({

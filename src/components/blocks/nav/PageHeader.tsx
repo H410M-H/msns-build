@@ -8,6 +8,7 @@ import {
   BreadcrumbSeparator,
 } from "~/components/ui/breadcrumb";
 import { SidebarTrigger } from "~/components/ui/sidebar";
+import { auth } from "~/server/auth";
 
 interface PageHeaderProps {
   breadcrumbs: Array<{
@@ -17,13 +18,13 @@ interface PageHeaderProps {
   }>;
 }
 
-export function PageHeader({ breadcrumbs }: PageHeaderProps) {
-  return (
-      <div className="flex items-center">
-            <header className="sticky z-30 flex h-12 pt-6md:h-16 w-full items-center bg-gradient-to-r from-emerald-200 via-emerald-400 to-green-700 px-4 md:px-6 shadow-md rounded-lg">
+export async function PageHeader({ breadcrumbs }: PageHeaderProps) {
+  const session = await auth();
 
+  return (
+    <div className="flex flex-col items-center">
+      <header className="sticky z-30 flex h-12 pt-6 md:h-16 w-full items-center bg-gradient-to-r from-emerald-200 via-emerald-400 to-green-700 px-4 md:px-6 shadow-md rounded-lg">
         <SidebarTrigger className="md:mr-4 shrink-0" />
-        
         <Breadcrumb className="flex-1 min-w-0">
           <BreadcrumbList className="flex items-center gap-1 md:gap-2 overflow-x-auto scrollbar-hide">
             {breadcrumbs.map((crumb, index) => (
@@ -46,8 +47,13 @@ export function PageHeader({ breadcrumbs }: PageHeaderProps) {
             ))}
           </BreadcrumbList>
         </Breadcrumb>
-    </header>
+      </header>
+      <div className="ml-auto flex items-center space-x-4 mt-2">
+        <span className="text-sm text-gray-700">
+          {session?.user.accountType }
+        </span>
+        <span className="text-sm text-gray-500">{session?.user.accountId}</span>
+      </div>
     </div>
-
   );
 }

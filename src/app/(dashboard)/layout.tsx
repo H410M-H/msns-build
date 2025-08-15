@@ -18,10 +18,8 @@ export default async function DashboardLayout({
             <div className="flex">
               <AppSidebar role={""}/>
               <SidebarInset className="flex w-screen">
-                <main className=" pt-6 transition-[margin] duration-300">
-                    <main className="flex-1 p-4 md:p-6 lg:p-8 min-h-screen bg-gray-50">
+                <main className=" pt-6 transition-[margin] duration-300 flex-1 p-4 md:p-6 lg:p-8 min-h-screen bg-gray-50">
                       {children}
-                    </main>
                 </main>
               </SidebarInset>
             </div>

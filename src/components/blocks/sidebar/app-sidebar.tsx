@@ -59,7 +59,7 @@ const data: NavigationConfig = {
       icon: User,
     },
     {
-      title: "Setting",
+      title: "Settings",
       url: "/admin/user/account/settings",
       icon: Settings,
     },

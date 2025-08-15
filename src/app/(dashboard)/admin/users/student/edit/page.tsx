@@ -5,7 +5,6 @@ import { Separator } from "~/components/ui/separator";
 export default function StudentCred() {
     const breadcrumbs = [
         { href: "/dashboard", label: "Dashboard", },
-        { href: "/admin/academics", label: "Academics", },
         { href: "/admin/users/student/edit", label: "Registered Students", current: true },
       ]
       
