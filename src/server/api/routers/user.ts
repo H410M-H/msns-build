@@ -1,3 +1,4 @@
+// File: user.ts (unchanged, as no errors reported)
 import { TRPCError } from "@trpc/server"
 import { createTRPCRouter, publicProcedure } from "../trpc"
 import { z } from "zod"
@@ -142,5 +143,3 @@ export const UserRouter = createTRPCRouter({
       };
   }),
 })
-
-

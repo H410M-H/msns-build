@@ -5,6 +5,7 @@ import { StatsCards } from '~/components/cards/StatCard'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '~/components/ui/dialog'
 import { Button } from '~/components/ui/button' // Changed import source
 import EventsTable from '~/components/tables/EventsTable'
+import { SidebarTrigger } from '~/components/ui/sidebar'
 
 export default async function AdminDashboard() {
   const breadcrumbs = [
@@ -16,6 +17,8 @@ export default async function AdminDashboard() {
       <PageHeader breadcrumbs={breadcrumbs} />
       <div className="pt-8 px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between mb-6">
+                  <SidebarTrigger className="mb-4"/>
+
           <h2 className="text-3xl font-bold tracking-tight">Admin Dashboard</h2>
           <Dialog>
             <DialogTrigger asChild>

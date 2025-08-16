@@ -7,7 +7,6 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "~/components/ui/breadcrumb";
-import { SidebarTrigger } from "~/components/ui/sidebar";
 import { auth } from "~/server/auth";
 
 interface PageHeaderProps {
@@ -24,7 +23,7 @@ export async function PageHeader({ breadcrumbs }: PageHeaderProps) {
   return (
     <div className="flex flex-col items-center">
       <header className="sticky z-30 flex h-12 pt-6 md:h-16 w-full items-center bg-gradient-to-r from-emerald-200 via-emerald-400 to-green-700 px-4 md:px-6 shadow-md rounded-lg">
-        <SidebarTrigger className="md:mr-4 shrink-0" />
+        {/* <SidebarTrigger className="md:mr-4 shrink-0" /> */}
         <Breadcrumb className="flex-1 min-w-0">
           <BreadcrumbList className="flex items-center gap-1 md:gap-2 overflow-x-auto scrollbar-hide">
             {breadcrumbs.map((crumb, index) => (

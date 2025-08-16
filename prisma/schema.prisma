@@ -1,3 +1,4 @@
+// File: schema.prisma
 generator client {
   provider = "prisma-client-js"
 }
@@ -15,6 +16,12 @@ model User {
   createdAt   DateTime    @default(now())
   password    String
   username    String      @unique
+  bio         String?     @default("")
+  emailNotifications Boolean @default(true)
+  pushNotifications Boolean @default(false)
+  profileVisibility Boolean @default(true)
+  marketingEmails Boolean @default(false)
+  twoFactorAuth Boolean @default(false)
 
   Event Event[] @relation("EventCreator")
 
