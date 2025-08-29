@@ -34,7 +34,7 @@ export default function HomePage() {
       <div className="absolute bottom-0 left-0 w-full py-4 bg-white/40 dark:bg-slate-900/40 backdrop-blur-sm font-text">
         <div className="container mx-auto px-4">
           <div className="flex flex-col md:flex-row items-center justify-between text-sm text-primary">
-            <p>© {new Date().getFullYear()} MSNS-DEV™ | All rights reserved.</p>
+            <p>© {new Date().getFullYear()} MSNS-DEV™  All rights reserved.</p>
             <div className="flex gap-6 mt-2 md:mt-0">
               <Link href="/terms" className="hover:text-secondary transition-colors">Terms</Link>
               <Link href="/privacy" className="hover:text-secondary transition-colors">Privacy</Link>
