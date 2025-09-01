@@ -389,4 +389,103 @@ export const feeRouter = createTRPCRouter({
         });
       }
     }),
+
+  // New procedure: getFeeByEachMonth
+  getFeeByEachMonth: publicProcedure
+    .input(
+      z.object({
+        month: z.number().min(1).max(12),
+        year: z.number(),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      try {
+        // Get all fee payments for the specified month/year
+        const feePayments = await ctx.db.feeStudentClass.findMany({
+          where: {
+            createdAt: {
+              gte: new Date(input.year, input.month - 1, 1),
+              lt: new Date(input.year, input.month, 1),
+            },
+          },
+          include: {
+            fees: true,
+            StudentClass: {
+              include: {
+                Grades: true,
+                Students: true,
+              },
+            },
+          },
+        })
+
+        // Group by class and calculate totals
+        type ClassFeeSummary = {
+          className: string;
+          totalPaid: number;
+          studentCount: number;
+          payments: {
+            studentName: string;
+            amount: number;
+            discount: number;
+          }[];
+        };
+
+        const feesByClass = feePayments.reduce(
+          (acc: Record<string, ClassFeeSummary>, payment) => {
+            const className = `${payment.StudentClass.Grades.grade} - ${payment.StudentClass.Grades.section}`;
+
+            if (!acc[className]) {
+              acc[className] = {
+                className,
+                totalPaid: 0,
+                studentCount: 0,
+                payments: [],
+              };
+            }
+
+            // Calculate total paid for this student
+            let studentTotal = 0;
+            if (payment.tuitionPaid) studentTotal += payment.fees.tuitionFee;
+            if (payment.examFundPaid) studentTotal += payment.fees.examFund;
+            if (payment.computerLabPaid) studentTotal += payment.fees.computerLabFund ?? 0;
+            if (payment.studentIdCardPaid) studentTotal += payment.fees.studentIdCardFee;
+            if (payment.infoAndCallsPaid) studentTotal += payment.fees.infoAndCallsFee;
+
+            // Apply discount
+            const discountAmount =
+              payment.discountByPercent > 0 ? (studentTotal * payment.discountByPercent) / 100 : payment.discount;
+
+            studentTotal -= discountAmount;
+
+            acc[className].totalPaid += studentTotal;
+            acc[className].studentCount += 1;
+            acc[className].payments.push({
+              studentName: payment.StudentClass.Students.studentName,
+              amount: studentTotal,
+              discount: discountAmount,
+            });
+
+            return acc;
+          },
+          {} as Record<string, ClassFeeSummary>,
+        );
+
+        const result = Object.values(feesByClass)
+        const grandTotal = result.reduce((sum, classData) => sum + classData.totalPaid, 0)
+
+        return {
+          feesByClass: result,
+          grandTotal,
+          month: input.month,
+          year: input.year,
+        }
+      } catch (error) {
+        console.error("Error fetching monthly fees:", error)
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to fetch monthly fees",
+        })
+      }
+    }),
 });

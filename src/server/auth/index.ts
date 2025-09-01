@@ -5,6 +5,10 @@ import { authConfig } from "./config";
 
 const { auth: uncachedAuth, handlers, signIn, signOut } = NextAuth(authConfig);
 
+const handler = NextAuth(authConfig);
+
+export { handler as GET, handler as POST };
+
 const auth = cache(uncachedAuth);
 
 export { auth, handlers, signIn, signOut };
