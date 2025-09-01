@@ -97,6 +97,21 @@ model Fees {
   FeeStudentClass  FeeStudentClass[]
 }
 
+model Expenses {
+  expenseId     String      @id @default(cuid())
+  title         String
+  description   String?
+  amount        Float
+  category      ExpenseCategory
+  month         Int         // 1-12
+  year          Int
+  date          DateTime    @default(now())
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+}
+
+
+
 model Grades {
   classId      String         @id @default(cuid())
   grade        String         @default("none")
@@ -273,6 +288,18 @@ enum FeeCategory {
   MonthlyFee
   AnnualFee
 }
+
+enum ExpenseCategory {
+  UTILITIES
+  SUPPLIES
+  MAINTENANCE
+  SALARIES
+  TRANSPORT
+  FOOD
+  EQUIPMENT
+  OTHER
+}
+
 
 enum Gender {
   MALE
