@@ -1,7 +1,7 @@
 "use client";
 
 import { RevenueCards } from "~/components/cards/RevenueCard";
-import { ExpensesTable } from "~/components/tables/ExpensesTable";
+// import { ExpensesTable } from "~/components/tables/ExpensesTable";
 import { PageHeader } from "~/components/blocks/nav/PageHeader";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { motion } from "framer-motion";
@@ -108,9 +108,7 @@ export default function RevenuePage() {
         >
           <div className="p-4 md:p-6">
             <RevenueCards />
-          </div>
-       <div className="p-4 md:p-6">
-            <ExpensesTable />
+            // <ExpensesTable />
           </div>
         </motion.div>
       </CardContent>
