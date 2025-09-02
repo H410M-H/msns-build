@@ -27,7 +27,7 @@ export const NavUser = () => {
 
   const handleSignOut = async () => {
     setIsLoggingOut(true);
-    await signOut({ redirect: true, callbackUrl: "/" });
+    await signOut({ redirect: true, callbackUrl: "/sign-in" });
   };
 
   return (
@@ -65,7 +65,7 @@ export const NavUser = () => {
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
               <DropdownMenuItem asChild>
-                <Link href="/admin/users/account/settings">
+                <Link href="/admin/users/profile">
                   <Settings className="mr-2 size-4" />
                   <span>Settings</span>
                 </Link>

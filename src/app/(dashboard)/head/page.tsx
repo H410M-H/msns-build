@@ -1,10 +1,13 @@
-import EventsCalendar from '~/components/blocks/academic-calender/events-calender'
 import { PageHeader } from '~/components/blocks/nav/PageHeader'
-import AdminCards from '~/components/cards/AdminCard'
 import { StatsCards } from '~/components/cards/StatCard'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '~/components/ui/dialog'
 import { Button } from '~/components/ui/button' // Changed import source
 import EventsTable from '~/components/tables/EventsTable'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '~/components/ui/card'
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@radix-ui/react-tabs'
+import { Settings, Calendar, BarChart3, Users, BookOpen } from 'lucide-react'
+import { ProfileSection } from '~/components/blocks/dashboard/profile'
+import { WelcomeSection } from '~/components/blocks/dashboard/welcome'
+import { ClerkSection } from '~/components/blocks/dashboard/clerk'
 
 export default async function HeadDashboard() {
   const breadcrumbs = [
@@ -14,47 +17,96 @@ export default async function HeadDashboard() {
   return (
     <div className="items-center">
       <PageHeader breadcrumbs={breadcrumbs} />
-      <div className="pt-8 px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-3xl font-bold tracking-tight">Head Dashboard</h2>
-          <Dialog>
-            <DialogTrigger asChild>
-              {/* Now using your custom Button component */}
-              <Button variant="outline">View Calendar</Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-4xl h-[80vh] overflow-y-auto">
-              <DialogHeader>
-                <DialogTitle>Academic Calendar</DialogTitle>
-              </DialogHeader>
-              <EventsCalendar />
-            </DialogContent>
-          </Dialog>
-        </div>
+      <WelcomeSection />
+      <ProfileSection />
 
-        {/* Overview Section */}
-        <section className="mb-10">
-          <h2 className="text-2xl font-bold text-slate-800 mb-6 pb-2 border-b border-slate-100">
-            Institutional Overview
-          </h2>
-          <div className="grid gap-6">
-            <StatsCards />
+      {/* Stats Overview */}
+          <section className="mb-10 px-4 sm:px-6 lg:px-8">
+        <h2 className="text-2xl font-bold text-slate-800 mb-6 pb-2 border-b border-slate-200">
+          Institutional Overview
+        </h2>
+        <StatsCards />
+      </section>
+
+      {/* Main Content Tabs */}
+      <Tabs defaultValue="management" className="mb-10">
+        <TabsList className="mb-8 grid w-full grid-cols-3 lg:w-[400px]">
+          <TabsTrigger value="management" className="flex items-center gap-2">
+            <Settings className="h-4 w-4" />
+            Management
+          </TabsTrigger>
+          <TabsTrigger value="events" className="flex items-center gap-2">
+            <Calendar className="h-4 w-4" />
+            Events
+          </TabsTrigger>
+          <TabsTrigger value="analytics" className="flex items-center gap-2">
+            <BarChart3 className="h-4 w-4" />
+            Analytics
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="management">
+          <ClerkSection />
+        </TabsContent>
+
+        <TabsContent value="events">
+          <div className="mb-8">
+            <div className="mb-6 flex items-center justify-between border-b border-slate-200 pb-2">
+              <h2 className="text-2xl font-bold text-slate-800">
+                Upcoming Events
+              </h2>
+              <Button variant="outline" className="flex items-center gap-2">
+                <Calendar className="h-4 w-4" />
+                Add Event
+              </Button>
+            </div>
+            <EventsTable />
           </div>
-        </section>
+        </TabsContent>
 
-        {/* Quick Actions Section */}
-        <section className="mb-8">
-          <h2 className="text-2xl font-bold text-slate-800 mb-6 pb-2 border-b border-slate-100">
-            Quick Management
-          </h2>
-          <AdminCards />
-        </section>
-                <section className="mb-8">
-          <h2 className="text-2xl font-bold text-slate-800 mb-6 pb-2 border-b border-slate-100">
-            Quick Management
-          </h2>
-          <EventsTable />
-        </section>
-      </div>
+        <TabsContent value="analytics">
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Users className="h-5 w-5" />
+                  User Analytics
+                </CardTitle>
+                <CardDescription>
+                  Overview of user activity and engagement
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="flex h-40 items-center justify-center rounded-lg bg-slate-100">
+                  <p className="text-slate-500">
+                    User engagement chart will be displayed here
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <BookOpen className="h-5 w-5" />
+                  Course Analytics
+                </CardTitle>
+                <CardDescription>
+                  Overview of course performance and enrollment
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="flex h-40 items-center justify-center rounded-lg bg-slate-100">
+                  <p className="text-slate-500">
+                    Course performance chart will be displayed here
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+      </Tabs>
+
     </div>
-  )
+      );
 }
