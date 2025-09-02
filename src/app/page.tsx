@@ -89,13 +89,13 @@ export default function Home() {
             <Zap className="h-5 w-5" />
             Get Started
           </Button>
-          <Button
+          {/* <Button
             onClick={() => router.push('/about')}
             className="h-14 px-8 text-lg border-2 border-emerald-400/40 text-emerald-100 hover:bg-emerald-500/20 backdrop-blur-xl shadow-2xl hover:shadow-emerald-500/20 transition-all duration-300 transform hover:scale-105 hover:border-emerald-300/60 rounded-md bg-transparent font-medium flex items-center gap-2"
           >
             <BookOpen className="h-5 w-5" />
             Learn More
-          </Button>
+          </Button> */}
         </div>
 
         {/* Feature Cards */}

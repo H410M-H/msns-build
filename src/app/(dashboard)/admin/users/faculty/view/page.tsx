@@ -1,12 +1,13 @@
 import { PageHeader } from "~/components/blocks/nav/PageHeader";
 import { EmployeeTable } from "~/components/tables/EmployeeTable";
 import { Separator } from "~/components/ui/separator";
+import SalaryPage from "../../../revenue/salary/page";
 
 export default function EmployeesTable() {
     const breadcrumbs = [
         { href: "/admin", label: "Dashboard", },
         { href: "/academics", label: "Academics", },
-        { href: "/admin/users/faculty/create", label: "Employee Registration", current: true },
+        { href: "/admin/users/faculty/view", label: "Faculty Management", current: true },
       ]
     
     return (
@@ -19,6 +20,10 @@ export default function EmployeesTable() {
             <EmployeeTable />
             <Separator className="bg-green-900" />
             </div>
+            <h1 className="text-center text-5xl p-4 font-serif font-semibold text-green-800">Employees Salaries</h1>
+            <Separator className="bg-green-900" />
+            <SalaryPage />
+            <Separator className="bg-green-900" />
             </div>
         </section>
     )

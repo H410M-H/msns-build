@@ -9,7 +9,7 @@ import { Badge } from "~/components/ui/badge"
 import { Trash2, Edit, Search } from "lucide-react"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "~/components/ui/table"
 
-interface Expense {
+export interface Expense {
   expenseId: string
   title: string
   description?: string

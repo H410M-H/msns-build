@@ -3,6 +3,7 @@
 import Image from "next/image";
 import {
   Briefcase,
+  Calendar,
   Home,
   List,
   ListOrdered,
@@ -60,7 +61,7 @@ const data: NavigationConfig = {
     },
     {
       title: "Settings",
-      url: "/admin/user/account/settings",
+      url: "/admin/users/account/settings",
       icon: Settings,
     },
   ],
@@ -69,6 +70,11 @@ const data: NavigationConfig = {
       title: "Overview",
       url: "/head",
       icon: Home,
+    },
+    {
+      title: "Dashboard",
+      url: "/dashboard",
+      icon: Briefcase,
     },
     {
       title: "Session",
@@ -128,26 +134,16 @@ const data: NavigationConfig = {
   ],
   NONE: [],
   PRINCIPAL: [
-    {
-      title: "Overview",
-      url: "/clerk",
+     {
+      title: "Dashboard",
+      url: "/principal",
       icon: Home,
     },
     {
       title: "Session",
       url: "/admin/sessions",
-      icon: ListOrdered,
-      items: [
-        {
-          title: "All Classes",
-          url: "/admin/session/class",
-        },
-        {
-          title: "Class Details",
-          url: "/admin/sessions/fee",
-        },
-      ],
-    },
+      icon: Calendar,
+          },
     {
       title: "Students",
       url: "/admin/users/student/view",
@@ -180,18 +176,120 @@ const data: NavigationConfig = {
     },
     {
       title: "Profile",
-      url: "/admin/users/account/settings",
+      url: "/admin/users/profile",
       icon: User,
     },
     {
       title: "Settings",
-      url: "/admin/users/account/settings",
+      url: "/admin/users/profile",
       icon: Settings,
     },
   ],
   ALL: [],
-  CLERK: [],
-  TEACHER: [],
+  CLERK:  [
+     {
+      title: "Dashboard",
+      url: "/principal",
+      icon: Home,
+    },
+    {
+      title: "Session",
+      url: "/admin/sessions",
+      icon: Calendar,
+          },
+    {
+      title: "Students",
+      url: "/admin/users/student/view",
+      icon: User,
+      items: [
+        {
+          title: "All Students",
+          url: "/admin/users/student/view",
+        },
+        {
+          title: "Create Student",
+          url: "/admin/users/student/create",
+        },
+      ],
+    },
+    {
+      title: "Faculty",
+      url: "/admin/users/faculty/view",
+      icon: User,
+      items: [
+        {
+          title: "All Employees",
+          url: "/admin/users/faculty/view",
+        },
+        {
+          title: "Create Student",
+          url: "/admin/users/faculty/create",
+        },
+      ],
+    },
+    {
+      title: "Profile",
+      url: "/admin/users/profile",
+      icon: User,
+    },
+    {
+      title: "Settings",
+      url: "/admin/users/profile",
+      icon: Settings,
+    },
+  ],
+  TEACHER:  [
+     {
+      title: "Dashboard",
+      url: "/principal",
+      icon: Home,
+    },
+    {
+      title: "Session",
+      url: "/admin/sessions",
+      icon: Calendar,
+          },
+    {
+      title: "Students",
+      url: "/admin/users/student/view",
+      icon: User,
+      items: [
+        {
+          title: "All Students",
+          url: "/admin/users/student/view",
+        },
+        {
+          title: "Create Student",
+          url: "/admin/users/student/create",
+        },
+      ],
+    },
+    {
+      title: "Faculty",
+      url: "/admin/users/faculty/view",
+      icon: User,
+      items: [
+        {
+          title: "All Employees",
+          url: "/admin/users/faculty/view",
+        },
+        {
+          title: "Create Student",
+          url: "/admin/users/faculty/create",
+        },
+      ],
+    },
+    {
+      title: "Profile",
+      url: "/admin/users/profile",
+      icon: User,
+    },
+    {
+      title: "Settings",
+      url: "/admin/users/profile",
+      icon: Settings,
+    },
+  ],
   WORKER: [],
   STUDENT: []
 };

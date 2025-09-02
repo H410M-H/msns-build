@@ -5,8 +5,7 @@ import { ScrollArea } from "~/components/ui/scroll-area";
 export default function EmployeeRegistration() {
   const breadcrumbs = [
     { href: "/dashboard", label: "Dashboard", },
-    { href: "/academics", label: "Academics", },
-    { href: "/userReg/faculty/create", label: "Employee Registration", current: true },
+    { href: "/admin/users/faculty/create", label: "Employee Registration", current: true },
   ]
   
   return (

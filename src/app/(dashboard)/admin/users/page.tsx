@@ -7,7 +7,7 @@ import RegistrationCards from "~/components/cards/RegistrationCard";
 export default function RegistrationPage() {
   const breadcrumbs = [
     { href: "/dashboard", label: "Dashboard" },
-    { href: "/admin/users", label: "User Management", current: true },
+    { href: "/dashboard/users", label: "User Management", current: true },
   ];
 
   return (

@@ -5,7 +5,8 @@ import { RevenueCards } from "~/components/cards/RevenueCard";
 import { PageHeader } from "~/components/blocks/nav/PageHeader";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { motion } from "framer-motion";
-
+import { ExpensesTable } from "~/components/tables/ExpensesTable";
+import type { Expense } from "~/components/tables/ExpensesTable";
 // Animated number component
 
 export default function RevenuePage() {
@@ -108,7 +109,11 @@ export default function RevenuePage() {
         >
           <div className="p-4 md:p-6">
             <RevenueCards />
-            // <ExpensesTable />
+          <ExpensesTable expenses={[]} onEdit={function (_expense: Expense): void {
+                    throw new Error("Function not implemented.");
+                  } } onDelete={function (_id: string): void {
+                    throw new Error("Function not implemented.");
+                  } } />
           </div>
         </motion.div>
       </CardContent>

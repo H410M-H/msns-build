@@ -98,10 +98,10 @@ export default function EmployeeCredDetails() {
             </Button>
             <CSVUploadDialog />
             <Button asChild>
-              <Link href="/userReg/faculty/create">Create</Link>
+              <Link href="/admin/users/faculty/create">Create</Link>
             </Button>
             <Button asChild>
-              <Link href="/userReg/faculty/view">View Table</Link>
+              <Link href="/admin/users/faculty/view">View Table</Link>
             </Button>
           </div>
         </div>

@@ -1,7 +1,6 @@
 import { PageHeader } from "~/components/blocks/nav/PageHeader";
 import { WelcomeSection } from "~/components/blocks/dashboard/welcome";
 import { ProfileSection } from "~/components/blocks/dashboard/profile";
-import { StatsSection } from "~/components/blocks/dashboard/stat";
 import { AdminSection } from "~/components/blocks/dashboard/admin";
 import { BarChart3, Settings, Calendar, Users, BookOpen } from "lucide-react";
 import EventsTable from "~/components/tables/EventsTable";
@@ -14,10 +13,11 @@ import {
 } from "~/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import { Button } from "~/components/ui/button";
+import { StatsCards } from "~/components/cards/StatCard";
 
 export default async function DashboardPage() {
   const breadcrumbs = [
-    { href: "/dashboard", label: "Dashboard", current: true },
+    { href: "/admin", label: "Dashboard", current: true },
   ];
 
   return (
@@ -27,7 +27,12 @@ export default async function DashboardPage() {
       <ProfileSection />
 
       {/* Stats Overview */}
-      <StatsSection />
+          <section className="mb-10 px-4 sm:px-6 lg:px-8">
+        <h2 className="text-2xl font-bold text-slate-800 mb-6 pb-2 border-b border-slate-200">
+          Institutional Overview
+        </h2>
+        <StatsCards />
+      </section>
 
       {/* Main Content Tabs */}
       <Tabs defaultValue="management" className="mb-10">

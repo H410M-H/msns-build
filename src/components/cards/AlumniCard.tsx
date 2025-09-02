@@ -1,57 +1,79 @@
-import { DollarSignIcon, NotebookTabsIcon, Settings2Icon, User2Icon, UserIcon } from "lucide-react";
-import Link from "next/link";
+"use client"
 
-export const AlumniCards = () => {
-  const services = [
-    {
-      title: "Profile",
-      description: "Generate comprehensive financial reports and analytics.",
-      icon: <User2Icon className="mb-4 h-8 w-8 text-purple-500" />,
-      href: "/faculty/profile",
-    },
-    {
-      title: "Registration",
-      description:
-        "Easily enroll new students and manage their financial records.",
-      icon: <UserIcon className="mb-4 h-12 w-12 text-green-500" />,
-      href: "/registration/faculty/view",
-    },
-    {
-      title: "Academics",
-      description:
-        "Easily enroll new students and manage their financial records.",
-      icon: <NotebookTabsIcon className="mb-4 h-12 w-12 text-blue-500" />,
-      href: "/admin/academics",
-    },
-    {
-      title: "Salaries",
-      description: "Streamline tuition and fee collection processes.",
-      icon: <DollarSignIcon className="mb-4 h-12 w-12 text-green-500" />,
-      href: "/revenue/salary",
-    },
-    {
-      title: "Settings",
-      description: "Customize payment plans and automate recurring payments.",
-      icon: <Settings2Icon className="mb-4 h-12 w-12 text-red-500" />,
-      href: "/faculty/settings",
-    },
-  ];
+import { ArrowRight, CalendarIcon as CalendarCog, type LucideIcon, NotebookPenIcon, Wallet } from 'lucide-react'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card"
+import Link from "next/link"
+
+type IconType = LucideIcon
+
+interface Services {
+  title: string
+  description: string
+  icon: IconType
+  href: string
+  iconColor: string
+  bgColor: string
+}
+
+const services: Services[] = [
+  {
+    title: "Session Management",
+    description: "Manage academic sessions, terms, and schedules",
+    icon: CalendarCog,
+    href: "/dashboard/sessions",
+    iconColor: "text-yellow-600",
+    bgColor: "bg-yellow-50",
+  },
+  {
+    title: "User Management",
+    description: "Manage students, teachers, and staff accounts",
+    icon: NotebookPenIcon,
+    iconColor: "text-blue-600",
+    bgColor: "bg-blue-50",
+    href: "/dashboard/users",
+  },
+  {
+    title: "Revenue Management",
+    description: "Track and manage student fees and payments",
+    icon: Wallet,
+    iconColor: "text-green-600",
+    bgColor: "bg-green-50",
+    href: "/dashboard/revenue",
+  },
+]
+export default function AlumniCard() {
 
   return (
-    <section className="grid grid-cols-1 gap-6 p-6 md:grid-cols-2 lg:grid-cols-3">
-      {services.map((service, index) => (
-        <Link
-          href={service.href}
-          key={index}
-          className="transform rounded-lg bg-yellow-100 p-6 shadow-md transition duration-300 ease-in-out hover:scale-105 hover:cursor-pointer"
-        >
-          <div className="flex flex-col items-center text-center">
-            {service.icon}
-            <h3 className="mb-2 text-xl font-semibold">{service.title}</h3>
-            <p className="text-gray-600">{service.description}</p>
-          </div>
-        </Link>
-      ))}
-    </section>
-  );
-};
+    <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+      {services.map((service) => {
+        const Icon = service.icon
+        return (
+          <Link href={service.href} key={service.title} className="group">
+            <Card className={`relative overflow-hidden transition-all duration-300 hover:-translate-y-1.5 shadow-sm hover:shadow-lg ${service.bgColor} hover:bg-opacity-90`}>
+              <div className="absolute inset-0 bg-gradient-to-br from-white/30 to-transparent" />
+              <CardHeader className="relative z-10">
+                <div className="flex items-center gap-4">
+                  <div className={`p-3 rounded-xl ${service.bgColor} bg-opacity-20`}>
+                    <Icon className={`h-8 w-8 ${service.iconColor}`} />
+                  </div>
+                  <CardTitle className="text-xl font-semibold text-slate-800">
+                    {service.title}
+                  </CardTitle>
+                </div>
+                <CardDescription className="text-slate-600 mt-2">
+                  {service.description}
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="relative z-10 pt-4">
+                <div className="flex items-center text-sm font-medium text-blue-600 group-hover:text-blue-700 transition-colors">
+                  Access Panel
+                  <ArrowRight className="h-4 w-4 ml-2 transition-transform group-hover:translate-x-1" />
+                </div>
+              </CardContent>
+            </Card>
+          </Link>
+        )
+      })}
+    </div>
+  )
+}
