@@ -109,6 +109,11 @@ export default function SalaryPage() {
             />
           </motion.div>
 
+
+          <Separator className="bg-gradient-to-r from-green-200/80 to-teal-200/80 h-[2px] shadow-sm" />
+
+<ExpensesForm />
+
           {/* Footer Badges */}
           <motion.div 
             className="pb-6 text-center text-sm text-green-700/80 font-medium"
