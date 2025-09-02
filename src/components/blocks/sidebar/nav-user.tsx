@@ -78,7 +78,7 @@ export const NavUser = () => {
               className="text-red-500 focus:bg-red-50 focus:text-red-500 dark:focus:bg-red-950/50"
             >
               <LogOut className="mr-2 size-4" />
-              <span>{isLoggingOut ? "Logging out..." : "Log out"}</span>
+              <span>{isLoggingOut ? "/sign-in" : "Log out"}</span>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
