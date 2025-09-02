@@ -84,6 +84,7 @@ export default function SalaryPage() {
               
               <div className="flex items-center gap-3">
                 <SalaryAssignmentForm />
+<ExpenseCreationDialog />
                 
                 <Button
                   variant="outline"
