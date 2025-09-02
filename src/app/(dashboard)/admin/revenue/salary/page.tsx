@@ -6,7 +6,7 @@ import { useState } from 'react'
 import { PageHeader } from "~/components/blocks/nav/PageHeader"
 import { SalaryAssignmentForm } from "~/components/forms/employee/SalaryAllotment"
 import { SalaryTable } from "~/components/tables/SalaryTable"
-import { ExpenseForm } from "~/components/blocks/expense/ExpenseForm"
+import { ExpenseForm } from "~/components/blocks/expense/expense-form.tsx"
 import { Button } from "~/components/ui/button"
 import { Search, RefreshCw } from "lucide-react"
 import { motion } from "framer-motion"
