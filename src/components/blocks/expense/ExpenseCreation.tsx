@@ -9,7 +9,7 @@ import {
   DialogTrigger,
 } from "~/components/ui/dialog";
 import { Button } from "~/components/ui/button";
-import { ExpenseForm, ExpenseFormData } from "./ExpenseForm";
+import { ExpenseForm, ExpenseFormData } from "~/components/forms/ExpenseForm";
 import { useRouter } from "next/navigation";
 import { api } from "~/trpc/react";
 
