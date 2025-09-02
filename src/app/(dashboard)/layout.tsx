@@ -9,7 +9,8 @@ import { auth } from '~/server/auth'
 import { db } from '~/server/db'
 import ProfileCard from '~/components/cards/ProfileCard'
 import { Menu, Calendar, User, BookOpen, GraduationCap, Shield, Bell, Sparkles, ChevronRight, Activity, Star, Trophy, Clock } from 'lucide-react'
-import { SidebarProvider, SidebarTrigger } from '~/components/ui/sidebar'
+import { SidebarInset, SidebarProvider, SidebarTrigger } from '~/components/ui/sidebar'
+import { AppSidebar } from '~/components/blocks/sidebar/app-sidebar'
 
 export default async function AdminDashboard() {
   const session = await auth()
@@ -99,14 +100,17 @@ export default async function AdminDashboard() {
         <div className="absolute bottom-32 right-1/3 w-4 h-4 bg-cyan-400 rounded-full animate-bounce opacity-50" style={{animationDelay: '2s'}}></div>
 
         <div className="relative z-10">
-          <PageHeader breadcrumbs={breadcrumbs} />
           
           <div className="pt-6 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+            <SidebarInset>
+            <AppSidebar />
+
             {/* Sidebar Trigger */}
             <div className="mb-6">
               <SidebarTrigger className="bg-white/80 hover:bg-white border border-white/40 shadow-lg hover:shadow-xl rounded-xl p-3 transform hover:scale-105 transition-all duration-200">
                 <Menu className="w-5 h-5" />
               </SidebarTrigger>
+                        <PageHeader breadcrumbs={breadcrumbs} />
             </div>
 
             {/* Hero Welcome Section */}
@@ -364,6 +368,7 @@ export default async function AdminDashboard() {
                 </div>
               </section>
             )}
+</SidebarInset>
 
             {/* Footer spacing */}
             <div className="h-20"></div>
