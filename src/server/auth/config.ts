@@ -45,7 +45,7 @@ export const authConfig = {
                         throw new Error("Missing credentials");
                     }
                     const account = await db.user.findUnique({
-                        where: { email: email.toLowerCase() },
+                        where: { email: email },
                     })
                     if(!account) throw new Error("No account found with this email");
 
