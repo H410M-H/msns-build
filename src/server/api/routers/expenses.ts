@@ -13,7 +13,7 @@ const expenseSchema = z.object({
 
 export const expensesRouter = createTRPCRouter({
   // Create expense
-  create: protectedProcedure.input(expenseSchema).mutation(async ({ ctx, input }) => {
+  createExpense: protectedProcedure.input(expenseSchema).mutation(async ({ ctx, input }) => {
     try {
       const expense = await ctx.db.expenses.create({
         data: input,
@@ -29,7 +29,7 @@ export const expensesRouter = createTRPCRouter({
   }),
 
   // Get all expenses with optional filtering
-  getAll: protectedProcedure
+  getAllExpenses: protectedProcedure
     .input(
       z
         .object({
@@ -63,7 +63,7 @@ export const expensesRouter = createTRPCRouter({
     }),
 
   // Get expense by ID
-  getById: protectedProcedure.input(z.object({ id: z.string() })).query(async ({ ctx, input }) => {
+  getExpenseById: protectedProcedure.input(z.object({ id: z.string() })).query(async ({ ctx, input }) => {
     try {
       const expense = await ctx.db.expenses.findUnique({
         where: { expenseId: input.id },
@@ -87,7 +87,7 @@ export const expensesRouter = createTRPCRouter({
   }),
 
   // Update expense
-  update: protectedProcedure
+  updateExpense: protectedProcedure
     .input(
       z.object({
         id: z.string(),
@@ -111,7 +111,7 @@ export const expensesRouter = createTRPCRouter({
     }),
 
   // Delete expense
-  delete: protectedProcedure.input(z.object({ id: z.string() })).mutation(async ({ ctx, input }) => {
+  deleteExpense: protectedProcedure.input(z.object({ id: z.string() })).mutation(async ({ ctx, input }) => {
     try {
       await ctx.db.expenses.delete({
         where: { expenseId: input.id },
@@ -127,7 +127,7 @@ export const expensesRouter = createTRPCRouter({
   }),
 
   // Get expenses by month with totals
-  getByMonth: protectedProcedure
+  getExpensesByMonth: protectedProcedure
     .input(
       z.object({
         month: z.number().min(1).max(12),
@@ -169,7 +169,7 @@ export const expensesRouter = createTRPCRouter({
     }),
 
   // Get expense summary for a period
-  getSummary: protectedProcedure
+  getExpensesSummary: protectedProcedure
     .input(
       z.object({
         startMonth: z.number().min(1).max(12),
