@@ -1,5 +1,7 @@
 import EventsCalendar from '~/components/blocks/academic-calender/events-calender';
 import { PageHeader } from '~/components/blocks/nav/PageHeader';
+import { WelcomeSection } from "~/components/blocks/dashboard/welcome";
+import { ProfileSection } from "~/components/blocks/dashboard/profile";
 import AdminCards from '~/components/cards/AdminCard';
 import { StatsCards } from '~/components/cards/StatCard';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '~/components/ui/dialog';
@@ -17,6 +19,9 @@ export default async function PrincipalDashboard() {
   return (
     <>
       <PageHeader breadcrumbs={breadcrumbs} />
+      <WelcomeSection />
+      <ProfileSection />
+
 
       {/* Stats Overview */}
       <section className="mb-10 px-4 sm:px-6 lg:px-8">
