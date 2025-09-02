@@ -6,6 +6,7 @@ import { useState } from 'react'
 import { PageHeader } from "~/components/blocks/nav/PageHeader"
 import { SalaryAssignmentForm } from "~/components/forms/employee/SalaryAllotment"
 import { SalaryTable } from "~/components/tables/SalaryTable"
+import { ExpenseForm } from "~/components/blocks/expense/ExpenseForm"
 import { Button } from "~/components/ui/button"
 import { Search, RefreshCw } from "lucide-react"
 import { motion } from "framer-motion"
@@ -112,7 +113,7 @@ export default function SalaryPage() {
 
           <Separator className="bg-gradient-to-r from-green-200/80 to-teal-200/80 h-[2px] shadow-sm" />
 
-<ExpensesForm />
+<ExpenseForm />
 
           {/* Footer Badges */}
           <motion.div 
