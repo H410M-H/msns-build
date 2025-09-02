@@ -16,7 +16,8 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { useToast } from "~/hooks/use-toast";
 import { z } from "zod";
-import { expenseSchema } from "~/server/api/routers/expenses"; // Adjust path as needed
+
+
 
 interface ExpenseFormProps {
   onSubmit: (data: ExpenseFormData) => void;
