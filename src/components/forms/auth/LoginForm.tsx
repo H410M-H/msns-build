@@ -160,7 +160,7 @@ export const LoginForm = () => {
 
         <div className="mt-8">
           <p className="text-center text-xs text-gray-500 dark:text-gray-400">
-            By logging in, you agree to Kolibri&apos;s
+            By logging in, you agree to MSNS-DEV&apos;s
             <a
               href="/terms"
               className="mx-1 text-blue-600 hover:underline dark:text-blue-400"
