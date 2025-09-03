@@ -53,6 +53,7 @@ export function ExpenseCreationDialog() {
       ...data,
       category: data.category as
         | "OTHER"
+        | "BISE"
         | "UTILITIES"
         | "SUPPLIES"
         | "MAINTENANCE"

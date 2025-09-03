@@ -290,6 +290,7 @@ enum FeeCategory {
 }
 
 enum ExpenseCategory {
+  BISE
   UTILITIES
   SUPPLIES
   MAINTENANCE

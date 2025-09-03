@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
@@ -37,6 +37,7 @@ export interface ExpenseFormData {
 
 const categories = [
   { value: "UTILITIES", label: "Utilities" },
+  { value: "BISE", label: "Registration & Affiliation" },
   { value: "SUPPLIES", label: "Supplies" },
   { value: "MAINTENANCE", label: "Maintenance" },
   { value: "SALARIES", label: "Salaries" },
@@ -60,6 +61,16 @@ const months = [
   { value: 11, label: "November" },
   { value: 12, label: "December" },
 ];
+
+// Zod schema for expense form validation
+const expenseSchema = z.object({
+  title: z.string().min(1, "Title is required"),
+  description: z.string().optional(),
+  amount: z.number().min(0.01, "Amount must be greater than 0"),
+  category: z.string().min(1, "Category is required"),
+  month: z.number().min(1, "Month is required").max(12, "Month must be between 1 and 12"),
+  year: z.number().min(2020, "Year must be at least 2020").max(2030, "Year must be at most 2030"),
+});
 
 export function ExpenseForm({
   onSubmit,
@@ -90,7 +101,7 @@ export function ExpenseForm({
         const fieldErrors = error.errors.reduce(
           (acc, curr) => ({
             ...acc,
-            [curr.path[0]]: curr.message,
+            [String(curr.path[0])]: curr.message,
           }),
           {},
         );
@@ -108,7 +119,6 @@ export function ExpenseForm({
       toast({
         title: "Validation Error",
         description: "Please correct the form errors",
-        variant: "destructive",
       });
       return;
     }
@@ -206,11 +216,9 @@ export function ExpenseForm({
                   ))}
                 </SelectContent>
               </Select>
-              {errors.month && (
-                <p className="text-sm text-red-500">{errors.month}</p>
-ევ
-
-              )}
+{errors.month && (
+  <p className="text-sm text-red-500">{errors.month}</p>
+)}
             </div>
 
             <div className="space-y-2">

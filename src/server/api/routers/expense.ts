@@ -6,7 +6,7 @@ const expenseSchema = z.object({
   title: z.string().min(1, "Title is required"),
   description: z.string().optional(),
   amount: z.number().positive("Amount must be positive"),
-  category: z.enum(["UTILITIES", "SUPPLIES", "MAINTENANCE", "SALARIES", "TRANSPORT", "FOOD", "EQUIPMENT", "OTHER"]),
+  category: z.enum(["UTILITIES", "BISE","SUPPLIES", "MAINTENANCE", "SALARIES", "TRANSPORT", "FOOD", "EQUIPMENT", "OTHER"]),
   month: z.number().min(1).max(12),
   year: z.number().min(2020).max(2030),
 });

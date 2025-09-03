@@ -3,7 +3,6 @@
 import { Separator } from "~/components/ui/separator"
 import { Input } from "~/components/ui/input"
 import { useState } from 'react'
-import { PageHeader } from "~/components/blocks/nav/PageHeader"
 import { SalaryAssignmentForm } from "~/components/forms/employee/SalaryAllotment"
 import { SalaryTable } from "~/components/tables/SalaryTable"
 import { ExpenseCreationDialog } from "~/components/blocks/expense/ExpenseCreation"
@@ -18,11 +17,6 @@ export default function SalaryPage() {
   const [searchTerm, setSearchTerm] = useState('')
   const [isRefreshing, setIsRefreshing] = useState(false)
 
-  const breadcrumbs = [
-    { href: "/dashboard", label: "Dashboard" },
-    { href: "/employees", label: "Employees" },
-    { href: "/revenue/salary", label: "Salary Management", current: true },
-  ]
 
   const handleRefresh = async () => {
     setIsRefreshing(true)
@@ -44,7 +38,6 @@ export default function SalaryPage() {
         transition={{ duration: 60, repeat: Infinity, ease: "linear" }}
       />
       
-      <PageHeader breadcrumbs={breadcrumbs} />
       
       <div className="container mx-auto pt-[5rem]">
         <div className="w-full mx-auto space-y-6">
