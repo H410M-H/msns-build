@@ -1,7 +1,6 @@
 import {
   SidebarInset,
   SidebarProvider,
-  SidebarTrigger,
 } from "~/components/ui/sidebar";
 import { AppSidebar } from "~/components/blocks/sidebar/app-sidebar";
 
@@ -11,10 +10,11 @@ export default async function ClerkDashboardLayout({
   return (
     <>
       <SidebarProvider>
-        <AppSidebar />
+        <AppSidebar className="h-screen" />
         <SidebarInset>
-          <SidebarTrigger className="m-4" />
-          <div className="grid gap-4 p-4 md:min-h-min">{children}</div>
+          <main className="w-full h-screen bg-from-yellow-100/20 sm:px-6 sm:py-0 md:gap-8 lg:grid-cols-3 xl:grid-cols-3">
+            {children}
+          </main>
         </SidebarInset>
       </SidebarProvider>
     </>

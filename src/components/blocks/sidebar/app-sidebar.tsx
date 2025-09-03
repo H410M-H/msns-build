@@ -4,6 +4,7 @@ import Image from "next/image";
 import {
   Briefcase,
   Calendar,
+  DollarSignIcon,
   Home,
   List,
   ListOrdered,
@@ -37,6 +38,11 @@ const data: NavigationConfig = {
       title: "Session",
       url: "/admin/sessions",
       icon: Package,
+    },
+        {
+      title: "Revenue",
+      url: "/admin/revenue",
+      icon: DollarSignIcon,
     },
     {
       
@@ -304,24 +310,62 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   }, [session?.data?.user?.accountType]);
 
   return (
-    <Sidebar collapsible="icon" {...props}>
+<Sidebar collapsible="icon" {...props} className="border-r border-slate-200/60 bg-gradient-to-b from-slate-50 to-white">
+  {/* Sidebar Header with improved logo presentation */}
+  <SidebarHeader className="relative h-24 flex items-center justify-center p-4 border-b border-slate-200/50">
+    <div className="relative w-full h-16">
+      <Image
+        className="object-contain"
+        src="https://res.cloudinary.com/dvvbxrs55/image/upload/v1729267533/Official_LOGO_grn_ic9ldd.png"
+        alt="Institution Logo"
+        fill
+        sizes="(max-width: 768px) 100px, 150px"
+        priority
+      />
+    </div>
+  </SidebarHeader>
 
-      <SidebarHeader className="relative my-2 mt-16 h-16 w-full">
-        <Image
-          className="object-contain"
-            src="https://res.cloudinary.com/dvvbxrs55/image/upload/v1729267533/Official_LOGO_grn_ic9ldd.png"
-          alt="logo"
-          fill
-          sizes="100%"
-        />
-      </SidebarHeader>
-      <SidebarContent>
-        <NavMain items={items} />
-      </SidebarContent>
-      <SidebarFooter>
-        <NavUser />
-      </SidebarFooter>
-      <SidebarRail />
-    </Sidebar>
+  {/* Sidebar Content with enhanced navigation */}
+  <SidebarContent className="py-6">
+    <div className="px-3 mb-4">
+      <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider pl-3 mb-2">
+        Main Navigation
+      </div>
+    </div>
+    <NavMain items={items} />
+    
+    {/* Optional: Additional section for quick actions */}
+    <div className="mt-8 px-3">
+      <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider pl-3 mb-2">
+        Quick Access
+      </div>
+      <div className="space-y-1">
+        <button className="flex items-center w-full px-3 py-2 text-sm rounded-lg text-blue-700 bg-blue-50/80 hover:bg-blue-100 transition-colors">
+          <span className="mr-2">⭐</span>
+          <span>Starred Items</span>
+        </button>
+        <button className="flex items-center w-full px-3 py-2 text-sm rounded-lg text-slate-700 hover:bg-slate-100/80 transition-colors">
+          <span className="mr-2">🕒</span>
+          <span>Recent</span>
+        </button>
+      </div>
+    </div>
+  </SidebarContent>
+
+  {/* Enhanced Footer with user profile */}
+  <SidebarFooter className="p-4 border-t border-slate-200/50 bg-white/50">
+    <div className="flex items-center justify-between mb-3">
+      <span className="text-xs font-medium text-slate-600">Status</span>
+      <span className="flex h-2 w-2">
+        <span className="animate-ping absolute h-2 w-2 rounded-full bg-green-400 opacity-75"></span>
+        <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+      </span>
+    </div>
+    <NavUser />
+  </SidebarFooter>
+
+  {/* Styled Rail */}
+  <SidebarRail className="bg-slate-100/50" />
+</Sidebar>
   );
 }
