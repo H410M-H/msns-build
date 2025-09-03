@@ -1,10 +1,13 @@
-import EventsCalendar from '~/components/blocks/academic-calender/events-calender'
 import { PageHeader } from '~/components/blocks/nav/PageHeader'
-import AdminCards from '~/components/cards/AdminCard'
 import { StatsCards } from '~/components/cards/StatCard'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '~/components/ui/dialog'
 import { Button } from '~/components/ui/button' // Changed import source
 import EventsTable from '~/components/tables/EventsTable'
+import { ProfileSection } from '~/components/blocks/dashboard/profile'
+import { WelcomeSection } from '~/components/blocks/dashboard/welcome'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '~/components/ui/tabs'
+import { Settings, Calendar, BarChart3, Users, BookOpen } from 'lucide-react'
+import { ClerkSection } from '~/components/blocks/dashboard/clerk'
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '~/components/ui/card'
 
 export default async function ClerkDashboard() {
   const breadcrumbs = [
@@ -24,7 +27,7 @@ return (
         </h2>
         <StatsCards />
       </section>
-
+S
       {/* Main Content Tabs */}
       <Tabs defaultValue="management" className="mb-10">
         <TabsList className="mb-8 grid w-full grid-cols-3 lg:w-[400px]">
