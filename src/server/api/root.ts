@@ -11,7 +11,7 @@ import { AllotmentRouter } from "./routers/allotment";
 import { UserRouter } from "./routers/user";
 import { EventRouter } from "./routers/event";
 import { ProfileRouter } from "./routers/profile";
-import { expensesRouter } from "./routers/expenses";
+import { expensesRouter } from "./routers/expense";
 
 export const appRouter = createTRPCRouter({
   user: UserRouter,

@@ -9,14 +9,15 @@ import {
   DialogTrigger,
 } from "~/components/ui/dialog";
 import { Button } from "~/components/ui/button";
-import { ExpenseForm, ExpenseFormData } from "./ExpenseForm";
 import { useRouter } from "next/navigation";
 import { api } from "~/trpc/react";
+import { ExpenseForm, type ExpenseFormData } from "~/components/forms/fee/ExpenseForm";
+import { useToast } from "~/hooks/use-toast";
 
 export function ExpenseCreationDialog() {
   const router = useRouter();
   const { toast } = useToast();
-  const createExpense = api.expenses.createExpense.useMutation({
+  const createExpense = api.expense.createExpense.useMutation({
     onSuccess: () => {
       toast({
         title: "Success",
@@ -27,14 +28,24 @@ export function ExpenseCreationDialog() {
     onError: (error) => {
       toast({
         title: "Error",
-        description: error.message || "Failed to create expense",
-        variant: "destructive",
+        description: error.message ?? "Failed to create expense",
       });
     },
   });
 
   const handleSubmit = (data: ExpenseFormData) => {
-    createExpense.mutate(data);
+    createExpense.mutate({
+      ...data,
+      category: data.category as
+        | "OTHER"
+        | "UTILITIES"
+        | "SUPPLIES"
+        | "MAINTENANCE"
+        | "SALARIES"
+        | "TRANSPORT"
+        | "FOOD"
+        | "EQUIPMENT",
+    });
   };
 
   return (
