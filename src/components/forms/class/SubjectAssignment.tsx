@@ -173,8 +173,8 @@ export const SubjectAssignmentDialog = ({
                         </div>
                       )}
                       {teachers?.map((teacher) => (
-                        <SelectItem 
-                          key={teacher.employeeId} 
+                        <SelectItem
+                          key={teacher.employeeId}
                           value={teacher.employeeId}
                         >
                           {teacher.employeeName}

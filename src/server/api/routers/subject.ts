@@ -93,8 +93,8 @@ export const SubjectRouter = createTRPCRouter({
   // In subject.ts, update the getSubjectsByClass procedure
 getSubjectsByClass: publicProcedure
 .input(z.object({ 
-  classId: z.string().cuid().optional(), // Made optional to handle undefined/null from client
-  sessionId: z.string().cuid().optional() // Made optional to handle undefined/null from client
+  classId: z.string().cuid().optional(),
+  sessionId: z.string().cuid().optional() 
 }))
 .query(async ({ ctx, input }) => {
   try {
