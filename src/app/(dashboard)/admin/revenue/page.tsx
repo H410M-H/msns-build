@@ -85,7 +85,6 @@ export default function RevenuePage() {
               >
                 <RevenueCards />
                 <ExpensesTable
-                  expenses={[]}
                   onEdit={handleEdit}
                   onDelete={handleDelete}
                 />
