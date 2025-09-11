@@ -19,4 +19,11 @@ export const fingerRouter = createTRPCRouter({
         console.error(error);
       }
     }),
+  getFinger: publicProcedure.query(async ({ ctx, input }) => {
+    try {
+      return await ctx.db.fingerprint.findFirstOrThrow();
+    } catch (error) {
+      console.error(error);
+    }
+  }),
 });

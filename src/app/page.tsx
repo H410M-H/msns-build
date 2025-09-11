@@ -1,6 +1,7 @@
 // 'use client'
 
-import { FingerprintTest } from "~/components/test/finger-print";
+import { FingerprintCapture } from "~/components/test/bio";
+
 
 // import { useRouter } from 'next/navigation'
 // import Link from 'next/link'
@@ -317,5 +318,5 @@ import { FingerprintTest } from "~/components/test/finger-print";
 // }
 
 export default function HomePage() {
-  return <FingerprintTest />;
+  return <FingerprintCapture />;
 }

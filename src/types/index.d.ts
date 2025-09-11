@@ -201,3 +201,70 @@ type CaptureResultProps = {
   image?: Uint8Array;
   quality?: number;
 };
+
+interface SGFAWebAPI {
+  Init: () => Promise<SGResult>;
+  Capture: (
+    quality: number,
+    timeout: number,
+    templateFormat: number,
+    showPreview: boolean,
+  ) => Promise<SGCaptureResult>;
+  Match: (template1: string, template2: string) => Promise<SGMatchResult>;
+  GetVersion: () => Promise<SGVersionResult>;
+  GetLastError: () => Promise<SGErrorResult>;
+  GetDeviceInfo: () => Promise<SGDeviceInfoResult>;
+}
+
+interface SGResult {
+  ReturnCode: number;
+  Message?: string;
+}
+
+interface SGCaptureResult extends SGResult {
+  Data: string;
+  ImageWidth?: number;
+  ImageHeight?: number;
+  ImageDPI?: number;
+  Quality?: number;
+}
+
+interface SGMatchResult extends SGResult {
+  Score: number;
+  Matched: boolean;
+}
+
+interface SGVersionResult extends SGResult {
+  Version: string;
+}
+
+interface SGErrorResult extends SGResult {
+  ErrorCode: number;
+  ErrorMessage: string;
+}
+
+interface SGDeviceInfoResult extends SGResult {
+  DeviceID: string;
+  DeviceType: string;
+  Width: number;
+  Height: number;
+  DPI: number;
+}
+
+type FingerPrintResponseProps = {
+  ErrorCode: number;
+  Manufacturer: string;
+  Model: string;
+  SerialNumber: string;
+  ImageWidth: number;
+  ImageHeight: number;
+  ImageDPI: number;
+  ImageQuality: string;
+  NFIQ: number;
+  ImageDataBase64: string | null;
+  BMPBase64: string;
+  WSQImage: string;
+  WSQImageSize: number;
+  ISOTemplateBase64: string;
+  TemplateBase64: string;
+};
