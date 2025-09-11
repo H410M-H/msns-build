@@ -144,7 +144,7 @@ export default async function DashboardPage() {
       </div>
 
       {/* Quick Stats Footer - Now uncommented and styled */}
-      <div className="mb-10 px-4 sm:px-6 lg:px-8">
+      {/* <div className="mb-10 px-4 sm:px-6 lg:px-8">
         <div className="rounded-xl border border-slate-200/60 bg-white p-6 shadow-sm">
           <div className="flex items-center justify-between mb-4">
             <h3 className="font-semibold text-slate-700">Quick Stats</h3>
@@ -169,7 +169,7 @@ export default async function DashboardPage() {
             </div>
           </div>
         </div>
-      </div>
+      </div> */}
     </div>
   );
 }

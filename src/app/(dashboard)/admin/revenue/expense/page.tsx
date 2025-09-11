@@ -3,7 +3,6 @@
 import { Separator } from "~/components/ui/separator"
 import { Input } from "~/components/ui/input"
 import { useState } from 'react'
-import { SalaryAssignmentForm } from "~/components/forms/employee/SalaryAllotment"
 import { SalaryTable } from "~/components/tables/SalaryTable"
 import { ExpenseCreationDialog } from "~/components/blocks/expense/ExpenseCreation"
 import { Button } from "~/components/ui/button"
@@ -86,7 +85,6 @@ export default function ExpensePage() {
               </div>
               
               <div className="flex items-center gap-3">
-                <SalaryAssignmentForm />
 <ExpenseCreationDialog />
                 
                 <Button
