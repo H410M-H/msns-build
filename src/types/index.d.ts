@@ -1,14 +1,23 @@
-type AccountTypeEnum = "ADMIN" | "PRINCIPAL" | "HEAD" | "CLERK" | "TEACHER" | "WORKER" | "STUDENT" | "ALL" | "NONE";
+type AccountTypeEnum =
+  | "ADMIN"
+  | "PRINCIPAL"
+  | "HEAD"
+  | "CLERK"
+  | "TEACHER"
+  | "WORKER"
+  | "STUDENT"
+  | "ALL"
+  | "NONE";
 
 type NavItem = {
+  title: string;
+  url: string;
+  icon?: LucideIcon;
+  isActive?: boolean;
+  items?: {
     title: string;
     url: string;
-    icon?: LucideIcon;
-    isActive?: boolean;
-    items?: {
-        title: string;
-        url: string;
-    }[];
+  }[];
 };
 
 type ClassProps = {
@@ -58,7 +67,14 @@ type EmployeeProps = {
   cnic: string;
   maritalStatus: "Married" | "Unmarried" | "Widow" | "Divorced";
   doj: string;
-  designation: "ADMIN" | "PRINCIPAL" | "HEAD" | "CLERK" | "TEACHER" | "WORKER" | "STUDENT";
+  designation:
+    | "ADMIN"
+    | "PRINCIPAL"
+    | "HEAD"
+    | "CLERK"
+    | "TEACHER"
+    | "WORKER"
+    | "STUDENT";
   residentialAddress: string;
   mobileNo: string;
   additionalContact?: string | null;
@@ -164,4 +180,24 @@ type SalaryIncrementProps = {
   incrementAmount: number;
   reason: string;
   effectiveDate: Date;
+};
+
+type FingerprintDeviceProps = {
+  id: string;
+  name: string;
+  open(): Promise<void>;
+  close(): Promise<void>;
+  capture(options?: CaptureOptions): Promise<CaptureResult>;
+};
+
+type CaptureOptionsProps = {
+  timeout?: number;
+  waitForFinger?: boolean;
+  qualityThreshold?: number;
+};
+
+type CaptureResultProps = {
+  template?: Uint8Array;
+  image?: Uint8Array;
+  quality?: number;
 };

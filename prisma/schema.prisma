@@ -9,23 +9,30 @@ datasource db {
 }
 
 model User {
-  id          String      @id @default(cuid())
-  email       String      @unique
-  accountId   String
-  accountType Designation @default(ADMIN)
-  createdAt   DateTime    @default(now())
-  password    String
-  username    String      @unique
-  bio         String?     @default("")
-  emailNotifications Boolean @default(true)
-  pushNotifications Boolean @default(false)
-  profileVisibility Boolean @default(true)
-  marketingEmails Boolean @default(false)
-  twoFactorAuth Boolean @default(false)
+  id                 String      @id @default(cuid())
+  email              String      @unique
+  accountId          String
+  accountType        Designation @default(ADMIN)
+  createdAt          DateTime    @default(now())
+  password           String
+  username           String      @unique
+  bio                String?     @default("")
+  emailNotifications Boolean     @default(true)
+  pushNotifications  Boolean     @default(false)
+  profileVisibility  Boolean     @default(true)
+  marketingEmails    Boolean     @default(false)
+  twoFactorAuth      Boolean     @default(false)
 
   Event Event[] @relation("EventCreator")
 
   EventAttendee Attendee[]
+}
+
+model Fingerprint {
+  fingerId  String   @id @default(cuid())
+  template  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model ClassSubject {
@@ -98,19 +105,17 @@ model Fees {
 }
 
 model Expenses {
-  expenseId     String      @id @default(cuid())
-  title         String
-  description   String?
-  amount        Float
-  category      ExpenseCategory
-  month         Int         // 1-12
-  year          Int
-  date          DateTime    @default(now())
-  createdAt     DateTime    @default(now())
-  updatedAt     DateTime    @updatedAt
+  expenseId   String          @id @default(cuid())
+  title       String
+  description String?
+  amount      Float
+  category    ExpenseCategory
+  month       Int // 1-12
+  year        Int
+  date        DateTime        @default(now())
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
 }
-
-
 
 model Grades {
   classId      String         @id @default(cuid())
@@ -155,24 +160,24 @@ model Sessions {
 }
 
 model Event {
-  id             String     @id @default(cuid())
-  title          String
-  description    String?
-  startDateTime  DateTime
-  endDateTime    DateTime
-  timezone       String    @default("UTC")
-  location       String?
-  isOnline       Boolean   @default(false)
-  type           EventType
-  priority       Priority
-  status         EventStatus
-  recurring      RecurrenceType
-  recurrenceEnd  DateTime?
-  maxAttendees   Int?
-  isPublic       Boolean   @default(false)
-  notes          String?
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
+  id            String         @id @default(cuid())
+  title         String
+  description   String?
+  startDateTime DateTime
+  endDateTime   DateTime
+  timezone      String         @default("UTC")
+  location      String?
+  isOnline      Boolean        @default(false)
+  type          EventType
+  priority      Priority
+  status        EventStatus
+  recurring     RecurrenceType
+  recurrenceEnd DateTime?
+  maxAttendees  Int?
+  isPublic      Boolean        @default(false)
+  notes         String?
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
 
   tags      EventTag[]
   attendees Attendee[]
@@ -182,7 +187,7 @@ model Event {
 }
 
 model Tag {
-  id     String @id @default(cuid())
+  id     String     @id @default(cuid())
   name   String
   color  String
   events EventTag[]
@@ -191,30 +196,29 @@ model Tag {
 model EventTag {
   eventId String
   tagId   String
-  event   Event @relation(fields: [eventId], references: [id])
-  tag     Tag   @relation(fields: [tagId], references: [id])
+  event   Event  @relation(fields: [eventId], references: [id])
+  tag     Tag    @relation(fields: [tagId], references: [id])
 
   @@id([eventId, tagId])
 }
 
 model Attendee {
-  eventId  String
-  userId   String
-  status   AttendeeStatus
-  event    Event @relation(fields: [eventId], references: [id])
-  user     User  @relation(fields: [userId], references: [id])
+  eventId String
+  userId  String
+  status  AttendeeStatus
+  event   Event          @relation(fields: [eventId], references: [id])
+  user    User           @relation(fields: [userId], references: [id])
 
   @@id([eventId, userId])
 }
 
 model Reminder {
-  id           String   @id @default(cuid())
+  id            String       @id @default(cuid())
   minutesBefore Int
-  type         ReminderType
-  eventId      String
-  event        Event    @relation(fields: [eventId], references: [id])
+  type          ReminderType
+  eventId       String
+  event         Event        @relation(fields: [eventId], references: [id])
 }
-
 
 model StudentClass {
   scId            String            @id @default(cuid())
@@ -301,7 +305,6 @@ enum ExpenseCategory {
   OTHER
 }
 
-
 enum Gender {
   MALE
   FEMALE
@@ -314,6 +317,7 @@ enum MaritalStatus {
   Widow
   Divorced
 }
+
 enum EventType {
   MEETING
   WORKSHOP

@@ -12,6 +12,7 @@ import { UserRouter } from "./routers/user";
 import { EventRouter } from "./routers/event";
 import { ProfileRouter } from "./routers/profile";
 import { expensesRouter } from "./routers/expense";
+import { fingerRouter } from "./routers/finger";
 
 export const appRouter = createTRPCRouter({
   user: UserRouter,
@@ -27,6 +28,7 @@ export const appRouter = createTRPCRouter({
   event: EventRouter,
   subject: SubjectRouter,
   class: ClassRouter,
+  finger:fingerRouter,
 });
 
 // export type definition of API
