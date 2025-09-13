@@ -317,6 +317,8 @@ import { FingerprintCapture } from "~/components/test/bio";
 //   )
 // }
 
+
+export const dynamic='force-dynamic'
 export default function HomePage() {
   return <FingerprintCapture />;
 }

@@ -59,6 +59,7 @@ export const FingerprintCapture = () => {
 
       console.log(data);
 
+      //TODO: save finger in database
       //finger.mutate({ template: data.ISOTemplateBase64 });
 
       if (data.ErrorCode === 0) {
@@ -70,7 +71,6 @@ export const FingerprintCapture = () => {
         setDeviceStatus("error");
       }
     } catch (error) {
-      setStatus("Error: " + error.message);
       setDeviceStatus("error");
     } finally {
       setIsLoading(false);
@@ -90,7 +90,7 @@ export const FingerprintCapture = () => {
           headers: { "Content-Type": "application/x-www-form-urlencoded" },
         },
       );
-      console.log(response)
+      console.log(response);
 
       if (!response.data) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -98,7 +98,7 @@ export const FingerprintCapture = () => {
 
       const newFinger = response.data;
 
-      console.log(newFinger)
+      console.log(newFinger);
 
       const payloadStringMatch = `template1=${savedFinger?.template}&template2=${newFinger.ISOTemplateBase64}&licstr=&templateFormat=ISO`;
       const matchResponse = await axios.post<{
@@ -112,10 +112,9 @@ export const FingerprintCapture = () => {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
-      console.log(matchResponse.data)
+      console.log(matchResponse.data);
 
       if (matchResponse.data.ErrorCode === 106) {
-        
         setStatus(`Error: ${matchResponse.data.ErrorCode}`);
         setStatus("Not Matched successful!");
         setDeviceStatus("error");
@@ -124,7 +123,6 @@ export const FingerprintCapture = () => {
         setDeviceStatus("connected");
       }
     } catch (error) {
-      setStatus("Error: " + error.message);
       setDeviceStatus("error");
     } finally {
       setIsLoading(false);
@@ -201,6 +199,7 @@ export const FingerprintCapture = () => {
           <div className="flex items-center space-x-2">
             <span className="text-sm font-medium">Port:</span>
             <input
+              placeholder="something"
               type="number"
               value={port}
               onChange={(e) => setPort(Number(e.target.value))}
@@ -225,6 +224,7 @@ export const FingerprintCapture = () => {
                 <div className="flex items-center rounded-lg bg-gray-200 p-3">
                   <span className="text-gray-600">http://localhost:</span>
                   <input
+                  placeholder="0"
                     type="number"
                     value={port}
                     onChange={(e) => setPort(Number(e.target.value))}
@@ -402,7 +402,7 @@ export const FingerprintCapture = () => {
                     />
                   </svg>
                   <p className="mt-4 text-gray-600">
-                    No capture data yet. Click "Capture Fingerprint" to begin.
+                    No capture data yet. Click &quots;Capture Fingerprint&quots; to begin.
                   </p>
                 </div>
               </div>
