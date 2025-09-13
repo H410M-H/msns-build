@@ -38,28 +38,29 @@ model ClassSubject {
 }
 
 model Employees {
-    employeeId         String             @id @default(cuid())
-    registrationNumber String             @unique
-    employeeName       String             @db.VarChar(100)
-    fatherName         String             @db.VarChar(100)
-    admissionNumber    String             @unique
+    employeeId         String               @id @default(cuid())
+    registrationNumber String               @unique
+    employeeName       String               @db.VarChar(100)
+    fatherName         String               @db.VarChar(100)
+    admissionNumber    String               @unique
     gender             Gender
-    dob                String             @default("none")
-    cnic               String             @default("0000-0000000-0")
+    dob                String               @default("none")
+    cnic               String               @default("0000-0000000-0")
     maritalStatus      MaritalStatus
-    doj                String             @default("none")
+    doj                String               @default("none")
     designation        Designation
     residentialAddress String
-    mobileNo           String             @default("none")
-    additionalContact  String?            @default("none")
-    education          String             @default("none")
-    isAssign           Boolean            @default(false)
-    profilePic         String?            @default("/user.jpg")
+    mobileNo           String               @default("none")
+    additionalContact  String?              @default("none")
+    education          String               @default("none")
+    isAssign           Boolean              @default(false)
+    profilePic         String?              @default("/user.jpg")
     cv                 String?
     BioMetric          BioMetric?
     ClassSubject       ClassSubject[]
     SalaryAssignment   SalaryAssignment[]
     SalaryIncrement    SalaryIncrement[]
+    EmployeeAttendance EmployeeAttendance[]
 }
 
 model BioMetric {
@@ -72,6 +73,19 @@ model BioMetric {
     updatedAt DateTime @updatedAt
 
     employee Employees @relation(fields: [employeeId], references: [employeeId])
+}
+
+model EmployeeAttendance {
+    employeeAttendanceId String    @id @default(cuid())
+    morning              String    @default("A")
+    afternoon            String    @default("A")
+    date                 String    @default("")
+    employeeId           String
+    employee             Employees @relation(fields: [employeeId], references: [employeeId])
+    createdAt            DateTime  @default(now())
+    updatedAt            DateTime  @updatedAt
+
+    @@unique([employeeId, date])
 }
 
 model FeeStudentClass {

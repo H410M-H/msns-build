@@ -288,3 +288,13 @@ type CalendarDay = {
   isToday: boolean;
   isWeekend: boolean;
 };
+
+type EmployeeAttendanceProps = {
+  employeeAttendanceId: string;
+  morning: string;
+  afternoon: string;
+  employeeId: string;
+  date: string;
+  createdAt: Date;
+  updatedAt: Date;
+};

@@ -10,10 +10,7 @@ import { api } from "~/trpc/react";
 import { cn } from "~/lib/utils";
 import { AttendanceModal } from "./attendance-dialog";
 import { useAttendance } from "~/hooks/use-attendance";
-
-interface CalendarGridProps {
-  onAttendanceClick?: (employeeId: string, date: string) => void;
-}
+import { Separator } from "~/components/ui/separator";
 
 interface AttendanceRecord {
   id: string;
@@ -34,57 +31,11 @@ const weekdayNames: string[] = [
   "Sat",
 ];
 
-const generateMockAttendance = (): AttendanceRecord[] => {
-  const records: AttendanceRecord[] = [];
-  const today = new Date();
-  const currentMonth = today.getMonth();
-  const currentYear = today.getFullYear();
-
-  Array.from<number>({ length: 10 }).forEach((_, index) => {
-    for (let i = 1; i <= 31; i++) {
-      const date = new Date(currentYear, currentMonth, i);
-      if (date.getMonth() !== currentMonth) break; // Stop if we go to next month
-
-      const dateStr = date.toISOString().split("T")[0] ?? "";
-
-      // Random attendance status
-      const statuses: AttendanceRecord["status"][] = [
-        "present",
-        "present",
-        "present",
-        "absent",
-        "late",
-      ];
-      const randomStatus =
-        statuses[Math.floor(Math.random() * statuses.length)];
-
-      records.push({
-        id: `${index}-${dateStr}`,
-        employeeId: `employee-${index}`,
-        date: dateStr,
-        status: randomStatus ?? "present",
-        checkIn:
-          randomStatus === "present"
-            ? "09:00"
-            : randomStatus === "late"
-              ? "09:30"
-              : undefined,
-        checkOut:
-          randomStatus === "present" || randomStatus === "late"
-            ? "17:30"
-            : undefined,
-      });
-    }
-  });
-
-  return records;
-};
-
 export const CalendarGrid = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const { setEmployee, setOpen } = useAttendance();
   const [employees] = api.employee.getEmployees.useSuspenseQuery();
-  const attendanceRecords = generateMockAttendance();
+  const [attendances] = api.attendance.getAllEmployeeAttendance.useSuspenseQuery();
 
   const currentMonthDays: Dayjs[] = useMemo(() => {
     const monthStart = dayjs(currentDate).startOf("month");
@@ -94,45 +45,22 @@ export const CalendarGrid = () => {
     );
   }, [currentDate]);
 
-  const navigateMonth = (direction: "prev" | "next") => {
+  const navigateMonth = useCallback((direction: "prev" | "next") => {
     const newDate = dayjs(currentDate)
       .add(direction === "next" ? 1 : -1, "month")
       .toDate();
     setCurrentDate(newDate);
-  };
+  },[currentDate]);
 
   const getAttendanceForEmployeeAndDate = (
     employeeId: string,
     date: string,
   ) => {
-    return attendanceRecords.find(
-      (record) => record.employeeId === employeeId && record.date === date,
+    return attendances.find(
+      (record) =>
+        record.employeeId === employeeId &&
+        dayjs(record.date).isSame(dayjs(date), "date"),
     );
-  };
-
-  const getStatusColor = (status: AttendanceRecord["status"]) => {
-    const colors = {
-      present:
-        "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200",
-      absent: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200",
-      late: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200",
-      "half-day":
-        "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200",
-      holiday:
-        "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200",
-    };
-    return colors[status];
-  };
-
-  const getStatusSymbol = (status: AttendanceRecord["status"]) => {
-    const symbols = {
-      present: "P",
-      absent: "A",
-      late: "L",
-      "half-day": "H",
-      holiday: "🏖️",
-    };
-    return symbols[status];
   };
 
   const openDialog = useCallback(
@@ -258,7 +186,7 @@ export const CalendarGrid = () => {
                       variant="outline"
                       key={`${employee.employeeId}-${date.format("YYYY-MM-DD")}`}
                       className={cn(
-                        "flex h-full min-w-[40px] items-center justify-center rounded border border-border/50 p-1 text-xs",
+                        "grid h-full min-w-[40px] gap-2 rounded border border-border/50 p-1 text-xs",
                         isToday && "ring-1 ring-primary",
                         isClickable && "cursor-pointer hover:bg-muted/50",
                         !isToday && "bg-gray-400",
@@ -270,12 +198,19 @@ export const CalendarGrid = () => {
                       disabled={!isToday}
                     >
                       {attendance ? (
-                        <Badge
-                          variant="secondary"
-                          className={`flex h-4 w-4 items-center justify-center p-0 text-xs ${getStatusColor(attendance.status)}`}
-                        >
-                          {getStatusSymbol(attendance.status)}
-                        </Badge>
+                        <>
+                          <p
+                            className={`${attendance.morning == "P" ? "font-bold text-primary" : "font-bold text-destructive"}`}
+                          >
+                            {attendance.morning}
+                          </p>
+                          <span className="h-1 w-full border-2" />
+                          <p
+                            className={`${attendance.afternoon == "P" ? "font-bold text-primary" : "font-bold text-destructive"}`}
+                          >
+                            {attendance.afternoon}
+                          </p>
+                        </>
                       ) : (
                         <p>N</p>
                       )}

@@ -19,7 +19,8 @@ export const AttendanceModal = () => {
   const date = dayjs();
   const [isLoading, setLoading] = useState<boolean>(false);
   const [status, setStatus] = useState<string>("");
-  const { isOpen, employee, setClear } = useAttendance();
+  const { isOpen, employee, setClear, setOpen } = useAttendance();
+  const utils = api.useUtils();
   const [attendanceType, setAttendanceType] = useState<"first" | "second">(
     "first",
   );
@@ -29,6 +30,22 @@ export const AttendanceModal = () => {
     },
     { enabled: !!employee.employeeId },
   );
+
+  const addAttendance = api.attendance.addEmployeeAttendance.useMutation({
+    onMutate: async () => {
+      setLoading(true);
+      await utils.attendance.getAllEmployeeAttendance.refetch();
+      setOpen(false);
+    },
+    onSuccess: () => {
+      setLoading(false);
+      setStatus("Attendance Saved.");
+    },
+    onError: () => {
+      setLoading(false);
+      setStatus("Attendance not Saved.");
+    },
+  });
 
   const captureFingerprint = async () => {
     try {
@@ -77,7 +94,15 @@ export const AttendanceModal = () => {
     }
   };
 
+  const saveAttendance = async () => {
+    addAttendance.mutate({
+      employeeId: employee.employeeId,
+      timeSlot: attendanceType,
+    });
+  };
+
   const handleClose = useCallback(() => {
+    setOpen(false);
     setClear();
   }, [setClear]);
 
@@ -95,7 +120,6 @@ export const AttendanceModal = () => {
     return () => {
       setStatus("");
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [date]);
 
   const formattedDate = dayjs(date).format("MMMM D, YYYY");
@@ -103,7 +127,7 @@ export const AttendanceModal = () => {
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle className="text-lg">Mark Attendance</DialogTitle>
           <div className="space-y-2">
@@ -138,7 +162,7 @@ export const AttendanceModal = () => {
         <Button variant="outline" onClick={handleClose}>
           Cancel
         </Button>
-        <Button onClick={captureFingerprint}>Save</Button>
+        <Button onClick={saveAttendance}>Save</Button>
       </DialogContent>
     </Dialog>
   );

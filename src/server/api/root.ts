@@ -13,6 +13,7 @@ import { EventRouter } from "./routers/event";
 import { ProfileRouter } from "./routers/profile";
 import { expensesRouter } from "./routers/expense";
 import { fingerRouter } from "./routers/finger";
+import { attendanceRouter } from "./routers/attendance";
 
 export const appRouter = createTRPCRouter({
   user: UserRouter,
@@ -29,12 +30,8 @@ export const appRouter = createTRPCRouter({
   subject: SubjectRouter,
   class: ClassRouter,
   finger:fingerRouter,
+  attendance:attendanceRouter
 });
 
-// export type definition of API
 export type AppRouter = typeof appRouter;
-
-/**
- * Create a server-side caller for the tRPC API.
- */
 export const createCaller = createCallerFactory(appRouter);
