@@ -141,13 +141,12 @@ export const EmployeeRouter = createTRPCRouter({
         ]),
       }),
     )
-    .query(async ({ ctx, input }) => {
+    .query(async ({ ctx }) => {
       try {
-        return await ctx.db.employees.findMany({
-          where: {
-            designation: input.designation,
-          },
+        const employees = await ctx.db.employees.findMany({
         });
+        console.log(employees);
+        return employees;
       } catch (error) {
         console.error(error);
         throw new TRPCError({
