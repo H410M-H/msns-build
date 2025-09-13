@@ -268,3 +268,23 @@ type FingerPrintResponseProps = {
   ISOTemplateBase64: string;
   TemplateBase64: string;
 };
+
+type AttendanceRecord = {
+  id: string;
+  employeeId: string;
+  date: string; // YYYY-MM-DD format
+  status: AttendanceStatus;
+  checkIn?: string; // HH:mm format
+  checkOut?: string; // HH:mm format
+  notes?: string;
+};
+
+type AttendanceStatus = "present" | "absent" | "late" | "half-day" | "holiday";
+
+type CalendarDay = {
+  date: string;
+  dayOfMonth: number;
+  isCurrentMonth: boolean;
+  isToday: boolean;
+  isWeekend: boolean;
+};

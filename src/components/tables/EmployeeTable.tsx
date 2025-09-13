@@ -198,12 +198,16 @@ const columns = [
     header: "Bio metric",
     cell: ({ row }) => (
       <div className="flex items-center gap-2">
-        <Fingerprint
-          className={cn(
-            "h-4 w-4",
-            row.original.BioMetric ? "text-green-500" : "text-red-500",
-          )}
-        />
+        <Link
+          href={`/admin/users/faculty/bio-metric?employeeId=${row.original.employeeId}&employeeName=${row.original.employeeName}`}
+        >
+          <Fingerprint
+            className={cn(
+              "h-4 w-4",
+              row.original.BioMetric ? "text-green-500" : "text-red-500",
+            )}
+          />
+        </Link>
       </div>
     ),
   },
@@ -231,13 +235,13 @@ const columns = [
               View Details
             </Link>
           </DropdownMenuItem>
-          <DropdownMenuItem asChild>
+          {/* <DropdownMenuItem asChild>
             <Link
-              href={`/admin/users/faculty/bio-metric?employeeId=${row.original.employeeId}`}
+              href={`/admin/users/faculty/bio-metric?employeeId=${row.original.employeeId}&employeeName=${row.original.employeeName}`}
             >
               Bio Metric
             </Link>
-          </DropdownMenuItem>
+          </DropdownMenuItem> */}
           {row.original.cv && (
             <DropdownMenuItem asChild>
               <Link href={row.original.cv} target="_blank">

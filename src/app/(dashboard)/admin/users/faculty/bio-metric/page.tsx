@@ -5,7 +5,10 @@ import { ScrollArea } from "~/components/ui/scroll-area";
 export default async function EmployeeRegistration(
   props: PageProps<"/admin/users/faculty/bio-metric">,
 ) {
-  const { employeeId } = (await props.searchParams) as { employeeId: string };
+  const { employeeId, employeeName } = (await props.searchParams) as {
+    employeeId: string;
+    employeeName: string;
+  };
   const breadcrumbs = [
     { href: "/dashboard", label: "Dashboard" },
     {
@@ -19,7 +22,7 @@ export default async function EmployeeRegistration(
     <ScrollArea className="items-center">
       <PageHeader breadcrumbs={breadcrumbs} />
       <div className="pt-14">
-        <RegisterEmployeeBioMetric employeeId={employeeId} />
+        <RegisterEmployeeBioMetric employeeId={employeeId} employeeName={employeeName} />
       </div>
     </ScrollArea>
   );
