@@ -330,7 +330,7 @@ export const SubjectCreationDialog = ({
                         {renderSelectContent(
                           loadingTeachers,
                           teachersError,
-                          teachers?.map(t => ({ id: t.employeeId, name: t.employeeName })) ?? [],
+                          teachers?.map(t => ({ id: t.employeeId, name: t.designation })) ?? [],
                           "teachers"
                         )}
                       </SelectContent>

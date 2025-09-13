@@ -1,4 +1,3 @@
-// File: schema.prisma
 generator client {
   provider = "prisma-client-js"
 }
@@ -10,22 +9,20 @@ datasource db {
 
 model User {
   id                 String      @id @default(cuid())
-  email              String      @unique
   accountId          String
   accountType        Designation @default(ADMIN)
   createdAt          DateTime    @default(now())
   password           String
   username           String      @unique
+  email              String      @unique
   bio                String?     @default("")
   emailNotifications Boolean     @default(true)
-  pushNotifications  Boolean     @default(false)
-  profileVisibility  Boolean     @default(true)
   marketingEmails    Boolean     @default(false)
+  profileVisibility  Boolean     @default(true)
+  pushNotifications  Boolean     @default(false)
   twoFactorAuth      Boolean     @default(false)
-
-  Event Event[] @relation("EventCreator")
-
-  EventAttendee Attendee[]
+  EventAttendee      Attendee[]
+  Event              Event[]     @relation("EventCreator")
 }
 
 model Fingerprint {
@@ -110,7 +107,7 @@ model Expenses {
   description String?
   amount      Float
   category    ExpenseCategory
-  month       Int // 1-12
+  month       Int
   year        Int
   date        DateTime        @default(now())
   createdAt   DateTime        @default(now())
@@ -178,12 +175,10 @@ model Event {
   notes         String?
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
-
-  tags      EventTag[]
-  attendees Attendee[]
-  reminders Reminder[]
-
-  User User[] @relation("EventCreator")
+  attendees     Attendee[]
+  tags          EventTag[]
+  reminders     Reminder[]
+  User          User[]         @relation("EventCreator")
 }
 
 model Tag {
@@ -267,6 +262,13 @@ model Subject {
   ClassSubject ClassSubject[]
 }
 
+// model Fingerprint {
+//   fingerId  String   @id
+//   template  String
+//   createdAt DateTime @default(now())
+//   updatedAt DateTime
+// }
+
 enum ClassCategory {
   Montessori
   Primary
@@ -294,7 +296,6 @@ enum FeeCategory {
 }
 
 enum ExpenseCategory {
-  BISE
   UTILITIES
   SUPPLIES
   MAINTENANCE
@@ -303,6 +304,7 @@ enum ExpenseCategory {
   FOOD
   EQUIPMENT
   OTHER
+  BISE
 }
 
 enum Gender {

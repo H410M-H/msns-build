@@ -20,6 +20,76 @@ type NavItem = {
   }[];
 };
 
+type AttendanceStatus = "PRESENT" | "ABSENT" | "LATE" | "EXCUSED"
+
+type AccountType =
+  | "STUDENT"
+  | "FACULTY"
+  | "ADMIN"
+  | "WORKER"
+  | "HEAD"
+  | "PRINCIPAL"
+  | "CLERK"
+  | "TEACHER"
+  | "NONE"
+  | "ALL"
+
+interface AttendanceRecord {
+  id: string
+  userId: string
+  date: Date
+  status: AttendanceStatus
+  classId?: string
+  remarks?: string
+  createdAt: Date
+  updatedAt: Date
+  user?: {
+    id: string
+    username: string
+    accountId: string
+    accountType: AccountType
+  }
+  class?: {
+    id: string
+    name: string
+    section: string
+  }
+}
+
+interface AttendanceStats {
+  total: number
+  present: number
+  absent: number
+  late: number
+  excused: number
+  presentPercentage: number
+}
+
+interface MonthlyAttendanceData {
+  attendance: AttendanceRecord[]
+  students?: Array<{
+    id: string
+    username: string
+    accountId: string
+  }>
+  employees?: Array<{
+    id: string
+    username: string
+    accountId: string
+    accountType: AccountType
+  }>
+  daysInMonth: number
+}
+
+interface Class {
+  id: string
+  name: string
+  section: string
+  gradeLevel?: number
+  academicYear?: string
+}
+
+
 type ClassProps = {
   sessionId?: string;
   classId: string;
