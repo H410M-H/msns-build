@@ -1,10 +1,10 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Button } from "~/components/ui/button"
-import { Input } from "~/components/ui/input"
-import { api } from "~/trpc/react"
-import Link from "next/link"
+import { useState } from "react";
+import { Button } from "~/components/ui/button";
+import { Input } from "~/components/ui/input";
+import { api } from "~/trpc/react";
+import Link from "next/link";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,8 +12,15 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "~/components/ui/dropdown-menu"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "~/components/ui/table"
+} from "~/components/ui/dropdown-menu";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "~/components/ui/table";
 import {
   type ColumnDef,
   type SortingState,
@@ -23,40 +30,55 @@ import {
   getSortedRowModel,
   getFilteredRowModel,
   flexRender,
-} from "@tanstack/react-table"
-import { Checkbox } from "~/components/ui/checkbox"
-import { EmployeeDeletionDialog } from "../forms/employee/EmployeeDeletion"
-import { CSVUploadDialog } from "../forms/student/FileInput"
-import { DotSquareIcon, RefreshCcw } from "lucide-react"
+} from "@tanstack/react-table";
+import { Checkbox } from "~/components/ui/checkbox";
+import { EmployeeDeletionDialog } from "../forms/employee/EmployeeDeletion";
+import { CSVUploadDialog } from "../forms/student/FileInput";
+import { DotSquareIcon, Fingerprint, RefreshCcw } from "lucide-react";
+import { cn } from "~/lib/utils";
 
 // Use the exact type structure from your Prisma schema
 type EmployeeFromDB = {
-  employeeId: string
-  registrationNumber: string
-  employeeName: string
-  fatherName: string
-  admissionNumber: string
-  gender: "MALE" | "FEMALE" | "CUSTOM"
-  dob: string
-  cnic: string
-  maritalStatus: "Married" | "Unmarried" | "Widow" | "Divorced"
-  doj: string
-  designation: "PRINCIPAL" | "ADMIN" | "HEAD" | "CLERK" | "TEACHER" | "WORKER" | "NONE" | "ALL" | "STUDENT" | "FACULTY"
-  residentialAddress: string
-  mobileNo: string
-  additionalContact?: string | null
-  education: string
-  isAssign: boolean
-  profilePic?: string | null
-  cv?: string | null
-}
+  employeeId: string;
+  registrationNumber: string;
+  employeeName: string;
+  fatherName: string;
+  admissionNumber: string;
+  gender: "MALE" | "FEMALE" | "CUSTOM";
+  dob: string;
+  cnic: string;
+  maritalStatus: "Married" | "Unmarried" | "Widow" | "Divorced";
+  doj: string;
+  designation:
+    | "PRINCIPAL"
+    | "ADMIN"
+    | "HEAD"
+    | "CLERK"
+    | "TEACHER"
+    | "WORKER"
+    | "NONE"
+    | "ALL"
+    | "STUDENT"
+    | "FACULTY";
+  residentialAddress: string;
+  mobileNo: string;
+  additionalContact?: string | null;
+  education: string;
+  isAssign: boolean;
+  profilePic?: string | null;
+  BioMetric: { fingerId: string } | null;
+  cv?: string | null;
+};
 
 const columns = [
   {
     id: "select",
     header: ({ table }) => (
       <Checkbox
-        checked={table.getIsAllPageRowsSelected() || (table.getIsSomePageRowsSelected() && "indeterminate")}
+        checked={
+          table.getIsAllPageRowsSelected() ||
+          (table.getIsSomePageRowsSelected() && "indeterminate")
+        }
         onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
         aria-label="Select all"
       />
@@ -75,13 +97,17 @@ const columns = [
     id: "registrationNumber",
     accessorFn: (row: EmployeeFromDB) => row.registrationNumber,
     header: "Reg #",
-    cell: ({ getValue }) => <div className="font-medium">{getValue() as string}</div>,
+    cell: ({ getValue }) => (
+      <div className="font-medium">{getValue() as string}</div>
+    ),
   },
   {
     id: "employeeName",
     accessorFn: (row: EmployeeFromDB) => row.employeeName,
     header: "Name",
-    cell: ({ getValue }) => <div className="font-bold">{getValue() as string}</div>,
+    cell: ({ getValue }) => (
+      <div className="font-bold">{getValue() as string}</div>
+    ),
   },
   {
     id: "fatherName",
@@ -100,10 +126,10 @@ const columns = [
     accessorFn: (row: EmployeeFromDB) => row.dob,
     header: "Date of Birth",
     cell: ({ getValue }) => {
-      const dateStr = getValue() as string
-      if (dateStr === "none") return <span>Not provided</span>
-      const date = new Date(dateStr)
-      return <span>{date.toLocaleDateString()}</span>
+      const dateStr = getValue() as string;
+      if (dateStr === "none") return <span>Not provided</span>;
+      const date = new Date(dateStr);
+      return <span>{date.toLocaleDateString()}</span>;
     },
   },
   {
@@ -111,7 +137,9 @@ const columns = [
     accessorFn: (row: EmployeeFromDB) => row.designation,
     header: "Designation",
     cell: ({ getValue }) => (
-      <span className="px-2 py-1 rounded-full text-xs bg-blue-100 text-blue-800">{getValue() as string}</span>
+      <span className="rounded-full bg-blue-100 px-2 py-1 text-xs text-blue-800">
+        {getValue() as string}
+      </span>
     ),
   },
   {
@@ -119,8 +147,8 @@ const columns = [
     accessorFn: (row: EmployeeFromDB) => row.mobileNo,
     header: "Mobile",
     cell: ({ getValue }) => {
-      const mobile = getValue() as string
-      return <span>{mobile === "none" ? "Not provided" : mobile}</span>
+      const mobile = getValue() as string;
+      return <span>{mobile === "none" ? "Not provided" : mobile}</span>;
     },
   },
   {
@@ -128,10 +156,10 @@ const columns = [
     accessorFn: (row: EmployeeFromDB) => row.doj,
     header: "Date of Joining",
     cell: ({ getValue }) => {
-      const dateStr = getValue() as string
-      if (dateStr === "none") return <span>Not provided</span>
-      const date = new Date(dateStr)
-      return <span>{date.toLocaleDateString()}</span>
+      const dateStr = getValue() as string;
+      if (dateStr === "none") return <span>Not provided</span>;
+      const date = new Date(dateStr);
+      return <span>{date.toLocaleDateString()}</span>;
     },
   },
   {
@@ -139,8 +167,8 @@ const columns = [
     accessorFn: (row: EmployeeFromDB) => row.education,
     header: "Education",
     cell: ({ getValue }) => {
-      const education = getValue() as string
-      return <span>{education === "none" ? "Not provided" : education}</span>
+      const education = getValue() as string;
+      return <span>{education === "none" ? "Not provided" : education}</span>;
     },
   },
   {
@@ -155,12 +183,28 @@ const columns = [
     header: "Assignment Status",
     cell: ({ getValue }) => (
       <span
-        className={`px-2 py-1 rounded-full text-xs ${
-          getValue() ? "bg-green-100 text-green-800" : "bg-yellow-100 text-yellow-800"
+        className={`rounded-full px-2 py-1 text-xs ${
+          getValue()
+            ? "bg-green-100 text-green-800"
+            : "bg-yellow-100 text-yellow-800"
         }`}
       >
         {getValue() ? "Assigned" : "Unassigned"}
       </span>
+    ),
+  },
+  {
+    id: "biometric",
+    header: "Bio metric",
+    cell: ({ row }) => (
+      <div className="flex items-center gap-2">
+        <Fingerprint
+          className={cn(
+            "h-4 w-4",
+            row.original.BioMetric ? "text-green-500" : "text-red-500",
+          )}
+        />
+      </div>
     ),
   },
   {
@@ -170,18 +214,29 @@ const columns = [
     cell: ({ row }: { row: { original: EmployeeFromDB } }) => (
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="ghost" className="w-8 h-8 p-0">
-            <DotSquareIcon className="w-4 h-4" />
+          <Button variant="ghost" className="h-8 w-8 p-0">
+            <DotSquareIcon className="h-4 w-4" />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
           <DropdownMenuLabel>Actions</DropdownMenuLabel>
           <DropdownMenuSeparator />
           <DropdownMenuItem asChild>
-            <Link href={`/dashboard/employee/edit/${row.original.employeeId}`}>Edit</Link>
+            <Link href={`/dashboard/employee/edit/${row.original.employeeId}`}>
+              Edit
+            </Link>
           </DropdownMenuItem>
           <DropdownMenuItem asChild>
-            <Link href={`/dashboard/employee/view/${row.original.employeeId}`}>View Details</Link>
+            <Link href={`/dashboard/employee/view/${row.original.employeeId}`}>
+              View Details
+            </Link>
+          </DropdownMenuItem>
+          <DropdownMenuItem asChild>
+            <Link
+              href={`/admin/users/faculty/bio-metric?employeeId=${row.original.employeeId}`}
+            >
+              Bio Metric
+            </Link>
           </DropdownMenuItem>
           {row.original.cv && (
             <DropdownMenuItem asChild>
@@ -194,12 +249,12 @@ const columns = [
       </DropdownMenu>
     ),
   },
-] satisfies ColumnDef<EmployeeFromDB, unknown>[]
+] satisfies ColumnDef<EmployeeFromDB, unknown>[];
 
 export function EmployeeTable() {
-  const [sorting, setSorting] = useState<SortingState>([])
-  const [rowSelection, setRowSelection] = useState({})
-  const { data: employees, refetch } = api.employee.getEmployees.useQuery()
+  const [sorting, setSorting] = useState<SortingState>([]);
+  const [rowSelection, setRowSelection] = useState({});
+  const { data: employees, refetch } = api.employee.getEmployees.useQuery();
 
   const table = useReactTable<EmployeeFromDB>({
     data: employees ?? [],
@@ -211,7 +266,7 @@ export function EmployeeTable() {
     getFilteredRowModel: getFilteredRowModel(),
     onRowSelectionChange: setRowSelection,
     state: { sorting, rowSelection },
-  })
+  });
 
   return (
     <div className="w-full">
@@ -219,19 +274,33 @@ export function EmployeeTable() {
         <div className="flex items-center gap-2">
           <Input
             placeholder="Search name"
-            value={(table.getColumn("employeeName")?.getFilterValue() as string) ?? ""}
-            onChange={(e) => table.getColumn("employeeName")?.setFilterValue(e.target.value)}
+            value={
+              (table.getColumn("employeeName")?.getFilterValue() as string) ??
+              ""
+            }
+            onChange={(e) =>
+              table.getColumn("employeeName")?.setFilterValue(e.target.value)
+            }
             className="max-w-sm"
           />
           <Input
             placeholder="Search by designation"
-            value={(table.getColumn("designation")?.getFilterValue() as string) ?? ""}
-            onChange={(e) => table.getColumn("designation")?.setFilterValue(e.target.value)}
+            value={
+              (table.getColumn("designation")?.getFilterValue() as string) ?? ""
+            }
+            onChange={(e) =>
+              table.getColumn("designation")?.setFilterValue(e.target.value)
+            }
             className="max-w-sm"
           />
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" onClick={() => refetch()} className="shrink-0">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => refetch()}
+            className="shrink-0"
+          >
             <RefreshCcw className="h-4 w-4" />
           </Button>
           <EmployeeDeletionDialog
@@ -249,14 +318,19 @@ export function EmployeeTable() {
           </Button>
         </div>
       </div>
-      <div className="p-4 border rounded-md">
+      <div className="rounded-md border p-4">
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => (
                   <TableHead key={header.id}>
-                    {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
+                    {header.isPlaceholder
+                      ? null
+                      : flexRender(
+                          header.column.columnDef.header,
+                          header.getContext(),
+                        )}
                   </TableHead>
                 ))}
               </TableRow>
@@ -267,7 +341,12 @@ export function EmployeeTable() {
               table.getRowModel().rows.map((row) => (
                 <TableRow key={row.id}>
                   {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</TableCell>
+                    <TableCell key={cell.id}>
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext(),
+                      )}
+                    </TableCell>
                   ))}
                 </TableRow>
               ))
@@ -283,8 +362,8 @@ export function EmployeeTable() {
       </div>
       <div className="flex items-center justify-between py-4">
         <span className="text-sm">
-          {table.getFilteredSelectedRowModel().rows.length} of {table.getFilteredRowModel().rows.length} row(s)
-          selected.
+          {table.getFilteredSelectedRowModel().rows.length} of{" "}
+          {table.getFilteredRowModel().rows.length} row(s) selected.
         </span>
         <div className="flex gap-2">
           <Button
@@ -295,11 +374,16 @@ export function EmployeeTable() {
           >
             Previous
           </Button>
-          <Button variant="outline" size="sm" onClick={() => table.nextPage()} disabled={!table.getCanNextPage()}>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => table.nextPage()}
+            disabled={!table.getCanNextPage()}
+          >
             Next
           </Button>
         </div>
       </div>
     </div>
-  )
+  );
 }

@@ -56,9 +56,22 @@ model Employees {
     isAssign           Boolean            @default(false)
     profilePic         String?            @default("/user.jpg")
     cv                 String?
+    BioMetric          BioMetric?
     ClassSubject       ClassSubject[]
     SalaryAssignment   SalaryAssignment[]
     SalaryIncrement    SalaryIncrement[]
+}
+
+model BioMetric {
+    fingerId    String @id @default(cuid())
+    thumb       String @default("")
+    indexFinger String @default("")
+    employeeId  String @unique
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    employee Employees @relation(fields: [employeeId], references: [employeeId])
 }
 
 model FeeStudentClass {
@@ -253,13 +266,6 @@ model Subject {
     createdAt    DateTime       @default(now())
     updatedAt    DateTime       @updatedAt
     ClassSubject ClassSubject[]
-}
-
-model Fingerprint {
-    fingerId  String   @id
-    template  String
-    createdAt DateTime @default(now())
-    updatedAt DateTime
 }
 
 enum ClassCategory {
