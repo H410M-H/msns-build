@@ -20,7 +20,7 @@ const services: Services[] = [
     title: "Session Management",
     description: "Manage academic sessions, terms, and schedules",
     icon: CalendarCog,
-    href: "/dashboard/sessions",
+    href: "/admin/sessions",
     iconColor: "text-yellow-600",
     bgColor: "bg-yellow-50",
   },
@@ -30,7 +30,7 @@ const services: Services[] = [
     icon: NotebookPenIcon,
     iconColor: "text-blue-600",
     bgColor: "bg-blue-50",
-    href: "/dashboard/users",
+    href: "/admin/users",
   },
   {
     title: "Revenue Management",
@@ -38,7 +38,7 @@ const services: Services[] = [
     icon: Wallet,
     iconColor: "text-green-600",
     bgColor: "bg-green-50",
-    href: "/dashboard/revenue",
+    href: "/admin/revenue",
   },
 ]
 export default function AlumniCard() {

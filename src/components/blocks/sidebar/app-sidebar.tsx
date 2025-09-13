@@ -73,29 +73,15 @@ const data: NavigationConfig = {
   ],
   HEAD: [
     {
-      title: "Overview",
-      url: "/head",
-      icon: Home,
-    },
-    {
       title: "Dashboard",
-      url: "/dashboard",
+      url: "/head",
       icon: Briefcase,
     },
     {
       title: "Session",
       url: "/admin/sessions",
       icon: ListOrdered,
-      items: [
-        {
-          title: "All Classes",
-          url: "/admin/session/class",
-        },
-        {
-          title: "Class Details",
-          url: "/admin/sessions/fee",
-        },
-      ],
+
     },
     {
       title: "Students",
@@ -129,12 +115,12 @@ const data: NavigationConfig = {
     },
     {
       title: "Profile",
-      url: "/admin/users/account/settings",
+      url: "/admin/users/profile",
       icon: User,
     },
     {
       title: "Settings",
-      url: "/admin/users/account/settings",
+      url: "/admin/users/profile",
       icon: Settings,
     },
   ],
