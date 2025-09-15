@@ -6,13 +6,13 @@ export const fingerRouter = createTRPCRouter({
     .input(
       z.object({
         employeeId: z.string(),
-        thumb: z.string(),
-        indexFinger: z.string(),
+        thumb: z.array(z.string()), // Changed to array of strings
+        indexFinger: z.array(z.string()),
       }),
     )
     .mutation(async ({ ctx, input }) => {
       try {
-        console.log(input);
+        console.log(input)
         const data = await ctx.db.bioMetric.upsert({
           where: { employeeId: input.employeeId },
           create: {
@@ -25,12 +25,11 @@ export const fingerRouter = createTRPCRouter({
             indexFinger: input.indexFinger,
           },
         });
-        console.log(
-          input.thumb == data.thumb,
-          input.indexFinger == input.indexFinger,
-        );
+
+        return data;
       } catch (error) {
         console.error(error);
+        throw new Error("Failed to save fingerprint data");
       }
     }),
   getFinger: publicProcedure

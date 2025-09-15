@@ -12,6 +12,7 @@ import {
   Shield,
   User,
   Clock,
+  RotateCcw,
 } from "lucide-react";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
@@ -26,8 +27,6 @@ type ComponentProps = {
   employeeName: string;
 };
 
-type CaptureType = "thumb" | "indexFinger";
-
 interface FingerPrintResponseProps {
   ErrorCode: number;
   ISOTemplateBase64: string;
@@ -37,13 +36,14 @@ export const RegisterEmployeeBioMetric = ({
   employeeId,
   employeeName,
 }: ComponentProps) => {
-  const [loadingType, setLoadingType] = useState<CaptureType | null>(null);
-  const [thumbData, setThumbData] = useState<string>("");
-  const [indexFingerData, setIndexFingerData] = useState<string>("");
+  const [loading, setLoading] = useState<boolean>(false);
+  const [thumbData, setThumbData] = useState<string[]>([]);
   const [deviceStatus, setDeviceStatus] = useState<
     "disconnected" | "connected" | "capturing" | "error"
   >("disconnected");
   const [captureProgress, setCaptureProgress] = useState(0);
+  const [currentCapture, setCurrentCapture] = useState(0);
+  const [totalCaptures, setTotalCaptures] = useState(3);
 
   const utils = api.useUtils();
   const { data: savedFinger, isLoading: isFetching } =
@@ -77,17 +77,19 @@ export const RegisterEmployeeBioMetric = ({
     return interval;
   }, []);
 
-  const captureFingerprint = useCallback(
-    async (type: CaptureType) => {
-      try {
-        setLoadingType(type);
-        setDeviceStatus("capturing");
+  const captureFingerprint = useCallback(async () => {
+    try {
+      setLoading(true);
+      setDeviceStatus("capturing");
 
+      let newThumbData: string[] = [];
+
+      for (let i = currentCapture; i < totalCaptures; i++) {
         const progressInterval = simulateProgress();
 
         const response = await axios.post<FingerPrintResponseProps>(
           "https://localhost:8443/SGIFPCapture",
-          "Timeout=10000&Quality=60&licstr=&templateFormat=ISO",
+          "Timeout=10000&Quality=50&licstr=&templateFormat=ISO",
           {
             headers: {
               "Content-Type": "text/plain;charset=UTF-8",
@@ -103,68 +105,83 @@ export const RegisterEmployeeBioMetric = ({
         }
 
         if (response.data.ErrorCode === 0) {
-          if (type === "thumb") {
-            setThumbData(response.data.ISOTemplateBase64);
-          } else {
-            setIndexFingerData(response.data.ISOTemplateBase64);
+          // Add the new capture to our array
+          console.log(response.data.ISOTemplateBase64);
+
+          newThumbData = [...newThumbData, response.data.ISOTemplateBase64];
+          setThumbData(newThumbData);
+
+          // Update current capture count
+          const newCaptureCount = i + 1;
+          setCurrentCapture(newCaptureCount);
+
+          // Show progress toast
+          if (newCaptureCount < totalCaptures) {
+            toast.success(
+              `Capture ${newCaptureCount} of ${totalCaptures} complete!`,
+              {
+                description: "Next capture in 3 seconds...",
+              },
+            );
+
+            // Wait 3 seconds before next capture
+            await new Promise((resolve) => setTimeout(resolve, 3000));
           }
-
-          setDeviceStatus("connected");
-
-          // Save to database
-          fingerMutation.mutate({
-            employeeId,
-            thumb:
-              type === "thumb" ? response.data.ISOTemplateBase64 : thumbData,
-            indexFinger:
-              type === "indexFinger"
-                ? response.data.ISOTemplateBase64
-                : indexFingerData,
-          });
-
-          toast.success(
-            `${type === "thumb" ? "Thumb" : "Index finger"} captured!`,
-            {
-              description:
-                "Biometric data captured and processed successfully.",
-            },
-          );
         } else {
           throw new Error(`Scanner error code: ${response.data.ErrorCode}`);
         }
-      } catch (error) {
-        console.error("Fingerprint capture error:", error);
-        setDeviceStatus("error");
-
-        const errorMessage =
-          error instanceof Error ? error.message : "Unknown error occurred";
-        toast.error(`Failed to capture ${type}`, {
-          description: errorMessage,
-        });
-      } finally {
-        setLoadingType(null);
-        setCaptureProgress(0);
       }
-    },
-    [employeeId, fingerMutation, thumbData, indexFingerData, simulateProgress],
-  );
+
+      // All captures completed, send to backend
+      setDeviceStatus("connected");
+      fingerMutation.mutate({
+        employeeId,
+        thumb: newThumbData,
+        indexFinger: [""],
+      });
+
+      toast.success("All captures completed!", {
+        description: "Multiple thumb captures have been successfully stored.",
+      });
+    } catch (error) {
+      console.error("Fingerprint capture error:", error);
+      setDeviceStatus("error");
+
+      const errorMessage =
+        error instanceof Error ? error.message : "Unknown error occurred";
+      toast.error("Failed to capture fingerprint", {
+        description: errorMessage,
+      });
+    } finally {
+      setLoading(false);
+      setCaptureProgress(0);
+    }
+  }, [employeeId, fingerMutation, currentCapture, totalCaptures, simulateProgress]);
+
+  const resetCaptures = useCallback(() => {
+    setThumbData([]);
+    setCurrentCapture(0);
+    toast.info("Captures reset", {
+      description: "You can now start fresh with new fingerprint captures.",
+    });
+  }, []);
 
   useEffect(() => {
     if (savedFinger) {
-      setThumbData(savedFinger.thumb ?? "");
-      setIndexFingerData(savedFinger.indexFinger ?? "");
+      // Handle both old format (single string) and new format (array)
+      if (Array.isArray(savedFinger.thumb)) {
+        setThumbData(savedFinger.thumb);
+        setCurrentCapture(savedFinger.thumb.length);
+      } else if (savedFinger.thumb) {
+        setThumbData([savedFinger.thumb]);
+        setCurrentCapture(1);
+      }
       setDeviceStatus("connected");
     }
   }, [savedFinger]);
 
-  const hasThumbData = thumbData !== "";
-  const hasIndexFingerData = indexFingerData !== "";
-  const completionPercentage =
-    ((hasThumbData ? 1 : 0) + (hasIndexFingerData ? 1 : 0)) * 50;
-
-  const isCapturing = loadingType !== null;
-  const isThumbLoading = loadingType === "thumb";
-  const isIndexFingerLoading = loadingType === "indexFinger";
+  const completionPercentage = (currentCapture / totalCaptures) * 100;
+  const isComplete = currentCapture >= totalCaptures;
 
   const getStatusIcon = () => {
     switch (deviceStatus) {
@@ -208,19 +225,19 @@ export const RegisterEmployeeBioMetric = ({
   }
 
   return (
-    <div className="mx-auto w-full max-w-6xl space-y-6">
+    <div className="mx-auto w-full max-w-4xl space-y-6">
       {/* Header Section */}
       <Card className="border-0 bg-gradient-to-r from-blue-50 to-indigo-50">
         <CardHeader className="pb-4 text-center">
           <div className="mb-2 flex items-center justify-center gap-3">
             <Shield className="h-8 w-8 text-blue-600" />
             <CardTitle className="text-2xl font-bold text-gray-900">
-              Biometric Registration
+              Multi-Capture Biometric Registration
             </CardTitle>
           </div>
           <p className="mx-auto max-w-lg text-muted-foreground">
-            Secure your account with fingerprint authentication. Please scan
-            both thumbprint and index finger.
+            For improved accuracy, we&apos;ll capture your thumbprint multiple
+            times from different angles.
           </p>
         </CardHeader>
       </Card>
@@ -264,25 +281,28 @@ export const RegisterEmployeeBioMetric = ({
               <div className="flex items-center justify-between">
                 <p className="text-sm font-medium">Completion</p>
                 <span className="text-sm font-medium">
-                  {completionPercentage}%
+                  {Math.round(completionPercentage)}%
                 </span>
               </div>
               <Progress value={completionPercentage} className="h-2" />
+              <p className="text-xs text-muted-foreground">
+                {currentCapture} of {totalCaptures} captures
+              </p>
             </div>
           </CardContent>
         </Card>
       </div>
 
       {/* Capture Progress */}
-      {isCapturing ? (
+      {loading ? (
         <Card className="border-blue-200 bg-blue-50">
           <CardContent className="pt-6">
             <div className="space-y-3">
               <div className="flex items-center gap-3">
                 <Loader2 className="h-5 w-5 animate-spin text-blue-600" />
                 <span className="font-medium text-blue-900">
-                  Capturing{" "}
-                  {loadingType === "thumb" ? "thumbprint" : "index finger"}...
+                  Capturing thumbprint ({currentCapture + 1} of {totalCaptures}
+                  )...
                 </span>
               </div>
               <Progress value={captureProgress} className="h-2" />
@@ -296,164 +316,115 @@ export const RegisterEmployeeBioMetric = ({
 
       {/* Main Capture Interface */}
       <Card className="overflow-hidden">
-        <CardContent className="p-0">
-          <div className="grid grid-cols-1 divide-y lg:grid-cols-2 lg:divide-x lg:divide-y-0">
-            {/* Thumb Section */}
-            <div className="space-y-6 p-8">
-              <div className="text-center">
-                <h3 className="mb-2 text-lg font-semibold text-gray-900">
-                  Thumbprint
-                </h3>
-                <p className="text-sm text-muted-foreground">
-                  Place your thumb on the scanner device
-                </p>
-              </div>
-
-              <div className="flex flex-col items-center space-y-6">
-                <div className="relative">
-                  <div
-                    className={cn(
-                      "rounded-full p-8 transition-all duration-500",
-                      hasThumbData
-                        ? "bg-emerald-50 shadow-lg shadow-emerald-500/25"
-                        : "bg-gray-50",
-                      isThumbLoading && "animate-pulse bg-blue-50",
-                    )}
-                  >
-                    {isThumbLoading ? (
-                      <Loader2 className="h-20 w-20 animate-spin text-blue-500" />
-                    ) : (
-                      <Fingerprint
-                        className={cn(
-                          "h-20 w-20 transition-all duration-500",
-                          hasThumbData ? "text-emerald-500" : "text-gray-400",
-                        )}
-                      />
-                    )}
-                  </div>
-
-                  {hasThumbData && !isThumbLoading && (
-                    <div className="absolute -right-2 -top-2 rounded-full bg-white p-1 shadow-lg">
-                      <CheckCircle className="h-6 w-6 text-emerald-500" />
-                    </div>
-                  )}
-                </div>
-
-                <Button
-                  onClick={() => captureFingerprint("thumb")}
-                  disabled={isCapturing}
-                  size="lg"
-                  className={cn(
-                    "min-w-[160px] transition-all duration-300",
-                    hasThumbData
-                      ? "bg-emerald-600 hover:bg-emerald-700"
-                      : "bg-blue-600 hover:bg-blue-700",
-                  )}
-                >
-                  {isThumbLoading ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Capturing...
-                    </>
-                  ) : hasThumbData ? (
-                    <>
-                      <CheckCircle className="mr-2 h-4 w-4" />
-                      Recapture Thumb
-                    </>
-                  ) : (
-                    <>
-                      <Fingerprint className="mr-2 h-4 w-4" />
-                      Capture Thumb
-                    </>
-                  )}
-                </Button>
-              </div>
+        <CardContent className="p-8">
+          <div className="flex flex-col items-center space-y-8">
+            <div className="text-center">
+              <h3 className="mb-2 text-lg font-semibold text-gray-900">
+                Thumbprint Capture
+              </h3>
+              <p className="text-sm text-muted-foreground">
+                {isComplete
+                  ? "All captures completed successfully!"
+                  : `Place your thumb on the scanner (${currentCapture}/${totalCaptures})`}
+              </p>
             </div>
 
-            {/* Index Finger Section */}
-            <div className="space-y-6 p-8">
-              <div className="text-center">
-                <h3 className="mb-2 text-lg font-semibold text-gray-900">
-                  Index Finger
-                </h3>
-                <p className="text-sm text-muted-foreground">
-                  Place your index finger on the scanner device
-                </p>
-              </div>
-
-              <div className="flex flex-col items-center space-y-6">
-                <div className="relative">
-                  <div
+            <div className="relative">
+              <div
+                className={cn(
+                  "rounded-full p-8 transition-all duration-500",
+                  currentCapture > 0
+                    ? "bg-emerald-50 shadow-lg shadow-emerald-500/25"
+                    : "bg-gray-50",
+                  loading && "animate-pulse bg-blue-50",
+                )}
+              >
+                {loading ? (
+                  <Loader2 className="h-20 w-20 animate-spin text-blue-500" />
+                ) : (
+                  <Fingerprint
                     className={cn(
-                      "rounded-full p-8 transition-all duration-500",
-                      hasIndexFingerData
-                        ? "bg-emerald-50 shadow-lg shadow-emerald-500/25"
-                        : "bg-gray-50",
-                      isIndexFingerLoading && "animate-pulse bg-blue-50",
+                      "h-20 w-20 transition-all duration-500",
+                      currentCapture > 0 ? "text-emerald-500" : "text-gray-400",
                     )}
-                  >
-                    {isIndexFingerLoading ? (
-                      <Loader2 className="h-20 w-20 animate-spin text-blue-500" />
-                    ) : (
-                      <Fingerprint
-                        className={cn(
-                          "h-20 w-20 transition-all duration-500",
-                          hasIndexFingerData
-                            ? "text-emerald-500"
-                            : "text-gray-400",
-                        )}
-                      />
-                    )}
-                  </div>
-
-                  {hasIndexFingerData && !isIndexFingerLoading && (
-                    <div className="absolute -right-2 -top-2 rounded-full bg-white p-1 shadow-lg">
-                      <CheckCircle className="h-6 w-6 text-emerald-500" />
-                    </div>
-                  )}
-                </div>
-
-                <Button
-                  onClick={() => captureFingerprint("indexFinger")}
-                  disabled={isCapturing}
-                  size="lg"
-                  className={cn(
-                    "min-w-[160px] transition-all duration-300",
-                    hasIndexFingerData
-                      ? "bg-emerald-600 hover:bg-emerald-700"
-                      : "bg-blue-600 hover:bg-blue-700",
-                  )}
-                >
-                  {isIndexFingerLoading ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Capturing...
-                    </>
-                  ) : hasIndexFingerData ? (
-                    <>
-                      <CheckCircle className="mr-2 h-4 w-4" />
-                      Recapture Finger
-                    </>
-                  ) : (
-                    <>
-                      <Fingerprint className="mr-2 h-4 w-4" />
-                      Capture Finger
-                    </>
-                  )}
-                </Button>
+                  />
+                )}
               </div>
+
+              {currentCapture > 0 && !loading && (
+                <div className="absolute -right-2 -top-2 flex h-6 w-6 items-center justify-center rounded-full bg-white p-1 shadow-lg">
+                  <span className="text-xs font-bold text-emerald-500">
+                    {currentCapture}
+                  </span>
+                </div>
+              )}
+            </div>
+
+            <div className="flex flex-col gap-4 sm:flex-row">
+              <Button
+                onClick={captureFingerprint}
+                disabled={loading || isComplete}
+                size="lg"
+                className={cn(
+                  "min-w-[160px] transition-all duration-300",
+                  isComplete
+                    ? "bg-emerald-600 hover:bg-emerald-700"
+                    : "bg-blue-600 hover:bg-blue-700",
+                )}
+              >
+                {loading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Capturing...
+                  </>
+                ) : isComplete ? (
+                  <>
+                    <CheckCircle className="mr-2 h-4 w-4" />
+                    All Captures Complete
+                  </>
+                ) : (
+                  <>
+                    <Fingerprint className="mr-2 h-4 w-4" />
+                    {currentCapture === 0 ? "Start Capture" : "Next Capture"}
+                  </>
+                )}
+              </Button>
+
+              {currentCapture > 0 && (
+                <Button
+                  onClick={resetCaptures}
+                  disabled={loading}
+                  variant="outline"
+                  size="lg"
+                >
+                  <RotateCcw className="mr-2 h-4 w-4" />
+                  Reset
+                </Button>
+              )}
             </div>
           </div>
         </CardContent>
       </Card>
 
+      {/* Capture guidance */}
+      {currentCapture > 0 && !isComplete && (
+        <Alert className="border-blue-200 bg-blue-50">
+          <AlertCircle className="h-5 w-5 text-blue-600" />
+          <AlertDescription className="font-medium text-blue-800">
+            For capture {currentCapture + 1}, try placing your thumb at a
+            slightly different angle to improve recognition accuracy.
+          </AlertDescription>
+        </Alert>
+      )}
+
       {/* Success Message */}
-      {hasThumbData && hasIndexFingerData && (
+      {isComplete && (
         <Alert className="border-emerald-200 bg-emerald-50">
           <CheckCircle className="h-5 w-5 text-emerald-600" />
           <AlertDescription className="font-medium text-emerald-800">
-            Biometric registration completed successfully! Both fingerprints
-            have been captured and securely stored.
+            Multi-capture registration completed successfully! {totalCaptures}{" "}
+            thumbprint samples have been captured and securely stored for
+            improved recognition accuracy.
           </AlertDescription>
         </Alert>
       )}
@@ -472,23 +443,27 @@ export const RegisterEmployeeBioMetric = ({
       {/* Instructions */}
       <Card className="border-blue-200 bg-blue-50">
         <CardContent className="pt-6">
-          <h4 className="mb-3 font-semibold text-blue-900">Instructions:</h4>
+          <h4 className="mb-3 font-semibold text-blue-900">
+            Multi-Capture Instructions:
+          </h4>
           <ul className="space-y-2 text-sm text-blue-800">
             <li className="flex items-start gap-2">
               <span className="mt-0.5 font-medium text-blue-600">1.</span>
-              Ensure your fingerprint scanner is connected and powered on
+              We&apos;ll capture your thumbprint {totalCaptures} times for
+              improved accuracy
             </li>
             <li className="flex items-start gap-2">
               <span className="mt-0.5 font-medium text-blue-600">2.</span>
-              Clean your fingers and the scanner surface for best results
+              For each capture, place your thumb at a slightly different angle
             </li>
             <li className="flex items-start gap-2">
               <span className="mt-0.5 font-medium text-blue-600">3.</span>
-              Press firmly and hold steady during the capture process
+              Press firmly and hold steady during each capture process
             </li>
             <li className="flex items-start gap-2">
               <span className="mt-0.5 font-medium text-blue-600">4.</span>
-              Complete both thumbprint and index finger scans for full access
+              Multiple captures help the system recognize your fingerprint more
+              reliably
             </li>
           </ul>
         </CardContent>

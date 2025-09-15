@@ -26,7 +26,7 @@ export const AttendanceModal = () => {
   const [attendanceType, setAttendanceType] = useState<"first" | "second">(
     "first",
   );
-  const savedFinger = api.finger.getFinger.useQuery(
+  const savedFingers = api.finger.getFinger.useQuery(
     {
       employeeId: employee.employeeId,
     },
@@ -55,7 +55,8 @@ export const AttendanceModal = () => {
   const captureFingerprint = async () => {
     try {
       setLoading(true);
-      console.log(savedFinger.data?.thumb);
+      setStatus("Scanning fingerprint...");
+
       const response = await axios.post<FingerPrintResponseProps>(
         "https://localhost:8443/SGIFPCapture",
         "Timeout=10000&Quality=60&licstr=&templateFormat=ISO",
@@ -67,47 +68,72 @@ export const AttendanceModal = () => {
       );
 
       if (!response.data) {
-        setStatus("Error in scaning finger");
+        setStatus("Error in scanning finger");
         return;
       }
 
       if (response.data.ErrorCode === 0) {
-        const payloadStringMatch = `template2=${response.data.ISOTemplateBase64}&template1=${savedFinger.data?.thumb}&licstr=&templateFormat=ISO`;
-        const matchResponse = await axios.post<{
-          ErrorCode: number;
-          MatchingScore: number;
-        }>(`https://localhost:8443/SGIMatchScore`, payloadStringMatch, {
-          headers: {
-            "Content-Type": "text/plain;charset=UTF-8",
-          },
-        });
+        const capturedTemplate = response.data.ISOTemplateBase64;
+        setStatus("Matching fingerprint...");
 
-        if (!matchResponse.data) {
-          setStatus("Error in matching finger");
+        // Check if we have saved fingerprints
+        if (!savedFingers.data?.thumb) {
+          setStatus("No saved fingerprints found");
+          toast.error("No fingerprints registered for this employee.");
           return;
         }
 
-        console.log(JSON.stringify(matchResponse.data, null, 2));
-        if (matchResponse.data.ErrorCode === 0) {
-          if (matchResponse.data.MatchingScore > 100) {
-            addAttendance.mutate({
-              employeeId: employee.employeeId,
-              timeSlot: attendanceType,
-            });
-          } else {
-            toast.error("Fingerprint not matched.");
-          }
+        // Convert saved thumb string back to array (using | delimiter)
 
-          setStatus("Successfully saved attendance");
+        let highestScore = 0;
+        let matched = false;
+
+        // Compare with all saved templates
+        for (const savedTemplate of savedFingers.data.thumb) {
+          const payloadStringMatch = `template2=${capturedTemplate}&template1=${savedTemplate}&licstr=&templateFormat=ISO`;
+
+          const matchResponse = await axios.post<{
+            ErrorCode: number;
+            MatchingScore: number;
+          }>(`https://localhost:8443/SGIMatchScore`, payloadStringMatch, {
+            headers: {
+              "Content-Type": "text/plain;charset=UTF-8",
+            },
+          });
+
+          if (matchResponse.data?.ErrorCode === 0) {
+            console.log(matchResponse.data)
+            if (matchResponse.data.MatchingScore > highestScore) {
+              highestScore = matchResponse.data.MatchingScore;
+            }
+
+            if (matchResponse.data.MatchingScore > 100) {
+              matched = true;
+              break; // Found a match, no need to check others
+            }
+          }
+        }
+
+        if (matched) {
+          setStatus(`Fingerprint matched! Score: ${highestScore}`);
+          addAttendance.mutate({
+            employeeId: employee.employeeId,
+            timeSlot: attendanceType,
+          });
         } else {
-          setStatus("Not Matched!");
+          setStatus(`Fingerprint not matched. Highest score: ${highestScore}`);
+          toast.error("Fingerprint not matched. Please try again.");
         }
       } else {
-        throw new Error(`Scanner error code: ${response.data.ErrorCode}`);
+        setStatus("Scanner error. Please try again.");
+
+        toast.error("Error processing fingerprint.");
       }
     } catch (error) {
       console.error("Fingerprint capture error:", error);
       setStatus("Error in saving attendance");
+
+      toast.error("Error processing fingerprint.");
     } finally {
       setLoading(false);
     }
@@ -178,7 +204,7 @@ export const AttendanceModal = () => {
         </Button>
         <Button
           onClick={captureFingerprint}
-          disabled={savedFinger.isFetching || addAttendance.isPending}
+          disabled={savedFingers.isFetching || addAttendance.isPending}
         >
           Save
         </Button>
