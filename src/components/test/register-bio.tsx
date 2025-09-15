@@ -86,10 +86,12 @@ export const RegisterEmployeeBioMetric = ({
         const progressInterval = simulateProgress();
 
         const response = await axios.post<FingerPrintResponseProps>(
-          `https://localhost:8443/SGIFPCapture`,
-          "Timeout=10000&Quality=50&licstr=&templateFormat=ISO&imageWSQRate=0.75",
+          "https://localhost:8443/SGIFPCapture",
+          "Timeout=10000&Quality=60&licstr=&templateFormat=ISO",
           {
-            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            headers: {
+              "Content-Type": "text/plain;charset=UTF-8",
+            },
           },
         );
 
@@ -101,12 +103,10 @@ export const RegisterEmployeeBioMetric = ({
         }
 
         if (response.data.ErrorCode === 0) {
-          const template = response.data.ISOTemplateBase64;
-
           if (type === "thumb") {
-            setThumbData(template);
+            setThumbData(response.data.ISOTemplateBase64);
           } else {
-            setIndexFingerData(template);
+            setIndexFingerData(response.data.ISOTemplateBase64);
           }
 
           setDeviceStatus("connected");
@@ -114,8 +114,12 @@ export const RegisterEmployeeBioMetric = ({
           // Save to database
           fingerMutation.mutate({
             employeeId,
-            thumb: type === "thumb" ? template : thumbData,
-            indexFinger: type === "indexFinger" ? template : indexFingerData,
+            thumb:
+              type === "thumb" ? response.data.ISOTemplateBase64 : thumbData,
+            indexFinger:
+              type === "indexFinger"
+                ? response.data.ISOTemplateBase64
+                : indexFingerData,
           });
 
           toast.success(
@@ -270,7 +274,7 @@ export const RegisterEmployeeBioMetric = ({
       </div>
 
       {/* Capture Progress */}
-      {isCapturing && (
+      {isCapturing ? (
         <Card className="border-blue-200 bg-blue-50">
           <CardContent className="pt-6">
             <div className="space-y-3">
@@ -288,7 +292,7 @@ export const RegisterEmployeeBioMetric = ({
             </div>
           </CardContent>
         </Card>
-      )}
+      ) : null}
 
       {/* Main Capture Interface */}
       <Card className="overflow-hidden">

@@ -3,23 +3,13 @@
 import { useCallback, useMemo, useState } from "react";
 import dayjs, { type Dayjs } from "dayjs";
 import { Card } from "~/components/ui/card";
-import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { api } from "~/trpc/react";
 import { cn } from "~/lib/utils";
 import { AttendanceModal } from "./attendance-dialog";
 import { useAttendance } from "~/hooks/use-attendance";
-import { Separator } from "~/components/ui/separator";
 
-interface AttendanceRecord {
-  id: string;
-  employeeId: string;
-  date: string;
-  status: "present" | "absent" | "late" | "half-day" | "holiday";
-  checkIn?: string;
-  checkOut?: string;
-}
 
 const weekdayNames: string[] = [
   "Sun",
@@ -35,7 +25,8 @@ export const CalendarGrid = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const { setEmployee, setOpen } = useAttendance();
   const [employees] = api.employee.getEmployees.useSuspenseQuery();
-  const [attendances] = api.attendance.getAllEmployeeAttendance.useSuspenseQuery();
+  const [attendances] =
+    api.attendance.getAllEmployeeAttendance.useSuspenseQuery();
 
   const currentMonthDays: Dayjs[] = useMemo(() => {
     const monthStart = dayjs(currentDate).startOf("month");
@@ -45,12 +36,15 @@ export const CalendarGrid = () => {
     );
   }, [currentDate]);
 
-  const navigateMonth = useCallback((direction: "prev" | "next") => {
-    const newDate = dayjs(currentDate)
-      .add(direction === "next" ? 1 : -1, "month")
-      .toDate();
-    setCurrentDate(newDate);
-  },[currentDate]);
+  const navigateMonth = useCallback(
+    (direction: "prev" | "next") => {
+      const newDate = dayjs(currentDate)
+        .add(direction === "next" ? 1 : -1, "month")
+        .toDate();
+      setCurrentDate(newDate);
+    },
+    [currentDate],
+  );
 
   const getAttendanceForEmployeeAndDate = (
     employeeId: string,
@@ -212,7 +206,11 @@ export const CalendarGrid = () => {
                           </p>
                         </>
                       ) : (
-                        <p>N</p>
+                        <>
+                          <p className="font-bold text-destructive">A</p>
+                          <span className="h-1 w-full border-2" />
+                          <p className="font-bold text-destructive">A</p>
+                        </>
                       )}
                     </Button>
                   );

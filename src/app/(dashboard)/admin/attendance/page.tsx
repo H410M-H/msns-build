@@ -2,6 +2,7 @@ import { CalendarIcon } from "lucide-react";
 import { Badge } from "~/components/ui/badge";
 import dayjs from "dayjs";
 import { CalendarGrid } from "~/components/test/attendance/attendance-calendar";
+import { Suspense } from "react";
 export default function AttendancePage() {
   return (
     <div className="min-h-screen bg-background">
@@ -29,7 +30,11 @@ export default function AttendancePage() {
           </div>
         </div>
       </header>
-      <CalendarGrid />
+      <Suspense
+        fallback={<div className="text-4xl text-red-600">Loading....</div>}
+      >
+        <CalendarGrid />
+      </Suspense>
     </div>
   );
 }

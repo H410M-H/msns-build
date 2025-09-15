@@ -21,12 +21,13 @@ export const attendanceRouter = createTRPCRouter({
           },
           create: {
             employeeId: input.employeeId,
-            morning: input.timeSlot == "first" ? "P" : "A",
-            afternoon: input.timeSlot == "second" ? "P" : "A",
             date: dayjs().format("YYYY-MM-DD"),
+            morning: input.timeSlot === "first" ? "P" : "A",
+            afternoon: input.timeSlot === "second" ? "P" : "A",
           },
           update: {
-            afternoon: "P",
+            ...(input.timeSlot === "first" && { morning: "P" }),
+            ...(input.timeSlot === "second" && { afternoon: "P" }),
           },
         });
       } catch (error) {

@@ -65,8 +65,8 @@ model Employees {
 
 model BioMetric {
     fingerId    String @id @default(cuid())
-    thumb       String @default("")
-    indexFinger String @default("")
+    thumb       String @default("") @db.Text
+    indexFinger String @default("") @db.Text
     employeeId  String @unique
 
     createdAt DateTime @default(now())

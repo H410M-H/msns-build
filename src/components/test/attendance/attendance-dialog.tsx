@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from "~/components/ui/dialog";
@@ -14,6 +15,7 @@ import { useAttendance } from "~/hooks/use-attendance";
 import { Fingerprint, Loader2 } from "lucide-react";
 import axios from "axios";
 import { api } from "~/trpc/react";
+import { toast } from "sonner";
 
 export const AttendanceModal = () => {
   const date = dayjs();
@@ -32,30 +34,35 @@ export const AttendanceModal = () => {
   );
 
   const addAttendance = api.attendance.addEmployeeAttendance.useMutation({
-    onMutate: async () => {
+    onMutate: () => {
       setLoading(true);
+    },
+    onSuccess: async () => {
       await utils.attendance.getAllEmployeeAttendance.refetch();
       setOpen(false);
-    },
-    onSuccess: () => {
       setLoading(false);
+      setClear();
       setStatus("Attendance Saved.");
+      toast.success("Attendance saved.");
     },
     onError: () => {
       setLoading(false);
       setStatus("Attendance not Saved.");
+      toast.error("Attendance error.");
     },
   });
 
   const captureFingerprint = async () => {
     try {
       setLoading(true);
-
+      console.log(savedFinger.data?.thumb);
       const response = await axios.post<FingerPrintResponseProps>(
-        `https://localhost:8443/SGIFPCapture`,
-        "Timeout=10000&Quality=50&licstr=&templateFormat=ISO&imageWSQRate=0.75",
+        "https://localhost:8443/SGIFPCapture",
+        "Timeout=10000&Quality=60&licstr=&templateFormat=ISO",
         {
-          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          headers: {
+            "Content-Type": "text/plain;charset=UTF-8",
+          },
         },
       );
 
@@ -65,12 +72,14 @@ export const AttendanceModal = () => {
       }
 
       if (response.data.ErrorCode === 0) {
-        const payloadStringMatch = `template1=${savedFinger.data?.thumb}&template2=${response.data.ISOTemplateBase64}&licstr=&templateFormat=ISO`;
+        const payloadStringMatch = `template2=${response.data.ISOTemplateBase64}&template1=${savedFinger.data?.thumb}&licstr=&templateFormat=ISO`;
         const matchResponse = await axios.post<{
           ErrorCode: number;
           MatchingScore: number;
         }>(`https://localhost:8443/SGIMatchScore`, payloadStringMatch, {
-          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          headers: {
+            "Content-Type": "text/plain;charset=UTF-8",
+          },
         });
 
         if (!matchResponse.data) {
@@ -78,10 +87,20 @@ export const AttendanceModal = () => {
           return;
         }
 
-        if (matchResponse.data.ErrorCode === 106) {
-          setStatus("Not Matched successful!");
-        } else {
+        console.log(JSON.stringify(matchResponse.data, null, 2));
+        if (matchResponse.data.ErrorCode === 0) {
+          if (matchResponse.data.MatchingScore > 100) {
+            addAttendance.mutate({
+              employeeId: employee.employeeId,
+              timeSlot: attendanceType,
+            });
+          } else {
+            toast.error("Fingerprint not matched.");
+          }
+
           setStatus("Successfully saved attendance");
+        } else {
+          setStatus("Not Matched!");
         }
       } else {
         throw new Error(`Scanner error code: ${response.data.ErrorCode}`);
@@ -94,19 +113,13 @@ export const AttendanceModal = () => {
     }
   };
 
-  const saveAttendance = async () => {
-    addAttendance.mutate({
-      employeeId: employee.employeeId,
-      timeSlot: attendanceType,
-    });
-  };
-
   const handleClose = useCallback(() => {
     setOpen(false);
     setClear();
-  }, [setClear]);
+  }, [setClear, setOpen]);
 
   useEffect(() => {
+    setClear();
     if (date) {
       const currentHour = dayjs().hour();
       if (currentHour >= 7 && currentHour < 12) {
@@ -117,10 +130,8 @@ export const AttendanceModal = () => {
         setAttendanceType("first");
       }
     }
-    return () => {
-      setStatus("");
-    };
-  }, [date]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const formattedDate = dayjs(date).format("MMMM D, YYYY");
   const dayOfWeek = dayjs(date).format("dddd");
@@ -130,6 +141,9 @@ export const AttendanceModal = () => {
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle className="text-lg">Mark Attendance</DialogTitle>
+          <DialogDescription className="sr-only">
+            Attendance for {employee.employeeName}
+          </DialogDescription>
           <div className="space-y-2">
             <div className="flex items-center gap-2">
               <Badge variant="outline" className="text-xs">
@@ -162,7 +176,12 @@ export const AttendanceModal = () => {
         <Button variant="outline" onClick={handleClose}>
           Cancel
         </Button>
-        <Button onClick={saveAttendance}>Save</Button>
+        <Button
+          onClick={captureFingerprint}
+          disabled={savedFinger.isFetching || addAttendance.isPending}
+        >
+          Save
+        </Button>
       </DialogContent>
     </Dialog>
   );

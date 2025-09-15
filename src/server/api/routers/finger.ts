@@ -6,13 +6,14 @@ export const fingerRouter = createTRPCRouter({
     .input(
       z.object({
         employeeId: z.string(),
-        indexFinger: z.string(),
         thumb: z.string(),
+        indexFinger: z.string(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
       try {
-        await ctx.db.bioMetric.upsert({
+        console.log(input);
+        const data = await ctx.db.bioMetric.upsert({
           where: { employeeId: input.employeeId },
           create: {
             employeeId: input.employeeId,
@@ -20,10 +21,14 @@ export const fingerRouter = createTRPCRouter({
             indexFinger: input.indexFinger,
           },
           update: {
-            thumb: input.indexFinger,
+            thumb: input.thumb,
             indexFinger: input.indexFinger,
           },
         });
+        console.log(
+          input.thumb == data.thumb,
+          input.indexFinger == input.indexFinger,
+        );
       } catch (error) {
         console.error(error);
       }
