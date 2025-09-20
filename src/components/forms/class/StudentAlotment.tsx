@@ -1,14 +1,28 @@
 "use client"
 
 import { Button } from "~/components/ui/button"
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "~/components/ui/dialog"
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "~/components/ui/dialog"
 import { useForm } from "react-hook-form"
 import { api } from "~/trpc/react"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "~/components/ui/select"
 import { Label } from "~/components/ui/label"
 import { z } from "zod"
 import { toast } from "~/hooks/use-toast"
+import { type ReactNode } from "react"
 
 // Use the exact schema from your AllotmentRouter
 const AllotmentSchema = z.object({
@@ -20,14 +34,22 @@ const AllotmentSchema = z.object({
 type AllotmentSchemaType = z.infer<typeof AllotmentSchema>
 
 interface AllotmentDialogProps {
-  open: boolean
-  onOpenChange: (open: boolean) => void
+  open?: boolean
+  onOpenChange?: (open: boolean) => void
   sessions: { sessionId: string; sessionName: string }[]
   students: { studentId: string; studentName: string }[]
   classId: string
+  children?: ReactNode // 👈 added for button trigger
 }
 
-export default function AllotmentDialog({ open, onOpenChange, sessions, students, classId }: AllotmentDialogProps) {
+export default function AllotmentDialog({
+  open,
+  onOpenChange,
+  sessions,
+  students,
+  classId,
+  children,
+}: AllotmentDialogProps) {
   const form = useForm<AllotmentSchemaType>({
     resolver: zodResolver(AllotmentSchema),
     defaultValues: {
@@ -48,13 +70,13 @@ export default function AllotmentDialog({ open, onOpenChange, sessions, students
       form.reset()
       await utils.student.getUnAllocateStudents.invalidate()
       await utils.allotment.invalidate()
-      onOpenChange(false)
+      onOpenChange?.(false)
     },
     onError: (error) => {
       toast({
         title: "Error",
         description: error.message || "Failed to allot student to class.",
-        })
+      })
     },
   })
 
@@ -67,14 +89,24 @@ export default function AllotmentDialog({ open, onOpenChange, sessions, students
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
+      {/* 👇 This makes your button (or any child) the trigger */}
+      <DialogTrigger asChild>
+        {children ?? <Button>Allot Student</Button>}
+      </DialogTrigger>
+
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>Allot Student to Class</DialogTitle>
         </DialogHeader>
+
         <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-4 py-2">
+          {/* Session Select */}
           <div className="space-y-2">
             <Label htmlFor="session-select">Session</Label>
-            <Select onValueChange={(value) => form.setValue("sessionId", value)} value={form.watch("sessionId")}>
+            <Select
+              onValueChange={(value) => form.setValue("sessionId", value)}
+              value={form.watch("sessionId")}
+            >
               <SelectTrigger id="session-select">
                 <SelectValue placeholder="Select session" />
               </SelectTrigger>
@@ -93,13 +125,19 @@ export default function AllotmentDialog({ open, onOpenChange, sessions, students
               </SelectContent>
             </Select>
             {form.formState.errors.sessionId && (
-              <p className="text-sm text-red-500">{form.formState.errors.sessionId.message}</p>
+              <p className="text-sm text-red-500">
+                {form.formState.errors.sessionId.message}
+              </p>
             )}
           </div>
 
+          {/* Student Select */}
           <div className="space-y-2">
             <Label htmlFor="student-select">Student</Label>
-            <Select onValueChange={(value) => form.setValue("studentId", value)} value={form.watch("studentId")}>
+            <Select
+              onValueChange={(value) => form.setValue("studentId", value)}
+              value={form.watch("studentId")}
+            >
               <SelectTrigger id="student-select">
                 <SelectValue placeholder="Select student" />
               </SelectTrigger>
@@ -118,17 +156,28 @@ export default function AllotmentDialog({ open, onOpenChange, sessions, students
               </SelectContent>
             </Select>
             {form.formState.errors.studentId && (
-              <p className="text-sm text-red-500">{form.formState.errors.studentId.message}</p>
+              <p className="text-sm text-red-500">
+                {form.formState.errors.studentId.message}
+              </p>
             )}
           </div>
 
           <DialogFooter className="mt-4">
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={allotment.isPending}>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => onOpenChange?.(false)}
+              disabled={allotment.isPending}
+            >
               Cancel
             </Button>
             <Button
               type="submit"
-              disabled={allotment.isPending || !form.watch("sessionId") || !form.watch("studentId")}
+              disabled={
+                allotment.isPending ||
+                !form.watch("sessionId") ||
+                !form.watch("studentId")
+              }
             >
               {allotment.isPending ? "Allotting..." : "Allot Student"}
             </Button>
@@ -139,5 +188,4 @@ export default function AllotmentDialog({ open, onOpenChange, sessions, students
   )
 }
 
-// Also export as named export for flexibility
 export { AllotmentDialog }

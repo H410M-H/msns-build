@@ -164,17 +164,17 @@ export const ClassAllotmentTable = ({ classId, sessionId }: ClassAllotmentTableP
             </div>
           </div>
           <div className="flex gap-3">
-<AllotmentDialog
-  classId={classId}
-  open={allotmentOpen}
-  onOpenChange={setAllotmentOpen}
-  sessions={[{ sessionId, sessionName: students[0]?.Sessions.sessionName ?? "" }]}
-  students={[students.map((s) => s.Students)].flat()}
->
-  <Button className="bg-white/10 hover:bg-white/20">
-    ➕ Allot Students
-  </Button>
-</AllotmentDialog>
+            <AllotmentDialog
+              classId={classId}
+              open={allotmentOpen}
+              onOpenChange={setAllotmentOpen}
+              sessions={[{ sessionId, sessionName: students[0]?.Sessions.sessionName ?? "" }]}
+              students={[students.map((s) => s.Students)].flat()}
+            >
+              <Button className="bg-white/10 hover:bg-white/20">
+                ➕ Allot Students
+              </Button>
+            </AllotmentDialog>
 
             <Button onClick={refreshData} variant="ghost" className="gap-2 bg-white/10 hover:bg-white/20">
               <ReloadIcon className={studentsLoading ? "animate-spin" : ""} />
