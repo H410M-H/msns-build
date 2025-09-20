@@ -35,7 +35,7 @@ export default function MarkEmployeeAttendancePage() {
     { enabled: !!selectedDesignation },
   )
 
-  const markAttendanceMutation = api.attendance.markEmployeeAttendance.useMutation({
+  const markAttendanceMutation = api.attendance.addEmployeeAttendance.useMutation({
     onSuccess: () => {
       toast.success("Employee attendance marked successfully!")
       setAttendanceData({})
@@ -91,6 +91,7 @@ export default function MarkEmployeeAttendancePage() {
       date: selectedDate,
       status: data.status,
       notes: data.notes,
+      timeSlot: data.checkInTime && data.checkOutTime ? "both" : data.checkInTime ? "checkin" : data.checkOutTime ? "checkout" : "none",
       checkInTime: data.checkInTime ? `${selectedDate}T${data.checkInTime}` : undefined,
       checkOutTime: data.checkOutTime ? `${selectedDate}T${data.checkOutTime}` : undefined,
     }))

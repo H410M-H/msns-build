@@ -32,7 +32,7 @@ const employeeSchema = z.object({
 export const EmployeeRouter = createTRPCRouter({
   getEmployees: publicProcedure.query(async ({ ctx }) => {
     try {
-      return  await ctx.db.employees.findMany({
+      return await ctx.db.employees.findMany({
         include: {
           BioMetric: {
             select: {
@@ -141,11 +141,13 @@ export const EmployeeRouter = createTRPCRouter({
         ]),
       }),
     )
-    .query(async ({ ctx }) => {
+    .query(async ({ ctx, input }) => {
       try {
         const employees = await ctx.db.employees.findMany({
+          where: {
+            designation: input.designation,
+          },
         });
-        console.log(employees);
         return employees;
       } catch (error) {
         console.error(error);

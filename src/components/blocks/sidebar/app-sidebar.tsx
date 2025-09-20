@@ -160,8 +160,12 @@ const data: NavigationConfig = {
           title: "All Employees",
           url: "/admin/users/faculty/view",
         },
+                {
+          title: "Attendance",
+          url: "/admin/attendance",
+        },
         {
-          title: "Create Student",
+          title: "Create Employee",
           url: "/admin/users/faculty/create",
         },
       ],

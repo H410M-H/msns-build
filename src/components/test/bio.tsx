@@ -3,13 +3,27 @@ import Image from "next/image";
 import { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 import { api } from "~/trpc/react";
-export const FingerprintCapture = () => {
+import { Input } from "../ui/input";
+
+interface FingerPrintResponseProps {
+  ErrorCode: number;
+  ISOTemplateBase64: string;
+  BMPBase64: string;
+  SerialNumber?: string;
+  NFIQ?: number;
+}
+
+type FingerprintCaptureProps = {
+  employeeId: string;
+};
+
+export const FingerprintCapture = ({ employeeId }: FingerprintCaptureProps) => {
   const [status, setStatus] = useState("Idle");
   const [isLoading, setIsLoading] = useState(false);
   const [match, setMatch] = useState<number>(0);
   const [port, setPort] = useState(8443);
   const finger = api.finger.addFinger.useMutation();
-  const [savedFinger] = api.finger.getFinger.useSuspenseQuery();
+  const [savedFinger] = api.finger.getFinger.useSuspenseQuery({ employeeId });
   const [captureData, setCaptureData] =
     useState<FingerPrintResponseProps | null>(null);
   const [deviceStatus, setDeviceStatus] = useState("disconnected");
@@ -20,7 +34,7 @@ export const FingerprintCapture = () => {
     try {
       console.log("clicked");
       const response = await axios.get(
-        `http://localhost:${port}/SGIFPGetDeviceInfo`,
+        `https://localhost:${port}/SGIFPGetDeviceInfo`,
       );
 
       console.log(response.data);
@@ -33,7 +47,7 @@ export const FingerprintCapture = () => {
       }
     } catch (error) {
       setDeviceStatus("error");
-      setStatus("Error checking device status");
+      setStatus(`Error checking device status: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }, [port]);
 
@@ -44,7 +58,7 @@ export const FingerprintCapture = () => {
       const payloadString =
         "Timeout=10000&Quality=50&licstr=&templateFormat=ISO&imageWSQRate=0.75";
       const response = await axios.post<FingerPrintResponseProps>(
-        `https://localhost:8443/SGIFPCapture`,
+        `https://localhost:${port}/SGIFPCapture`,
         payloadString,
         {
           headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -59,8 +73,11 @@ export const FingerprintCapture = () => {
 
       console.log(data);
 
-      //TODO: save finger in database
-      //finger.mutate({ template: data.ISOTemplateBase64 });
+      finger.mutate({
+        employeeId,
+        thumb: [data.ISOTemplateBase64],
+        indexFinger: [],
+      });
 
       if (data.ErrorCode === 0) {
         setCaptureData(data);
@@ -72,10 +89,11 @@ export const FingerprintCapture = () => {
       }
     } catch (error) {
       setDeviceStatus("error");
+      setStatus(`Error capturing fingerprint: ${error instanceof Error ? error.message : 'Unknown error'}`);
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [finger, employeeId, port]);
 
   const matchFinger = useCallback(async () => {
     setStatus("Matching device...");
@@ -84,13 +102,13 @@ export const FingerprintCapture = () => {
       const payloadString =
         "Timeout=10000&Quality=50&licstr=&templateFormat=ISO&imageWSQRate=0.75";
       const response = await axios.post<FingerPrintResponseProps>(
-        `https://localhost:8443/SGIFPCapture`,
+        `https://localhost:${port}/SGIFPCapture`,
         payloadString,
         {
           headers: { "Content-Type": "application/x-www-form-urlencoded" },
         },
       );
-      console.log(response);
+      console.log(response)
 
       if (!response.data) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -98,13 +116,13 @@ export const FingerprintCapture = () => {
 
       const newFinger = response.data;
 
-      console.log(newFinger);
+      console.log(newFinger)
 
-      const payloadStringMatch = `template1=${savedFinger?.template}&template2=${newFinger.ISOTemplateBase64}&licstr=&templateFormat=ISO`;
+      const payloadStringMatch = `template1=${savedFinger?.thumb[0] ?? ''}&template2=${newFinger.ISOTemplateBase64}&licstr=&templateFormat=ISO`;
       const matchResponse = await axios.post<{
         ErrorCode: number;
         MatchingScore: number;
-      }>(`https://localhost:8443/SGIMatchScore`, payloadStringMatch, {
+      }>(`https://localhost:${port}/SGIMatchScore`, payloadStringMatch, {
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
       });
 
@@ -112,22 +130,22 @@ export const FingerprintCapture = () => {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
-      console.log(matchResponse.data);
+      console.log(matchResponse.data)
 
       if (matchResponse.data.ErrorCode === 106) {
-        setStatus(`Error: ${matchResponse.data.ErrorCode}`);
-        setStatus("Not Matched successful!");
+        setStatus(`Error: ${matchResponse.data.ErrorCode} - Not matched`);
         setDeviceStatus("error");
       } else {
         setMatch(matchResponse.data.MatchingScore);
         setDeviceStatus("connected");
       }
     } catch (error) {
+      setStatus(`Error matching fingerprint: ${error instanceof Error ? error.message : 'Unknown error'}`);
       setDeviceStatus("error");
     } finally {
       setIsLoading(false);
     }
-  }, [port]);
+  }, [savedFinger, port]);
   const resetCapture = useCallback(() => {
     setCaptureData(null);
     setStatus("Ready for new capture");
@@ -198,11 +216,15 @@ export const FingerprintCapture = () => {
           </div>
           <div className="flex items-center space-x-2">
             <span className="text-sm font-medium">Port:</span>
-            <input
-              placeholder="something"
+            <Input
               type="number"
               value={port}
-              onChange={(e) => setPort(Number(e.target.value))}
+              onChange={(e) => {
+                const newPort = Number(e.target.value);
+                if (newPort >= 1024 && newPort <= 65535) {
+                  setPort(newPort);
+                }
+              }}
               className="w-20 rounded bg-gray-600 px-2 py-1 text-sm text-white"
             />
           </div>
@@ -222,12 +244,16 @@ export const FingerprintCapture = () => {
                   API Endpoint
                 </label>
                 <div className="flex items-center rounded-lg bg-gray-200 p-3">
-                  <span className="text-gray-600">http://localhost:</span>
-                  <input
-                  placeholder="0"
+                  <span className="text-gray-600">https://localhost:</span>
+                  <Input
                     type="number"
                     value={port}
-                    onChange={(e) => setPort(Number(e.target.value))}
+                    onChange={(e) => {
+                      const newPort = Number(e.target.value);
+                      if (newPort >= 1024 && newPort <= 65535) {
+                        setPort(newPort);
+                      }
+                    }}
                     className="mx-1 w-16 border-b border-gray-400 bg-transparent text-center"
                   />
                   <span className="text-gray-600">/SGIFPCapture</span>
@@ -354,7 +380,7 @@ export const FingerprintCapture = () => {
                     Fingerprint Image
                   </h3>
                   <div className="mt-2 flex items-center justify-center rounded-lg border border-gray-300 bg-white p-4">
-                    {captureData.TemplateBase64 ? (
+                    {captureData.BMPBase64 ? (
                       <Image
                         src={`data:image/bmp;base64,${captureData.BMPBase64}`}
                         alt="Fingerprint scan"
@@ -402,7 +428,7 @@ export const FingerprintCapture = () => {
                     />
                   </svg>
                   <p className="mt-4 text-gray-600">
-                    No capture data yet. Click &quots;Capture Fingerprint&quots; to begin.
+                    No capture data yet. Click &quot;Capture Fingerprint&quot; to begin.
                   </p>
                 </div>
               </div>

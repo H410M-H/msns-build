@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useMemo } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card"
 import { Button } from "~/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select"
@@ -8,8 +8,11 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "~
 import { Badge } from "~/components/ui/badge"
 import { ChevronLeft, ChevronRight, Download } from "lucide-react"
 import dayjs from "dayjs"
+import { api } from "~/trpc/react"
+import { toast } from "sonner"
 
-// Mock data - replace with actual tRPC calls
+type Designation = "PRINCIPAL" | "ADMIN" | "HEAD" | "CLERK" | "TEACHER" | "WORKER" | "ALL"
+
 const designations = [
   { value: "ALL", label: "All Employees" },
   { value: "TEACHER", label: "Teachers" },
@@ -20,54 +23,80 @@ const designations = [
   { value: "WORKER", label: "Workers" },
 ]
 
-const mockEmployees = [
-  { id: "1", username: "Dr. Sarah Wilson", accountId: "msn-t-24-001", accountType: "TEACHER" },
-  { id: "2", username: "John Admin", accountId: "msn-a-24-001", accountType: "ADMIN" },
-  { id: "3", username: "Mary Principal", accountId: "msn-p-24-001", accountType: "PRINCIPAL" },
-  { id: "4", username: "Bob Clerk", accountId: "msn-c-24-001", accountType: "CLERK" },
-]
-
 export default function EmployeeMonthlyAttendancePage() {
-  const [selectedDesignation, setSelectedDesignation] = useState<string>("ALL")
+  const [selectedDesignation, setSelectedDesignation] = useState<Designation>("ALL")
   const [currentMonth, setCurrentMonth] = useState(dayjs().month())
   const [currentYear, setCurrentYear] = useState(dayjs().year())
 
   const daysInMonth = dayjs().year(currentYear).month(currentMonth).daysInMonth()
   const monthName = dayjs().month(currentMonth).format("MMMM")
 
+  // Fetch employees by designation
+  const { data: employees, error: employeeError } = api.employee.getEmployeesByDesignation.useQuery(
+    { designation: selectedDesignation as Exclude<Designation, "ALL"> },
+    { enabled: selectedDesignation !== "ALL" }
+  )
+
+  // Fetch all employees if "ALL" is selected
+  const { data: allEmployees, error: allEmployeesError } = api.employee.getEmployees.useQuery(
+    undefined,
+    { enabled: selectedDesignation === "ALL" }
+  )
+
+  // Fetch attendance data for the selected month
+  const startOfMonth = dayjs().year(currentYear).month(currentMonth).startOf("month").format("YYYY-MM-DD")
+  const endOfMonth = dayjs().year(currentYear).month(currentMonth).endOf("month").format("YYYY-MM-DD")
+  const { data: attendanceData } = api.attendance.getAllEmployeeAttendance.useQuery()
+
+  // Filter attendance data for the current month
+  const filteredAttendanceData = useMemo(() => {
+    return attendanceData?.filter((att) => {
+      const attDate = dayjs(att.date)
+      return attDate.isAfter(dayjs(startOfMonth).subtract(1, "day")) && attDate.isBefore(dayjs(endOfMonth).add(1, "day"))
+    }) ?? []
+  }, [attendanceData, startOfMonth, endOfMonth])
+
+  // Combine employee data based on selection
+  const filteredEmployees = useMemo(() => {
+    const employeeList = selectedDesignation === "ALL" ? allEmployees : employees
+    return employeeList?.map(emp => ({
+      id: emp.employeeId,
+      username: emp.employeeName,
+      accountId: emp.registrationNumber,
+      accountType: emp.designation
+    })) ?? []
+  }, [employees, allEmployees, selectedDesignation])
+
   // Generate array of days for the month
   const days = Array.from({ length: daysInMonth }, (_, i) => i + 1)
 
-  // Filter employees based on selected designation
-  const filteredEmployees =
-    selectedDesignation === "ALL"
-      ? mockEmployees
-      : mockEmployees.filter((emp) => emp.accountType === selectedDesignation)
-
-  // Mock attendance data - replace with actual tRPC call
-  const getAttendanceStatus = (_employeeId: string, _day: number) => {
-    const statuses = ["PRESENT", "ABSENT", "LATE", "EXCUSED"]
-    return statuses[Math.floor(Math.random() * statuses.length)]
+  const getAttendanceStatus = (employeeId: string, day: number): string => {
+    const date = dayjs().year(currentYear).month(currentMonth).date(day).format("YYYY-MM-DD")
+    const record = filteredAttendanceData.find(
+      (att) => att.employeeId === employeeId && att.date === date
+    )
+    if (!record) return "ABSENT"
+    if (record.morning === "P" && record.afternoon === "P") return "PRESENT"
+    if (record.morning === "A" && record.afternoon === "A") return "ABSENT"
+    return "PARTIAL" // For cases where only one time slot is marked as present
   }
 
   const getStatusBadge = (status: string) => {
     const variants = {
       PRESENT: "default",
       ABSENT: "destructive",
-      LATE: "secondary",
-      EXCUSED: "outline",
+      PARTIAL: "secondary",
     } as const
 
     const colors = {
       PRESENT: "P",
       ABSENT: "A",
-      LATE: "L",
-      EXCUSED: "E",
+      PARTIAL: "P/A",
     }
 
     return (
-      <Badge variant={variants[status as keyof typeof variants]} className="w-6 h-6 p-0 text-xs">
-        {colors[status as keyof typeof colors]}
+      <Badge variant={variants[status as keyof typeof variants] ?? "outline"} className="w-6 h-6 p-0 text-xs">
+        {colors[status as keyof typeof colors] ?? "A"}
       </Badge>
     )
   }
@@ -101,10 +130,19 @@ export default function EmployeeMonthlyAttendancePage() {
     } as const
 
     return (
-      <Badge variant={colors[accountType as keyof typeof colors] || "outline"} className="text-xs">
+      <Badge variant={colors[accountType as keyof typeof colors] ?? "outline"} className="text-xs">
         {accountType}
       </Badge>
     )
+  }
+
+  const handleExportReport = () => {
+    toast.info("Export functionality not implemented yet")
+  }
+
+  // Handle errors
+  if (employeeError || allEmployeesError) {
+    toast.error("Failed to fetch employee data")
   }
 
   return (
@@ -114,7 +152,7 @@ export default function EmployeeMonthlyAttendancePage() {
           <h1 className="text-3xl font-bold tracking-tight">Employee Monthly Attendance</h1>
           <p className="text-muted-foreground">View monthly attendance records for all staff members</p>
         </div>
-        <Button>
+        <Button onClick={handleExportReport}>
           <Download className="mr-2 h-4 w-4" />
           Export Report
         </Button>
@@ -142,7 +180,7 @@ export default function EmployeeMonthlyAttendancePage() {
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex items-center space-x-4">
-            <Select value={selectedDesignation} onValueChange={setSelectedDesignation}>
+            <Select value={selectedDesignation} onValueChange={(value) => setSelectedDesignation(value as Designation)}>
               <SelectTrigger className="w-[200px]">
                 <SelectValue placeholder="Select designation" />
               </SelectTrigger>
@@ -159,7 +197,7 @@ export default function EmployeeMonthlyAttendancePage() {
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-semibold">
-                {designations.find((d) => d.value === selectedDesignation)?.label} - {monthName} {currentYear}
+                {designations.find((d) => d.value === selectedDesignation)?.label ?? "All Employees"} - {monthName} {currentYear}
               </h3>
               <div className="flex items-center space-x-4 text-sm">
                 <div className="flex items-center space-x-1">
@@ -172,11 +210,7 @@ export default function EmployeeMonthlyAttendancePage() {
                 </div>
                 <div className="flex items-center space-x-1">
                   <Badge variant="secondary" className="w-4 h-4 p-0"></Badge>
-                  <span>Late</span>
-                </div>
-                <div className="flex items-center space-x-1">
-                  <Badge variant="outline" className="w-4 h-4 p-0"></Badge>
-                  <span>Excused</span>
+                  <span>Partial</span>
                 </div>
               </div>
             </div>
