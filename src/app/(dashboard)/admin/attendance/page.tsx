@@ -3,6 +3,8 @@ import { Badge } from "~/components/ui/badge";
 import dayjs from "dayjs";
 import { CalendarGrid } from "~/components/test/attendance/attendance-calendar";
 import { Suspense } from "react";
+
+export const dynamic = "force-dynamic";
 export default function AttendancePage() {
   return (
     <div className="min-h-screen bg-background">
