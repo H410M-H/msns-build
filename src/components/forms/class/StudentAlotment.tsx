@@ -149,7 +149,7 @@ export default function AllotmentDialog({
                     </SelectItem>
                   ))
                 ) : (
-                  <SelectItem value="" disabled>
+                  <SelectItem value="std" disabled>
                     No students available
                   </SelectItem>
                 )}
