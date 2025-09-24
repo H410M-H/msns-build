@@ -26,10 +26,10 @@ export default function EmployeesTable() {
           <EmployeeTable />
           <Separator className="bg-green-900" />
         </div>
-        <h1 className="p-4 text-center font-serif text-5xl font-semibold text-green-800">
+        <Separator className="bg-green-900" />
+                <h1 className="p-4 text-center font-serif text-5xl font-semibold text-green-800">
           Employees Salaries
         </h1>
-        <Separator className="bg-green-900" />
         <SalaryPage />
         <Separator className="bg-green-900" />
       </div>

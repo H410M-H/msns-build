@@ -317,6 +317,9 @@ export function EmployeeTable() {
           <Button asChild>
             <Link href="/admin/users/faculty/create">Create</Link>
           </Button>
+                    <Button asChild>
+            <Link href="/admin/attendance">Attendance</Link>
+          </Button>
           <Button asChild>
             <Link href="/admin/users/faculty/edit">View Cards</Link>
           </Button>

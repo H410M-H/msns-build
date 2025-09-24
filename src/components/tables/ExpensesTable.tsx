@@ -193,7 +193,7 @@ export function ExpensesTable({ onEdit, onDelete }: ExpensesTableProps) {
           <span>Expenses</span>
           <div className="flex items-center gap-4">
             <Badge variant="secondary" className="text-lg px-3 py-1">
-              Total: ${totalAmount.toLocaleString()}
+              Total: {totalAmount.toLocaleString()} PKR/-
             </Badge>
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
               <DialogTrigger asChild>

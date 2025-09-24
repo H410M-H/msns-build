@@ -131,7 +131,15 @@ export const SessionList = () => {
           </Card>
         ))}
       </div>
-
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {filteredSessions.map((session) => (
+            <Button asChild variant="outline" className="w-full" key={session.sessionId}>
+              <Link href={`/admin/attendance`}>
+                View Attendance Details
+              </Link>
+            </Button>
+          ))}
+        </div>
       {/* No Sessions Found */}
       {filteredSessions.length === 0 && (
         <div className="py-12 text-center">
