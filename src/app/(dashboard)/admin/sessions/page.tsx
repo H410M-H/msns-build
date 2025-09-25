@@ -72,114 +72,148 @@ export default function SessionFeePage() {
     }
   ];
 
-  return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100">
-      <PageHeader breadcrumbs={breadcrumbs} />
+return (
+  <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50/30">
+    <PageHeader breadcrumbs={breadcrumbs} />
 
-      <div className="px-6 p-6">
-        <motion.section
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 mb-6"
-        >
-          {stats.map((stat, index) => (
-            <motion.div
-              key={index}
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: index * 0.1, type: "spring", stiffness: 100 }}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              <Card className="flex flex-col justify-between p-4 bg-white rounded-lg shadow-md hover:shadow-lg transition-all duration-300 group relative overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 -translate-x-full group-hover:translate-x-0" />
+    <div className="px-4 sm:px-6 lg:px-8 py-6 max-w-7xl mx-auto">
+      {/* Stats Grid - Improved responsive layout */}
+      <motion.section
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="grid grid-cols-1 xs:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 lg:gap-6 mb-8"
+      >
+        {stats.map((stat, index) => (
+          <motion.div
+            key={index}
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ 
+              delay: index * 0.1, 
+              type: "spring", 
+              stiffness: 200,
+              damping: 15
+            }}
+            whileHover={{ 
+              scale: 1.02,
+              y: -2
+            }}
+            whileTap={{ scale: 0.98 }}
+            className="h-full"
+          >
+            <Card className="h-full flex flex-col justify-between p-5 bg-white/80 backdrop-blur-sm rounded-2xl border border-gray-100/60 shadow-sm hover:shadow-md transition-all duration-300 group relative overflow-hidden">
+              {/* Modern gradient overlay */}
+              <div className="absolute inset-0 bg-gradient-to-br from-white/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+              
+              {/* Accent border effect */}
+              <div className="absolute top-0 left-0 w-full h-0.5 bg-gradient-to-r from-blue-500/0 via-blue-500/40 to-blue-500/0 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
-                <CardHeader className="flex items-center justify-between space-y-0">
-                  <motion.div whileHover={{ x: 2 }}>
-                    <CardTitle className="text-sm font-medium text-gray-700">
-                      {stat.title}
-                    </CardTitle>
-                  </motion.div>
-                  <motion.div
-                    className={`h-10 w-10 flex items-center justify-center rounded-full ${stat.color}`}
-                    whileHover={{ rotate: 360, scale: 1.1 }}
-                    transition={{ type: "spring" }}
-                  >
-                    <stat.icon className="h-5 w-5" />
-                  </motion.div>
-                </CardHeader>
-                <CardContent>
-                  {stat.value === undefined ? (
-                    <motion.div
-                      animate={{ opacity: [0.5, 1, 0.5] }}
-                      transition={{ duration: 1.5, repeat: Infinity }}
-                    >
-                      <Skeleton className="h-8 w-3/4" />
-                    </motion.div>
-                  ) : (
-                    <motion.div
-                      className="text-2xl font-extrabold text-gray-900"
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                    >
-                      {stat.prefix}
-                      {typeof stat.value === 'number' ? (
-                        <AnimatedNumber value={stat.value} />
-                      ) : (
-                        stat.value
-                      )}
-                    </motion.div>
-                  )}
-                </CardContent>
-              </Card>
-            </motion.div>
-          ))}
-        </motion.section>
-        {/* Session Management Section */}
-        <motion.div
-          initial={{ opacity: 0, y: 50 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.2 }}
-        >
-          <div className="bg-gradient-to-r from-blue-100/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-          <Card className="bg-white shadow-lg rounded-xl overflow-hidden hover:shadow-xl transition-shadow duration-300 group">
-            <CardHeader className="bg-gradient-to-r from-gray-50 to-gray-100 border-b relative">
-              <CardTitle className="text-2xl font-bold text-gray-800 relative">
-                <motion.div
-                  whileHover={{ x: 5 }}
-                  className="inline-block"
-                >
-                  Session Management
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 p-0 mb-3">
+                <motion.div whileHover={{ x: 2 }}>
+                  <CardTitle className="text-xs font-semibold uppercase tracking-wide text-gray-600/90">
+                    {stat.title}
+                  </CardTitle>
                 </motion.div>
-                {sessionData && (
-                  <motion.span
+                <motion.div
+                  className={`h-9 w-9 flex items-center justify-center rounded-xl ${stat.color} shadow-sm`}
+                  whileHover={{ 
+                    rotate: [0, -5, 5, 0],
+                    scale: 1.05
+                  }}
+                  transition={{ type: "spring", stiffness: 300 }}
+                >
+                  <stat.icon className="h-4 w-4 text-white" />
+                </motion.div>
+              </CardHeader>
+              
+              <CardContent className="p-0">
+                {stat.value === undefined ? (
+                  <motion.div
+                    animate={{ opacity: [0.4, 0.8, 0.4] }}
+                    transition={{ duration: 2, repeat: Infinity }}
+                  >
+                    <Skeleton className="h-7 w-20 rounded-lg" />
+                  </motion.div>
+                ) : (
+                  <motion.div
+                    className="text-2xl font-bold bg-gradient-to-br from-gray-900 to-gray-700 bg-clip-text text-transparent"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
-                    className="ml-4 text-sm font-normal text-gray-500 inline-block"
+                    transition={{ delay: index * 0.1 + 0.2 }}
                   >
-                    Current Session: {sessionData.sessionName}
-                    <span className="mx-2">•</span>
-                    {new Date(sessionData.sessionFrom).getFullYear()}–
-                    {new Date(sessionData.sessionTo).getFullYear()}
-                  </motion.span>
+                    {stat.prefix}
+                    {typeof stat.value === 'number' ? (
+                      <AnimatedNumber value={stat.value} />
+                    ) : (
+                      stat.value
+                    )}
+                  </motion.div>
                 )}
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="p-0">
-              <ScrollArea className="h-[calc(100vh-320px)]">
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ staggerChildren: 0.1 }}
-                >
-                  <SessionList />
-                </motion.div>
-              </ScrollArea>
-            </CardContent>
-          </Card>
-        </motion.div>
-      </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+        ))}
+      </motion.section>
+
+      {/* Session Management Section - Modernized */}
+      <motion.div
+        initial={{ opacity: 0, y: 30 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, delay: 0.3 }}
+      >
+        <Card className="bg-white/80 backdrop-blur-sm shadow-sm hover:shadow-md transition-all duration-500 rounded-2xl border border-gray-100/60 overflow-hidden group">
+          {/* Header with improved gradient */}
+          <CardHeader className="bg-gradient-to-r from-slate-50/80 to-blue-50/30 border-b border-gray-200/40 p-6 relative">
+            <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-blue-500 to-purple-500" />
+            
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div>
+                <CardTitle className="text-xl font-bold bg-gradient-to-br from-gray-900 to-gray-700 bg-clip-text text-transparent">
+                  <motion.div
+                    whileHover={{ x: 3 }}
+                    className="inline-flex items-center gap-2"
+                  >
+                    <div className="h-2 w-2 bg-blue-500 rounded-full"></div>
+                    Session Management
+                  </motion.div>
+                </CardTitle>
+                
+                {sessionData && (
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="flex flex-wrap items-center gap-1 mt-2 text-sm text-gray-600/90"
+                  >
+                    <span className="font-medium">Current Session:</span>
+                    <span className="text-gray-900 font-semibold">{sessionData.sessionName}</span>
+                    <span className="mx-1">•</span>
+                    <span>
+                      {new Date(sessionData.sessionFrom).getFullYear()}–
+                      {new Date(sessionData.sessionTo).getFullYear()}
+                    </span>
+                  </motion.div>
+                )}
+              </div>
+              
+
+            </div>
+          </CardHeader>
+          
+          <CardContent className="p-0">
+            <ScrollArea className="h-[calc(100vh-360px)] min-h-[400px]">
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ staggerChildren: 0.15, delay: 0.2 }}
+              >
+                <SessionList />
+              </motion.div>
+            </ScrollArea>
+          </CardContent>
+        </Card>
+      </motion.div>
     </div>
-  );
+  </div>
+);
 }
