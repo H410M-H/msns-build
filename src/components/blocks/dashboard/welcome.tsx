@@ -50,10 +50,10 @@ export const WelcomeSection = async () => {
               </div> */}
             </div>
           </div>
+      </div>
 
           <CalendarDialog />
         </div>
-      </div>
     </div>
   );
 };

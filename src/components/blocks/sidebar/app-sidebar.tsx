@@ -62,13 +62,8 @@ const data: NavigationConfig = {
     },
     {
       title: "Profile",
-      url: "/admin/users/account/settings",
+      url: "/admin/users/profile",
       icon: User,
-    },
-    {
-      title: "Settings",
-      url: "/admin/users/account/settings",
-      icon: Settings,
     },
   ],
   HEAD: [
@@ -117,11 +112,6 @@ const data: NavigationConfig = {
       title: "Profile",
       url: "/admin/users/profile",
       icon: User,
-    },
-    {
-      title: "Settings",
-      url: "/admin/users/profile",
-      icon: Settings,
     },
   ],
   NONE: [],
@@ -172,13 +162,8 @@ const data: NavigationConfig = {
     },
     {
       title: "Profile",
-      url: "/admin/users/profile",
+      url: "/admin/users/account/profile",
       icon: User,
-    },
-    {
-      title: "Settings",
-      url: "/admin/users/profile",
-      icon: Settings,
     },
   ],
   ALL: [],

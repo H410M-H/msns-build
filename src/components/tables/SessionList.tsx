@@ -48,7 +48,9 @@ export const SessionList = () => {
       {/* Enhanced Header Controls */}
       <div className="flex flex-col lg:flex-row items-center justify-between gap-6">
         <div className="flex items-center gap-4 w-full lg:flex-1">
+          
           <div className="relative flex-1 max-w-md">
+
             <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" />
             <Input
               placeholder="Search sessions..."

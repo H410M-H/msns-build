@@ -37,9 +37,9 @@ export default function ProfileCard() {
   }
 
   return (
-    <Card className="w-full">
-      <CardHeader className="text-center pb-4">
-        <div className="flex justify-center mb-4">
+    <Card className="w-full max-w-sm mx-auto p-12">
+      <CardHeader className="text-center">
+        <div className="flex justify-center">
           <Avatar className="w-24 h-24">
             <AvatarImage
               src={`/placeholder-422db.png?height=96&width=96&query=profile picture for ${user.username}`}

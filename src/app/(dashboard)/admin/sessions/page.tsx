@@ -1,8 +1,20 @@
 "use client";
 
-import { ScrollArea } from "~/components/ui/scroll-area";
-import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
-import { Users, BookOpen, GraduationCap, School, DollarSign } from "lucide-react";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "~/components/ui/card";
+import {
+  Users,
+  BookOpen,
+  GraduationCap,
+  School,
+  DollarSign,
+  Target,
+} from "lucide-react";
 import { PageHeader } from "~/components/blocks/nav/PageHeader";
 import { SessionList } from "~/components/tables/SessionList";
 import { api } from "~/trpc/react";
@@ -36,184 +48,177 @@ export default function SessionFeePage() {
   const { data: studentData } = api.student.getStudents.useQuery();
   const { data: subjectData } = api.subject.getAllSubjects.useQuery();
 
-  const totalRevenue = feeData?.reduce((acc, fee) => acc + fee.tuitionFee, 0) ?? 0;
+  const totalRevenue =
+    feeData?.reduce((acc, fee) => acc + fee.tuitionFee, 0) ?? 0;
 
   const stats = [
     {
       title: "Total Students",
       value: studentData?.length ?? 0,
       icon: Users,
-      color: "bg-green-100 text-green-600"
+      color: "bg-gradient-to-br from-green-500 to-emerald-600",
+      bgColor: "from-green-50 to-green-100/50",
     },
     {
       title: "Total Classes",
       value: classData?.length ?? 0,
       icon: School,
-      color: "bg-purple-100 text-purple-600"
+      color: "bg-gradient-to-br from-purple-500 to-indigo-600",
+      bgColor: "from-purple-50 to-purple-100/50",
     },
     {
       title: "Active Employees",
       value: employeeData?.length ?? 0,
       icon: GraduationCap,
-      color: "bg-yellow-100 text-yellow-600"
+      color: "bg-gradient-to-br from-amber-500 to-orange-600",
+      bgColor: "from-amber-50 to-amber-100/50",
     },
     {
       title: "Courses Offered",
       value: subjectData?.length ?? 0,
       icon: BookOpen,
-      color: "bg-pink-100 text-pink-600"
+      color: "bg-gradient-to-br from-pink-500 to-rose-600",
+      bgColor: "from-pink-50 to-pink-100/50",
     },
     {
       title: "Total Revenue",
       value: totalRevenue,
       icon: DollarSign,
-      color: "bg-teal-100 text-teal-600",
-      prefix: "Rs. "
-    }
+      color: "bg-gradient-to-br from-teal-500 to-cyan-600",
+      bgColor: "from-teal-50 to-teal-100/50",
+      prefix: "Rs. ",
+    },
   ];
 
-return (
-  <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50/30">
-    <PageHeader breadcrumbs={breadcrumbs} />
+  return (
+    <div className="min-h-screen">
+      <PageHeader breadcrumbs={breadcrumbs} />
 
-    <div className="px-4 sm:px-6 lg:px-8 py-6 max-w-7xl mx-auto">
-      {/* Stats Grid - Improved responsive layout */}
-      <motion.section
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="grid grid-cols-1 xs:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 lg:gap-6 mb-8"
-      >
-        {stats.map((stat, index) => (
-          <motion.div
-            key={index}
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ 
-              delay: index * 0.1, 
-              type: "spring", 
-              stiffness: 200,
-              damping: 15
-            }}
-            whileHover={{ 
-              scale: 1.02,
-              y: -2
-            }}
-            whileTap={{ scale: 0.98 }}
-            className="h-full"
-          >
-            <Card className="h-full flex flex-col justify-between p-5 bg-white/80 backdrop-blur-sm rounded-2xl border border-gray-100/60 shadow-sm hover:shadow-md transition-all duration-300 group relative overflow-hidden">
-              {/* Modern gradient overlay */}
-              <div className="absolute inset-0 bg-gradient-to-br from-white/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-              
-              {/* Accent border effect */}
-              <div className="absolute top-0 left-0 w-full h-0.5 bg-gradient-to-r from-blue-500/0 via-blue-500/40 to-blue-500/0 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+      <div className="flex-1 space-y-4 lg:pb-8">
+        <motion.section
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.3 }}
+          className="border-gren-200/20 rounded-3xl border bg-white shadow-sm"
+        >
+          <section className="grid grid-cols-1 gap-4 px-4 py-4 lg:grid-cols-5 lg:px-6">
+            {stats.map((stat, index) => (
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, y: 20, scale: 0.95 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                transition={{
+                  delay: index * 0.1,
+                  type: "spring",
+                  stiffness: 200,
+                  damping: 15,
+                }}
+                whileHover={{
+                  scale: 1.02,
+                  y: -2,
+                }}
+                className="h-full"
+              >
+                <Card className="group relative flex h-full flex-col justify-between overflow-hidden rounded-2xl border border-white/40 bg-gradient-to-br from-pink-300/30 via-green-300/30 to-white/80 p-6 shadow-sm backdrop-blur-sm transition-all duration-300 hover:shadow-md">
+                  {/* Animated gradient overlay */}
+                  <div className="absolute left-0 top-0 h-0.5 w-full bg-gradient-to-r from-transparent via-current to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-30" />
 
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 p-0 mb-3">
-                <motion.div whileHover={{ x: 2 }}>
-                  <CardTitle className="text-xs font-semibold uppercase tracking-wide text-gray-600/90">
-                    {stat.title}
-                  </CardTitle>
-                </motion.div>
-                <motion.div
-                  className={`h-9 w-9 flex items-center justify-center rounded-xl ${stat.color} shadow-sm`}
-                  whileHover={{ 
-                    rotate: [0, -5, 5, 0],
-                    scale: 1.05
-                  }}
-                  transition={{ type: "spring", stiffness: 300 }}
-                >
-                  <stat.icon className="h-4 w-4 text-white" />
-                </motion.div>
-              </CardHeader>
-              
-              <CardContent className="p-0">
-                {stat.value === undefined ? (
-                  <motion.div
-                    animate={{ opacity: [0.4, 0.8, 0.4] }}
-                    transition={{ duration: 2, repeat: Infinity }}
-                  >
-                    <Skeleton className="h-7 w-20 rounded-lg" />
-                  </motion.div>
-                ) : (
-                  <motion.div
-                    className="text-2xl font-bold bg-gradient-to-br from-gray-900 to-gray-700 bg-clip-text text-transparent"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: index * 0.1 + 0.2 }}
-                  >
-                    {stat.prefix}
-                    {typeof stat.value === 'number' ? (
-                      <AnimatedNumber value={stat.value} />
+                  <CardHeader className="mb-4 flex flex-row items-center justify-between space-y-0 p-0">
+                    <motion.div whileHover={{ x: 2 }}>
+                      <CardTitle className="text-sm font-semibold uppercase tracking-wide text-slate-600/90">
+                        {stat.title}
+                      </CardTitle>
+                    </motion.div>
+                    <motion.div
+                      className={`flex h-10 w-10 items-center justify-center rounded-xl ${stat.color} shadow-lg shadow-black/5`}
+                      whileHover={{
+                        rotate: [0, -5, 5, 0],
+                        scale: 1.1,
+                      }}
+                      transition={{ type: "spring", stiffness: 300 }}
+                    >
+                      <stat.icon className="h-5 w-5 text-white" />
+                    </motion.div>
+                  </CardHeader>
+
+                  <CardContent className="p-0">
+                    {stat.value === undefined ? (
+                      <motion.div
+                        animate={{ opacity: [0.4, 0.8, 0.4] }}
+                        transition={{ duration: 2, repeat: Infinity }}
+                      >
+                        <Skeleton className="h-8 w-24 rounded-lg bg-slate-200/50" />
+                      </motion.div>
                     ) : (
-                      stat.value
+                      <motion.div
+                        className="bg-gradient-to-br from-slate-900 to-slate-700 bg-clip-text text-2xl font-bold text-transparent"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ delay: index * 0.1 + 0.2 }}
+                      >
+                        {stat.prefix}
+                        {typeof stat.value === "number" ? (
+                          <AnimatedNumber value={stat.value} />
+                        ) : (
+                          stat.value
+                        )}
+                      </motion.div>
                     )}
-                  </motion.div>
-                )}
+                  </CardContent>
+                </Card>
+              </motion.div>
+            ))}
+          </section>
+        </motion.section>
+
+        <motion.section
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.5 }}
+          className="rounded-3xl border border-slate-200/60 bg-white shadow-sm"
+        >
+          <div className="relative overflow-hidden rounded-3xl border border-white/40 bg-white/70 p-8 shadow-2xl backdrop-blur-sm lg:p-6">
+            {/* Animated background elements */}
+            <div className="absolute right-0 top-0 h-32 w-32 rounded-full bg-gradient-to-br from-blue-400/20 to-purple-400/40 blur-2xl"></div>
+            <div className="absolute bottom-0 left-0 h-24 w-24 rounded-full bg-gradient-to-br from-green-400/20 to-teal-400/40 blur-xl"></div>
+            <Card className="border-0 bg-transparent shadow-none">
+              <div className="flex items-center gap-3">
+                <div className="rounded-lg bg-blue-100 p-2">
+                  <Target className="h-5 w-5 text-blue-600" />
+                </div>
+                <div>
+                  <CardTitle className="text-xl font-bold text-slate-800">
+                    Session Management
+                  </CardTitle>
+                  {sessionData && (
+                    <CardDescription className="mt-1 flex flex-wrap items-center gap-2 text-slate-600">
+                      <span className="font-medium">Current Session:</span>
+                      <span className="font-semibold text-slate-900">
+                        {sessionData.sessionName}
+                      </span>
+                      <span className="mx-1">•</span>
+                      <span>
+                        {new Date(sessionData.sessionFrom).getFullYear()}–
+                        {new Date(sessionData.sessionTo).getFullYear()}
+                      </span>
+                    </CardDescription>
+                  )}
+                </div>
+              </div>
+
+              <CardContent className="p-0">
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ staggerChildren: 0.1, delay: 0.4 }}
+                >
+                  <SessionList />
+                </motion.div>
               </CardContent>
             </Card>
-          </motion.div>
-        ))}
-      </motion.section>
-
-      {/* Session Management Section - Modernized */}
-      <motion.div
-        initial={{ opacity: 0, y: 30 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, delay: 0.3 }}
-      >
-        <Card className="bg-white/80 backdrop-blur-sm shadow-sm hover:shadow-md transition-all duration-500 rounded-2xl border border-gray-100/60 overflow-hidden group">
-          {/* Header with improved gradient */}
-          <CardHeader className="bg-gradient-to-r from-slate-50/80 to-blue-50/30 border-b border-gray-200/40 p-6 relative">
-            <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-blue-500 to-purple-500" />
-            
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-              <div>
-                <CardTitle className="text-xl font-bold bg-gradient-to-br from-gray-900 to-gray-700 bg-clip-text text-transparent">
-                  <motion.div
-                    whileHover={{ x: 3 }}
-                    className="inline-flex items-center gap-2"
-                  >
-                    <div className="h-2 w-2 bg-blue-500 rounded-full"></div>
-                    Session Management
-                  </motion.div>
-                </CardTitle>
-                
-                {sessionData && (
-                  <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    className="flex flex-wrap items-center gap-1 mt-2 text-sm text-gray-600/90"
-                  >
-                    <span className="font-medium">Current Session:</span>
-                    <span className="text-gray-900 font-semibold">{sessionData.sessionName}</span>
-                    <span className="mx-1">•</span>
-                    <span>
-                      {new Date(sessionData.sessionFrom).getFullYear()}–
-                      {new Date(sessionData.sessionTo).getFullYear()}
-                    </span>
-                  </motion.div>
-                )}
-              </div>
-              
-
-            </div>
-          </CardHeader>
-          
-          <CardContent className="p-0">
-            <ScrollArea className="h-[calc(100vh-360px)] min-h-[400px]">
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ staggerChildren: 0.15, delay: 0.2 }}
-              >
-                <SessionList />
-              </motion.div>
-            </ScrollArea>
-          </CardContent>
-        </Card>
-      </motion.div>
+          </div>
+        </motion.section>
+      </div>
     </div>
-  </div>
-);
+  );
 }

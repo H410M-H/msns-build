@@ -47,16 +47,20 @@ export function StatsCards() {
   ]
 
   return (
-    <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-      {stats.map((stat) => (
-        <Card 
-          key={stat.title} 
-          className="relative overflow-hidden bg-gradient-to-br from-white to-slate-50 hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
-        >
-          <div className="absolute inset-0 bg-gradient-to-br from-white/50 to-transparent" />
-          <CardHeader className="relative z-10 flex flex-row items-center justify-between space-y-0 pb-4">
-            <CardTitle className="text-sm font-semibold text-slate-600">
-              {stat.title}
+          <div className="relative  ">
+      <div className="relative overflow-hidden rounded-3xl border border-white/40 bg-white/70 p-4 shadow-2xl backdrop-blur-sm lg:p-6">
+        <div className="absolute right-0 top-0 h-32 w-32 rounded-full bg-gradient-to-br from-yellow-400/20 to-orange-400/40 blur-2xl"></div>
+ 
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+        {stats.map((stat) => (
+          <Card
+            key={stat.title}
+            className="relative overflow-hidden bg-gradient-to-br from-white to-slate-50 hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
+          >
+            <div className="absolute inset-0 bg-gradient-to-br from-yellow-400/20 to-green-400/40 blur-2xl" />
+            <CardHeader className="relative z-10 flex flex-row items-center justify-between space-y-0 pb-6">
+              <CardTitle className="text-sm font-semibold text-slate-600">
+                {stat.title}
             </CardTitle>
             <div className={`p-2 rounded-lg ${stat.color.replace('text', 'bg')}/20`}>
               <stat.icon className={`h-5 w-5 ${stat.color}`} />
@@ -81,6 +85,8 @@ export function StatsCards() {
           </CardContent>
         </Card>
       ))}
+      </div>
     </div>
+  </div>
   )
 }
