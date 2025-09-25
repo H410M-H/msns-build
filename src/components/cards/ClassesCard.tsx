@@ -37,7 +37,7 @@ export const ClassesCard = () => {
           <CardContent>
             <p>Section: {classItem.section ?? "Not Available"}</p> {/* Fallback value */}
             <p>Category: {classItem.category}</p>
-            <p>Fee: ${classItem.fee.toFixed(2)}</p>
+            <p>Fee: PKR/- {classItem.fee.toFixed(2)}</p>
           </CardContent>
           <CardFooter className="flex justify-between">
             <Button variant="outline" className="bg-blue-500 text-white hover:bg-blue-600">
