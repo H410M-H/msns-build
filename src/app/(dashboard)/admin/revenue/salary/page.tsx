@@ -5,7 +5,6 @@ import { Input } from "~/components/ui/input"
 import { useState } from 'react'
 import { SalaryAssignmentForm } from "~/components/forms/employee/SalaryAllotment"
 import { SalaryTable } from "~/components/tables/SalaryTable"
-import { ExpenseCreationDialog } from "~/components/blocks/expense/ExpenseCreation"
 import { Button } from "~/components/ui/button"
 import { Search, RefreshCw } from "lucide-react"
 import { motion } from "framer-motion"
@@ -39,14 +38,14 @@ export default function SalaryPage() {
       />
       
       
-      <div className="container mx-auto pt-[5rem]">
-        <div className="w-full mx-auto space-y-6">
+      <div className="container mx-auto">
+        <div className="w-full mx-auto">
           {/* Header Section */}
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="text-center space-y-4"
+            className="text-center py-4  space-y-4"
           >
             <h1 className="text-4xl md:text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-green-800 to-teal-600 tracking-tight drop-shadow-sm">
               Employee Compensation Management
@@ -78,8 +77,7 @@ export default function SalaryPage() {
               
               <div className="flex items-center gap-3">
                 <SalaryAssignmentForm />
-<ExpenseCreationDialog />
-                
+               
                 <Button
                   variant="outline"
                   className="border-green-200 text-green-700 hover:bg-green-50/50 hover:text-green-800 group"

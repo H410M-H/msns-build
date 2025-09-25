@@ -303,17 +303,13 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   {/* Sidebar Content with enhanced navigation */}
   <SidebarContent className="py-6">
     <div className="px-3 mb-4">
-      <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider pl-3 mb-2">
-        Main Navigation
-      </div>
+
     </div>
     <NavMain items={items} />
     
     {/* Optional: Additional section for quick actions */}
     <div className="mt-8 px-3">
-      <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider pl-3 mb-2">
-        Quick Access
-      </div>
+
       <div className="space-y-1">
         <button className="flex items-center w-full px-3 py-2 text-sm rounded-lg text-blue-700 bg-blue-50/80 hover:bg-blue-100 transition-colors">
           <span className="mr-2">⭐</span>

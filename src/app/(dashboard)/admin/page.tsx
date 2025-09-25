@@ -10,7 +10,6 @@ import {
   Users,
   BookOpen,
   Plus,
-  TrendingUp,
 } from "lucide-react";
 import EventsTable from "~/components/tables/EventsTable";
 import {
@@ -107,7 +106,7 @@ export default async function DashboardPage() {
                       </CardTitle>
                       <CardDescription>Overview of user activity and engagement</CardDescription>
                     </CardHeader>
-                    <CardContent className="p-6">
+                    {/* <CardContent className="p-6">
                       <div className="flex h-40 flex-col items-center justify-center rounded-lg border border-slate-200/40 bg-gradient-to-br from-blue-100/30 to-blue-50/50">
                         <div className="mb-2 flex items-center gap-2 text-blue-600">
                           <TrendingUp className="h-5 w-5" />
@@ -117,7 +116,7 @@ export default async function DashboardPage() {
                           User engagement analytics<br />will be displayed here
                         </p>
                       </div>
-                    </CardContent>
+                    </CardContent> */}
                   </Card>
 
                   <Card className="border-slate-200/60 hover:shadow-md transition-all">
@@ -128,7 +127,7 @@ export default async function DashboardPage() {
                       </CardTitle>
                       <CardDescription>Overview of course performance and enrollment</CardDescription>
                     </CardHeader>
-                    <CardContent className="p-6">
+                    {/* <CardContent className="p-6">
                       <div className="flex h-40 flex-col items-center justify-center rounded-lg border border-slate-200/40 bg-gradient-to-br from-indigo-100/30 to-indigo-50/50">
                         <div className="mb-2 flex items-center gap-2 text-indigo-600">
                           <TrendingUp className="h-5 w-5" />
@@ -138,7 +137,7 @@ export default async function DashboardPage() {
                           Course performance metrics<br />will be displayed here
                         </p>
                       </div>
-                    </CardContent>
+                    </CardContent> */}
                   </Card>
                 </div>
               </TabsContent>

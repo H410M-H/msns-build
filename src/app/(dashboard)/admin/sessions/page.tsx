@@ -198,24 +198,21 @@ export default function SessionFeePage() {
                       </span>
                       <span className="mx-1">•</span>
                       <span>
-                        {new Date(sessionData.sessionFrom).getFullYear()}–
-                        {new Date(sessionData.sessionTo).getFullYear()}
+                        {new Date(sessionData.sessionFrom).getFullYear()}–{new Date(sessionData.sessionTo).getFullYear()}
                       </span>
                     </CardDescription>
                   )}
                 </div>
               </div>
-
-              <CardContent className="p-0">
-                <motion.div
+                  
+               <motion.div
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ staggerChildren: 0.1, delay: 0.4 }}
                 >
                   <SessionList />
                 </motion.div>
-              </CardContent>
-            </Card>
+           </Card>
           </div>
         </motion.section>
       </div>

@@ -6,7 +6,7 @@ import { Input } from "~/components/ui/input";
 import { Card } from "~/components/ui/card";
 import { Badge } from "~/components/ui/badge";
 import { Checkbox } from "~/components/ui/checkbox";
-import { CalendarDays, Search, RefreshCcw, GraduationCap, Clock, BookOpen, Users } from "lucide-react";
+import { CalendarDays, Search, RefreshCcw, GraduationCap, Clock, BookOpen } from "lucide-react";
 import { api } from "~/trpc/react";
 import Link from "next/link";
 import { SessionCreationDialog } from "../forms/annualSession/SessionCreation";
@@ -44,21 +44,14 @@ export const SessionList = () => {
 
   return (
 <div className="space-y-8 bg-gradient-to-br from-slate-50 via-blue-50/30 to-purple-50/40 p-8 rounded-3xl shadow-2xl border border-white/50 backdrop-blur-sm">
-      
-      {/* Enhanced Header Controls */}
-      <div className="flex flex-col lg:flex-row items-center justify-between gap-6">
-        <div className="flex items-center gap-4 w-full lg:flex-1">
-          
-          <div className="relative flex-1 max-w-md">
-
-            <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" />
+              <div className="flex items-center gap-4 w-full lg:flex-1">
+                      <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" />
             <Input
               placeholder="Search sessions..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-12 pr-4 py-3 border-2 border-slate-200/60 rounded-2xl shadow-sm focus:ring-2 focus:ring-blue-500/50 focus:border-blue-400 transition-all duration-300 bg-white/80 backdrop-blur-sm text-slate-700 placeholder:text-slate-400"
             />
-          </div>
           <Button
             variant="outline"
             size="icon"
@@ -67,7 +60,6 @@ export const SessionList = () => {
           >
             <RefreshCcw className="h-5 w-5 text-blue-600 group-hover:rotate-180 transition-transform duration-500" />
           </Button>
-        </div>
         
         <div className="flex items-center gap-3">
           <SessionCreationDialog />
@@ -180,7 +172,7 @@ export const SessionList = () => {
         ))}
       </div>
       
-      {/* Enhanced Attendance Buttons */}
+      {/* Enhanced Attendance Buttons
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {filteredSessions.map((session) => (
           <Button 
@@ -194,7 +186,7 @@ export const SessionList = () => {
             </Link>
           </Button>
         ))}
-      </div>
+      </div> */}
 
       {/* Enhanced No Sessions Found */}
       {filteredSessions.length === 0 && (
