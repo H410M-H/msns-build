@@ -188,7 +188,7 @@ export const SessionList = () => {
                     className="flex w-full items-center justify-center gap-2"
                   >
                     <BookOpen className="h-4 w-4 transition-transform duration-300 group-hover:scale-110" />
-                    View timetable
+                    Timetable
                   </Link>
                 </Button>
               </div>

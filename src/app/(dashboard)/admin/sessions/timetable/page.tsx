@@ -81,9 +81,5 @@ export default async function TimeTablePage(props: PageProps<'/admin/sessions/ti
     const paramProps = await props.params
 
 
-    return <TimetableView
-        timetable={mockTimetable}
-        defaultTimeSlots={mockDefaultTimeSlots}
-        editable={true}
-    />
+    return <TimetableView/>
 }

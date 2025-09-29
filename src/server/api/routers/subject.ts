@@ -48,7 +48,34 @@ export const SubjectRouter = createTRPCRouter({
       });
     }
   }),
-
+  getAllSubjectsForTimeTable: publicProcedure.query(async ({ ctx }) => {
+    try {
+      return await ctx.db.classSubject.findMany({
+        select: {
+          csId: true,
+          classId: true,
+          subjectId: true,
+          Grades: {
+            select: {
+              grade: true,
+            }
+          },
+          Subject: {
+            select: {
+              subjectId: true,
+              subjectName: true,
+            }
+          }
+        }
+      });
+    } catch (error) {
+      console.error("Error fetching subjects:", error);
+      throw new TRPCError({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "Failed to fetch subjects. Please try again later.",
+      });
+    }
+  }),
   assignSubjectToClass: publicProcedure
     .input(classAssignmentSchema)
     .mutation(async ({ ctx, input }) => {
@@ -91,78 +118,78 @@ export const SubjectRouter = createTRPCRouter({
     }),
 
   // In subject.ts, update the getSubjectsByClass procedure
-getSubjectsByClass: publicProcedure
-.input(z.object({ 
-  classId: z.string().cuid().optional(),
-  sessionId: z.string().cuid().optional() 
-}))
-.query(async ({ ctx, input }) => {
-  try {
-    // Explicitly check if classId and sessionId are provided, as they are required for the query
-    if (!input.classId) {
-      throw new TRPCError({
-        code: "BAD_REQUEST",
-        message: "classId is required to fetch subjects by class.",
-      });
-    }
-    if (!input.sessionId) {
-      throw new TRPCError({
-        code: "BAD_REQUEST",
-        message: "sessionId is required to fetch subjects by class.",
-      });
-    }
-
-    const classSubjects = await ctx.db.classSubject.findMany({
-      where: { 
-        classId: input.classId,
-        sessionId: input.sessionId,
-      },
-      include: {
-        Subject: {
-          select: {
-            subjectId: true,
-            subjectName: true,
-            description: true,
-          }
-        },
-        Employees: {
-          select: {
-            employeeId: true,
-            employeeName: true,
-            designation: true,
-          }
-        },
-        Grades: {
-          select: {
-            classId: true,
-            grade: true,
-            section: true,
-          }
-        },
-        Sessions: {
-          select: {
-            sessionId: true,
-            sessionName: true,
-          }
-        },
-      },
-      orderBy: {
-        Subject: {
-          subjectName: 'asc',
+  getSubjectsByClass: publicProcedure
+    .input(z.object({
+      classId: z.string().cuid().optional(),
+      sessionId: z.string().cuid().optional()
+    }))
+    .query(async ({ ctx, input }) => {
+      try {
+        // Explicitly check if classId and sessionId are provided, as they are required for the query
+        if (!input.classId) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "classId is required to fetch subjects by class.",
+          });
         }
-      }
-    });
+        if (!input.sessionId) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "sessionId is required to fetch subjects by class.",
+          });
+        }
 
-    return classSubjects; // Return empty array if no results
-  } catch (error) {
-    if (error instanceof TRPCError) throw error;
-    console.error("Fetch error:", error);
-    throw new TRPCError({
-      code: "INTERNAL_SERVER_ERROR",
-      message: "Failed to retrieve class subjects",
-    });
-  }
-}),
+        const classSubjects = await ctx.db.classSubject.findMany({
+          where: {
+            classId: input.classId,
+            sessionId: input.sessionId,
+          },
+          include: {
+            Subject: {
+              select: {
+                subjectId: true,
+                subjectName: true,
+                description: true,
+              }
+            },
+            Employees: {
+              select: {
+                employeeId: true,
+                employeeName: true,
+                designation: true,
+              }
+            },
+            Grades: {
+              select: {
+                classId: true,
+                grade: true,
+                section: true,
+              }
+            },
+            Sessions: {
+              select: {
+                sessionId: true,
+                sessionName: true,
+              }
+            },
+          },
+          orderBy: {
+            Subject: {
+              subjectName: 'asc',
+            }
+          }
+        });
+
+        return classSubjects; // Return empty array if no results
+      } catch (error) {
+        if (error instanceof TRPCError) throw error;
+        console.error("Fetch error:", error);
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to retrieve class subjects",
+        });
+      }
+    }),
 
   createSubject: publicProcedure
     .input(createSubjectSchema)
@@ -285,8 +312,8 @@ getSubjectsByClass: publicProcedure
       }
     }),
 
-    removeSubjectFromClass: publicProcedure
-    .input(z.object({ 
+  removeSubjectFromClass: publicProcedure
+    .input(z.object({
       csId: z.string().cuid("Invalid assignment ID"),
       sessionId: z.string().cuid("Invalid session ID"),
     }))
@@ -294,29 +321,29 @@ getSubjectsByClass: publicProcedure
       try {
         // First verify existence
         const assignment = await ctx.db.classSubject.findUnique({
-          where: { 
+          where: {
             csId: input.csId,
             sessionId: input.sessionId,
           },
         });
-  
+
         if (!assignment) {
           throw new TRPCError({
             code: "NOT_FOUND",
             message: "Class assignment not found",
           });
         }
-  
+
         // Then delete using the correct unique identifier
         await ctx.db.classSubject.delete({
-          where: { 
-            csId: input.csId 
+          where: {
+            csId: input.csId
           },
         });
-  
-        return { 
-          success: true, 
-          message: "Subject successfully removed from class" 
+
+        return {
+          success: true,
+          message: "Subject successfully removed from class"
         };
       } catch (error) {
         if (error instanceof TRPCError) throw error;
