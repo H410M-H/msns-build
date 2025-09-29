@@ -1,5 +1,5 @@
 import { PageHeader } from "~/components/blocks/nav/PageHeader";
-import { RegisterEmployeeBioMetric } from "~/components/test/register-bio";
+import { RegisterEmployeeBioMetric } from "~/components/attendance/register-bio";
 import { ScrollArea } from "~/components/ui/scroll-area";
 
 export default async function EmployeeRegistration(

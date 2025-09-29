@@ -49,7 +49,25 @@ export const EmployeeRouter = createTRPCRouter({
       });
     }
   }),
-
+  getAllEmployeesFoTimeTable:
+    publicProcedure.query(async ({ ctx }) => {
+      try {
+        return await ctx.db.employees.findMany({
+          select: {
+            employeeId: true,
+            employeeName: true,
+            designation: true,
+            education: true
+          }
+        });
+      } catch (error) {
+        console.error(error);
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Something went wrong.",
+        });
+      }
+    }),
   getUnAllocateEmployees: publicProcedure.query(async ({ ctx }) => {
     try {
       const employees = await ctx.db.employees.findMany({

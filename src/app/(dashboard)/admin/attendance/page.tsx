@@ -1,7 +1,7 @@
 import { CalendarIcon } from "lucide-react";
 import { Badge } from "~/components/ui/badge";
 import dayjs from "dayjs";
-import { CalendarGrid } from "~/components/test/attendance/attendance-calendar";
+import { CalendarGrid } from "~/components/attendance/attendance/attendance-calendar";
 import { Suspense } from "react";
 
 export const dynamic = "force-dynamic";
