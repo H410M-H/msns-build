@@ -37,13 +37,12 @@ export const RegisterEmployeeBioMetric = ({
   employeeName,
 }: ComponentProps) => {
   const [loading, setLoading] = useState<boolean>(false);
-  const [thumbData, setThumbData] = useState<string[]>([]);
   const [deviceStatus, setDeviceStatus] = useState<
     "disconnected" | "connected" | "capturing" | "error"
   >("disconnected");
   const [captureProgress, setCaptureProgress] = useState(0);
   const [currentCapture, setCurrentCapture] = useState(0);
-  const [totalCaptures, setTotalCaptures] = useState(3);
+  const totalCaptures = 3;
 
   const utils = api.useUtils();
   const { data: savedFinger, isLoading: isFetching } =
@@ -106,10 +105,8 @@ export const RegisterEmployeeBioMetric = ({
 
         if (response.data.ErrorCode === 0) {
           // Add the new capture to our array
-          console.log(response.data.ISOTemplateBase64);
-
           newThumbData = [...newThumbData, response.data.ISOTemplateBase64];
-          setThumbData(newThumbData);
+
 
           // Update current capture count
           const newCaptureCount = i + 1;
@@ -159,7 +156,7 @@ export const RegisterEmployeeBioMetric = ({
   }, [employeeId, fingerMutation, currentCapture, totalCaptures, simulateProgress]);
 
   const resetCaptures = useCallback(() => {
-    setThumbData([]);
+    
     setCurrentCapture(0);
     toast.info("Captures reset", {
       description: "You can now start fresh with new fingerprint captures.",
@@ -169,11 +166,9 @@ export const RegisterEmployeeBioMetric = ({
   useEffect(() => {
     if (savedFinger) {
       // Handle both old format (single string) and new format (array)
-      if (Array.isArray(savedFinger.thumb)) {
-        setThumbData(savedFinger.thumb);
+      if (Array.isArray(savedFinger.thumb)) { 
         setCurrentCapture(savedFinger.thumb.length);
       } else if (savedFinger.thumb) {
-        setThumbData([savedFinger.thumb]);
         setCurrentCapture(1);
       }
       setDeviceStatus("connected");
