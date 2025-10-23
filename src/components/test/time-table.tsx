@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useCallback } from "react";
+import { useState, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { Badge } from "../ui/badge";
 import { Clock, User, X } from "lucide-react";
@@ -9,6 +9,7 @@ import { api } from "~/trpc/react";
 import { ScrollArea, ScrollBar } from "~/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 import React from "react";
+import { Button } from "../ui/button";
 
 interface TimetableEntry {
   timetableId: string;
@@ -242,7 +243,7 @@ const Slot = React.memo(
       setIsOver(true);
     }, []);
 
-    const handleDragLeave = useCallback((e: React.DragEvent) => {
+    const handleDragLeave = useCallback((_e: React.DragEvent) => {
       setIsOver(false);
     }, []);
 
@@ -274,7 +275,7 @@ const Slot = React.memo(
 
         let data: DragTeacher | DragSubject | DragEntry;
         try {
-          data = JSON.parse(dataStr);
+          data = JSON.parse(dataStr) as DragTeacher | DragSubject | DragEntry;
         } catch {
           return;
         }
@@ -499,13 +500,13 @@ const Slot = React.memo(
             <Badge variant="outline" className="text-xs">
               {entry.Employees.designation || ""}
             </Badge>
-            <button
+            <Button
               type="button"
               onClick={handleRemove}
               className="absolute right-2 top-2 flex h-6 w-6 items-center justify-center rounded-full bg-red-500 text-white opacity-0 transition-opacity duration-200 hover:bg-red-600 group-hover:opacity-100"
             >
               <X className="h-3 w-3" />
-            </button>
+            </Button>
           </div>
         ) : (
           <div className="flex h-full items-center justify-center text-sm text-gray-500">
@@ -520,13 +521,13 @@ const Slot = React.memo(
 Slot.displayName = "Slot";
 TeacherItem.displayName = "TeacherItem";
 SubjectItem.displayName = "SubjectItem";
-Slot.displayName = "Slot";
 
 export const TimetableView = () => {
-  const [teachers] = api.employee.getAllEmployeesFoTimeTable.useSuspenseQuery();
-  const [classSubjects] =
-    api.subject.getAllSubjectsForTimeTable.useSuspenseQuery();
-  const [classes] = api.class.getClasses.useSuspenseQuery();
+  // Use proper TypeScript inference without unsafe assertions
+  const teachersQuery = api.employee.getAllEmployeesForTimeTable.useSuspenseQuery();
+  const classSubjectsQuery = api.subject.getAllSubjectsForTimeTable.useSuspenseQuery();
+  const classesQuery = api.class.getClasses.useSuspenseQuery();
+
   const [timetable, setTimetable] = useState<Record<string, TimetableEntry[]>>(
     {},
   );
@@ -539,6 +540,11 @@ export const TimetableView = () => {
     lectureNumber: number;
     classId: string;
   } | null>(null);
+
+  // Extract data from queries - TypeScript will infer the types properly
+  const teachers = teachersQuery[0] as Employee[];
+  const classSubjects = classSubjectsQuery[0] as ClassSubject[];
+  const classes = classesQuery[0] as Grade[];
 
   const getEntryForSlot = useCallback(
     (day: string, lectureNumber: number, classId: string) => {
