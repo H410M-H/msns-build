@@ -7,7 +7,7 @@ import React from "react"
 import { Button } from "~/components/ui/button"
 import { Card, CardHeader, CardTitle, CardContent } from "~/components/ui/card"
 import { ScrollBar } from "~/components/ui/scroll-area"
-import { Class, DAYS_OF_WEEK, Teacher, TimeSlot } from "~/lib/timetable-view"
+import { type Class, DAYS_OF_WEEK, type Teacher, type TimeSlot } from "~/lib/timetable-view"
 
 import { api } from "~/trpc/react"
 
@@ -27,7 +27,7 @@ interface TeacherSlot {
   Grades: { classId: string; grade: string; section: string }
 }
 
-export function TeacherwiseView({ teachers, classes, defaultTimeSlots }: TeacherwiseViewProps) {
+export function TeacherwiseView({ teachers }: TeacherwiseViewProps) {
   const [selectedTeacher, setSelectedTeacher] = useState<Teacher | null>(teachers[0] ?? null)
 
   const [teacherTimetable] = api.timetable.getTimetableByTeacher.useSuspenseQuery(
@@ -40,7 +40,7 @@ export function TeacherwiseView({ teachers, classes, defaultTimeSlots }: Teacher
       schedule[day] = []
     })
 
-    teacherTimetable?.forEach((entry: any) => {
+    teacherTimetable?.forEach((entry: TeacherSlot) => {
       if (
         entry.dayOfWeek &&
         Array.isArray(schedule[entry.dayOfWeek]) &&
@@ -106,7 +106,7 @@ export function TeacherwiseView({ teachers, classes, defaultTimeSlots }: Teacher
               </div>
               <div>
                 <p className="text-xs text-muted-foreground">Education</p>
-                <p className="text-sm font-medium">{selectedTeacher.education || "N/A"}</p>
+                <p className="text-sm font-medium">{selectedTeacher.education ?? "N/A"}</p>
               </div>
               <div className="pt-2 border-t">
                 <p className="text-xs text-muted-foreground">Total Classes/Week</p>

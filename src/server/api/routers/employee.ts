@@ -49,7 +49,7 @@ export const EmployeeRouter = createTRPCRouter({
       });
     }
   }),
-  getAllEmployeesFoTimeTable:
+  getAllEmployeesForTimeTable:
     publicProcedure.query(async ({ ctx }) => {
       try {
         return await ctx.db.employees.findMany({

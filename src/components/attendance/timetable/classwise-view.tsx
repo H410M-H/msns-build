@@ -1,14 +1,15 @@
 "use client"
 
-import { Clock, GripVertical, User, X } from "lucide-react"
 import type React from "react"
 
 import { useState, useMemo } from "react"
-import { Button } from "~/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card"
-import { ScrollArea, ScrollBar } from "~/components/ui/scroll-area"
-import { Class, DAYS_OF_WEEK, DraggedTeacher, LECTURE_NUMBERS, Teacher, TimeSlot } from "~/lib/timetable-view"
-import { cn } from "~/lib/utils"
+import { Card, CardContent, CardHeader, CardTitle } from "../ui/card"
+import { Button } from "../ui/button"
+import { ScrollArea, ScrollBar } from "../ui/scroll-area"
+import { Clock, User, X, GripVertical } from "lucide-react"
+import { cn } from "../../lib/utils"
+import type { Teacher, Class, TimeSlot, DraggedTeacher } from "../../lib/timetable-types"
+import { DAYS_OF_WEEK, LECTURE_NUMBERS } from "../../lib/timetable-types"
 import { api } from "~/trpc/react"
 
 interface ClasswiseViewProps {
@@ -34,13 +35,14 @@ export function ClasswiseView({
   onAssignTeacher,
   onRemoveTeacher,
 }: ClasswiseViewProps) {
-  const [selectedClass, setSelectedClass] = useState<Class | null>(classes[0] ?? null)
+  const [selectedClass, setSelectedClass] = useState<Class | null>(classes[0] || null)
   const [draggedTeacher, setDraggedTeacher] = useState<DraggedTeacher | null>(null)
   const [selectedSlot, setSelectedSlot] = useState<string | null>(null)
 
   const [sessions] = api.timetable.getActiveSessions.useSuspenseQuery()
   const [classTimetable] = api.timetable.getTimetableByClass.useSuspenseQuery(
-    { classId: selectedClass?.classId ?? "" }
+    { classId: selectedClass?.classId || "" },
+    { enabled: !!selectedClass?.classId },
   )
 
   const assignTeacherMutation = api.timetable.assignTeacher.useMutation()
@@ -52,7 +54,7 @@ export function ClasswiseView({
       if (!map[entry.dayOfWeek]) {
         map[entry.dayOfWeek] = {}
       }
-      (map[entry.dayOfWeek] ??= {})[entry.lectureNumber] = entry
+      map[entry.dayOfWeek][entry.lectureNumber] = entry
     })
     return map
   }, [classTimetable])
@@ -180,7 +182,7 @@ export function ClasswiseView({
               </CardTitle>
             </CardHeader>
             <CardContent className="overflow-x-auto">
-              {assignTeacherMutation.isPending ??
+              {assignTeacherMutation.isPending ||
                 (removeTeacherMutation.isPending && (
                   <div className="mb-3 p-3 bg-blue-50 border border-blue-200 rounded-lg flex items-center gap-2">
                     <Clock className="h-4 w-4 animate-spin" />
@@ -228,6 +230,7 @@ export function ClasswiseView({
                                     <p className="text-xs text-blue-700 truncate">{slot.Subject.subjectName}</p>
                                   </div>
                                   <Button
+                                    size="sm"
                                     variant="ghost"
                                     className="h-4 w-4 p-0 flex-shrink-0"
                                     onClick={() => handleRemoveTeacher(slot.timetableId)}
