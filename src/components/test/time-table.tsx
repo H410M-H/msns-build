@@ -79,10 +79,10 @@ export const TimetableView = ({
                                   
                                         <div className="flex items-center gap-1 text-xs text-muted-foreground">
                                             <User className="h-3 w-3" />
-                                            {entry.Employees.employeeName}
+                                            {teacher.employeeName}
                                         </div>
                                         <Badge variant="outline" className="text-xs">
-                                            {entry.Employees.designation}
+                                            {teacher.designation}
                                         </Badge>
 
 
