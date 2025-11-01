@@ -14,6 +14,7 @@ import { ProfileRouter } from "./routers/profile";
 import { expensesRouter } from "./routers/expense";
 import { fingerRouter } from "./routers/finger";
 import { attendanceRouter } from "./routers/attendance";
+import { timetableRouter } from "./routers/timetable";
 
 export const appRouter = createTRPCRouter({
   user: UserRouter,
@@ -29,8 +30,9 @@ export const appRouter = createTRPCRouter({
   event: EventRouter,
   subject: SubjectRouter,
   class: ClassRouter,
-  finger:fingerRouter,
-  attendance:attendanceRouter
+  finger: fingerRouter,
+  attendance: attendanceRouter,
+  timetable: timetableRouter,
 });
 
 export type AppRouter = typeof appRouter;
