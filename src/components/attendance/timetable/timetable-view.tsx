@@ -48,7 +48,7 @@ export function TimetableView({
   onSelect,
   editable = false,
 }: TimetableViewProps) {
-  const [teachers] = api.employee.getAllEmployeesFoTimeTable.useSuspenseQuery()
+  const [teachers] = api.employee.getAllEmployeesForTimeTable.useSuspenseQuery()
   const [selectedEntry, setSelectedEntry] = useState<string | null>(null)
 
   const getTimeSlot = (lectureNumber: number) => {

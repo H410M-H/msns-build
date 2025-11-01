@@ -1,16 +1,14 @@
 "use client"
 
 import type React from "react"
-
+import { GripVertical, User, Clock, X } from "lucide-react"
+import { cn } from "~/lib/utils"
+import { LECTURE_NUMBERS, DAYS_OF_WEEK, type Class, type Teacher, type TimeSlot, type DraggedTeacher } from "~/lib/timetable-view"
 import { useState, useMemo } from "react"
-import { Card, CardContent, CardHeader, CardTitle } from "../ui/card"
-import { Button } from "../ui/button"
-import { ScrollArea, ScrollBar } from "../ui/scroll-area"
-import { Clock, User, X, GripVertical } from "lucide-react"
-import { cn } from "../../lib/utils"
-import type { Teacher, Class, TimeSlot, DraggedTeacher } from "../../lib/timetable-types"
-import { DAYS_OF_WEEK, LECTURE_NUMBERS } from "../../lib/timetable-types"
+import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card"
 import { api } from "~/trpc/react"
+import { Button } from "~/components/ui/button"
+import { ScrollBar, ScrollArea } from "~/components/ui/scroll-area"
 
 interface ClasswiseViewProps {
   classes: Class[]
@@ -35,29 +33,34 @@ export function ClasswiseView({
   onAssignTeacher,
   onRemoveTeacher,
 }: ClasswiseViewProps) {
-  const [selectedClass, setSelectedClass] = useState<Class | null>(classes[0] || null)
+  const [selectedClass, setSelectedClass] = useState<Class | null>(classes[0] ?? null)
   const [draggedTeacher, setDraggedTeacher] = useState<DraggedTeacher | null>(null)
-  const [selectedSlot, setSelectedSlot] = useState<string | null>(null)
 
   const [sessions] = api.timetable.getActiveSessions.useSuspenseQuery()
   const [classTimetable] = api.timetable.getTimetableByClass.useSuspenseQuery(
-    { classId: selectedClass?.classId || "" },
-    { enabled: !!selectedClass?.classId },
+    { classId: selectedClass?.classId ?? "" }
   )
 
   const assignTeacherMutation = api.timetable.assignTeacher.useMutation()
   const removeTeacherMutation = api.timetable.removeTeacher.useMutation()
 
   const timetableMap = useMemo(() => {
-    const map: Record<string, Record<number, TimetableEntry>> = {}
-    classTimetable?.forEach((entry: any) => {
-      if (!map[entry.dayOfWeek]) {
-        map[entry.dayOfWeek] = {}
+    const map: Record<string, Record<number, TimetableEntry>> = {};
+    const timetableArray: TimetableEntry[] = Array.isArray(classTimetable) ? classTimetable : [];
+    timetableArray.forEach((entry) => {
+      if (
+        entry &&
+        typeof entry.dayOfWeek === "string" &&
+        typeof entry.lectureNumber === "number"
+      ) {
+        if (!map[entry.dayOfWeek]) {
+          map[entry.dayOfWeek] = {};
+        }
+        (map[entry.dayOfWeek] ??= {})[entry.lectureNumber] = entry;
       }
-      map[entry.dayOfWeek][entry.lectureNumber] = entry
-    })
-    return map
-  }, [classTimetable])
+    });
+    return map;
+  }, [classTimetable]);
 
   const getTimeSlot = (lectureNumber: number) => {
     return defaultTimeSlots.find((slot) => slot.lectureNumber === lectureNumber)
@@ -73,19 +76,23 @@ export function ClasswiseView({
     e.dataTransfer.dropEffect = "copy"
   }
 
-  const handleSlotDrop = async (day: string, lectureNumber: number, e: React.DragEvent) => {
+  const handleSlotDrop = async (
+    day: (typeof DAYS_OF_WEEK)[number],
+    lectureNumber: number,
+    e: React.DragEvent
+  ) => {
     e.preventDefault()
     if (!draggedTeacher || !selectedClass || !sessions?.[0]) return
-
+  
     const timeSlot = getTimeSlot(lectureNumber)
     if (!timeSlot) return
-
+  
     try {
       await assignTeacherMutation.mutateAsync({
         classId: selectedClass.classId,
         employeeId: draggedTeacher.employeeId,
         subjectId: "default-subject", // TODO: select from class subjects
-        dayOfWeek: day as any,
+        dayOfWeek: day as "Monday" | "Tuesday" | "Wednesday" | "Thursday" | "Friday" | "Saturday",
         lectureNumber,
         sessionId: sessions[0].sessionId,
         startTime: timeSlot.startTime,

@@ -5,6 +5,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs"
 import { GridIcon, Users, AlertCircle } from "lucide-react"
 import { api } from "~/trpc/react"
+import { type Class, type Teacher, type TimetableViewMode } from "~/lib/timetable-view"
+import { ClasswiseView } from "~/components/attendance/timetable/classwise-view"
+import { TeacherwiseView } from "~/components/attendance/timetable/teacherwise-view"
 
 const DEFAULT_TIME_SLOTS = [
   { lectureNumber: 1, startTime: "08:00", endTime: "08:35" },
@@ -24,13 +27,18 @@ function TimetableContent() {
   const [teachers] = api.employee.getAllEmployeesForTimeTable.useSuspenseQuery()
   const [classes] = api.class.getClasses.useSuspenseQuery()
 
-  const transformedClasses: Class[] = classes.map((cls: any) => ({
+  const transformedClasses: Class[] = classes.map((cls: { classId: string; grade: string; section: string }) => ({
     classId: cls.classId,
     grade: cls.grade,
     section: cls.section,
   }))
 
-  const transformedTeachers: Teacher[] = teachers.map((teacher: any) => ({
+  const transformedTeachers: Teacher[] = teachers.map((teacher: {
+    employeeId: string;
+    employeeName: string;
+    designation: string;
+    education: string;
+  }) => ({
     employeeId: teacher.employeeId,
     employeeName: teacher.employeeName,
     designation: teacher.designation,
