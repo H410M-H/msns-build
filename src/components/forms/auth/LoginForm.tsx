@@ -57,7 +57,7 @@ export const LoginForm = () => {
   };
 
   return (
-    <div className="relative mx-auto w-full max-w-md">
+    <div className="relative mx-auto w-full max-w-md sm:max-w-lg lg:max-w-xl">
     <div className="overflow-hidden rounded-2xl bg-white/90 shadow-xl backdrop-blur-md transition-all duration-300 hover:shadow-blue-100/50 dark:bg-slate-900/90 dark:hover:shadow-blue-900/20">
       <div className="relative px-6 pb-8 pt-10 sm:px-10">
         <div className="absolute left-0 top-0 h-2 w-full bg-primary" />
@@ -162,23 +162,21 @@ export const LoginForm = () => {
           <p className="text-center text-xs text-gray-500 dark:text-gray-400">
             By logging in, you agree to MSNS-DEV&apos;s
             <a
-              href="/terms"
-              className="mx-1 text-blue-600 hover:underline dark:text-blue-400"
+                href="https://msns.edu.pk/terms-of-service"
+              className="mx-1 text-green-600 hover:underline dark:text-green-400"
             >
               Terms of Service
             </a>
             and
             <a
-              href="/privacy"
-              className="ml-1 text-blue-600 hover:underline dark:text-blue-400"
+                href="https://msns.edu.pk/terms-of-service"
+              className="ml-1 text-green-600 hover:underline dark:text-green-400"
             >
               Privacy Policy
             </a>
           </p>
         </div>
       </div>
-
-      {/* Bottom decorative wave */}
       <div className="h-12 w-full bg-primary/10 dark:bg-primary/5">
         <svg
           className="h-full w-full"
