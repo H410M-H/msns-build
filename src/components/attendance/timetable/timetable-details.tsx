@@ -1,11 +1,9 @@
 "use client"
 
-
 import { Clock, User, BookOpen, ArrowLeft, Badge } from "lucide-react"
 import type { TimetableEntry } from "./timetable-view"
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card"
 import { Button } from "~/components/ui/button"
-
 export interface TimetableDetailsProps {
   entry: TimetableEntry | null
   onBack: () => void
@@ -42,7 +40,7 @@ export function TimetableDetails({ entry, onBack, onEdit, onDelete }: TimetableD
               <Clock className="h-4 w-4" />
               Day of Week
             </div>
-            <Badge  className="text-base">
+            <Badge className="text-base">
               {entry.dayOfWeek}
             </Badge>
           </div>

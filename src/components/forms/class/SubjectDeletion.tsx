@@ -1,7 +1,9 @@
-"use client";
+"use client"
 
-import { Button } from "~/components/ui/button";
-import { api } from "~/trpc/react";
+import { Button } from "~/components/ui/button"
+import { api } from "~/trpc/react"
+import { ReloadIcon } from "@radix-ui/react-icons"
+import { toast } from "~/hooks/use-toast"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -12,25 +14,40 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "~/components/ui/alert-dialog";
-import { ReloadIcon } from "@radix-ui/react-icons";
+} from "~/components/ui/alert-dialog"
 
-export const SubjectDeletionDialog = ({
-  csId,
-  classId,
-}: {
-  csId: string;
-  classId: string;
-  sessionId: string;
-}) => {
-  const utils = api.useUtils();
+type SubjectDeletionDialogProps = {
+  csId: string
+  classId: string
+  subjectName: string
+}
+
+export function SubjectDeletionDialog({ csId, classId, subjectName }: SubjectDeletionDialogProps) {
+  const utils = api.useUtils()
   const removeSubject = api.subject.removeSubjectFromClass.useMutation({
     onSuccess: async () => {
-      await utils.subject.getSubjectsByClass.invalidate({
-        classId,
-      });
+      toast({
+        title: "Success",
+        description: `Subject "${subjectName}" removed from class`,
+      })
+      await Promise.all([
+        utils.subject.getSubjectsByClass.invalidate({ classId }),
+        utils.subject.getAllSubjects.invalidate(),
+      ])
     },
-  });
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to remove subject",
+      })
+    },
+  })
+
+  const handleRemove = () => {
+    removeSubject.mutate({
+      csId,
+    })
+  }
 
   return (
     <AlertDialog>
@@ -41,35 +58,28 @@ export const SubjectDeletionDialog = ({
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Confirm Removal</AlertDialogTitle>
+          <AlertDialogTitle>Remove Subject</AlertDialogTitle>
           <AlertDialogDescription>
-            Are you sure you want to remove this subject from the class? This
-            action cannot be undone.
+            Are you sure you want to remove <strong>{subjectName}</strong> from this class? This action cannot be
+            undone.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel>Cancel</AlertDialogCancel>
           <AlertDialogAction asChild>
-            <Button
-              variant="destructive"
-              onClick={() => removeSubject.mutate({
-                csId,
-                sessionId: ""
-              })}
-              disabled={removeSubject.isPending}
-            >
+            <Button variant="destructive" onClick={handleRemove} disabled={removeSubject.isPending}>
               {removeSubject.isPending ? (
                 <>
                   <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />
                   Removing...
                 </>
               ) : (
-                "Confirm Remove"
+                "Remove Subject"
               )}
             </Button>
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
-  );
-};
+  )
+}

@@ -178,6 +178,27 @@ export const timetableRouter = createTRPCRouter({
     }
   }),
 
+  // Get subjects available for a class with teachers
+  getSubjectsByClassWithTeachers: publicProcedure
+    .input(z.object({ classId: z.string().cuid() }))
+    .query(async ({ ctx, input }) => {
+      try {
+        return await ctx.db.classSubject.findMany({
+          where: { classId: input.classId },
+          include: {
+            Subject: true,
+            Employees: true,
+          },
+        })
+      } catch (error) {
+        console.error(error)
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to fetch class subjects with teachers",
+        })
+      }
+    }),
+
   // Get active session
   getActiveSessions: publicProcedure.query(async ({ ctx }) => {
     try {

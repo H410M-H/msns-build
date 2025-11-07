@@ -107,7 +107,7 @@ export default function AllotmentDialog({
               onValueChange={(value) => form.setValue("sessionId", value)}
               value={form.watch("sessionId")}
             >
-              <SelectTrigger id="session-select">
+              <SelectTrigger id="">
                 <SelectValue placeholder="Select session" />
               </SelectTrigger>
               <SelectContent>

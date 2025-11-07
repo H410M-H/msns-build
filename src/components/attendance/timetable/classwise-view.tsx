@@ -1,14 +1,17 @@
 "use client"
 
+import { ScrollArea } from "@radix-ui/react-scroll-area"
+import { BookOpen, User, GripVertical, Clock, X } from "lucide-react"
 import type React from "react"
-import { GripVertical, User, Clock, X } from "lucide-react"
-import { cn } from "~/lib/utils"
-import { LECTURE_NUMBERS, DAYS_OF_WEEK, type Class, type Teacher, type TimeSlot, type DraggedTeacher } from "~/lib/timetable-view"
+
 import { useState, useMemo } from "react"
-import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card"
-import { api } from "~/trpc/react"
 import { Button } from "~/components/ui/button"
-import { ScrollBar, ScrollArea } from "~/components/ui/scroll-area"
+import { Card, CardHeader, CardTitle, CardContent } from "~/components/ui/card"
+import { ScrollBar } from "~/components/ui/scroll-area"
+import { type Class, DAYS_OF_WEEK, type DraggedTeacher, LECTURE_NUMBERS, type Teacher, type TimeSlot } from "~/lib/timetable-types"
+import { cn } from "~/lib/utils"
+
+import { api } from "~/trpc/react"
 
 interface ClasswiseViewProps {
   classes: Class[]
@@ -33,34 +36,34 @@ export function ClasswiseView({
   onAssignTeacher,
   onRemoveTeacher,
 }: ClasswiseViewProps) {
-  const [selectedClass, setSelectedClass] = useState<Class | null>(classes[0] ?? null)
+  const [selectedClass, setSelectedClass] = useState<Class | null>(classes[0] || null)
   const [draggedTeacher, setDraggedTeacher] = useState<DraggedTeacher | null>(null)
+  const [selectedSlot, setSelectedSlot] = useState<string | null>(null)
+  const [selectedSubject, setSelectedSubject] = useState<{ subjectId: string; subjectName: string } | null>(null)
 
   const [sessions] = api.timetable.getActiveSessions.useSuspenseQuery()
   const [classTimetable] = api.timetable.getTimetableByClass.useSuspenseQuery(
-    { classId: selectedClass?.classId ?? "" }
+    { classId: selectedClass?.classId || "" },
+    { enabled: !!selectedClass?.classId },
+  )
+  const [classSubjects] = api.timetable.getSubjectsByClassWithTeachers.useSuspenseQuery(
+    { classId: selectedClass?.classId || "" },
+    { enabled: !!selectedClass?.classId },
   )
 
   const assignTeacherMutation = api.timetable.assignTeacher.useMutation()
   const removeTeacherMutation = api.timetable.removeTeacher.useMutation()
 
   const timetableMap = useMemo(() => {
-    const map: Record<string, Record<number, TimetableEntry>> = {};
-    const timetableArray: TimetableEntry[] = Array.isArray(classTimetable) ? classTimetable : [];
-    timetableArray.forEach((entry) => {
-      if (
-        entry &&
-        typeof entry.dayOfWeek === "string" &&
-        typeof entry.lectureNumber === "number"
-      ) {
-        if (!map[entry.dayOfWeek]) {
-          map[entry.dayOfWeek] = {};
-        }
-        (map[entry.dayOfWeek] ??= {})[entry.lectureNumber] = entry;
+    const map: Record<string, Record<number, TimetableEntry>> = {}
+    classTimetable?.forEach((entry: any) => {
+      if (!map[entry.dayOfWeek]) {
+        map[entry.dayOfWeek] = {}
       }
-    });
-    return map;
-  }, [classTimetable]);
+      map[entry.dayOfWeek][entry.lectureNumber] = entry
+    })
+    return map
+  }, [classTimetable])
 
   const getTimeSlot = (lectureNumber: number) => {
     return defaultTimeSlots.find((slot) => slot.lectureNumber === lectureNumber)
@@ -76,29 +79,28 @@ export function ClasswiseView({
     e.dataTransfer.dropEffect = "copy"
   }
 
-  const handleSlotDrop = async (
-    day: (typeof DAYS_OF_WEEK)[number],
-    lectureNumber: number,
-    e: React.DragEvent
-  ) => {
+  const handleSlotDrop = async (day: string, lectureNumber: number, e: React.DragEvent) => {
     e.preventDefault()
-    if (!draggedTeacher || !selectedClass || !sessions?.[0]) return
-  
+    if (!draggedTeacher || !selectedClass || !sessions?.[0] || !selectedSubject) {
+      alert("Please select a subject first")
+      return
+    }
+
     const timeSlot = getTimeSlot(lectureNumber)
     if (!timeSlot) return
-  
+
     try {
       await assignTeacherMutation.mutateAsync({
         classId: selectedClass.classId,
         employeeId: draggedTeacher.employeeId,
-        subjectId: "default-subject", // TODO: select from class subjects
-        dayOfWeek: day as "Monday" | "Tuesday" | "Wednesday" | "Thursday" | "Friday" | "Saturday",
+        subjectId: selectedSubject.subjectId,
+        dayOfWeek: day as any,
         lectureNumber,
         sessionId: sessions[0].sessionId,
         startTime: timeSlot.startTime,
         endTime: timeSlot.endTime,
       })
-      onAssignTeacher?.(`${day}-${lectureNumber}`, draggedTeacher, "Subject")
+      onAssignTeacher?.(`${day}-${lectureNumber}`, draggedTeacher, selectedSubject.subjectName)
     } catch (error) {
       console.error("Failed to assign teacher:", error)
     }
@@ -120,23 +122,61 @@ export function ClasswiseView({
 
   return (
     <div className="space-y-4">
-      {/* Class Selector */}
+      {/* Class and Subject Selector */}
       <Card>
         <CardHeader>
-          <CardTitle>Select Class</CardTitle>
+          <CardTitle>Select Class & Subject</CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className="flex flex-wrap gap-2">
-            {classes.map((cls) => (
-              <Button
-                key={cls.classId}
-                variant={selectedClass?.classId === cls.classId ? "default" : "outline"}
-                onClick={() => setSelectedClass(cls)}
-              >
-                {cls.grade} - {cls.section}
-              </Button>
-            ))}
+        <CardContent className="space-y-4">
+          <div>
+            <label className="text-sm font-medium mb-2 block">Class</label>
+            <div className="flex flex-wrap gap-2">
+              {classes.map((cls) => (
+                <Button
+                  key={cls.classId}
+                  variant={selectedClass?.classId === cls.classId ? "default" : "outline"}
+                  onClick={() => {
+                    setSelectedClass(cls)
+                    setSelectedSubject(null)
+                  }}
+                >
+                  {cls.grade} - {cls.section}
+                </Button>
+              ))}
+            </div>
           </div>
+
+          {selectedClass && classSubjects && classSubjects.length > 0 && (
+            <div>
+              <label className="text-sm font-medium mb-2 block flex items-center gap-2">
+                <BookOpen className="h-4 w-4" />
+                Subject
+              </label>
+              <div className="flex flex-wrap gap-2">
+                {classSubjects.map((cs) => (
+                  <Button
+                    key={cs.csId}
+                    variant={selectedSubject?.subjectId === cs.subjectId ? "default" : "outline"}
+                    onClick={() => setSelectedSubject({ subjectId: cs.subjectId, subjectName: cs.Subject.subjectName })}
+                    className="text-xs"
+                  >
+                    {cs.Subject.subjectName}
+                  </Button>
+                ))}
+              </div>
+              {selectedSubject && (
+                <p className="text-xs text-muted-foreground mt-2">
+                  Selected: <span className="font-medium">{selectedSubject.subjectName}</span>
+                </p>
+              )}
+            </div>
+          )}
+
+          {selectedClass && (!classSubjects || classSubjects.length === 0) && (
+            <p className="text-sm text-yellow-600 bg-yellow-50 p-3 rounded">
+              No subjects configured for this class. Please set up subjects first.
+            </p>
+          )}
         </CardContent>
       </Card>
 
@@ -225,8 +265,11 @@ export function ClasswiseView({
                             onDragOver={handleSlotDragOver}
                             onDrop={(e) => handleSlotDrop(day, lectureNumber, e)}
                             className={cn(
-                              "p-2 border rounded-lg min-h-[80px] transition-colors cursor-copy",
-                              slot ? "bg-blue-50 border-blue-200" : "bg-muted/20 hover:bg-muted/40 border-dashed",
+                              "p-2 border rounded-lg min-h-[80px] transition-colors",
+                              !selectedSubject && "opacity-50 cursor-not-allowed",
+                              slot
+                                ? "bg-blue-50 border-blue-200"
+                                : "bg-muted/20 hover:bg-muted/40 border-dashed cursor-copy",
                             )}
                           >
                             {slot ? (
@@ -248,7 +291,9 @@ export function ClasswiseView({
                                 </div>
                               </div>
                             ) : (
-                              <div className="text-xs text-muted-foreground text-center py-6">Drag teacher here</div>
+                              <div className="text-xs text-muted-foreground text-center py-6">
+                                {selectedSubject ? "Drag teacher here" : "Select subject first"}
+                              </div>
                             )}
                           </div>
                         )

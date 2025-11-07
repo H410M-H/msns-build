@@ -2,12 +2,12 @@
 
 import { ScrollArea } from "@radix-ui/react-scroll-area"
 import { Clock } from "lucide-react"
-import { useState, useMemo } from "react"
-import React from "react"
+import type React from "react"
+
 import { Button } from "~/components/ui/button"
 import { Card, CardHeader, CardTitle, CardContent } from "~/components/ui/card"
 import { ScrollBar } from "~/components/ui/scroll-area"
-import { type Class, DAYS_OF_WEEK, type Teacher, type TimeSlot } from "~/lib/timetable-view"
+import { type Class, DAYS_OF_WEEK, type Teacher, type TimeSlot } from "~/lib/timetable-types"
 
 import { api } from "~/trpc/react"
 
@@ -27,11 +27,12 @@ interface TeacherSlot {
   Grades: { classId: string; grade: string; section: string }
 }
 
-export function TeacherwiseView({ teachers }: TeacherwiseViewProps) {
+export function TeacherwiseView({ teachers, classes, defaultTimeSlots }: TeacherwiseViewProps) {
   const [selectedTeacher, setSelectedTeacher] = useState<Teacher | null>(teachers[0] ?? null)
 
   const [teacherTimetable] = api.timetable.getTimetableByTeacher.useSuspenseQuery(
-    { employeeId: selectedTeacher?.employeeId ?? "" }
+    { employeeId: selectedTeacher?.employeeId ?? "" },
+    { enabled: !!selectedTeacher?.employeeId },
   )
 
   const scheduleByDay = useMemo(() => {
@@ -40,30 +41,26 @@ export function TeacherwiseView({ teachers }: TeacherwiseViewProps) {
       schedule[day] = []
     })
 
-    teacherTimetable?.forEach((entry: TeacherSlot) => {
-      if (
-        entry.dayOfWeek &&
-        Array.isArray(schedule[entry.dayOfWeek]) &&
-        schedule[entry.dayOfWeek] !== undefined
-      ) {
-        schedule[entry.dayOfWeek]!.push(entry)
+    teacherTimetable?.forEach((entry: any) => {
+      if (schedule[entry.dayOfWeek]) {
+        schedule[entry.dayOfWeek].push(entry)
       }
     })
 
     // Sort by lecture number
     Object.keys(schedule).forEach((day) => {
-      schedule[day]!.sort((a, b) => a.lectureNumber - b.lectureNumber)
+      schedule[day].sort((a, b) => a.lectureNumber - b.lectureNumber)
     })
 
     return schedule
   }, [teacherTimetable])
 
   const getTeacherTotalClasses = () => {
-    return teacherTimetable?.length ?? 0
+    return teacherTimetable?.length || 0
   }
 
   const getTeacherClassesPerDay = (day: string) => {
-    return scheduleByDay[day]?.length ?? 0
+    return scheduleByDay[day]?.length || 0
   }
 
   return (
@@ -106,7 +103,7 @@ export function TeacherwiseView({ teachers }: TeacherwiseViewProps) {
               </div>
               <div>
                 <p className="text-xs text-muted-foreground">Education</p>
-                <p className="text-sm font-medium">{selectedTeacher.education ?? "N/A"}</p>
+                <p className="text-sm font-medium">{selectedTeacher.education || "N/A"}</p>
               </div>
               <div className="pt-2 border-t">
                 <p className="text-xs text-muted-foreground">Total Classes/Week</p>
@@ -127,7 +124,7 @@ export function TeacherwiseView({ teachers }: TeacherwiseViewProps) {
               <CardContent>
                 <div className="grid grid-cols-3 gap-4">
                   {DAYS_OF_WEEK.map((day) => {
-                    const daySlots = scheduleByDay[day] ?? []
+                    const daySlots = scheduleByDay[day] || []
                     return (
                       <div key={day} className="border rounded-lg p-3">
                         <div className="flex items-center justify-between mb-3">

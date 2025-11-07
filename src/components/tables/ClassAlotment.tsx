@@ -193,8 +193,7 @@ export const ClassAllotmentTable = ({ classId, sessionId }: ClassAllotmentTableP
             <SubjectAssignmentDialog
               classId={classId}
               open={subjectAssignmentOpen}
-              onOpenChange={setSubjectAssignmentOpen}
-            />
+              onOpenChange={setSubjectAssignmentOpen} dayOfWeek={"Monday"} lectureNumber={0} sessionId={sessionId}            />
           </div>
         </div>
 
@@ -218,7 +217,7 @@ export const ClassAllotmentTable = ({ classId, sessionId }: ClassAllotmentTableP
                     <h3 className="text-lg font-semibold text-gray-800">{subject.Subject?.subjectName}</h3>
                     <p className="text-sm text-gray-600 line-clamp-2">{subject.Subject?.description}</p>
                   </div>
-                  <SubjectDeletionDialog csId={subject.csId} classId={classId} sessionId={sessionId} />
+                  <SubjectDeletionDialog csId={subject.csId} classId={classId} subjectName={sessionId } />
                 </div>
                 {subject.Employees && (
                   <div className="mt-4 flex items-center justify-between">

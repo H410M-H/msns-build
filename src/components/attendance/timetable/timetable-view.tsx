@@ -1,14 +1,12 @@
 "use client"
 
 import { useState } from "react"
-import { cn } from "~/lib/utils"
-import { Plus, Edit, Trash2, Clock, User } from "lucide-react"
-import { Badge } from "~/components/ui/badge"
-
+import { Clock, User, Edit, Trash2, Plus, Badge } from "lucide-react"
 import { api } from "~/trpc/react"
 import { ScrollArea, ScrollBar } from "~/components/ui/scroll-area"
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card"
-import { Button } from "~/components/ui/button"
+import { Button } from "react-day-picker"
+import { cn } from "~/lib/utils"
 
 export interface TimetableEntry {
   timetableId: string
@@ -86,7 +84,7 @@ export function TimetableView({
                     <User className="h-3 w-3" />
                     {teacher.employeeName}
                   </div>
-                  <Badge variant="outline" className="text-xs">
+                  <Badge  className="text-xs">
                     {teacher.designation}
                   </Badge>
                 </div>
@@ -116,7 +114,7 @@ export function TimetableView({
                         </div>
                       )}
                       {isBreakTime(lectureNumber) && (
-                        <Badge variant="secondary" className="mt-1 text-xs">
+                        <Badge  className="mt-1 text-xs">
                           After Break
                         </Badge>
                       )}
@@ -142,7 +140,7 @@ export function TimetableView({
                                 <User className="h-3 w-3" />
                                 {entry.Employees.employeeName}
                               </div>
-                              <Badge variant="outline" className="text-xs">
+                              <Badge  className="text-xs">
                                 {entry.Employees.designation}
                               </Badge>
 
@@ -150,8 +148,6 @@ export function TimetableView({
                                 <div className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity">
                                   <div className="flex gap-1">
                                     <Button
-                                      size="sm"
-                                      variant="ghost"
                                       className="h-6 w-6 p-0"
                                       onClick={(e) => {
                                         e.stopPropagation()
@@ -161,8 +157,6 @@ export function TimetableView({
                                       <Edit className="h-3 w-3" />
                                     </Button>
                                     <Button
-                                      size="sm"
-                                      variant="ghost"
                                       className="h-6 w-6 p-0 text-destructive hover:text-destructive"
                                       onClick={(e) => {
                                         e.stopPropagation()
@@ -179,8 +173,6 @@ export function TimetableView({
                             editable && (
                               <div className="flex items-center justify-center h-full opacity-0 group-hover:opacity-100 transition-opacity">
                                 <Button
-                                  size="sm"
-                                  variant="ghost"
                                   className="h-8 w-8 p-0"
                                   onClick={(e) => {
                                     e.stopPropagation()
@@ -220,7 +212,7 @@ export function TimetableView({
                 <span>Free Period</span>
               </div>
               <div className="flex items-center gap-2">
-                <Badge variant="secondary" className="text-xs">
+                <Badge className="text-xs">
                   After Break
                 </Badge>
                 <span>Post-break lecture</span>

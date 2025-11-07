@@ -1,259 +1,196 @@
-"use client";
+// components/forms/class/SubjectAssignment.tsx
+"use client"
 
-import { Button } from "~/components/ui/button";
-import { api } from "~/trpc/react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "~/components/ui/dialog";
-import {
-  Form,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "~/components/ui/form";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "~/components/ui/select";
-import { toast } from "~/hooks/use-toast";
-import { ReloadIcon } from "@radix-ui/react-icons";
+import { useState } from "react"
+import { Button } from "~/components/ui/button"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "~/components/ui/dialog"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select"
+import { Label } from "~/components/ui/label"
+import { api } from "~/trpc/react"
+import { toast } from "~/hooks/use-toast"
+import { Skeleton } from "~/components/ui/skeleton"
+import { ReloadIcon } from "@radix-ui/react-icons"
+import type { DayOfWeek } from "@prisma/client"
+import type { Teacher, ClassSubjectAssignment } from "~/lib/timetable-types"
 
-
-type SubjectAssignmentDialogProps = {
-  classId: string;
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
+// Define a more flexible type for the API response
+type ApiClassSubjectAssignment = Omit<ClassSubjectAssignment, 'Sessions'> & {
+  Sessions: {
+    sessionId: string;
+    sessionName: string;
+  };
 };
 
-const formSchema = z.object({
-  subjectId: z.string().min(1, "Subject is required"),
-  employeeId: z.string().min(1, "Teacher is required"),
-  sessionId: z.string().min(1, "Session is required"),
-});
+type SubjectAssignmentDialogProps = {
+  classId: string
+  dayOfWeek: DayOfWeek
+  lectureNumber: number
+  sessionId: string
+  open: boolean
+  onOpenChange: (open: boolean) => void
+  onAssigned?: () => void
+}
 
-export const SubjectAssignmentDialog = ({ 
+export function SubjectAssignmentDialog({
   classId,
+  dayOfWeek,
+  lectureNumber,
+  sessionId,
   open,
-  onOpenChange
-}: SubjectAssignmentDialogProps) => {  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
-  });
+  onOpenChange,
+  onAssigned,
+}: SubjectAssignmentDialogProps) {
+  const [selectedSubject, setSelectedSubject] = useState<string>("")
+  const [selectedTeacher, setSelectedTeacher] = useState<string>("")
 
-  const utils = api.useUtils();
+  const utils = api.useUtils()
 
-  // Queries with error handling
-  const {
-    data: subjects,
-    isLoading: loadingSubjects,
-    error: subjectsError,
-  } = api.subject.getAllSubjects.useQuery();
+  const subjectsQuery = api.subject.getSubjectsByClass.useQuery(
+    { classId, sessionId },
+    { enabled: open && !!classId && !!sessionId },
+  )
+  
+  const teachersQuery = api.employee.getEmployeesByDesignation.useQuery(
+    { designation: "TEACHER" },
+    { enabled: open },
+  )
 
-  const {
-    data: teachers,
-    isLoading: loadingTeachers,
-    error: teachersError,
-  } = api.employee.getEmployeesByDesignation.useQuery({
-    designation: "TEACHER"
-  });
+  // Use the more flexible type for the API response
+  const subjects: ApiClassSubjectAssignment[] = subjectsQuery.data ?? []
+  const teachers: Teacher[] = teachersQuery.data ?? []
 
-  const {
-    data: sessions,
-    isLoading: loadingSessions,
-    error: sessionsError,
-  } = api.session.getSessions.useQuery();
+  const assignToSlot = api.timetable.assignTeacher.useMutation()
 
-  // Mutation with proper error handling and invalidation
-  const assignSubject = api.subject.assignSubjectToClass.useMutation({
-    onSuccess: async () => {
-      toast({ title: "Success", description: "Subject assigned successfully" });
-      form.reset();
-      await utils.subject.getSubjectsByClass.invalidate();
-      onOpenChange(false);
-    },
-  });
+  const handleAssign = async () => {
+    if (!selectedSubject || !selectedTeacher) {
+      toast({
+        title: "Validation Error",
+        description: "Please select both a subject and a teacher",
+      })
+      return
+    }
 
-  const handleSubmit = (values: z.infer<typeof formSchema>) => {
-    assignSubject.mutate({
-      classId,
-      subjectId: values.subjectId,
-      employeeId: values.employeeId,
-      sessionId: values.sessionId
-    });
-  };
+    try {
+      await assignToSlot.mutateAsync({
+        classId,
+        dayOfWeek,
+        lectureNumber,
+        subjectId: selectedSubject,
+        employeeId: selectedTeacher,
+        sessionId,
+        startTime: "09:00",
+        endTime: "10:00",
+      })
+
+      toast({
+        title: "Success",
+        description: "Subject and teacher assigned to this slot",
+      })
+
+      setSelectedSubject("")
+      setSelectedTeacher("")
+      await utils.timetable.getTimetable.invalidate()
+      onOpenChange(false)
+      onAssigned?.()
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Failed to assign subject and teacher"
+      toast({
+        title: "Error",
+        description: errorMessage,
+      })
+    }
+  }
+
+  const dayNames: Record<DayOfWeek, string> = {
+    Monday: "Monday",
+    Tuesday: "Tuesday",
+    Wednesday: "Wednesday",
+    Thursday: "Thursday",
+    Friday: "Friday",
+    Saturday: "Saturday",
+  }
 
   return (
-<Dialog open={open} onOpenChange={onOpenChange}>      <DialogTrigger asChild>
-        <Button variant="outline">Add Subject</Button>
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogTrigger asChild>
+        <Button variant="outline" size="sm">
+          Assign
+        </Button>
       </DialogTrigger>
-      <DialogContent>
+      <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle>Assign Subject to Class</DialogTitle>
+          <DialogTitle>Assign Subject & Teacher</DialogTitle>
         </DialogHeader>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
-            <FormField
-              control={form.control}
-              name="subjectId"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Subject</FormLabel>
-                  <Select 
-                    onValueChange={field.onChange} 
-                    value={field.value}
-                    disabled={loadingSubjects}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select subject" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {loadingSubjects && (
-                        <div className="p-2 text-center text-sm">
-                          Loading subjects...
-                        </div>
-                      )}
-                      {subjectsError && (
-                        <div className="p-2 text-center text-sm text-red-500">
-                          Failed to load subjects
-                        </div>
-                      )}
-                      {subjects?.map((subject) => (
-                        <SelectItem 
-                          key={subject.subjectId} 
-                          value={subject.subjectId}
-                        >
-                          {subject.subjectName}
-                        </SelectItem>
-                      ))}
-                      {!loadingSubjects && !subjectsError && subjects?.length === 0 && (
-                        <div className="p-2 text-center text-sm text-muted-foreground">
-                          No subjects available
-                        </div>
-                      )}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
 
-            <FormField
-              control={form.control}
-              name="employeeId"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Teacher</FormLabel>
-                  <Select 
-                    onValueChange={field.onChange} 
-                    value={field.value}
-                    disabled={loadingTeachers}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select teacher" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {loadingTeachers && (
-                        <div className="p-2 text-center text-sm">
-                          Loading teachers...
-                        </div>
-                      )}
-                      {teachersError && (
-                        <div className="p-2 text-center text-sm text-red-500">
-                          Failed to load teachers
-                        </div>
-                      )}
-                      {teachers?.map((teacher) => (
-                        <SelectItem
-                          key={teacher.employeeId}
-                          value={teacher.employeeId}
-                        >
-                          {teacher.employeeName}
-                        </SelectItem>
-                      ))}
-                      {!loadingTeachers && !teachersError && teachers?.length === 0 && (
-                        <div className="p-2 text-center text-sm text-muted-foreground">
-                          No teachers available
-                        </div>
-                      )}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+        <div className="space-y-4 py-4">
+          <div className="bg-muted/50 p-3 rounded-lg space-y-1">
+            <p className="text-sm font-medium text-muted-foreground">Slot Details</p>
+            <p className="text-sm font-semibold">
+              {dayNames[dayOfWeek]} - Lecture {lectureNumber}
+            </p>
+          </div>
 
-            <FormField
-              control={form.control}
-              name="sessionId"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Session</FormLabel>
-                  <Select 
-                    onValueChange={field.onChange} 
-                    value={field.value}
-                    disabled={loadingSessions}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select session" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {loadingSessions && (
-                        <div className="p-2 text-center text-sm">
-                          Loading sessions...
-                        </div>
-                      )}
-                      {sessionsError && (
-                        <div className="p-2 text-center text-sm text-red-500">
-                          Failed to load sessions
-                        </div>
-                      )}
-                      {sessions?.map((session) => (
-                        <SelectItem 
-                          key={session.sessionId} 
-                          value={session.sessionId}
-                        >
-                          {session.sessionName}
-                        </SelectItem>
-                      ))}
-                      {!loadingSessions && !sessionsError && sessions?.length === 0 && (
-                        <div className="p-2 text-center text-sm text-muted-foreground">
-                          No sessions available
-                        </div>
-                      )}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+          <div className="space-y-2">
+            <Label htmlFor="subject">Subject *</Label>
+            {subjectsQuery.isLoading ? (
+              <Skeleton className="h-10 w-full" />
+            ) : (
+              <Select value={selectedSubject} onValueChange={setSelectedSubject}>
+                <SelectTrigger id="subject">
+                  <SelectValue placeholder="Select a subject" />
+                </SelectTrigger>
+                <SelectContent>
+                  {subjects.map((cs) => (
+                    <SelectItem key={cs.csId} value={cs.subjectId}>
+                      {cs.Subject.subjectName}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
+          </div>
 
-            <Button 
-              type="submit" 
-              disabled={assignSubject.isPending}
-              className="w-full"
+          <div className="space-y-2">
+            <Label htmlFor="teacher">Teacher *</Label>
+            {teachersQuery.isLoading ? (
+              <Skeleton className="h-10 w-full" />
+            ) : (
+              <Select value={selectedTeacher} onValueChange={setSelectedTeacher}>
+                <SelectTrigger id="teacher">
+                  <SelectValue placeholder="Select a teacher" />
+                </SelectTrigger>
+                <SelectContent>
+                  {teachers.map((teacher) => (
+                    <SelectItem key={teacher.employeeId} value={teacher.employeeId}>
+                      {teacher.employeeName}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
+          </div>
+
+          <div className="flex gap-2 pt-4">
+            <Button variant="outline" onClick={() => onOpenChange(false)} className="flex-1">
+              Cancel
+            </Button>
+            <Button
+              onClick={handleAssign}
+              disabled={assignToSlot.isPending || !selectedSubject || !selectedTeacher}
+              className="flex-1"
             >
-              {assignSubject.isPending ? (
+              {assignToSlot.isPending ? (
                 <>
                   <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />
                   Assigning...
                 </>
               ) : (
-                "Assign Subject"
+                "Assign"
               )}
             </Button>
-          </form>
-        </Form>
+          </div>
+        </div>
       </DialogContent>
     </Dialog>
-  );
-};
+  )
+}

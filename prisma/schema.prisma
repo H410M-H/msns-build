@@ -407,10 +407,11 @@ enum ReminderType {
 
 // New enum for timetable days
 enum DayOfWeek {
-    Monday
-    Tuesday
-    Wednesday
-    Thursday
-    Friday
-    Saturday
+  MONDAY
+  TUESDAY
+  WEDNESDAY
+  THURSDAY
+  FRIDAY
+  SATURDAY
+  SUNDAY
 }
