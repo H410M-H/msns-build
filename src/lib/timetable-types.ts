@@ -48,13 +48,13 @@ export interface DraggedTeacher extends Teacher {
 
 export type TimetableViewMode = "class" | "teacher"
 
-export type DayOfWeek = "MONDAY" | "TUESDAY" | "WEDNESDAY" | "THURSDAY" | "FRIDAY" | "SATURDAY"
+export type DayOfWeek = "Monday" | "Tuesday" | "Wednesday" | "Thursday" | "Friday" | "Saturday"
 
 // Utility functions
-export const DAYS_OF_WEEK: DayOfWeek[] = ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY"]
+export const DAYS_OF_WEEK: DayOfWeek[] = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
 export const LECTURE_NUMBERS = [1, 2, 3, 4, 5, 6, 7, 8, 9]
 
-export const generateSlotId = (day: string, lectureNumber: number, classId: string) => {
+export const generateSlotId = (day: DayOfWeek, lectureNumber: number, classId: string) => {
   return `${day}-${lectureNumber}-${classId}`
 }
 
