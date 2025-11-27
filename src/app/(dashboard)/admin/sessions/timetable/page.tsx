@@ -69,7 +69,7 @@ function TimetableContent() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 p-4 sm:p-6 md:p-8">
-      <div className="max-w-7xl mx-auto space-y-6 sm:space-y-8">
+      <div className="w-screen max-w-[105rem] mx-auto space-y-6 sm:space-y-8">
         {/* Header */}
         <div className="text-center space-y-2 sm:space-y-4">
           <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600">
@@ -90,7 +90,7 @@ function TimetableContent() {
           </CardHeader>
           <CardContent className="p-4 sm:p-6">
             <Tabs value={viewMode} onValueChange={(value) => setViewMode(value as TimetableViewMode)} className="space-y-4 sm:space-y-6">
-              <TabsList className="grid w-full max-w-md mx-auto grid-cols-2 gap-2 sm:gap-3 md:gap-4 bg-transparent">
+              <TabsList className="grid w-screen max-w-md mx-auto grid-cols-2 gap-2 sm:gap-3 md:gap-4 bg-transparent">
                 <TabsTrigger
                   value="class"
                   className="flex items-center justify-center gap-1 sm:gap-2 backdrop-blur-md bg-white/30 border border-white/40 rounded-xl shadow-md hover:bg-indigo-200/40 hover:scale-105 transition-all duration-200 data-[state=active]:bg-indigo-500 data-[state=active]:text-white data-[state=active]:shadow-lg text-sm sm:text-base"
