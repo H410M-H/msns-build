@@ -9,9 +9,17 @@ const createSubjectSchema = z.object({
     .string()
     .min(2, "Subject name must be at least 2 characters")
     .max(50, "Subject name cannot exceed 50 characters")
-    .regex(/^[a-zA-Z0-9 ]+$/, "Subject name contains invalid characters"),
+    .regex(/^[a-zA-Z0-9\s\-&.,()]+$/, "Subject name contains invalid characters. Only letters, numbers, spaces, hyphens, ampersands, commas, periods, and parentheses are allowed."),
   book: z.string().max(100, "Book name cannot exceed 100 characters").optional(),
   description: z.string().max(500, "Description cannot exceed 500 characters").optional(),
+})
+
+const updateSubjectSchema = createSubjectSchema.extend({
+  subjectId: z.string().cuid("Invalid subject ID"),
+})
+
+const deleteSubjectSchema = z.object({
+  subjectId: z.string().cuid("Invalid subject ID"),
 })
 
 const classAssignmentSchema = z.object({
@@ -188,6 +196,123 @@ export const subjectRouter = createTRPCRouter({
       })
     }
   }),
+
+  updateSubject: publicProcedure
+    .input(updateSubjectSchema)
+    .mutation(async ({ ctx, input }) => {
+      try {
+        const { subjectId, ...data } = input
+
+        // Check if subject exists
+        const existingSubject = await ctx.db.subject.findUnique({
+          where: { subjectId },
+        })
+
+        if (!existingSubject) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Subject not found",
+          })
+        }
+
+        // Check for duplicate subject name (excluding current subject)
+        if (data.subjectName) {
+          const normalizedSubjectName = data.subjectName.trim().toLowerCase()
+          const duplicateSubject = await ctx.db.subject.findFirst({
+            where: {
+              subjectId: { not: subjectId },
+              subjectName: {
+                equals: normalizedSubjectName,
+                mode: "insensitive",
+              },
+            },
+          })
+
+          if (duplicateSubject) {
+            throw new TRPCError({
+              code: "CONFLICT",
+              message: "Subject with this name already exists",
+            })
+          }
+        }
+
+        const updatedSubject = await ctx.db.subject.update({
+          where: { subjectId },
+          data: {
+            subjectName: data.subjectName?.trim(),
+            book: data.book?.trim() ?? null,
+            description: data.description?.trim() ?? null,
+          },
+        })
+
+        return {
+          ...updatedSubject,
+          success: true,
+          message: "Subject updated successfully",
+        }
+      } catch (error) {
+        if (error instanceof TRPCError) throw error
+        console.error("Update error:", error)
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to update subject",
+        })
+      }
+    }),
+
+  deleteSubject: publicProcedure
+    .input(deleteSubjectSchema)
+    .mutation(async ({ ctx, input }) => {
+      try {
+        // Check if subject exists
+        const existingSubject = await ctx.db.subject.findUnique({
+          where: { subjectId: input.subjectId },
+          include: {
+            ClassSubject: true,
+            Timetable: true,
+          },
+        })
+
+        if (!existingSubject) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Subject not found",
+          })
+        }
+
+        // Check if subject is used in any class assignments
+        if (existingSubject.ClassSubject.length > 0) {
+          throw new TRPCError({
+            code: "CONFLICT",
+            message: "Cannot delete subject that is assigned to classes. Remove it from classes first.",
+          })
+        }
+
+        // Check if subject is used in any timetables
+        if (existingSubject.Timetable.length > 0) {
+          throw new TRPCError({
+            code: "CONFLICT",
+            message: "Cannot delete subject that is used in timetables. Remove it from timetables first.",
+          })
+        }
+
+        await ctx.db.subject.delete({
+          where: { subjectId: input.subjectId },
+        })
+
+        return {
+          success: true,
+          message: "Subject deleted successfully",
+        }
+      } catch (error) {
+        if (error instanceof TRPCError) throw error
+        console.error("Deletion error:", error)
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to delete subject",
+        })
+      }
+    }),
 
   listSubjects: publicProcedure
     .input(
