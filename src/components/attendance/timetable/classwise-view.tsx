@@ -1,6 +1,6 @@
 "use client"
 
-import type React from "react"
+import React from "react"
 import { useState, useMemo } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card"
 import { Button } from "~/components/ui/button"
@@ -11,6 +11,8 @@ import type { Teacher, Class, TimeSlot, DraggedTeacher } from "~/lib/timetable-t
 import { DAYS_OF_WEEK, LECTURE_NUMBERS } from "~/lib/timetable-types"
 import { api } from "~/trpc/react"
 import type { DayOfWeek } from "@prisma/client"
+import { Tooltip, TooltipContent, TooltipTrigger } from "~/components/ui/tooltip"
+import { Badge } from "~/components/ui/badge"
 
 interface ClasswiseViewProps {
   classes: Class[]
@@ -38,12 +40,21 @@ const isValidDayOfWeek = (day: string): day is "Monday" | "Tuesday" | "Wednesday
   return ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"].includes(day)
 }
 
+// Color palette for days
+const DAY_COLORS = [
+  "bg-blue-50 hover:bg-blue-100",
+  "bg-green-50 hover:bg-green-100",
+  "bg-yellow-50 hover:bg-yellow-100",
+  "bg-purple-50 hover:bg-purple-100",
+  "bg-pink-50 hover:bg-pink-100",
+  "bg-indigo-50 hover:bg-indigo-100",
+]
+
 export function ClasswiseView({
   classes,
   teachers,
   defaultTimeSlots,
   onAssignTeacher,
-  onRemoveTeacher: _onRemoveTeacher,
   onRemoveTeacher,
 }: ClasswiseViewProps) {
   const [selectedClass, setSelectedClass] = useState<Class | null>(classes[0] ?? null)
@@ -54,6 +65,17 @@ export function ClasswiseView({
   const { data: classTimetable, refetch: refetchTimetable } = api.timetable.getTimetableByClass.useQuery(
     { classId: selectedClass?.classId ?? "" },
     { enabled: !!selectedClass?.classId },
+  )
+
+  // NEW: Fetch class subjects separately
+  const { data: classSubjects } = api.subject.getSubjectsByClass.useQuery(
+    { 
+      classId: selectedClass?.classId ?? "", 
+      sessionId: sessions?.[0]?.sessionId ?? "" 
+    },
+    { 
+      enabled: !!selectedClass?.classId && !!sessions?.[0]?.sessionId 
+    }
   )
 
   const assignTeacherMutation = api.timetable.assignTeacher.useMutation({
@@ -141,158 +163,204 @@ export function ClasswiseView({
   }
 
   return (
-    <div className="space-y-4">
-      <Card>
-        <CardHeader>
-          <CardTitle>Select Class & Subject</CardTitle>
+    <div className="space-y-4 md:space-y-6">
+      <Card className="border-primary/20 shadow-lg">
+        <CardHeader className="bg-primary/5">
+          <CardTitle className="text-lg md:text-xl flex items-center gap-2 text-primary">
+            <Clock className="h-5 w-5" />
+            Select Class & Subject
+          </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-4 md:space-y-6 p-4 md:p-6">
           <div>
-            <label className="text-sm font-medium mb-2 block">Class</label>
-            <div className="flex flex-wrap gap-2">
-              {classes.map((cls) => (
-                <Button
-                  key={cls.classId}
-                  variant={selectedClass?.classId === cls.classId ? "default" : "outline"}
-                  onClick={() => {
-                    setSelectedClass(cls)
-                    setSelectedSubject(null)
-                  }}
-                >
-                  {cls.grade} - {cls.section}
-                </Button>
-              ))}
-            </div>
+            <label className="text-sm font-medium mb-2 block text-muted-foreground">Class</label>
+            <ScrollArea className="w-full whitespace-nowrap rounded-md border">
+              <div className="flex gap-2 p-2">
+                {classes.map((cls) => (
+                  <Button
+                    key={cls.classId}
+                    variant={selectedClass?.classId === cls.classId ? "default" : "outline"}
+                    onClick={() => {
+                      setSelectedClass(cls)
+                      setSelectedSubject(null)
+                    }}
+                    className="flex-shrink-0"
+                  >
+                    {cls.grade} - {cls.section}
+                  </Button>
+                ))}
+              </div>
+              <ScrollBar orientation="horizontal" />
+            </ScrollArea>
           </div>
 
           {selectedClass && (
             <div>
-              <label className="text-sm font-medium mb-2 flex items-center gap-2">
+              <label className="text-sm font-medium mb-2 flex items-center gap-2 text-muted-foreground">
                 <User className="h-4 w-4" /> Subject
               </label>
-              <div className="flex flex-wrap gap-2">
-                {classTimetable?.map((slot) => (
-                  <Button
-                    key={slot.timetableId}
-                    variant={selectedSubject?.subjectId === slot.Subject.subjectId ? "default" : "outline"}
-                    onClick={() =>
-                      setSelectedSubject({
-                        subjectId: slot.Subject.subjectId,
-                        subjectName: slot.Subject.subjectName ?? "",
-                      })
-                    }
-                  >
-                    {slot.Subject.subjectName}
-                  </Button>
-                ))}
-              </div>
+              <ScrollArea className="w-full whitespace-nowrap rounded-md border">
+                <div className="flex gap-2 p-2">
+                  {classSubjects?.map((subjectAssignment) => (
+                    <Button
+                      key={subjectAssignment.csId}
+                      variant={selectedSubject?.subjectId === subjectAssignment.subjectId ? "default" : "outline"}
+                      onClick={() =>
+                        setSelectedSubject({
+                          subjectId: subjectAssignment.subjectId,
+                          subjectName: subjectAssignment.Subject.subjectName,
+                        })
+                      }
+                      className="flex-shrink-0"
+                    >
+                      {subjectAssignment.Subject.subjectName}
+                    </Button>
+                  ))}
+                  {classSubjects?.length === 0 && (
+                    <div className="text-sm text-muted-foreground p-2">
+                      No subjects assigned to this class
+                    </div>
+                  )}
+                </div>
+                <ScrollBar orientation="horizontal" />
+              </ScrollArea>
             </div>
           )}
         </CardContent>
       </Card>
 
-      <div className="grid grid-cols-1 lg:grid-cols-6 gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-6 gap-4 md:gap-6">
         <div className="lg:col-span-1">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-sm flex items-center gap-2">
-                <User className="h-4 w-4" /> Teachers
+          <Card className="border-primary/20 shadow-lg h-full">
+            <CardHeader className="bg-primary/5">
+              <CardTitle className="text-lg flex items-center gap-2 text-primary">
+                <User className="h-5 w-5" /> Teachers
               </CardTitle>
             </CardHeader>
-            <CardContent>
-              <ScrollArea className="h-[600px]">
+            <CardContent className="p-4">
+              <ScrollArea className="h-[calc(100vh-300px)] md:h-[600px] pr-4">
                 <div className="space-y-2">
                   {teachers.map((teacher) => (
-                    <div
-                      key={teacher.employeeId}
-                      draggable
-                      onDragStart={(e) => handleTeacherDragStart(teacher, e)}
-                      className={cn(
-                        "p-2 border rounded-lg cursor-move hover:bg-accent/50 transition",
-                        draggedTeacher?.employeeId === teacher.employeeId && "bg-primary text-primary-foreground"
-                      )}
-                    >
-                      <div className="flex items-start gap-1">
-                        <GripVertical className="h-3 w-3 mt-1 flex-shrink-0" />
-                        <div className="min-w-0">
-                          <p className="text-xs font-medium truncate">{teacher.employeeName}</p>
-                          <p className="text-xs text-muted-foreground truncate">{teacher.designation}</p>
+                    <Tooltip key={teacher.employeeId}>
+                      <TooltipTrigger asChild>
+                        <div
+                          draggable
+                          onDragStart={(e) => handleTeacherDragStart(teacher, e)}
+                          className={cn(
+                            "p-3 border rounded-lg cursor-grab hover:bg-accent/50 transition-all duration-200 active:cursor-grabbing",
+                            "flex items-start gap-2 shadow-sm",
+                            draggedTeacher?.employeeId === teacher.employeeId && "bg-primary/10 border-primary scale-105"
+                          )}
+                        >
+                          <GripVertical className="h-4 w-4 mt-1 flex-shrink-0 text-muted-foreground" />
+                          <div className="min-w-0">
+                            <p className="text-sm font-medium truncate">{teacher.employeeName}</p>
+                            <Badge variant="secondary" className="text-xs mt-1">
+                              {teacher.designation}
+                            </Badge>
+                          </div>
                         </div>
-                      </div>
-                    </div>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        Drag to assign {teacher.employeeName}
+                      </TooltipContent>
+                    </Tooltip>
                   ))}
                 </div>
-                <ScrollBar orientation="vertical" />
               </ScrollArea>
             </CardContent>
           </Card>
         </div>
 
         <div className="lg:col-span-5">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
+          <Card className="border-primary/20 shadow-lg">
+            <CardHeader className="bg-primary/5">
+              <CardTitle className="flex items-center gap-2 text-primary text-lg md:text-xl">
                 <Clock className="h-5 w-5" />
                 {selectedClass ? `${selectedClass.grade} - ${selectedClass.section} Timetable` : "Select a Class"}
               </CardTitle>
             </CardHeader>
-            <CardContent className="overflow-x-auto">
-              <div className="min-w-[900px] grid grid-cols-7 gap-2">
-                <div className="font-semibold text-center p-3 bg-muted rounded-lg">Time</div>
-                {DAYS_OF_WEEK.map((day) => (
-                  <div key={day} className="font-semibold text-center p-3 bg-muted rounded-lg">
+            <CardContent className="overflow-x-auto p-4 md:p-6">
+              <div className="min-w-[900px] grid grid-cols-7 gap-2 md:gap-3">
+                <div className="font-semibold text-center p-3 bg-primary text-primary-foreground rounded-lg shadow">Time</div>
+                {DAYS_OF_WEEK.map((day, index) => (
+                  <div
+                    key={day}
+                    className={cn(
+                      "font-semibold text-center p-3 rounded-lg shadow text-foreground",
+                      DAY_COLORS[index % DAY_COLORS.length]
+                    )}
+                  >
                     {day}
                   </div>
                 ))}
 
                 {LECTURE_NUMBERS.map((lecture) => (
-                  <div key={lecture} className="contents">
-                    <div className="p-3 bg-muted/50 text-center rounded-lg">
+                  <React.Fragment key={lecture}>
+                    <div className="p-3 bg-muted/50 text-center rounded-lg shadow">
                       <div className="font-medium">L{lecture}</div>
                       {getTimeSlot(lecture) && (
-                        <div className="text-xs text-muted-foreground">{getTimeSlot(lecture)?.startTime}</div>
+                        <div className="text-xs text-muted-foreground">
+                          {getTimeSlot(lecture)?.startTime} - {getTimeSlot(lecture)?.endTime}
+                        </div>
                       )}
                     </div>
 
-                    {DAYS_OF_WEEK.map((day) => {
+                    {DAYS_OF_WEEK.map((day, dayIndex) => {
                       const slot = getSlotForPosition(day, lecture)
                       return (
-                        <div
-                          key={`${day}-${lecture}`}
-                          onDragOver={handleSlotDragOver}
-                          onDrop={(e) => handleSlotDrop(day, lecture, e)}
-                          className={cn(
-                            "p-2 border rounded-lg min-h-[80px]",
-                            !slot ? "border-dashed bg-muted/10 hover:bg-muted/30" : "bg-blue-50 border-blue-200"
-                          )}
-                        >
-                          {slot ? (
-                            <div className="space-y-1">
-                              <div className="flex items-start justify-between">
-                                <div className="min-w-0 flex-1">
-                                  <p className="text-xs font-medium">{slot.Employees.employeeName}</p>
-                                  <p className="text-xs truncate">{slot.Subject.subjectName}</p>
+                        <Tooltip key={`${day}-${lecture}`}>
+                          <TooltipTrigger asChild>
+                            <div
+                              onDragOver={handleSlotDragOver}
+                              onDrop={(e) => handleSlotDrop(day, lecture, e)}
+                              className={cn(
+                                "p-3 border rounded-lg min-h-[80px] md:min-h-[100px] transition-all duration-200 shadow",
+                                !slot 
+                                  ? "border-dashed bg-background hover:bg-muted/30" 
+                                  : cn(
+                                      "border-solid",
+                                      DAY_COLORS[dayIndex % DAY_COLORS.length]
+                                        ? DAY_COLORS[dayIndex % DAY_COLORS.length]!.replace("50", "100")
+                                        : ""
+                                    ),
+                                draggedTeacher && !slot && "border-primary scale-105"
+                              )}
+                            >
+                              {slot ? (
+                                <div className="space-y-1">
+                                  <div className="flex items-start justify-between">
+                                    <div className="min-w-0 flex-1">
+                                      <p className="text-sm font-medium">{slot.Employees.employeeName}</p>
+                                      <Badge variant="outline" className="text-xs mt-1">
+                                        {slot.Subject.subjectName}
+                                      </Badge>
+                                    </div>
+                                    <Button
+                                      size="sm"
+                                      variant="ghost"
+                                      className="h-5 w-5 p-0 hover:bg-destructive/20"
+                                      onClick={() => handleRemoveTeacher(slot.timetableId)}
+                                      disabled={removeTeacherMutation.isPending}
+                                    >
+                                      <X className="h-4 w-4 text-destructive" />
+                                    </Button>
+                                  </div>
                                 </div>
-                                <Button
-                                  size="sm"
-                                  variant="ghost"
-                                  className="h-4 w-4 p-0"
-                                  onClick={() => handleRemoveTeacher(slot.timetableId)}
-                                  disabled={removeTeacherMutation.isPending}
-                                >
-                                  <X className="h-3 w-3" />
-                                </Button>
-                              </div>
+                              ) : (
+                                <p className="text-xs text-center text-muted-foreground py-6 md:py-8">
+                                  {selectedSubject ? "Drag teacher here" : "Select subject first"}
+                                </p>
+                              )}
                             </div>
-                          ) : (
-                            <p className="text-xs text-center text-muted-foreground py-6">
-                              {selectedSubject ? "Drag teacher here" : "Select subject first"}
-                            </p>
-                          )}
-                        </div>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            {slot ? `${slot.Subject.subjectName} with ${slot.Employees.employeeName}` : "Empty slot - Assign teacher"}
+                          </TooltipContent>
+                        </Tooltip>
                       )
                     })}
-                  </div>
+                  </React.Fragment>
                 ))}
               </div>
             </CardContent>
