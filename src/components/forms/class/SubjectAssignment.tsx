@@ -10,7 +10,6 @@ import { api } from "~/trpc/react"
 import { toast } from "~/hooks/use-toast"
 import { Skeleton } from "~/components/ui/skeleton"
 import { ReloadIcon } from "@radix-ui/react-icons"
-import type { DayOfWeek } from "@prisma/client"
 import type { Teacher, ClassSubjectAssignment } from "~/lib/timetable-types"
 
 // Define a more flexible type for the API response
@@ -21,9 +20,12 @@ type ApiClassSubjectAssignment = Omit<ClassSubjectAssignment, 'Sessions'> & {
   };
 };
 
+// Define a type for weekdays only (Monday-Saturday)
+type Weekday = "Monday" | "Tuesday" | "Wednesday" | "Thursday" | "Friday" | "Saturday";
+
 type SubjectAssignmentDialogProps = {
   classId: string
-  dayOfWeek: DayOfWeek
+  dayOfWeek: Weekday // Changed from DayOfWeek to Weekday
   lectureNumber: number
   sessionId: string
   open: boolean
@@ -73,7 +75,7 @@ export function SubjectAssignmentDialog({
     try {
       await assignToSlot.mutateAsync({
         classId,
-        dayOfWeek,
+        dayOfWeek, // Now this matches the expected type
         lectureNumber,
         subjectId: selectedSubject,
         employeeId: selectedTeacher,
@@ -101,7 +103,7 @@ export function SubjectAssignmentDialog({
     }
   }
 
-  const dayNames: Record<DayOfWeek, string> = {
+  const dayNames: Record<Weekday, string> = {
     Monday: "Monday",
     Tuesday: "Tuesday",
     Wednesday: "Wednesday",
