@@ -105,7 +105,8 @@ export function ClasswiseView({
         classId: selectedClass.classId,
         employeeId: draggedTeacher.employeeId,
         subjectId: selectedSubject.subjectId,
-        dayOfWeek: day.toUpperCase() as DayOfWeek,
+        // FIX: Remove .toUpperCase() since Prisma uses PascalCase
+        dayOfWeek: day as DayOfWeek,
         lectureNumber: lecture,
         sessionId: sessions[0].sessionId,
         startTime: timeSlot.startTime,
