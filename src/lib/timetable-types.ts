@@ -48,10 +48,11 @@ export interface DraggedTeacher extends Teacher {
 
 export type TimetableViewMode = "class" | "teacher"
 
-export type DayOfWeek = "Monday" | "Tuesday" | "Wednesday" | "Thursday" | "Friday" | "Saturday"
+// Update DayOfWeek to match Prisma schema exactly
+export type DayOfWeek = "Monday" | "Tuesday" | "Wednesday" | "Thursday" | "Friday" | "Saturday" | "Sunday"
 
 // Utility functions
-export const DAYS_OF_WEEK: DayOfWeek[] = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
+export const DAYS_OF_WEEK: DayOfWeek[] = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
 export const LECTURE_NUMBERS = [1, 2, 3, 4, 5, 6, 7, 8, 9]
 
 export const generateSlotId = (day: DayOfWeek, lectureNumber: number, classId: string) => {
@@ -65,7 +66,7 @@ export const parseSlotId = (slotId: string) => {
   }
   const [day, lectureStr, classId] = parts
   return {
-    day: day!,
+    day: day as DayOfWeek,
     lectureNumber: Number.parseInt(lectureStr!, 10),
     classId: classId!,
   }

@@ -33,6 +33,11 @@ interface TimetableEntry {
   SubjectName?: string
 }
 
+// Helper function to validate day of week
+const isValidDayOfWeek = (day: string): day is "Monday" | "Tuesday" | "Wednesday" | "Thursday" | "Friday" | "Saturday" => {
+  return ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"].includes(day)
+}
+
 export function ClasswiseView({
   classes,
   teachers,
@@ -97,6 +102,12 @@ export function ClasswiseView({
 
     if (!draggedTeacher || !selectedClass || !sessions?.[0] || !selectedSubject) return
 
+    // Validate the day
+    if (!isValidDayOfWeek(day)) {
+      console.error("Invalid day:", day)
+      return
+    }
+
     const timeSlot = getTimeSlot(lecture)
     if (!timeSlot) return
 
@@ -105,8 +116,7 @@ export function ClasswiseView({
         classId: selectedClass.classId,
         employeeId: draggedTeacher.employeeId,
         subjectId: selectedSubject.subjectId,
-        // FIX: Remove .toUpperCase() since Prisma uses PascalCase
-        dayOfWeek: day as DayOfWeek,
+        dayOfWeek: day, // Now this is type-safe
         lectureNumber: lecture,
         sessionId: sessions[0].sessionId,
         startTime: timeSlot.startTime,
@@ -197,8 +207,10 @@ export function ClasswiseView({
                       key={teacher.employeeId}
                       draggable
                       onDragStart={(e) => handleTeacherDragStart(teacher, e)}
-                      className={cn("p-2 border rounded-lg cursor-move hover:bg-accent/50 transition",
-                        draggedTeacher?.employeeId === teacher.employeeId && "bg-primary text-primary-foreground")}
+                      className={cn(
+                        "p-2 border rounded-lg cursor-move hover:bg-accent/50 transition",
+                        draggedTeacher?.employeeId === teacher.employeeId && "bg-primary text-primary-foreground"
+                      )}
                     >
                       <div className="flex items-start gap-1">
                         <GripVertical className="h-3 w-3 mt-1 flex-shrink-0" />
@@ -227,15 +239,19 @@ export function ClasswiseView({
             <CardContent className="overflow-x-auto">
               <div className="min-w-[900px] grid grid-cols-7 gap-2">
                 <div className="font-semibold text-center p-3 bg-muted rounded-lg">Time</div>
-                {DAYS_OF_WEEK.map(day => (
-                  <div key={day} className="font-semibold text-center p-3 bg-muted rounded-lg">{day}</div>
+                {DAYS_OF_WEEK.map((day) => (
+                  <div key={day} className="font-semibold text-center p-3 bg-muted rounded-lg">
+                    {day}
+                  </div>
                 ))}
 
                 {LECTURE_NUMBERS.map((lecture) => (
                   <div key={lecture} className="contents">
                     <div className="p-3 bg-muted/50 text-center rounded-lg">
                       <div className="font-medium">L{lecture}</div>
-                      {getTimeSlot(lecture) && <div className="text-xs text-muted-foreground">{getTimeSlot(lecture)?.startTime}</div>}
+                      {getTimeSlot(lecture) && (
+                        <div className="text-xs text-muted-foreground">{getTimeSlot(lecture)?.startTime}</div>
+                      )}
                     </div>
 
                     {DAYS_OF_WEEK.map((day) => {
@@ -245,8 +261,10 @@ export function ClasswiseView({
                           key={`${day}-${lecture}`}
                           onDragOver={handleSlotDragOver}
                           onDrop={(e) => handleSlotDrop(day, lecture, e)}
-                          className={cn("p-2 border rounded-lg min-h-[80px]",
-                            !slot ? "border-dashed bg-muted/10 hover:bg-muted/30" : "bg-blue-50 border-blue-200")}
+                          className={cn(
+                            "p-2 border rounded-lg min-h-[80px]",
+                            !slot ? "border-dashed bg-muted/10 hover:bg-muted/30" : "bg-blue-50 border-blue-200"
+                          )}
                         >
                           {slot ? (
                             <div className="space-y-1">
