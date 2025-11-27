@@ -105,7 +105,7 @@ export function ClasswiseView({
         classId: selectedClass.classId,
         employeeId: draggedTeacher.employeeId,
         subjectId: selectedSubject.subjectId,
-        dayOfWeek: day as DayOfWeek,
+        dayOfWeek: day.toUpperCase() as DayOfWeek,
         lectureNumber: lecture,
         sessionId: sessions[0].sessionId,
         startTime: timeSlot.startTime,
