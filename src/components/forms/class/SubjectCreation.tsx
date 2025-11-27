@@ -6,7 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
 import { motion } from "framer-motion"
 import { BookPlus, Loader2, Search, Edit, Trash2, Eye, Save, X } from "lucide-react"
-import { Dialog, DialogContent, DialogTitle, DialogTrigger } from "~/components/ui/dialog"
+import { Dialog, DialogContent, DialogTitle, DialogDescription, DialogTrigger } from "~/components/ui/dialog"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "~/components/ui/form"
 import { Input } from "~/components/ui/input"
 import { Button } from "~/components/ui/button"
@@ -197,6 +197,9 @@ function SubjectEditDialog({
       </DialogTrigger>
       <DialogContent className="sm:max-w-md">
         <DialogTitle className="sr-only">Edit Subject</DialogTitle>
+        <DialogDescription className="sr-only">
+          Edit subject details including name, reference book, and description
+        </DialogDescription>
         <div className="p-6">
           <h3 className="text-lg font-semibold text-slate-800 mb-4 flex items-center">
             <Edit className="w-5 h-5 mr-2 text-blue-500" />
@@ -232,7 +235,7 @@ function SubjectEditDialog({
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent className="max-h-60 overflow-y-auto">
-                        <SelectItem value="">None</SelectItem>
+                        <SelectItem value="no-book">No book selected</SelectItem>
                         {BOOKS.map((book) => (
                           <SelectItem key={book.isbn} value={book.isbn}>
                             {book.title}
@@ -421,7 +424,7 @@ export function SubjectCreationDialog({ open, onOpenChange }: { open: boolean, o
     try {
       await createSubject.mutateAsync({
         subjectName: values.subjectName,
-        book: values.book ?? undefined,
+        book: values.book === "no-book" ? undefined : values.book,
         description: values.description ?? undefined,
       })
       
@@ -472,6 +475,9 @@ export function SubjectCreationDialog({ open, onOpenChange }: { open: boolean, o
       
       <DialogContent className="sm:max-w-4xl p-0 overflow-hidden bg-slate-50/50 backdrop-blur-3xl border-white/40 shadow-2xl rounded-[32px] max-h-[90vh] overflow-y-auto">
         <DialogTitle className="sr-only">Create and Manage Subjects</DialogTitle>
+        <DialogDescription className="sr-only">
+          Create new subjects and manage existing subjects in the system
+        </DialogDescription>
         
         <div className="p-6 relative">
           
@@ -542,7 +548,7 @@ export function SubjectCreationDialog({ open, onOpenChange }: { open: boolean, o
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent className="max-h-60 overflow-y-auto">
-                            <SelectItem value="">No book selected</SelectItem>
+                            <SelectItem value="no-book">No book selected</SelectItem>
                             {BOOKS.map((book) => (
                               <SelectItem key={book.isbn} value={book.isbn}>
                                 <div className="flex flex-col">
@@ -652,7 +658,7 @@ export function SubjectCreationDialog({ open, onOpenChange }: { open: boolean, o
                           <h4 className="font-semibold text-slate-800 text-sm">
                             {subject.subjectName}
                           </h4>
-                          {subject.book && (
+                          {subject.book && subject.book !== "no-book" && (
                             <p className="text-xs text-slate-600 mt-1">
                               <span className="font-medium">Book:</span> {
                                 BOOKS.find(b => b.isbn === subject.book)?.title ?? subject.book
