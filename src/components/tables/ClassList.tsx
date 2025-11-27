@@ -197,9 +197,9 @@ export const ClassList = ({ sessionId }: { sessionId: string }) => {
                  
                           >
                             <Link
-                              href={`/admin/sessions/class/timetable/?classId=${classItem.classId}`}
+                              href={`/admin/sessions/timetable/?classId=${classItem.classId}`}
                             >
-                              Timtable
+                              Timetable
                             </Link>
                           </Button>
                         </div>

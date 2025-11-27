@@ -52,7 +52,7 @@ export type TimetableViewMode = "class" | "teacher"
 export type DayOfWeek = "Monday" | "Tuesday" | "Wednesday" | "Thursday" | "Friday" | "Saturday" | "Sunday"
 
 // Utility functions
-export const DAYS_OF_WEEK: DayOfWeek[] = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+export const DAYS_OF_WEEK: DayOfWeek[] = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
 export const LECTURE_NUMBERS = [1, 2, 3, 4, 5, 6, 7, 8, 9]
 
 export const generateSlotId = (day: DayOfWeek, lectureNumber: number, classId: string) => {
