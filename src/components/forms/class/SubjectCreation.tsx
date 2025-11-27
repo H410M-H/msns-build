@@ -32,8 +32,7 @@ const formSchema = z.object({
   subjectName: z
     .string()
     .min(2, "Subject name must be at least 2 characters")
-    .max(50, "Subject name too long")
-    .regex(/^[a-zA-Z0-9\s\-&.,()]+$/, "Subject name contains invalid characters. Only letters, numbers, spaces, hyphens, ampersands, commas, periods, and parentheses are allowed."),
+    .max(50, "Subject name too long"),
   book: z.string().max(100, "Book reference too long").optional().or(z.literal("")),
   description: z.string().max(500, "Description too long").optional().or(z.literal("")),
 })
@@ -147,7 +146,8 @@ function SubjectEditDialog({
     },
   })
 
-  const updateSubject = api.subject.updateSubject.useMutation({
+  // Safe API hook with fallback
+  const updateSubject = api.subject.updateSubject?.useMutation?.({
     onSuccess: () => {
       toast({
         title: "✅ Subject Updated!",
@@ -165,7 +165,17 @@ function SubjectEditDialog({
         className: "bg-gradient-to-r from-red-500 to-orange-500 text-white border-none"
       })
     }
-  })
+  }) || { 
+    mutate: () => {
+      console.warn("Update subject mutation not available")
+      toast({
+        title: "Feature Not Available",
+        description: "Subject update is currently unavailable. Please try again later.",
+        className: "bg-gradient-to-r from-yellow-500 to-orange-500 text-white border-none"
+      })
+    }, 
+    isPending: false 
+  }
 
   const onSubmit = (values: EditFormValues) => {
     updateSubject.mutate({
@@ -291,7 +301,8 @@ function SubjectDeleteDialog({
   const [open, setOpen] = useState(false)
   const utils = api.useUtils()
   
-  const deleteSubject = api.subject.deleteSubject.useMutation({
+  // Safe API hook with fallback
+  const deleteSubject = api.subject.deleteSubject?.useMutation?.({
     onSuccess: () => {
       toast({
         title: "🗑️ Subject Deleted!",
@@ -309,7 +320,17 @@ function SubjectDeleteDialog({
         className: "bg-gradient-to-r from-red-500 to-orange-500 text-white border-none"
       })
     }
-  })
+  }) || { 
+    mutate: () => {
+      console.warn("Delete subject mutation not available")
+      toast({
+        title: "Feature Not Available",
+        description: "Subject deletion is currently unavailable. Please try again later.",
+        className: "bg-gradient-to-r from-yellow-500 to-orange-500 text-white border-none"
+      })
+    }, 
+    isPending: false 
+  }
 
   const handleDelete = () => {
     deleteSubject.mutate({ subjectId: subject.subjectId })
@@ -372,19 +393,29 @@ export function SubjectCreationDialog({ open, onOpenChange }: { open: boolean, o
 
   const utils = api.useUtils()
 
-  // API Hooks
-  const createSubject = api.subject.createSubject.useMutation()
-  const { data: subjects, isLoading: loadingSubjects } = api.subject.getAllSubjects.useQuery()
+  // Safe API hooks with fallbacks
+  const createSubject = api.subject.createSubject?.useMutation?.() || { 
+    mutateAsync: async () => {
+      console.warn("Create subject mutation not available")
+      throw new Error("Subject creation is currently unavailable")
+    }, 
+    isPending: false 
+  }
 
-  // Search filtered subjects - Fixed the mixed operators issue
-  const filteredSubjects = subjects?.filter(subject => {
+  const { data: subjects = [], isLoading: loadingSubjects } = api.subject.getAllSubjects?.useQuery?.() || { 
+    data: [], 
+    isLoading: false 
+  }
+
+  // Search filtered subjects
+  const filteredSubjects = subjects.filter(subject => {
     const query = searchQuery.toLowerCase()
     return (
       subject.subjectName.toLowerCase().includes(query) ||
       (subject.book?.toLowerCase().includes(query) ?? false) ||
       (subject.description?.toLowerCase().includes(query) ?? false)
     )
-  }) ?? []
+  })
 
   const onSubmit = async (values: SubjectFormValues) => {
     try {
@@ -412,12 +443,10 @@ export function SubjectCreationDialog({ open, onOpenChange }: { open: boolean, o
   }
 
   const handleSubjectUpdated = () => {
-    // Refresh the list
     void utils.subject.getAllSubjects.invalidate()
   }
 
   const handleSubjectDeleted = () => {
-    // Refresh the list
     void utils.subject.getAllSubjects.invalidate()
   }
 
