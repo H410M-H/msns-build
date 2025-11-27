@@ -3,5 +3,6 @@
         "activityBar.background": "#1A340F",
         "titleBar.activeBackground": "#244815",
         "titleBar.activeForeground": "#F6FCF3"
-    }
+    },
+    "prisma.pinToPrisma6": true
 }
