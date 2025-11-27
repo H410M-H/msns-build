@@ -1,131 +1,153 @@
 "use client"
 
-import { useState } from "react"
+import { useState, Suspense } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs"
 import { ClasswiseView } from "~/components/attendance/timetable/classwise-view"
 import { TeacherwiseView } from "~/components/attendance/timetable/teacherwise-view"
+import type { Class, Teacher, TimetableViewMode } from "~/lib/timetable-types"
+import { GridIcon, Users, AlertCircle } from "lucide-react"
 import { api } from "~/trpc/react"
-import { useToast } from "~/hooks/use-toast"
 
 const DEFAULT_TIME_SLOTS = [
-  { lectureNumber: 1, startTime: "09:00", endTime: "10:00" },
-  { lectureNumber: 2, startTime: "10:00", endTime: "11:00" },
-  { lectureNumber: 3, startTime: "11:00", endTime: "12:00" },
-  { lectureNumber: 4, startTime: "12:00", endTime: "01:00" },
-  { lectureNumber: 5, startTime: "02:00", endTime: "03:00" },
-  { lectureNumber: 6, startTime: "03:00", endTime: "04:00" },
-  { lectureNumber: 7, startTime: "04:00", endTime: "05:00" },
-  { lectureNumber: 8, startTime: "05:00", endTime: "06:00" },
-  { lectureNumber: 9, startTime: "06:00", endTime: "07:00" },
+  { lectureNumber: 1, startTime: "08:00", endTime: "08:35" },
+  { lectureNumber: 2, startTime: "08:40", endTime: "09:15" },
+  { lectureNumber: 3, startTime: "09:20", endTime: "09:55" },
+  { lectureNumber: 4, startTime: "10:00", endTime: "10:35" },
+  { lectureNumber: 5, startTime: "10:40", endTime: "11:15" },
+  { lectureNumber: 6, startTime: "11:20", endTime: "11:55" },
+  { lectureNumber: 7, startTime: "12:00", endTime: "12:35" },
+  { lectureNumber: 8, startTime: "13:00", endTime: "13:35" },
+  { lectureNumber: 9, startTime: "13:40", endTime: "14:15" },
 ]
 
-export default function TimetablePage() {
-  const [viewMode, setViewMode] = useState<"classwise" | "teacherwise">("classwise")
-  const { toast } = useToast()
+interface EmployeeResponse {
+  employeeId: string
+  employeeName: string
+  designation: string
+  education: string | null
+}
 
-  const assignTeacherMutation = api.timetable.assignTeacher.useMutation({
-    onSuccess: () => {
-      toast({
-        title: "Success",
-        description: "Teacher assigned successfully",
-      })
-    },
-    onError: () => {
-      toast({
-        title: "Error",
-        description: "Failed to assign teacher",
-      })
-    },
-  })
+interface ClassResponse {
+  classId: string
+  grade: string
+  section: string
+  category: string
+  fee: number
+}
 
-  const removeTeacherMutation = api.timetable.removeTeacher.useMutation({
-    onSuccess: () => {
-      toast({
-        title: "Success",
-        description: "Teacher removed successfully",
-      })
-    },
-    onError: () => {
-      toast({
-        title: "Error",
-        description: "Failed to remove teacher",
-      })
-    },
-  })
+function TimetableContent() {
+  const [viewMode, setViewMode] = useState<TimetableViewMode>("class")
 
-  const handleAssignTeacher = async (
-    classId: string,
-    teacherId: string,
-    subjectId: string,
-    day: string,
-    lectureNumber: number,
-  ) => {
-    const timeSlot = DEFAULT_TIME_SLOTS.find((slot) => slot.lectureNumber === lectureNumber)
-    if (!timeSlot) return
+  const { data: teachers, isLoading: teachersLoading } = api.employee.getAllEmployeesForTimeTable.useQuery()
+  const { data: classes, isLoading: classesLoading } = api.class.getClasses.useQuery()
 
-    // Note: sessionId would come from your session context
-    // For now, we'll use a placeholder that you should replace with actual session
-    const sessionId = localStorage.getItem("sessionId") ?? ""
-
-    try {
-      await assignTeacherMutation.mutateAsync({
-        classId,
-        employeeId: teacherId,
-        subjectId,
- dayOfWeek: day as "Monday" | "Tuesday" | "Wednesday" | "Thursday" | "Friday" | "Saturday",
-         lectureNumber,
-        sessionId,
-        startTime: timeSlot.startTime,
-        endTime: timeSlot.endTime,
-      })
-    } catch (error) {
-      console.error("[v0] Error in handleAssignTeacher:", error)
-      throw error
-    }
+  if (teachersLoading || classesLoading) {
+    return (
+      <div className="min-h-screen bg-background p-6 flex items-center justify-center">
+        <p>Loading...</p>
+      </div>
+    )
   }
 
-  const handleRemoveTeacher = async (timetableId: string) => {
-    try {
-      await removeTeacherMutation.mutateAsync({ timetableId })
-    } catch (error) {
-      console.error("[v0] Error in handleRemoveTeacher:", error)
-      throw error
-    }
-  }
+  const transformedClasses: Class[] = (classes ?? []).map((cls: ClassResponse) => ({
+    classId: cls.classId,
+    grade: cls.grade,
+    section: cls.section,
+  }))
+
+  const transformedTeachers: Teacher[] = (teachers ?? []).map((teacher: EmployeeResponse) => ({
+    employeeId: teacher.employeeId,
+    employeeName: teacher.employeeName,
+    designation: teacher.designation,
+    education: teacher.education ?? undefined,
+  }))
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold">Timetable Management</h1>
-        <p className="text-gray-600">Manage class schedules and teacher assignments</p>
+    <div className="min-h-screen bg-background p-6">
+      <div className="max-w-full mx-auto space-y-6">
+        {/* Header */}
+        <div>
+          <h1 className="text-3xl font-bold">Timetable Management</h1>
+          <p className="text-muted-foreground mt-2">Manage class schedules with drag-and-drop teacher assignment</p>
+        </div>
+
+        {/* View Mode Tabs */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">Select View Mode</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Tabs value={viewMode} onValueChange={(value) => setViewMode(value as TimetableViewMode)}>
+              <TabsList className="grid w-full max-w-md grid-cols-2">
+                <TabsTrigger value="class" className="flex items-center gap-2">
+                  <GridIcon className="h-4 w-4" />
+                  Classwise
+                </TabsTrigger>
+                <TabsTrigger value="teacher" className="flex items-center gap-2">
+                  <Users className="h-4 w-4" />
+                  Teacherwise
+                </TabsTrigger>
+              </TabsList>
+
+              {/* Classwise View */}
+              <TabsContent value="class" className="mt-6">
+                <ClasswiseView
+                  classes={transformedClasses}
+                  teachers={transformedTeachers}
+                  defaultTimeSlots={DEFAULT_TIME_SLOTS}
+                />
+              </TabsContent>
+
+              {/* Teacherwise View */}
+              <TabsContent value="teacher" className="mt-6">
+                <TeacherwiseView
+                  teachers={transformedTeachers}
+                  classes={transformedClasses}
+                  defaultTimeSlots={DEFAULT_TIME_SLOTS}
+                />
+              </TabsContent>
+            </Tabs>
+          </CardContent>
+        </Card>
+
+        {/* Features Card */}
+        <Card className="bg-blue-50 border-blue-200">
+          <CardHeader>
+            <CardTitle className="text-sm flex items-center gap-2">
+              <AlertCircle className="h-4 w-4" />
+              Features
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="text-sm text-muted-foreground space-y-2">
+            <ul className="space-y-1 list-disc list-inside">
+              <li>
+                <strong>Classwise View:</strong> Drag teachers from the sidebar to assign them to specific time slots.
+              </li>
+              <li>
+                <strong>Teacherwise View:</strong> View the complete weekly schedule for each teacher across all
+                classes.
+              </li>
+              <li>
+                <strong>Real-time Sync:</strong> All assignments are automatically saved to the database.
+              </li>
+              <li>
+                <strong>Conflict Prevention:</strong> Each slot shows the current teacher assignment to avoid conflicts.
+              </li>
+            </ul>
+          </CardContent>
+        </Card>
       </div>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Timetable Views</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Tabs value={viewMode} onValueChange={(value) => setViewMode(value as "classwise" | "teacherwise")}>
-            <TabsList>
-              <TabsTrigger value="classwise">Classwise View</TabsTrigger>
-              <TabsTrigger value="teacherwise">Teacherwise View</TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="classwise" className="mt-6">
-              <ClasswiseView
-                onAssignTeacher={handleAssignTeacher}
-                onRemoveTeacher={handleRemoveTeacher}
-                defaultTimeSlots={DEFAULT_TIME_SLOTS}
-              />
-            </TabsContent>
-
-            <TabsContent value="teacherwise" className="mt-6">
-              <TeacherwiseView defaultTimeSlots={DEFAULT_TIME_SLOTS} />
-            </TabsContent>
-          </Tabs>
-        </CardContent>
-      </Card>
     </div>
+  )
+}
+
+export default function TimetablePage() {
+  return (
+    <Suspense
+      fallback={<div className="min-h-screen bg-background p-6 flex items-center justify-center">Loading...</div>}
+    >
+      <TimetableContent />
+    </Suspense>
   )
 }

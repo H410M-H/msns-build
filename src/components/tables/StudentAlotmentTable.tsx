@@ -62,22 +62,7 @@ type APIStudentAllotmentResponse = {
 }
 
 
-type UnallocatedStudentResponse = {
-  data: {
-    studentId: string
-    studentName: string
-    fatherName: string
-    admissionNumber: string
-    createdAt: Date
-    studentMobile: string
-  }[]
-  meta: {
-    total: number
-    page: number
-    pageSize: number
-    totalPages: number
-  }
-}
+
 
 interface StudentAllotmentTableProps {
   classId: string
@@ -104,18 +89,7 @@ export function StudentAllotmentTable({ classId, sessionId }: StudentAllotmentTa
     enabled: allotmentOpen, // Only fetch when dialog is open
   })
 
-  // Fetch unallocated students for allotment dialog - provide pagination input
-  const { data: unallocatedStudentsResponse } = api.student.getUnAllocateStudents.useQuery(
-    {
-      page: 1,
-      pageSize: 100, // Get first 100 unallocated students
-    },
-    {
-      enabled: allotmentOpen, // Only fetch when dialog is open
-    },
-  )
 
-  // Remove student mutation
   const removeStudent = api.allotment.deleteStudentsFromClass.useMutation({
     onSuccess: async () => {
       toast({
@@ -304,12 +278,6 @@ export function StudentAllotmentTable({ classId, sessionId }: StudentAllotmentTa
       sessionName: session.sessionName,
     })) ?? []
 
-  // Transform unallocated students data for the dialog
-  const transformedStudents =
-    (unallocatedStudentsResponse as UnallocatedStudentResponse)?.data?.map((student) => ({
-      studentId: student.studentId,
-      studentName: student.studentName,
-    })) ?? []
 
   return (
     <div className="space-y-6">
@@ -443,7 +411,6 @@ export function StudentAllotmentTable({ classId, sessionId }: StudentAllotmentTa
         open={allotmentOpen}
         onOpenChange={setAllotmentOpen}
         sessions={transformedSessions}
-        students={transformedStudents}
       />
     </div>
   )

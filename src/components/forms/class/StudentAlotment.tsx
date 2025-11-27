@@ -22,7 +22,7 @@ import {
 import { Label } from "~/components/ui/label"
 import { z } from "zod"
 import { toast } from "~/hooks/use-toast"
-import { type ReactNode } from "react"
+import { type ReactNode, useEffect } from "react"
 
 // Use the exact schema from your AllotmentRouter
 const AllotmentSchema = z.object({
@@ -37,16 +37,14 @@ interface AllotmentDialogProps {
   open?: boolean
   onOpenChange?: (open: boolean) => void
   sessions: { sessionId: string; sessionName: string }[]
-  students: { studentId: string; studentName: string }[]
   classId: string
-  children?: ReactNode // 👈 added for button trigger
+  children?: ReactNode
 }
 
 export default function AllotmentDialog({
   open,
   onOpenChange,
   sessions,
-  students,
   classId,
   children,
 }: AllotmentDialogProps) {
@@ -60,6 +58,18 @@ export default function AllotmentDialog({
   })
 
   const utils = api.useUtils()
+
+  // Fetch unallocated students - this query returns the correct data structure
+  const { data: unallocatedStudentsData, isLoading: studentsLoading } = 
+    api.student.getUnAllocateStudents.useQuery(
+      {
+        page: 1,
+        pageSize: 100,
+      },
+      {
+        enabled: open, // Only fetch when dialog is open
+      }
+    )
 
   const allotment = api.allotment.addToClass.useMutation({
     onSuccess: async () => {
@@ -87,9 +97,25 @@ export default function AllotmentDialog({
     })
   }
 
+  // Transform the unallocated students data for the dropdown
+  const unallocatedStudents = unallocatedStudentsData?.data?.map(student => ({
+    studentId: student.studentId,
+    studentName: student.studentName,
+  })) ?? []
+
+  // Reset form when dialog opens/closes
+  useEffect(() => {
+    if (!open) {
+      form.reset({
+        sessionId: "",
+        studentId: "",
+        classId,
+      })
+    }
+  }, [open, form, classId])
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      {/* 👇 This makes your button (or any child) the trigger */}
       <DialogTrigger asChild>
         {children ?? <Button>Allot Student</Button>}
       </DialogTrigger>
@@ -107,7 +133,7 @@ export default function AllotmentDialog({
               onValueChange={(value) => form.setValue("sessionId", value)}
               value={form.watch("sessionId")}
             >
-              <SelectTrigger id="">
+              <SelectTrigger id="session-select">
                 <SelectValue placeholder="Select session" />
               </SelectTrigger>
               <SelectContent>
@@ -137,20 +163,33 @@ export default function AllotmentDialog({
             <Select
               onValueChange={(value) => form.setValue("studentId", value)}
               value={form.watch("studentId")}
+              disabled={studentsLoading}
             >
               <SelectTrigger id="student-select">
-                <SelectValue placeholder="Select student" />
+                <SelectValue 
+                  placeholder={
+                    studentsLoading 
+                      ? "Loading students..." 
+                      : unallocatedStudents.length === 0 
+                        ? "No unallocated students"
+                        : "Select student"
+                  } 
+                />
               </SelectTrigger>
               <SelectContent>
-                {students.length > 0 ? (
-                  students.map((student) => (
+                {studentsLoading ? (
+                  <SelectItem value="loading" disabled>
+                    Loading students...
+                  </SelectItem>
+                ) : unallocatedStudents.length > 0 ? (
+                  unallocatedStudents.map((student) => (
                     <SelectItem key={student.studentId} value={student.studentId}>
                       {student.studentName}
                     </SelectItem>
                   ))
                 ) : (
-                  <SelectItem value="std" disabled>
-                    No students available
+                  <SelectItem value="no-students" disabled>
+                    No unallocated students available
                   </SelectItem>
                 )}
               </SelectContent>
@@ -176,7 +215,8 @@ export default function AllotmentDialog({
               disabled={
                 allotment.isPending ||
                 !form.watch("sessionId") ||
-                !form.watch("studentId")
+                !form.watch("studentId") ||
+                studentsLoading
               }
             >
               {allotment.isPending ? "Allotting..." : "Allot Student"}

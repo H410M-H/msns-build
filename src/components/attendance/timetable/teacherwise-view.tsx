@@ -1,15 +1,14 @@
 "use client"
 
-import { ScrollArea } from "@radix-ui/react-scroll-area"
-import { Clock } from "lucide-react"
-import type React from "react"
-
+import { useState, useMemo } from "react"
+import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card"
 import { Button } from "~/components/ui/button"
-import { Card, CardHeader, CardTitle, CardContent } from "~/components/ui/card"
-import { ScrollBar } from "~/components/ui/scroll-area"
-import { type Class, DAYS_OF_WEEK, type Teacher, type TimeSlot } from "~/lib/timetable-types"
-
+import { ScrollArea, ScrollBar } from "~/components/ui/scroll-area"
+import { Clock } from "lucide-react"
+import type { Teacher, Class, TimeSlot } from "~/lib/timetable-types"
+import { DAYS_OF_WEEK } from "~/lib/timetable-types"
 import { api } from "~/trpc/react"
+import type { DayOfWeek } from "@prisma/client"
 
 interface TeacherwiseViewProps {
   teachers: Teacher[]
@@ -17,68 +16,59 @@ interface TeacherwiseViewProps {
   defaultTimeSlots: TimeSlot[]
 }
 
-interface TeacherSlot {
+interface TeacherTimetableEntry {
   timetableId: string
-  dayOfWeek: string
+  dayOfWeek: DayOfWeek
   lectureNumber: number
   startTime: string
   endTime: string
-  Subject: { subjectName: string }
+  Subject: { subjectId: string; subjectName: string }
   Grades: { classId: string; grade: string; section: string }
+  Sessions: { sessionId: string; sessionName: string }
+  Employees: { employeeId: string; employeeName: string; designation: string }
 }
 
-export function TeacherwiseView({ teachers, classes, defaultTimeSlots }: TeacherwiseViewProps) {
+export function TeacherwiseView({ teachers, classes: _classes, defaultTimeSlots: _slots }: TeacherwiseViewProps) {
   const [selectedTeacher, setSelectedTeacher] = useState<Teacher | null>(teachers[0] ?? null)
 
-  const [teacherTimetable] = api.timetable.getTimetableByTeacher.useSuspenseQuery(
+  const { data: teacherTimetable } = api.timetable.getTimetableByTeacher.useQuery(
     { employeeId: selectedTeacher?.employeeId ?? "" },
     { enabled: !!selectedTeacher?.employeeId },
   )
 
-  const scheduleByDay = useMemo(() => {
-    const schedule: Record<string, TeacherSlot[]> = {}
-    DAYS_OF_WEEK.forEach((day) => {
-      schedule[day] = []
+  const schedule = useMemo(() => {
+    const map: Record<string, TeacherTimetableEntry[]> = {}
+    DAYS_OF_WEEK.forEach(day => (map[day] = []))
+
+    teacherTimetable?.forEach(entry => {
+      const typed = entry as TeacherTimetableEntry
+      map[typed.dayOfWeek]?.push(typed)
     })
 
-    teacherTimetable?.forEach((entry: any) => {
-      if (schedule[entry.dayOfWeek]) {
-        schedule[entry.dayOfWeek].push(entry)
-      }
+    Object.keys(map).forEach(day => {
+      map[day]?.sort((a, b) => a.lectureNumber - b.lectureNumber)
     })
 
-    // Sort by lecture number
-    Object.keys(schedule).forEach((day) => {
-      schedule[day].sort((a, b) => a.lectureNumber - b.lectureNumber)
-    })
-
-    return schedule
+    return map
   }, [teacherTimetable])
 
-  const getTeacherTotalClasses = () => {
-    return teacherTimetable?.length || 0
-  }
-
-  const getTeacherClassesPerDay = (day: string) => {
-    return scheduleByDay[day]?.length || 0
-  }
+  const getClassesCount = () => teacherTimetable?.length ?? 0
+  const getClassesCountForDay = (day: string) => schedule[day]?.length ?? 0
 
   return (
     <div className="space-y-4">
-      {/* Teacher Selector */}
       <Card>
         <CardHeader>
           <CardTitle>Select Teacher</CardTitle>
         </CardHeader>
         <CardContent>
-          <ScrollArea className="w-full">
+          <ScrollArea className="w-full whitespace-nowrap">
             <div className="flex gap-2 pb-4">
               {teachers.map((teacher) => (
                 <Button
                   key={teacher.employeeId}
                   variant={selectedTeacher?.employeeId === teacher.employeeId ? "default" : "outline"}
                   onClick={() => setSelectedTeacher(teacher)}
-                  className="whitespace-nowrap"
                 >
                   {teacher.employeeName}
                 </Button>
@@ -90,95 +80,54 @@ export function TeacherwiseView({ teachers, classes, defaultTimeSlots }: Teacher
       </Card>
 
       {selectedTeacher && (
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
-          {/* Teacher Info Card */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-sm">{selectedTeacher.employeeName}</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <div>
-                <p className="text-xs text-muted-foreground">Designation</p>
-                <p className="text-sm font-medium">{selectedTeacher.designation}</p>
-              </div>
-              <div>
-                <p className="text-xs text-muted-foreground">Education</p>
-                <p className="text-sm font-medium">{selectedTeacher.education || "N/A"}</p>
-              </div>
-              <div className="pt-2 border-t">
-                <p className="text-xs text-muted-foreground">Total Classes/Week</p>
-                <p className="text-2xl font-bold">{getTeacherTotalClasses()}</p>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Weekly Schedule */}
-          <div className="lg:col-span-3">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-sm">
-                  <Clock className="h-4 w-4" />
-                  Weekly Schedule
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-3 gap-4">
-                  {DAYS_OF_WEEK.map((day) => {
-                    const daySlots = scheduleByDay[day] || []
-                    return (
-                      <div key={day} className="border rounded-lg p-3">
-                        <div className="flex items-center justify-between mb-3">
-                          <h3 className="font-semibold text-sm">{day}</h3>
-                          {daySlots.length > 0 && (
-                            <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
-                              {daySlots.length}
-                            </span>
-                          )}
-                        </div>
-                        {daySlots.length > 0 ? (
-                          <div className="space-y-2">
-                            {daySlots.map((slot) => (
-                              <div key={slot.timetableId} className="bg-green-50 border border-green-200 rounded p-2">
-                                <div>
-                                  <p className="text-xs font-medium text-green-900">
-                                    {slot.Grades.grade} - {slot.Grades.section}
-                                  </p>
-                                  <p className="text-xs text-green-700 mt-1">{slot.Subject.subjectName}</p>
-                                  <p className="text-xs text-green-600 flex items-center gap-1 mt-1">
-                                    <Clock className="h-3 w-3" />L{slot.lectureNumber}: {slot.startTime}
-                                  </p>
-                                </div>
-                              </div>
-                            ))}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-sm">
+              <Clock className="h-4 w-4" /> Weekly Schedule
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {Object.keys(schedule).map(day => {
+                const slots = schedule[day] ?? []
+                return (
+                  <div key={day} className="p-3 border rounded-lg">
+                    <h3 className="font-semibold text-sm">{day}</h3>
+                    {slots.length > 0 ? (
+                      <div className="space-y-2 mt-2">
+                        {slots.map(slot => (
+                          <div key={slot.timetableId} className="p-2 border bg-green-50 rounded">
+                            <p className="text-xs font-medium">{slot.Grades.grade} - {slot.Grades.section}</p>
+                            <p className="text-xs">{slot.Subject.subjectName}</p>
+                            <p className="text-xs flex items-center gap-1">
+                              <Clock className="h-3 w-3" /> L{slot.lectureNumber} - {slot.startTime}
+                            </p>
                           </div>
-                        ) : (
-                          <p className="text-xs text-muted-foreground">No classes scheduled</p>
-                        )}
+                        ))}
                       </div>
-                    )
-                  })}
-                </div>
-              </CardContent>
-            </Card>
+                    ) : (
+                      <p className="text-xs text-muted-foreground mt-2">No classes</p>
+                    )}
+                  </div>
+                )
+              })}
+            </div>
 
-            {/* Daily Breakdown */}
-            <Card className="mt-4">
-              <CardHeader>
-                <CardTitle className="text-sm">Classes Per Day</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-6 gap-2">
-                  {DAYS_OF_WEEK.map((day) => (
-                    <div key={day} className="text-center p-3 bg-muted rounded-lg">
-                      <p className="text-xs font-medium">{day.slice(0, 3)}</p>
-                      <p className="text-lg font-bold text-primary">{getTeacherClassesPerDay(day)}</p>
-                    </div>
-                  ))}
+            <div className="grid grid-cols-6 gap-2 mt-4">
+              {Object.keys(schedule).map(day => (
+                <div key={day} className="text-center p-2 bg-muted rounded">
+                  <p className="text-xs font-medium">{day.slice(0, 3)}</p>
+                  <p className="text-lg font-bold">{getClassesCountForDay(day)}</p>
                 </div>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
+              ))}
+            </div>
+
+            <div className="mt-3 pt-2 border-t">
+              <p className="text-xs text-muted-foreground">Total Classes/Week</p>
+              <p className="text-2xl font-bold">{getClassesCount()}</p>
+            </div>
+          </CardContent>
+        </Card>
       )}
     </div>
   )

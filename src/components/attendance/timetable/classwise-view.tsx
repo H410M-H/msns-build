@@ -1,17 +1,16 @@
 "use client"
 
-import { ScrollArea } from "@radix-ui/react-scroll-area"
-import { BookOpen, User, GripVertical, Clock, X } from "lucide-react"
 import type React from "react"
-
 import { useState, useMemo } from "react"
+import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card"
 import { Button } from "~/components/ui/button"
-import { Card, CardHeader, CardTitle, CardContent } from "~/components/ui/card"
-import { ScrollBar } from "~/components/ui/scroll-area"
-import { type Class, DAYS_OF_WEEK, type DraggedTeacher, LECTURE_NUMBERS, type Teacher, type TimeSlot } from "~/lib/timetable-types"
+import { ScrollArea, ScrollBar } from "~/components/ui/scroll-area"
+import { Clock, User, X, GripVertical } from "lucide-react"
 import { cn } from "~/lib/utils"
-
+import type { Teacher, Class, TimeSlot, DraggedTeacher } from "~/lib/timetable-types"
+import { DAYS_OF_WEEK, LECTURE_NUMBERS } from "~/lib/timetable-types"
 import { api } from "~/trpc/react"
+import type { DayOfWeek } from "@prisma/client"
 
 interface ClasswiseViewProps {
   classes: Class[]
@@ -23,10 +22,15 @@ interface ClasswiseViewProps {
 
 interface TimetableEntry {
   timetableId: string
-  dayOfWeek: string
+  dayOfWeek: DayOfWeek
   lectureNumber: number
+  startTime: string
+  endTime: string
   Employees: { employeeId: string; employeeName: string; designation: string }
-  Subject: { subjectName: string }
+  Subject: { subjectId: string; subjectName: string }
+  Grades: { classId: string; grade: string; section: string }
+  Sessions: { sessionId: string; sessionName: string }
+  SubjectName?: string
 }
 
 export function ClasswiseView({
@@ -34,40 +38,44 @@ export function ClasswiseView({
   teachers,
   defaultTimeSlots,
   onAssignTeacher,
+  onRemoveTeacher: _onRemoveTeacher,
   onRemoveTeacher,
 }: ClasswiseViewProps) {
-  const [selectedClass, setSelectedClass] = useState<Class | null>(classes[0] || null)
+  const [selectedClass, setSelectedClass] = useState<Class | null>(classes[0] ?? null)
   const [draggedTeacher, setDraggedTeacher] = useState<DraggedTeacher | null>(null)
-  const [selectedSlot, setSelectedSlot] = useState<string | null>(null)
   const [selectedSubject, setSelectedSubject] = useState<{ subjectId: string; subjectName: string } | null>(null)
 
-  const [sessions] = api.timetable.getActiveSessions.useSuspenseQuery()
-  const [classTimetable] = api.timetable.getTimetableByClass.useSuspenseQuery(
-    { classId: selectedClass?.classId || "" },
-    { enabled: !!selectedClass?.classId },
-  )
-  const [classSubjects] = api.timetable.getSubjectsByClassWithTeachers.useSuspenseQuery(
-    { classId: selectedClass?.classId || "" },
+  const { data: sessions } = api.timetable.getActiveSessions.useQuery()
+  const { data: classTimetable, refetch: refetchTimetable } = api.timetable.getTimetableByClass.useQuery(
+    { classId: selectedClass?.classId ?? "" },
     { enabled: !!selectedClass?.classId },
   )
 
-  const assignTeacherMutation = api.timetable.assignTeacher.useMutation()
-  const removeTeacherMutation = api.timetable.removeTeacher.useMutation()
+  const assignTeacherMutation = api.timetable.assignTeacher.useMutation({
+    onSuccess: () => void refetchTimetable(),
+  })
+
+  const removeTeacherMutation = api.timetable.removeTeacher.useMutation({
+    onSuccess: () => void refetchTimetable(),
+  })
 
   const timetableMap = useMemo(() => {
     const map: Record<string, Record<number, TimetableEntry>> = {}
-    classTimetable?.forEach((entry: any) => {
-      if (!map[entry.dayOfWeek]) {
-        map[entry.dayOfWeek] = {}
+    classTimetable?.forEach((entry) => {
+      const typed = entry as TimetableEntry
+      if (!map[typed.dayOfWeek]) {
+        map[typed.dayOfWeek] = {}
       }
-      map[entry.dayOfWeek][entry.lectureNumber] = entry
+      (map[typed.dayOfWeek] ??= {})[typed.lectureNumber] = typed
     })
     return map
   }, [classTimetable])
 
-  const getTimeSlot = (lectureNumber: number) => {
-    return defaultTimeSlots.find((slot) => slot.lectureNumber === lectureNumber)
-  }
+  const getTimeSlot = (lectureNumber: number) =>
+    defaultTimeSlots.find((slot) => slot.lectureNumber === lectureNumber)
+
+  const getSlotForPosition = (day: string, lecture: number) =>
+    timetableMap[day]?.[lecture]
 
   const handleTeacherDragStart = (teacher: Teacher, e: React.DragEvent) => {
     setDraggedTeacher(teacher)
@@ -79,14 +87,17 @@ export function ClasswiseView({
     e.dataTransfer.dropEffect = "copy"
   }
 
-  const handleSlotDrop = async (day: string, lectureNumber: number, e: React.DragEvent) => {
+  const handleSlotDrop = async (day: string, lecture: number, e: React.DragEvent) => {
     e.preventDefault()
-    if (!draggedTeacher || !selectedClass || !sessions?.[0] || !selectedSubject) {
+
+    if (!selectedSubject?.subjectId) {
       alert("Please select a subject first")
       return
     }
 
-    const timeSlot = getTimeSlot(lectureNumber)
+    if (!draggedTeacher || !selectedClass || !sessions?.[0] || !selectedSubject) return
+
+    const timeSlot = getTimeSlot(lecture)
     if (!timeSlot) return
 
     try {
@@ -94,16 +105,18 @@ export function ClasswiseView({
         classId: selectedClass.classId,
         employeeId: draggedTeacher.employeeId,
         subjectId: selectedSubject.subjectId,
-        dayOfWeek: day as any,
-        lectureNumber,
+        dayOfWeek: day as DayOfWeek,
+        lectureNumber: lecture,
         sessionId: sessions[0].sessionId,
         startTime: timeSlot.startTime,
         endTime: timeSlot.endTime,
       })
-      onAssignTeacher?.(`${day}-${lectureNumber}`, draggedTeacher, selectedSubject.subjectName)
-    } catch (error) {
-      console.error("Failed to assign teacher:", error)
+
+      onAssignTeacher?.(`${day}-${lecture}`, draggedTeacher, selectedSubject.subjectName)
+    } catch (err) {
+      console.error("Assign error:", err)
     }
+
     setDraggedTeacher(null)
   }
 
@@ -111,18 +124,13 @@ export function ClasswiseView({
     try {
       await removeTeacherMutation.mutateAsync({ timetableId })
       onRemoveTeacher?.(timetableId)
-    } catch (error) {
-      console.error("Failed to remove teacher:", error)
+    } catch (err) {
+      console.error("Remove error:", err)
     }
-  }
-
-  const getSlotForPosition = (day: string, lectureNumber: number) => {
-    return timetableMap[day]?.[lectureNumber]
   }
 
   return (
     <div className="space-y-4">
-      {/* Class and Subject Selector */}
       <Card>
         <CardHeader>
           <CardTitle>Select Class & Subject</CardTitle>
@@ -146,48 +154,38 @@ export function ClasswiseView({
             </div>
           </div>
 
-          {selectedClass && classSubjects && classSubjects.length > 0 && (
+          {selectedClass && (
             <div>
-              <label className="text-sm font-medium mb-2 block flex items-center gap-2">
-                <BookOpen className="h-4 w-4" />
-                Subject
+              <label className="text-sm font-medium mb-2 flex items-center gap-2">
+                <User className="h-4 w-4" /> Subject
               </label>
               <div className="flex flex-wrap gap-2">
-                {classSubjects.map((cs) => (
+                {classTimetable?.map((slot) => (
                   <Button
-                    key={cs.csId}
-                    variant={selectedSubject?.subjectId === cs.subjectId ? "default" : "outline"}
-                    onClick={() => setSelectedSubject({ subjectId: cs.subjectId, subjectName: cs.Subject.subjectName })}
-                    className="text-xs"
+                    key={slot.timetableId}
+                    variant={selectedSubject?.subjectId === slot.Subject.subjectId ? "default" : "outline"}
+                    onClick={() =>
+                      setSelectedSubject({
+                        subjectId: slot.Subject.subjectId,
+                        subjectName: slot.Subject.subjectName ?? "",
+                      })
+                    }
                   >
-                    {cs.Subject.subjectName}
+                    {slot.Subject.subjectName}
                   </Button>
                 ))}
               </div>
-              {selectedSubject && (
-                <p className="text-xs text-muted-foreground mt-2">
-                  Selected: <span className="font-medium">{selectedSubject.subjectName}</span>
-                </p>
-              )}
             </div>
-          )}
-
-          {selectedClass && (!classSubjects || classSubjects.length === 0) && (
-            <p className="text-sm text-yellow-600 bg-yellow-50 p-3 rounded">
-              No subjects configured for this class. Please set up subjects first.
-            </p>
           )}
         </CardContent>
       </Card>
 
       <div className="grid grid-cols-1 lg:grid-cols-6 gap-4">
-        {/* Teachers Sidebar */}
         <div className="lg:col-span-1">
           <Card>
             <CardHeader>
               <CardTitle className="text-sm flex items-center gap-2">
-                <User className="h-4 w-4" />
-                Teachers
+                <User className="h-4 w-4" /> Teachers
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -198,10 +196,8 @@ export function ClasswiseView({
                       key={teacher.employeeId}
                       draggable
                       onDragStart={(e) => handleTeacherDragStart(teacher, e)}
-                      className={cn(
-                        "p-2 border rounded-lg cursor-move hover:bg-accent/50 transition-colors",
-                        draggedTeacher?.employeeId === teacher.employeeId && "bg-primary text-primary-foreground",
-                      )}
+                      className={cn("p-2 border rounded-lg cursor-move hover:bg-accent/50 transition",
+                        draggedTeacher?.employeeId === teacher.employeeId && "bg-primary text-primary-foreground")}
                     >
                       <div className="flex items-start gap-1">
                         <GripVertical className="h-3 w-3 mt-1 flex-shrink-0" />
@@ -219,7 +215,6 @@ export function ClasswiseView({
           </Card>
         </div>
 
-        {/* Timetable Grid */}
         <div className="lg:col-span-5">
           <Card>
             <CardHeader>
@@ -229,78 +224,57 @@ export function ClasswiseView({
               </CardTitle>
             </CardHeader>
             <CardContent className="overflow-x-auto">
-              {assignTeacherMutation.isPending ||
-                (removeTeacherMutation.isPending && (
-                  <div className="mb-3 p-3 bg-blue-50 border border-blue-200 rounded-lg flex items-center gap-2">
-                    <Clock className="h-4 w-4 animate-spin" />
-                    <span className="text-sm text-blue-900">Saving...</span>
-                  </div>
-                ))}
               <div className="min-w-[900px] grid grid-cols-7 gap-2">
-                {/* Header Row */}
                 <div className="font-semibold text-center p-3 bg-muted rounded-lg">Time</div>
-                {DAYS_OF_WEEK.map((day) => (
-                  <div key={day} className="font-semibold text-center p-3 bg-muted rounded-lg">
-                    {day}
-                  </div>
+                {DAYS_OF_WEEK.map(day => (
+                  <div key={day} className="font-semibold text-center p-3 bg-muted rounded-lg">{day}</div>
                 ))}
 
-                {/* Grid Content */}
-                {LECTURE_NUMBERS.map((lectureNumber) => {
-                  const timeSlot = getTimeSlot(lectureNumber)
-                  return (
-                    <div key={lectureNumber} className="contents">
-                      {/* Time Column */}
-                      <div className="p-3 bg-muted/50 rounded-lg text-center text-sm">
-                        <div className="font-medium">L{lectureNumber}</div>
-                        {timeSlot && <div className="text-xs text-muted-foreground">{timeSlot.startTime}</div>}
-                      </div>
-
-                      {/* Day Columns */}
-                      {DAYS_OF_WEEK.map((day) => {
-                        const slot = getSlotForPosition(day, lectureNumber)
-                        return (
-                          <div
-                            key={`${day}-${lectureNumber}`}
-                            onDragOver={handleSlotDragOver}
-                            onDrop={(e) => handleSlotDrop(day, lectureNumber, e)}
-                            className={cn(
-                              "p-2 border rounded-lg min-h-[80px] transition-colors",
-                              !selectedSubject && "opacity-50 cursor-not-allowed",
-                              slot
-                                ? "bg-blue-50 border-blue-200"
-                                : "bg-muted/20 hover:bg-muted/40 border-dashed cursor-copy",
-                            )}
-                          >
-                            {slot ? (
-                              <div className="space-y-1">
-                                <div className="flex items-start justify-between gap-1">
-                                  <div className="min-w-0 flex-1">
-                                    <p className="text-xs font-medium text-blue-900">{slot.Employees.employeeName}</p>
-                                    <p className="text-xs text-blue-700 truncate">{slot.Subject.subjectName}</p>
-                                  </div>
-                                  <Button
-                                    size="sm"
-                                    variant="ghost"
-                                    className="h-4 w-4 p-0 flex-shrink-0"
-                                    onClick={() => handleRemoveTeacher(slot.timetableId)}
-                                    disabled={removeTeacherMutation.isPending}
-                                  >
-                                    <X className="h-3 w-3" />
-                                  </Button>
-                                </div>
-                              </div>
-                            ) : (
-                              <div className="text-xs text-muted-foreground text-center py-6">
-                                {selectedSubject ? "Drag teacher here" : "Select subject first"}
-                              </div>
-                            )}
-                          </div>
-                        )
-                      })}
+                {LECTURE_NUMBERS.map((lecture) => (
+                  <div key={lecture} className="contents">
+                    <div className="p-3 bg-muted/50 text-center rounded-lg">
+                      <div className="font-medium">L{lecture}</div>
+                      {getTimeSlot(lecture) && <div className="text-xs text-muted-foreground">{getTimeSlot(lecture)?.startTime}</div>}
                     </div>
-                  )
-                })}
+
+                    {DAYS_OF_WEEK.map((day) => {
+                      const slot = getSlotForPosition(day, lecture)
+                      return (
+                        <div
+                          key={`${day}-${lecture}`}
+                          onDragOver={handleSlotDragOver}
+                          onDrop={(e) => handleSlotDrop(day, lecture, e)}
+                          className={cn("p-2 border rounded-lg min-h-[80px]",
+                            !slot ? "border-dashed bg-muted/10 hover:bg-muted/30" : "bg-blue-50 border-blue-200")}
+                        >
+                          {slot ? (
+                            <div className="space-y-1">
+                              <div className="flex items-start justify-between">
+                                <div className="min-w-0 flex-1">
+                                  <p className="text-xs font-medium">{slot.Employees.employeeName}</p>
+                                  <p className="text-xs truncate">{slot.Subject.subjectName}</p>
+                                </div>
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  className="h-4 w-4 p-0"
+                                  onClick={() => handleRemoveTeacher(slot.timetableId)}
+                                  disabled={removeTeacherMutation.isPending}
+                                >
+                                  <X className="h-3 w-3" />
+                                </Button>
+                              </div>
+                            </div>
+                          ) : (
+                            <p className="text-xs text-center text-muted-foreground py-6">
+                              {selectedSubject ? "Drag teacher here" : "Select subject first"}
+                            </p>
+                          )}
+                        </div>
+                      )
+                    })}
+                  </div>
+                ))}
               </div>
             </CardContent>
           </Card>
