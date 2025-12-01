@@ -1,11 +1,11 @@
 "use client"
 
 import React from "react"
-import { useState, useMemo } from "react"
+import { useState, useMemo, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card"
 import { Button } from "~/components/ui/button"
 import { ScrollArea, ScrollBar } from "~/components/ui/scroll-area"
-import { Clock, User, X, GripVertical } from "lucide-react"
+import { Clock, User, X, GripVertical, Plus } from "lucide-react"
 import { cn } from "~/lib/utils"
 import type { Teacher, Class, TimeSlot, DraggedTeacher } from "~/lib/timetable-types"
 import { DAYS_OF_WEEK, LECTURE_NUMBERS } from "~/lib/timetable-types"
@@ -13,6 +13,7 @@ import { api } from "~/trpc/react"
 import type { DayOfWeek } from "@prisma/client"
 import { Tooltip, TooltipContent, TooltipTrigger } from "~/components/ui/tooltip"
 import { Badge } from "~/components/ui/badge"
+import { SubjectAssignmentDialog } from "~/components/forms/class/SubjectAssignment"
 
 interface ClasswiseViewProps {
   classes: Class[]
@@ -32,7 +33,6 @@ interface TimetableEntry {
   Subject: { subjectId: string; subjectName: string }
   Grades: { classId: string; grade: string; section: string }
   Sessions: { sessionId: string; sessionName: string }
-  SubjectName?: string
 }
 
 // Helper function to validate day of week
@@ -60,6 +60,16 @@ export function ClasswiseView({
   const [selectedClass, setSelectedClass] = useState<Class | null>(classes[0] ?? null)
   const [draggedTeacher, setDraggedTeacher] = useState<DraggedTeacher | null>(null)
   const [selectedSubject, setSelectedSubject] = useState<{ subjectId: string; subjectName: string } | null>(null)
+  const [assignmentDialogOpen, setAssignmentDialogOpen] = useState(false)
+  const [selectedSlot, setSelectedSlot] = useState<{
+    dayOfWeek: DayOfWeek;
+    lectureNumber: number;
+  } | null>(null)
+  
+  const [assignedSubjects, setAssignedSubjects] = useState<{
+    subjectId: string;
+    subjectName: string;
+  }[]>([])
 
   const { data: sessions } = api.timetable.getActiveSessions.useQuery()
   const { data: classTimetable, refetch: refetchTimetable } = api.timetable.getTimetableByClass.useQuery(
@@ -67,15 +77,31 @@ export function ClasswiseView({
     { enabled: !!selectedClass?.classId },
   )
 
-  // NEW: Fetch class subjects separately
-  const { data: classSubjects } = api.subject.getSubjectsByClass.useQuery(
-    { 
-      classId: selectedClass?.classId ?? "", 
-      sessionId: sessions?.[0]?.sessionId ?? "" 
-    },
-    { 
-      enabled: !!selectedClass?.classId && !!sessions?.[0]?.sessionId 
+  // Extract unique subjects from the timetable data
+  useEffect(() => {
+    if (classTimetable && classTimetable.length > 0) {
+      const uniqueSubjects = new Map<string, { subjectId: string; subjectName: string }>()
+      
+      classTimetable.forEach((entry) => {
+        const typed = entry as TimetableEntry
+        if (typed.Subject?.subjectId) {
+          uniqueSubjects.set(typed.Subject.subjectId, {
+            subjectId: typed.Subject.subjectId,
+            subjectName: typed.Subject.subjectName
+          })
+        }
+      })
+      
+      setAssignedSubjects(Array.from(uniqueSubjects.values()))
+    } else {
+      setAssignedSubjects([])
     }
+  }, [classTimetable])
+
+  // Fetch all subjects as fallback
+  const { data: allSubjects } = api.subject.getAllSubjects.useQuery(
+    undefined,
+    { enabled: true }
   )
 
   const assignTeacherMutation = api.timetable.assignTeacher.useMutation({
@@ -124,7 +150,6 @@ export function ClasswiseView({
 
     if (!draggedTeacher || !selectedClass || !sessions?.[0] || !selectedSubject) return
 
-    // Validate the day
     if (!isValidDayOfWeek(day)) {
       console.error("Invalid day:", day)
       return
@@ -138,7 +163,7 @@ export function ClasswiseView({
         classId: selectedClass.classId,
         employeeId: draggedTeacher.employeeId,
         subjectId: selectedSubject.subjectId,
-        dayOfWeek: day, // Now this is type-safe
+        dayOfWeek: day,
         lectureNumber: lecture,
         sessionId: sessions[0].sessionId,
         startTime: timeSlot.startTime,
@@ -146,6 +171,11 @@ export function ClasswiseView({
       })
 
       onAssignTeacher?.(`${day}-${lecture}`, draggedTeacher, selectedSubject.subjectName)
+      
+      // Add subject to assigned subjects if not already present
+      if (!assignedSubjects.some(sub => sub.subjectId === selectedSubject.subjectId)) {
+        setAssignedSubjects(prev => [...prev, selectedSubject])
+      }
     } catch (err) {
       console.error("Assign error:", err)
     }
@@ -160,6 +190,24 @@ export function ClasswiseView({
     } catch (err) {
       console.error("Remove error:", err)
     }
+  }
+
+  const handleOpenAssignmentDialog = (day: string, lecture: number) => {
+    if (!isValidDayOfWeek(day)) {
+      console.error("Invalid day:", day)
+      return
+    }
+    setSelectedSlot({
+      dayOfWeek: day,
+      lectureNumber: lecture
+    })
+    setAssignmentDialogOpen(true)
+  }
+
+  const handleAssigned = () => {
+    void refetchTimetable()
+    setAssignmentDialogOpen(false)
+    setSelectedSlot(null)
   }
 
   return (
@@ -183,6 +231,7 @@ export function ClasswiseView({
                     onClick={() => {
                       setSelectedClass(cls)
                       setSelectedSubject(null)
+                      setAssignedSubjects([])
                     }}
                     className="flex-shrink-0 text-xs sm:text-sm py-1 sm:py-2 px-2 sm:px-4"
                   >
@@ -197,33 +246,50 @@ export function ClasswiseView({
           {selectedClass && (
             <div>
               <label className="text-xs sm:text-sm font-medium mb-1 sm:mb-2 flex items-center gap-1 sm:gap-2 text-muted-foreground">
-                <User className="h-3 w-3 sm:h-4 sm:w-4" /> Subject
+                <User className="h-3 w-3 sm:h-4 sm:w-4" /> 
+                Subjects (From Timetable)
               </label>
               <ScrollArea className="w-full whitespace-nowrap rounded-md border h-[60px] sm:h-auto">
                 <div className="flex gap-2 p-2">
-                  {classSubjects?.map((subjectAssignment) => (
-                    <Button
-                      key={subjectAssignment.csId}
-                      variant={selectedSubject?.subjectId === subjectAssignment.subjectId ? "default" : "outline"}
-                      onClick={() =>
-                        setSelectedSubject({
-                          subjectId: subjectAssignment.subjectId,
-                          subjectName: subjectAssignment.Subject.subjectName,
-                        })
-                      }
-                      className="flex-shrink-0 text-xs sm:text-sm py-1 sm:py-2 px-2 sm:px-4"
-                    >
-                      {subjectAssignment.Subject.subjectName}
-                    </Button>
-                  ))}
-                  {classSubjects?.length === 0 && (
+                  {assignedSubjects.length > 0 ? (
+                    assignedSubjects.map((subject) => (
+                      <Button
+                        key={subject.subjectId}
+                        variant={selectedSubject?.subjectId === subject.subjectId ? "default" : "outline"}
+                        onClick={() => setSelectedSubject(subject)}
+                        className="flex-shrink-0 text-xs sm:text-sm py-1 sm:py-2 px-2 sm:px-4"
+                      >
+                        {subject.subjectName}
+                      </Button>
+                    ))
+                  ) : allSubjects && allSubjects.length > 0 ? (
+                    // Fallback: Show all subjects if no assignments yet
+                    allSubjects.map((subject) => (
+                      <Button
+                        key={subject.subjectId}
+                        variant={selectedSubject?.subjectId === subject.subjectId ? "default" : "outline"}
+                        onClick={() => setSelectedSubject({
+                          subjectId: subject.subjectId,
+                          subjectName: subject.subjectName
+                        })}
+                        className="flex-shrink-0 text-xs sm:text-sm py-1 sm:py-2 px-2 sm:px-4"
+                      >
+                        {subject.subjectName}
+                      </Button>
+                    ))
+                  ) : (
                     <div className="text-xs sm:text-sm text-muted-foreground p-2">
-                      No subjects assigned to this class
+                      No subjects assigned yet. Add subjects using the + button in timetable.
                     </div>
                   )}
                 </div>
                 <ScrollBar orientation="horizontal" />
               </ScrollArea>
+              {assignedSubjects.length === 0 && allSubjects && allSubjects.length > 0 && (
+                <div className="text-xs text-muted-foreground mt-1">
+                  Showing all available subjects. Assign a subject to see it appear here.
+                </div>
+              )}
             </div>
           )}
         </CardContent>
@@ -313,7 +379,7 @@ export function ClasswiseView({
                               onDragOver={handleSlotDragOver}
                               onDrop={(e) => handleSlotDrop(day, lecture, e)}
                               className={cn(
-                                "p-2 sm:p-3 border rounded-lg min-h-[60px] sm:min-h-[80px] md:min-h-[100px] transition-all duration-200 shadow text-xs sm:text-sm",
+                                "p-2 sm:p-3 border rounded-lg min-h-[60px] sm:min-h-[80px] md:min-h-[100px] transition-all duration-200 shadow text-xs sm:text-sm relative",
                                 !slot 
                                   ? "border-dashed bg-background hover:bg-muted/30" 
                                   : cn(
@@ -344,14 +410,24 @@ export function ClasswiseView({
                                   </div>
                                 </div>
                               ) : (
-                                <p className="text-[10px] sm:text-xs text-center text-muted-foreground py-4 sm:py-6 md:py-8 truncate">
-                                  {selectedSubject ? "Drag teacher" : "Select subject"}
-                                </p>
+                                <div className="flex flex-col items-center justify-center h-full space-y-1">
+                                  <p className="text-[10px] sm:text-xs text-center text-muted-foreground">
+                                    {selectedSubject ? "Drag teacher or" : "Select subject"}
+                                  </p>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="h-6 w-6 p-0 hover:bg-primary/10"
+                                    onClick={() => handleOpenAssignmentDialog(day, lecture)}
+                                  >
+                                    <Plus className="h-3 w-3" />
+                                  </Button>
+                                </div>
                               )}
                             </div>
                           </TooltipTrigger>
                           <TooltipContent>
-                            {slot ? `${slot.Subject.subjectName} with ${slot.Employees.employeeName}` : "Empty slot - Assign teacher"}
+                            {slot ? `${slot.Subject.subjectName} with ${slot.Employees.employeeName}` : "Empty slot - Click + to assign"}
                           </TooltipContent>
                         </Tooltip>
                       )
@@ -363,6 +439,19 @@ export function ClasswiseView({
           </Card>
         </div>
       </div>
+
+      {/* Subject Assignment Dialog */}
+      {selectedClass && selectedSlot && sessions?.[0] && (
+        <SubjectAssignmentDialog
+          classId={selectedClass.classId}
+          dayOfWeek={selectedSlot.dayOfWeek}
+          lectureNumber={selectedSlot.lectureNumber}
+          sessionId={sessions[0].sessionId}
+          open={assignmentDialogOpen}
+          onOpenChange={setAssignmentDialogOpen}
+          onAssigned={handleAssigned}
+        />
+      )}
     </div>
   )
 }
