@@ -1,91 +1,95 @@
-'use client'
+"use client";
 
-import { Boxes,  FileStackIcon, UserPlusIcon, type LucideIcon } from "lucide-react"
-import Link from "next/link"
+import { Boxes, FileStack, UserPlus, type LucideIcon, ArrowRight } from "lucide-react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
+import Link from "next/link";
 
 interface Service {
-  title: string
-  description: string
-  icon: LucideIcon
-  href: string
-  iconColor: string
-  gradientFrom: string
-  gradientTo: string
+  title: string;
+  description: string;
+  icon: LucideIcon;
+  href: string;
+  iconColor: string;
+  bgColor: string;
+  borderColor: string;
+  hoverGradient: string;
+  shadowColor: string;
 }
 
 const services: Service[] = [
   {
-    title: "Classes Allottment",
-    description: "Easily enroll new Employees and manage their financial records.",
-    icon: UserPlusIcon,
+    title: "Classes Allotment",
+    description: "Enroll employees and manage class assignments.",
+    icon: UserPlus,
     href: "/academics/classDetail",
-    iconColor: "text-blue-500",
-    gradientFrom: "from-blue-400",
-    gradientTo: "to-blue-700",
+    iconColor: "text-emerald-600",
+    bgColor: "bg-emerald-50",
+    borderColor: "group-hover:border-emerald-200",
+    hoverGradient: "from-emerald-50/60 to-white",
+    shadowColor: "group-hover:shadow-emerald-100",
   },
   {
-    title: "Section & Class Management",
-    description: "Easily enroll new students and manage their financial records.",
+    title: "Section Management",
+    description: "Manage class sections and student grouping.",
     icon: Boxes,
     href: "/academics/classwiseDetail",
-    iconColor: "text-purple-500",
-    gradientFrom: "from-purple-400",
-    gradientTo: "to-purple-700",
+    iconColor: "text-cyan-600",
+    bgColor: "bg-cyan-50",
+    borderColor: "group-hover:border-cyan-200",
+    hoverGradient: "from-cyan-50/60 to-white",
+    shadowColor: "group-hover:shadow-cyan-100",
   },
   {
     title: "Sessional Reports",
-    description: "Easily enroll new students and manage their financial records.",
-    icon: FileStackIcon,
-    href: "",
-    iconColor: "text-orange-500",
-    gradientFrom: "from-orange-400",
-    gradientTo: "to-orange-700",
+    description: "View and export comprehensive academic reports.",
+    icon: FileStack,
+    href: "/reports/sessional",
+    iconColor: "text-yellow-600",
+    bgColor: "bg-yellow-50",
+    borderColor: "group-hover:border-yellow-200",
+    hoverGradient: "from-yellow-50/60 to-white",
+    shadowColor: "group-hover:shadow-yellow-100",
   },
-]
+];
 
 export default function SessionCards() {
   return (
-    <div className="relative min-h-screen flex items-center justify-center px-4 py-6 rounded-md">
-      {/* Cards Grid */}
-      <div className="relative z-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-16 lg:gap-8 max-w-7xl w-full animate-slide-in-up">
-        {services.map((service, index) => {
-          const Icon = service.icon
-          return (
-            <Link
-              href={service.href}
-              key={index}
-              className="relative group gap-6 p-4 transform transition-all duration-500 
-                ease-in-out hover:scale-105 hover:z-20"
-              style={{ transitionDelay: `${index * 100}ms` }}
-            >
-              {/* Background Card Decoration */}
-              <div
-                className={`absolute inset-0 bg-gradient-to-r ${service.gradientFrom} ${service.gradientTo} 
-                  shadow-lg transform -skew-y-6 sm:skew-y-0 sm:-rotate-6 sm:rounded-3xl opacity-80 
-                  transition-transform duration-700 ease-in-out group-hover:rotate-0 
-                  group-hover:skew-y-0 group-hover:scale-105`}
-              />
-  
-              {/* Card Content */}
-              <div className="relative z-10 px-10 py-10 bg-yellow-100 backdrop-blur-lg shadow-xl 
-                rounded-3xl transition-transform duration-500 ease-in-out 
-                group-hover:scale-105 group-hover:rotate-1">
-                <div className="flex flex-col items-center text-center">
-                  <Icon className={`h-12 w-12 ${service.iconColor}`} />
-                  <h3 className="text-2xl font-semibold text-gray-900 
-                    group-hover:text-green-700 transition-colors duration-300">
-                    {service.title}
-                  </h3>
-                  <p className="mt-6 text-gray-700 group-hover:text-green-600 
-                    transition-colors duration-300">
-                    {service.description}
-                  </p>
+    <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+      {services.map((service) => {
+        const Icon = service.icon;
+        return (
+          <Link href={service.href} key={service.title} className="group block h-full">
+            <Card className={`relative h-full overflow-hidden transition-all duration-300 bg-white border border-slate-200 ${service.borderColor} hover:shadow-xl ${service.shadowColor} hover:-translate-y-1 rounded-2xl`}>
+              
+              {/* Gradient overlay on hover */}
+              <div className={`absolute inset-0 bg-gradient-to-br ${service.hoverGradient} opacity-0 transition-opacity duration-500 group-hover:opacity-100`} />
+              
+              <CardHeader className="relative z-10 p-6 pb-2">
+                <div className="flex items-start justify-between mb-4">
+                  <div className={`p-3.5 rounded-2xl ${service.bgColor} transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3 shadow-sm`}>
+                    <Icon className={`h-7 w-7 ${service.iconColor}`} />
+                  </div>
+                  
+                  {/* Animated Arrow Button */}
+                  <div className="flex items-center justify-center w-8 h-8 rounded-full bg-slate-50 border border-slate-100 text-slate-400 transition-all duration-300 group-hover:bg-white group-hover:text-slate-800 group-hover:border-slate-200 group-hover:shadow-sm">
+                    <ArrowRight className="h-4 w-4 transition-transform duration-300 -rotate-45 group-hover:rotate-0" />
+                  </div>
                 </div>
-              </div>
-            </Link>
-          )
-        })}
-      </div>
+                
+                <CardTitle className="text-xl font-bold text-slate-800 tracking-tight group-hover:text-slate-900 transition-colors">
+                    {service.title}
+                </CardTitle>
+              </CardHeader>
+              
+              <CardContent className="relative z-10 p-6 pt-2">
+                <CardDescription className="text-slate-500 text-sm font-medium leading-relaxed">
+                    {service.description}
+                </CardDescription>
+              </CardContent>
+            </Card>
+          </Link>
+        );
+      })}
     </div>
-  )
+  );
 }

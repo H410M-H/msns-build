@@ -17,76 +17,79 @@ export function StatsCards() {
       value: students?.length ?? 0,
       icon: Users,
       description: "Currently enrolled students",
-      color: "text-blue-600",
+      color: "text-emerald-400",
+      bgColor: "bg-emerald-500/10",
+      borderColor: "border-emerald-500/30",
       loading: studentsLoading,
     },
     {
       title: "Faculty & Staff",
       value: employees?.length ?? 0,
       icon: Briefcase,
-      description: "Teaching and administrative staff",
-      color: "text-green-600",
+      description: "Teaching staff",
+      color: "text-cyan-400",
+      bgColor: "bg-cyan-500/10",
+      borderColor: "border-cyan-500/30",
       loading: employeesLoading,
     },
     {
       title: "Active Classes",
       value: classes?.length ?? 0,
       icon: GraduationCap,
-      description: "Ongoing academic classes",
-      color: "text-purple-600",
+      description: "Academic classes",
+      color: "text-teal-400",
+      bgColor: "bg-teal-500/10",
+      borderColor: "border-teal-500/30",
       loading: classesLoading,
     },
     {
       title: "Fee Structures",
       value: fees?.length ?? 0,
       icon: Wallet,
-      description: "Defined fee configurations",
-      color: "text-yellow-600",
+      description: "Fee configurations",
+      color: "text-lime-400",
+      bgColor: "bg-lime-500/10",
+      borderColor: "border-lime-500/30",
       loading: feesLoading,
     },
   ]
 
   return (
-          <div className="relative  ">
-      <div className="relative overflow-hidden rounded-3xl border border-white/40 bg-white/70 p-4 shadow-2xl backdrop-blur-sm lg:p-6">
-        <div className="absolute right-0 top-0 h-32 w-32 rounded-full bg-gradient-to-br from-yellow-400/20 to-orange-400/40 blur-2xl"></div>
- 
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+    <div className="relative">
+      <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 xl:grid-cols-4">
         {stats.map((stat) => (
           <Card
             key={stat.title}
-            className="relative overflow-hidden bg-gradient-to-br from-white to-slate-50 hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
+            className={`relative overflow-hidden ${stat.bgColor} border ${stat.borderColor} backdrop-blur-md transition-all duration-300 hover:bg-white/10 hover:-translate-y-1 hover:shadow-lg`}
           >
-            <div className="absolute inset-0 bg-gradient-to-br from-yellow-400/20 to-green-400/40 blur-2xl" />
-            <CardHeader className="relative z-10 flex flex-row items-center justify-between space-y-0 pb-6">
-              <CardTitle className="text-sm font-semibold text-slate-600">
+            <CardHeader className="relative z-10 flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-semibold text-emerald-100/70">
                 {stat.title}
-            </CardTitle>
-            <div className={`p-2 rounded-lg ${stat.color.replace('text', 'bg')}/20`}>
-              <stat.icon className={`h-5 w-5 ${stat.color}`} />
-            </div>
-          </CardHeader>
-          <CardContent className="relative z-10">
-            {stat.loading ? (
-              <div className="space-y-2">
-                <Skeleton className="h-8 w-1/2" />
-                <Skeleton className="h-4 w-3/4" />
+              </CardTitle>
+              <div className={`p-2 rounded-xl bg-white/5 border border-white/10`}>
+                <stat.icon className={`h-4 w-4 ${stat.color}`} />
               </div>
-            ) : (
-              <>
-                <div className="text-3xl font-bold text-slate-900">
-                  {stat.value.toLocaleString()}
+            </CardHeader>
+            <CardContent className="relative z-10 pt-2">
+              {stat.loading ? (
+                <div className="space-y-2">
+                  <Skeleton className="h-8 w-1/2 bg-white/10" />
+                  <Skeleton className="h-4 w-3/4 bg-white/10" />
                 </div>
-                <p className="text-sm text-slate-500 mt-2">
-                  {stat.description}
-                </p>
-              </>
-            )}
-          </CardContent>
-        </Card>
-      ))}
+              ) : (
+                <>
+                  <div className="text-2xl font-bold text-white tracking-tight">
+                    {stat.value.toLocaleString()}
+                  </div>
+                  <p className="text-xs text-emerald-100/50 mt-1 font-medium">
+                    {stat.description}
+                  </p>
+                </>
+              )}
+            </CardContent>
+          </Card>
+        ))}
       </div>
     </div>
-  </div>
   )
 }

@@ -1,120 +1,118 @@
-"use client"
+"use client";
 
-import { useState, useCallback, useMemo } from "react"
-import { ChevronLeft, ChevronRight, Plus } from "lucide-react"
-import { Button } from "~/components/ui/button"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select"
-import { Input } from "~/components/ui/input"
-import EventModal, { type EventFormData } from "./event-modal"
-import EventColorLegend from "./event-color-legend"
-import EventDetailsModal, { type EventDetails } from "./event-details-modal"
-import CalendarDateCell from "./calender-date-cell"
-import { getEventsForDate } from "./event-utils"
-import DateEventsModal from "./date-events-modal"
-import { api } from "~/trpc/react"
-import { type CreateEventInput } from "~/lib/event-schemas"
-import { useSession } from "next-auth/react"
+import { useState, useCallback, useMemo } from "react";
+import { ChevronLeft, ChevronRight, Plus, Search, Filter, ArrowUpDown } from "lucide-react";
+import { Button } from "~/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "~/components/ui/select";
+import { Input } from "~/components/ui/input";
+import { api } from "~/trpc/react";
+import { useSession } from "next-auth/react";
 
-
+// Types and Schemas
+import { type CreateEventInput } from "~/lib/event-schemas";
+import EventModal, { type EventFormData } from "./event-modal";
+import EventColorLegend from "./event-color-legend";
+import EventDetailsModal, { type EventDetails } from "./event-details-modal";
+import CalendarDateCell from "./calender-date-cell";
+import { getEventsForDate } from "./event-utils";
+import DateEventsModal from "./date-events-modal";
 
 const MONTHS = [
   "January", "February", "March", "April", "May", "June",
   "July", "August", "September", "October", "November", "December",
-]
+];
 
-const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
-// Define FrontendEventData based on tRPC response
+// Sample data to prevent crashes before data loads
+const SAMPLE_EVENTS_DATA: EventDetails[] = [];
 
 export default function EventsCalendar() {
-  const [currentDate, setCurrentDate] = useState(new Date(2025, 6, 5)) // July 5, 2025
-  const [selectedDate, setSelectedDate] = useState(5)
-  const [courseFilter, setCourseFilter] = useState("all")
-  const [timelineFilter, setTimelineFilter] = useState("next-7-days")
-  const [sortBy, setSortBy] = useState("dates")
-  const [searchQuery, setSearchQuery] = useState("")
-  const [isModalOpen, setIsModalOpen] = useState(false)
-  const [selectedEventDetails, setSelectedEventDetails] = useState<EventDetails | null>(null)
-  const [isEventDetailsOpen, setIsEventDetailsOpen] = useState(false)
-  const [dateEventsModalOpen, setDateEventsModalOpen] = useState(false)
-  const [selectedDateForEvents, setSelectedDateForEvents] = useState<Date | null>(null)
-  const [events, setEvents] = useState<EventDetails[]>(SAMPLE_EVENTS_DATA)
-  const session = useSession()
+  const session = useSession();
+  
+  // -- State --
+  const [currentDate, setCurrentDate] = useState(new Date());
+  // Default to today's date for selection
+  const [selectedDate, setSelectedDate] = useState<number>(new Date().getDate());
+  
+  // Filters & Search
+  const [courseFilter, setCourseFilter] = useState("all");
+  const [timelineFilter, setTimelineFilter] = useState("this-month");
+  const [sortBy, setSortBy] = useState("dates"); // Now used in the sort logic and UI
+  const [searchQuery, setSearchQuery] = useState("");
 
-  // tRPC mutation for creating events
+  // Modals
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isEventDetailsOpen, setIsEventDetailsOpen] = useState(false);
+  const [dateEventsModalOpen, setDateEventsModalOpen] = useState(false);
+  
+  // Selected Data
+  const [selectedEventDetails, setSelectedEventDetails] = useState<EventDetails | null>(null);
+  const [selectedDateForEvents, setSelectedDateForEvents] = useState<Date | null>(null);
+  const [events, setEvents] = useState<EventDetails[]>(SAMPLE_EVENTS_DATA);
+
+  // -- Mutations --
   const createEventMutation = api.event.create.useMutation({
     onSuccess: () => {
-
-      setIsModalOpen(false)
+      setIsCreateModalOpen(false);
+      // In a real app, you would invalidate queries here: ctx.event.getAll.invalidate()
     },
     onError: (error) => {
-      console.error("Failed to create event:", error)
-      alert(`Failed to create event: ${error.message}`)
+      console.error("Failed to create event:", error);
+      alert(`Failed to create event: ${error.message}`);
     },
-  })
+  });
 
+  // -- Helpers --
   const getDaysInMonth = useCallback((date: Date): number => {
-    return new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate()
-  }, [])
+    return new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
+  }, []);
 
   const getFirstDayOfMonth = useCallback((date: Date): number => {
-    const firstDay = new Date(date.getFullYear(), date.getMonth(), 1).getDay()
-    return firstDay === 0 ? 6 : firstDay - 1
-  }, [])
+    const firstDay = new Date(date.getFullYear(), date.getMonth(), 1).getDay();
+    // Adjust for Monday start (0=Sun -> 6, 1=Mon -> 0)
+    return firstDay === 0 ? 6 : firstDay - 1;
+  }, []);
 
   const navigateMonth = useCallback((direction: "prev" | "next"): void => {
     setCurrentDate((prev) => {
-      const newDate = new Date(prev)
-      if (direction === "prev") {
-        newDate.setMonth(prev.getMonth() - 1)
-      } else {
-        newDate.setMonth(prev.getMonth() + 1)
-      }
-      return newDate
-    })
-  }, [])
+      const newDate = new Date(prev);
+      newDate.setMonth(prev.getMonth() + (direction === "prev" ? -1 : 1));
+      return newDate;
+    });
+  }, []);
 
+  // -- Handlers --
   const handleDateClick = useCallback((date: Date): void => {
-    setSelectedDateForEvents(date)
-    setDateEventsModalOpen(true)
-  }, [])
+    setSelectedDateForEvents(date);
+    setSelectedDate(date.getDate());
+    setDateEventsModalOpen(true);
+  }, []);
 
   const handleEventClickFromDate = useCallback((event: EventDetails): void => {
-    setSelectedEventDetails(event)
-    setDateEventsModalOpen(false)
-    setIsEventDetailsOpen(true)
-  }, [])
-
-  const handleEventEdit = useCallback((event: EventDetails): void => {
-    console.log("Edit event:", event)
-    setIsEventDetailsOpen(false)
-  }, [])
-
-  const handleEventDelete = useCallback((eventId: number): void => {
-    console.log("Delete event:", eventId)
-    setEvents((prev) => prev.filter((event) => event.id !== eventId))
-  }, [])
-
-  const handleEventDuplicate = useCallback((event: EventDetails): void => {
-    console.log("Duplicate event:", event)
-    setIsEventDetailsOpen(false)
-  }, [])
+    setSelectedEventDetails(event);
+    setDateEventsModalOpen(false);
+    setIsEventDetailsOpen(true);
+  }, []);
 
   const handleCreateEvent = useCallback(
     (formData: EventFormData): void => {
       if (!formData.date || !formData.startTime || !formData.endTime || !formData.title) {
-        alert("Please fill in all required fields.")
-        return
+        alert("Please fill in all required fields.");
+        return;
       }
 
-
-      const startDateTime = `${formData.date}T${formData.startTime}:00Z`
-      const endDateTime = `${formData.date}T${formData.endTime}:00Z`
       const eventData: CreateEventInput = {
         title: formData.title,
         description: formData.description ?? undefined,
-        startDateTime,
-        endDateTime,
+        startDateTime: `${formData.date}T${formData.startTime}:00Z`,
+        endDateTime: `${formData.date}T${formData.endTime}:00Z`,
         timezone: "UTC",
         location: formData.location ?? undefined,
         isOnline: formData.location.toLowerCase() === "online",
@@ -127,243 +125,247 @@ export default function EventsCalendar() {
         tagIds: [],
         reminders: [],
         attendees: [],
-        creatorId: session.data?.user.accountId??"event01",}
-         // Replace with actual user ID}
-      createEventMutation.mutate(eventData)
+        creatorId: session.data?.user.accountId ?? "default_user",
+      };
+
+      createEventMutation.mutate(eventData);
     },
     [createEventMutation, session.data?.user.accountId]
-  )
-  
+  );
 
+  // -- Filtering Logic --
   const filteredEvents = useMemo((): EventDetails[] => {
-    let filtered = events
+    let filtered = events;
 
+    // Filter by Type
     if (courseFilter !== "all") {
-      filtered = filtered.filter((event) => event.type.toLowerCase() === courseFilter)
+      filtered = filtered.filter((event) => event.type.toLowerCase() === courseFilter);
     }
 
+    // Filter by Search
     if (searchQuery) {
+      const q = searchQuery.toLowerCase();
       filtered = filtered.filter(
         (event) =>
-          event.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          event.type.toLowerCase().includes(searchQuery.toLowerCase())
-      )
+          event.title.toLowerCase().includes(q) ||
+          event.type.toLowerCase().includes(q)
+      );
     }
 
+    // Filter by Time
+    const now = new Date();
     if (timelineFilter === "next-7-days") {
-      const now = new Date()
-      const nextWeek = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000)
-      filtered = filtered.filter((event) => {
-        const eventDate = new Date(event.date)
-        return eventDate >= now && eventDate <= nextWeek
-      })
+        const nextWeek = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+        filtered = filtered.filter((e) => new Date(e.date) >= now && new Date(e.date) <= nextWeek);
     } else if (timelineFilter === "next-30-days") {
-      const now = new Date()
-      const nextMonth = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000)
-      filtered = filtered.filter((event) => {
-        const eventDate = new Date(event.date)
-        return eventDate >= now && eventDate <= nextMonth
-      })
-    } else if (timelineFilter === "this-month") {
-      const now = new Date()
-      filtered = filtered.filter((event) => {
-        const eventDate = new Date(event.date)
-        return (
-          eventDate.getMonth() === now.getMonth() &&
-          eventDate.getFullYear() === now.getFullYear()
-        )
-      })
+        const nextMonth = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
+        filtered = filtered.filter((e) => new Date(e.date) >= now && new Date(e.date) <= nextMonth);
     }
 
-    if (sortBy === "dates") {
-      filtered = filtered.sort((a, b) => a.date.localeCompare(b.date) || a.startTime.localeCompare(b.startTime))
-    } else if (sortBy === "name") {
-      filtered = filtered.sort((a, b) => a.title.localeCompare(b.title))
-    } else if (sortBy === "type") {
-      filtered = filtered.sort((a, b) => a.type.localeCompare(b.type))
-    }
+    // Sort
+    return filtered.sort((a, b) => {
+        if (sortBy === "name") return a.title.localeCompare(b.title);
+        if (sortBy === "type") return a.type.localeCompare(b.type);
+        // Default: Date ascending
+        return a.date.localeCompare(b.date) || a.startTime.localeCompare(b.startTime);
+    });
+  }, [events, courseFilter, searchQuery, timelineFilter, sortBy]);
 
-    return filtered
-  }, [events, courseFilter, searchQuery, timelineFilter, sortBy])
+  // -- Render Helpers --
+  const renderCalendarGrid = useMemo(() => {
+    const daysInMonth = getDaysInMonth(currentDate);
+    const firstDayIndex = getFirstDayOfMonth(currentDate);
+    
+    // Create empty cells for days before the 1st
+    const emptyCells = Array.from({ length: firstDayIndex }).map((_, i) => (
+      <div key={`empty-${i}`} className="min-h-[80px] sm:min-h-[120px] bg-gray-50/30 border-r border-b border-gray-100" />
+    ));
 
-  const currentMonth = useMemo(() => MONTHS[currentDate.getMonth()], [currentDate])
-  const currentYear = useMemo(() => currentDate.getFullYear(), [currentDate])
-  const prevMonth = useMemo(() => MONTHS[currentDate.getMonth() - 1] ?? MONTHS[11], [currentDate])
-  const nextMonth = useMemo(() => MONTHS[currentDate.getMonth() + 1] ?? MONTHS[0], [currentDate])
+    // Create cells for actual days
+    const dayCells = Array.from({ length: daysInMonth }).map((_, i) => {
+      const day = i + 1;
+      const cellDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
+      
+      const isToday = new Date().toDateString() === cellDate.toDateString();
+      
+      const isSelected = day === selectedDate && 
+        currentDate.getMonth() === selectedDateForEvents?.getMonth();
 
-  const selectedDateEvents = useMemo(
-    () => (selectedDateForEvents ? getEventsForDate(events, selectedDateForEvents) : []),
-    [events, selectedDateForEvents]
-  )
+      // FIXED: Use getEventsForDate to pass only relevant events to the cell
+      const daysEvents = getEventsForDate(filteredEvents, cellDate);
 
-  const renderCalendarDays = useCallback((): JSX.Element[] => {
-    const daysInMonth = getDaysInMonth(currentDate)
-    const firstDay = getFirstDayOfMonth(currentDate)
-    const days: JSX.Element[] = []
-
-    for (let i = 0; i < firstDay; i++) {
-      days.push(<div key={`empty-${i}`} className="h-12"></div>)
-    }
-
-    for (let day = 1; day <= daysInMonth; day++) {
-      const isSelected = day === selectedDate
-      const cellDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), day)
-
-      days.push(
+      return (
         <CalendarDateCell
-          key={day}
+          key={`day-${day}`}
           day={day}
           date={cellDate}
           isSelected={isSelected}
-          events={events}
+          isToday={isToday} 
+          events={daysEvents}
           onClick={() => setSelectedDate(day)}
           onDateClick={handleDateClick}
         />
-      )
-    }
+      );
+    });
 
-    return days
-  }, [currentDate, selectedDate, handleDateClick, getDaysInMonth, getFirstDayOfMonth, events])
+    return [...emptyCells, ...dayCells];
+  }, [currentDate, selectedDate, filteredEvents, handleDateClick, getDaysInMonth, getFirstDayOfMonth, selectedDateForEvents]);
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white p-6">
-      <div className="max-w-4xl mx-auto">
-        <div className="flex items-center justify-between mb-8">
-          <h1 className="text-2xl font-semibold">Calendar</h1>
-        </div>
-        <div className="flex items-center justify-between mb-8">
-          <Select value={courseFilter} onValueChange={setCourseFilter}>
-            <SelectTrigger className="w-48 bg-gray-800 border-gray-700">
-              <SelectValue placeholder="All courses" />
-            </SelectTrigger>
-            <SelectContent className="bg-gray-800 border-gray-700">
-              <SelectItem value="all">All courses</SelectItem>
-              <SelectItem value="programming">Programming</SelectItem>
-              <SelectItem value="design">Design</SelectItem>
-              <SelectItem value="marketing">Marketing</SelectItem>
-            </SelectContent>
-          </Select>
-          <Button
-            onClick={() => setIsModalOpen(true)}
-            className="bg-blue-600 hover:bg-blue-700"
-            disabled={createEventMutation.isPending}
+    <div className="flex flex-col h-full bg-white text-gray-900">
+      
+      {/* 1. Header Section */}
+      <div className="flex flex-col md:flex-row items-center justify-between gap-4 mb-6 pb-6 border-b border-gray-100">
+        <div className="flex items-center gap-4">
+          <div className="flex items-center rounded-lg bg-gray-100 p-1">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => navigateMonth("prev")}
+              className="h-8 w-8 hover:bg-white hover:shadow-sm"
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+            <div className="px-4 min-w-[140px] text-center font-semibold text-lg">
+              {MONTHS[currentDate.getMonth()]} {currentDate.getFullYear()}
+            </div>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => navigateMonth("next")}
+              className="h-8 w-8 hover:bg-white hover:shadow-sm"
+            >
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </div>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={() => setCurrentDate(new Date())}
+            className="hidden sm:flex"
           >
-            <Plus className="w-4 h-4 mr-2" />
-            New event
+            Today
           </Button>
         </div>
-        <div className="flex items-center justify-between mb-6">
-          <button
-            onClick={() => navigateMonth("prev")}
-            className="flex items-center text-gray-400 hover:text-white transition-colors"
-          >
-            <ChevronLeft className="w-5 h-5 mr-1" />
-            {prevMonth}
-          </button>
-          <h2 className="text-xl font-semibold">{currentMonth} {currentYear}</h2>
-          <button
-            onClick={() => navigateMonth("next")}
-            className="flex items-center text-gray-400 hover:text-white transition-colors"
-          >
-            {nextMonth}
-            <ChevronRight className="w-5 h-5 ml-1" />
-          </button>
-        </div>
-        <div className="bg-gray-800 rounded-lg p-6 mb-8">
-          <div className="grid grid-cols-7 gap-4 mb-4">
-            {DAYS.map((day) => (
-              <div key={day} className="text-center text-sm font-medium text-gray-400 py-2">
-                {day}
-              </div>
-            ))}
-          </div>
-          <div className="grid grid-cols-7 gap-4">{renderCalendarDays()}</div>
-        </div>
-        <div className="mb-8 p-4 bg-gray-800 rounded-lg">
-          <div className="text-sm text-gray-400 mb-2">Calendar Legend:</div>
-          <div className="flex flex-wrap gap-4 text-xs text-gray-500">
-            <div className="flex items-center gap-2">
-              <div className="w-2 h-2 rounded-full bg-blue-400" />
-              <span>Colored dots = Event types</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-4 h-4 bg-blue-600 text-white text-xs rounded-full flex items-center justify-center font-bold">
-                2
-              </div>
-              <span>Number badge = Multiple events</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-blue-600 rounded-full" />
-              <span>Click dates with events to view details</span>
-            </div>
-          </div>
-        </div>
-        <div className="flex items-center gap-4 mb-8 text-sm text-gray-400">
-          <button className="hover:text-white transition-colors">Full calendar</button>
-          <span>•</span>
-          <button className="hover:text-white transition-colors">Import or export calendars</button>
-        </div>
-        <div className="bg-gray-800 rounded-lg p-6">
-          <h3 className="text-xl font-semibold mb-6">Timeline</h3>
-          <div className="flex flex-col sm:flex-row gap-4 mb-6">
-            <Select value={timelineFilter} onValueChange={setTimelineFilter}>
-              <SelectTrigger className="w-full sm:w-48 bg-gray-700 border-gray-600">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent className="bg-gray-700 border-gray-600">
-                <SelectItem value="next-7-days">Next 7 days</SelectItem>
-                <SelectItem value="next-30-days">Next 30 days</SelectItem>
-                <SelectItem value="this-month">This month</SelectItem>
-              </SelectContent>
-            </Select>
-            <Select value={sortBy} onValueChange={setSortBy}>
-              <SelectTrigger className="w-full sm:w-48 bg-gray-700 border-gray-600">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent className="bg-gray-700 border-gray-600">
-                <SelectItem value="dates">Sort by dates</SelectItem>
-                <SelectItem value="name">Sort by name</SelectItem>
-                <SelectItem value="type">Sort by type</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="mb-8">
+
+        <div className="flex w-full md:w-auto items-center gap-3">
+          <div className="relative flex-1 md:w-64">
+            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
             <Input
-              placeholder="Search by activity type or name"
+              placeholder="Search events..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="bg-gray-700 border-gray-600 placeholder-gray-400"
+              className="pl-9 bg-gray-50 border-gray-200"
             />
           </div>
+          <Button
+            onClick={() => setIsCreateModalOpen(true)}
+            className="bg-blue-600 hover:bg-blue-700 text-white shadow-md shadow-blue-200"
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            <span className="hidden sm:inline">Add Event</span>
+            <span className="sm:hidden">Add</span>
+          </Button>
         </div>
-        <div className="mt-8">
-          <EventColorLegend />
-        </div>
-        <EventModal
-          isOpen={isModalOpen}
-          onClose={() => setIsModalOpen(false)}
-          selectedDate={new Date(currentDate.getFullYear(), currentDate.getMonth(), selectedDate)}
-          onCreate={handleCreateEvent}
-        />
-        <DateEventsModal
-          isOpen={dateEventsModalOpen}
-          onClose={() => setDateEventsModalOpen(false)}
-          date={selectedDateForEvents ?? new Date()}
-          events={selectedDateEvents}
-          onEventClick={handleEventClickFromDate}
-        />
-        <EventDetailsModal
-          isOpen={isEventDetailsOpen}
-          onClose={() => setIsEventDetailsOpen(false)}
-          event={selectedEventDetails}
-          onEdit={handleEventEdit}
-          onDelete={handleEventDelete}
-          onDuplicate={handleEventDuplicate}
-        />
       </div>
-    </div>
-  )
-}
 
-// Initial sample events data (can be empty if fetching from backend)
-const SAMPLE_EVENTS_DATA: EventDetails[] = []
+      {/* 2. Filters Bar */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
+        <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto">
+          {/* Filter By Type */}
+          <Select value={courseFilter} onValueChange={setCourseFilter}>
+            <SelectTrigger className="w-full sm:w-[150px] bg-white border-gray-200 h-9">
+              <Filter className="w-3.5 h-3.5 mr-2 text-gray-500" />
+              <SelectValue placeholder="Type" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Types</SelectItem>
+              <SelectItem value="class">Class</SelectItem>
+              <SelectItem value="exam">Exam</SelectItem>
+              <SelectItem value="assignment">Assignment</SelectItem>
+              <SelectItem value="holiday">Holiday</SelectItem>
+            </SelectContent>
+          </Select>
+
+          {/* Filter By Period */}
+          <Select value={timelineFilter} onValueChange={setTimelineFilter}>
+            <SelectTrigger className="w-full sm:w-[150px] bg-white border-gray-200 h-9">
+              <SelectValue placeholder="Period" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="this-month">This Month</SelectItem>
+              <SelectItem value="next-7-days">Next 7 Days</SelectItem>
+              <SelectItem value="next-30-days">Next 30 Days</SelectItem>
+            </SelectContent>
+          </Select>
+
+          {/* Sort By - FIXED: Reconnected to state */}
+          <Select value={sortBy} onValueChange={setSortBy}>
+            <SelectTrigger className="w-full sm:w-[150px] bg-white border-gray-200 h-9">
+              <ArrowUpDown className="w-3.5 h-3.5 mr-2 text-gray-500" />
+              <SelectValue placeholder="Sort" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="dates">Date (Asc)</SelectItem>
+              <SelectItem value="name">Name (A-Z)</SelectItem>
+              <SelectItem value="type">Type (A-Z)</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="hidden sm:flex items-center gap-2 text-xs text-gray-500 bg-gray-50 px-3 py-1.5 rounded-full border border-gray-100">
+           <span className="font-medium text-gray-700">{filteredEvents.length}</span> events
+        </div>
+      </div>
+
+      {/* 3. Calendar Grid */}
+      <div className="flex-1 border border-gray-200 rounded-xl overflow-hidden shadow-sm bg-white">
+        {/* Days Header */}
+        <div className="grid grid-cols-7 border-b border-gray-200 bg-gray-50/50">
+          {DAYS.map((day) => (
+            <div key={day} className="py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">
+              <span className="hidden sm:inline">{day}</span>
+              <span className="sm:hidden">{day.charAt(0)}</span>
+            </div>
+          ))}
+        </div>
+        
+        {/* Date Cells */}
+        <div className="grid grid-cols-7 auto-rows-fr">
+          {renderCalendarGrid}
+        </div>
+      </div>
+
+      {/* 4. Footer / Legend */}
+      <div className="mt-6">
+        <EventColorLegend />
+      </div>
+
+      {/* -- Dialogs -- */}
+      <EventModal
+        isOpen={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+        selectedDate={new Date(currentDate.getFullYear(), currentDate.getMonth(), selectedDate)}
+        onCreate={handleCreateEvent}
+      />
+      
+      <DateEventsModal
+        isOpen={dateEventsModalOpen}
+        onClose={() => setDateEventsModalOpen(false)}
+        date={selectedDateForEvents ?? new Date()}
+        // Use utility here as well to be safe
+        events={selectedDateForEvents ? getEventsForDate(events, selectedDateForEvents) : []}
+        onEventClick={handleEventClickFromDate}
+      />
+      
+      <EventDetailsModal
+        isOpen={isEventDetailsOpen}
+        onClose={() => setIsEventDetailsOpen(false)}
+        event={selectedEventDetails}
+        onEdit={(e) => console.log("Edit", e)}
+        onDelete={(id) => setEvents(prev => prev.filter(e => e.id !== id))}
+        onDuplicate={(e) => console.log("Duplicate", e)}
+      />
+    </div>
+  );
+}

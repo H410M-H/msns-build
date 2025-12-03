@@ -1,3 +1,4 @@
+// components/forms/class/SubjectAssignment.tsx
 "use client";
 
 import { useState, useEffect } from "react";
@@ -23,18 +24,13 @@ import { toast } from "~/hooks/use-toast";
 import { Skeleton } from "~/components/ui/skeleton";
 import { ReloadIcon } from "@radix-ui/react-icons";
 import { BookOpen, Users } from "lucide-react";
+import type { DayOfWeek } from "@prisma/client";
 
-type Weekday =
-  | "Monday"
-  | "Tuesday"
-  | "Wednesday"
-  | "Thursday"
-  | "Friday"
-  | "Saturday";
+// Removed local Weekday type to use DayOfWeek from Prisma source of truth
 
 type SubjectAssignmentDialogProps = {
   classId: string;
-  dayOfWeek: Weekday;
+  dayOfWeek: DayOfWeek; // Updated to use DayOfWeek
   lectureNumber: number;
   sessionId: string;
   open: boolean;
@@ -151,14 +147,14 @@ export function SubjectAssignmentDialog({
     }
   };
 
-  const dayNames: Record<Weekday, string> = {
+  const dayNames: Record<DayOfWeek, string> = {
     Monday: "Monday",
     Tuesday: "Tuesday",
     Wednesday: "Wednesday",
     Thursday: "Thursday",
     Friday: "Friday",
     Saturday: "Saturday",
-  };
+    Sunday: "Sunday",};
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

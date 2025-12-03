@@ -36,8 +36,8 @@ interface TimetableEntry {
 }
 
 // Helper function to validate day of week
-const isValidDayOfWeek = (day: string): day is "Monday" | "Tuesday" | "Wednesday" | "Thursday" | "Friday" | "Saturday" => {
-  return ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"].includes(day)
+const isValidDayOfWeek = (day: string): day is "Monday" | "Tuesday" | "Wednesday" | "Thursday" | "Friday" | "Saturday" | "Sunday" => {
+  return ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"].includes(day)
 }
 
 // Color palette for days

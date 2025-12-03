@@ -13,6 +13,8 @@ interface Services {
   href: string
   iconColor: string
   bgColor: string
+  borderColor: string
+  hoverShadow: string
 }
 
 const services: Services[] = [
@@ -21,53 +23,65 @@ const services: Services[] = [
     description: "Manage academic sessions, terms, and schedules",
     icon: CalendarCog,
     href: "/admin/sessions",
-    iconColor: "text-yellow-600",
-    bgColor: "bg-yellow-50",
+    iconColor: "text-emerald-400",
+    bgColor: "bg-emerald-500/5",
+    borderColor: "border-emerald-500/20",
+    hoverShadow: "hover:shadow-emerald-500/10",
   },
   {
     title: "User Management",
     description: "Manage students, teachers, and staff accounts",
     icon: NotebookPenIcon,
-    iconColor: "text-blue-600",
-    bgColor: "bg-blue-50",
     href: "/admin/users",
+    iconColor: "text-cyan-400",
+    bgColor: "bg-cyan-500/5",
+    borderColor: "border-cyan-500/20",
+    hoverShadow: "hover:shadow-cyan-500/10",
   },
   {
     title: "Revenue Management",
     description: "Track and manage student fees and payments",
     icon: Wallet,
-    iconColor: "text-green-600",
-    bgColor: "bg-green-50",
     href: "/admin/revenue",
+    iconColor: "text-amber-400",
+    bgColor: "bg-amber-500/5",
+    borderColor: "border-amber-500/20",
+    hoverShadow: "hover:shadow-amber-500/10",
   },
 ]
 
 export default function AdminCards() {
   return (
-    <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
       {services.map((service) => {
         const Icon = service.icon
         return (
-          <Link href={service.href} key={service.title} className="group">
-            <Card className={`relative overflow-hidden transition-all duration-300 hover:-translate-y-1.5 shadow-sm hover:shadow-lg ${service.bgColor} hover:bg-opacity-90`}>
-              <div className="absolute inset-0 bg-gradient-to-br from-white/30 to-transparent" />
-              <CardHeader className="relative z-10">
-                <div className="flex items-center gap-4">
-                  <div className={`p-3 rounded-xl ${service.bgColor} bg-opacity-20`}>
-                    <Icon className={`h-8 w-8 ${service.iconColor}`} />
+          <Link href={service.href} key={service.title} className="group block">
+            <Card className={`relative overflow-hidden transition-all duration-300 ${service.bgColor} border ${service.borderColor} hover:border-opacity-50 hover:-translate-y-1 hover:shadow-lg ${service.hoverShadow} backdrop-blur-md`}>
+              
+              {/* Gradient overlay on hover */}
+              <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
+              
+              <CardHeader className="relative z-10 p-5 pb-2">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="space-y-1">
+                    <CardTitle className="text-base font-bold text-white tracking-tight group-hover:text-white/90 transition-colors">
+                        {service.title}
+                    </CardTitle>
+                    <CardDescription className="text-emerald-100/50 text-xs font-medium line-clamp-1">
+                        {service.description}
+                    </CardDescription>
                   </div>
-                  <CardTitle className="text-xl font-semibold text-slate-800">
-                    {service.title}
-                  </CardTitle>
+                  <div className={`p-2 rounded-xl bg-black/20 border border-white/5 group-hover:scale-105 transition-transform duration-500 shrink-0`}>
+                    <Icon className={`h-5 w-5 ${service.iconColor} drop-shadow-sm`} />
+                  </div>
                 </div>
-                <CardDescription className="text-slate-600 mt-2">
-                  {service.description}
-                </CardDescription>
               </CardHeader>
-              <CardContent className="relative z-10 pt-4">
-                <div className="flex items-center text-sm font-medium text-blue-600 group-hover:text-blue-700 transition-colors">
+              
+              <CardContent className="relative z-10 p-5 pt-2">
+                <div className={`flex items-center text-xs font-semibold ${service.iconColor} opacity-70 group-hover:opacity-100 transition-all`}>
                   Access Panel
-                  <ArrowRight className="h-4 w-4 ml-2 transition-transform group-hover:translate-x-1" />
+                  <ArrowRight className="h-3 w-3 ml-1.5 transition-transform duration-300 group-hover:translate-x-1" />
                 </div>
               </CardContent>
             </Card>
@@ -77,5 +91,3 @@ export default function AdminCards() {
     </div>
   )
 }
-
-

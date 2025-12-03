@@ -62,12 +62,12 @@ export default function Home() {
       <motion.div
         className="absolute left-1/4 h-[35rem] w-[35rem] rounded-full bg-emerald-500/20 blur-[90px] sm:h-[25rem] sm:w-[25rem] sm:blur-[120px]"
         animate={{ y: [0, 40, 0], opacity: [0.3, 0.7, 0.3] }}
-        transition={{ duration: 6, repeat: Infinity }}
+        transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
       />
       <motion.div
         className="absolute bottom-0 right-1/4 h-[15rem] w-[15rem] rounded-full bg-cyan-500/20 blur-[90px] sm:h-[25rem] sm:w-[25rem] sm:blur-[120px]"
         animate={{ y: [0, -40, 0], opacity: [0.3, 0.7, 0.3] }}
-        transition={{ duration: 7, repeat: Infinity }}
+        transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
       />
 
       {/* 🏫 Hero Section */}
@@ -83,7 +83,7 @@ export default function Home() {
             <motion.div
               className="absolute rounded-full bg-emerald-400/30 blur-2xl"
               animate={{ scale: [1, 1.2, 1], opacity: [0.4, 0.8, 0.4] }}
-              transition={{ duration: 3, repeat: Infinity }}
+              transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
             />
             <Image
               src="https://res.cloudinary.com/dvvbxrs55/image/upload/v1729267508/logo-w_wt5wq6.png"
@@ -99,7 +99,7 @@ export default function Home() {
         <motion.div
           initial={{ opacity: 0, y: 40 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
+          transition={{ duration: 0.8, ease: "easeOut" }}
           className="space-y-4 max-w-screen"
         >
           <h1 className="bg-gradient-to-r from-emerald-300 via-cyan-300 to-emerald-300 bg-clip-text text-3xl font-black text-transparent drop-shadow-[0_0_20px_rgba(45,255,196,0.4)] sm:text-5xl md:text-6xl lg:text-7xl">
@@ -118,7 +118,7 @@ export default function Home() {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
+          transition={{ delay: 0.3, ease: "easeOut" }}
           className="mt-4 flex flex-col items-center justify-center gap-5 sm:mt-8 sm:flex-row sm:gap-8"
         >
           <Link
@@ -136,7 +136,7 @@ export default function Home() {
       <motion.div
         initial={{ opacity: 0, y: 40 }}
         whileInView={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8 }}
+        transition={{ duration: 0.8, ease: "easeOut" }}
         viewport={{ once: true }}
         className="relative z-10 mx-auto mb-4 w-auto rounded-2xl border border-emerald-400/20 bg-white/5 p-4 text-center shadow-[0_0_40px_rgba(45,255,196,0.15)] backdrop-blur-xl sm:mb-24 sm:max-w-2xl sm:rounded-3xl sm:p-10"
       >

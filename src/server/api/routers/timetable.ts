@@ -78,7 +78,7 @@ export const timetableRouter = createTRPCRouter({
         classId: z.string().cuid(),
         employeeId: z.string().cuid(),
         subjectId: z.string().cuid(),
-        dayOfWeek: z.enum(["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"] as const),
+        dayOfWeek: z.enum(["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"] as const),
         lectureNumber: z.number().min(1).max(9),
         sessionId: z.string().cuid(),
         startTime: z.string(),

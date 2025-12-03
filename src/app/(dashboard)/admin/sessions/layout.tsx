@@ -24,10 +24,8 @@ export default function SessionsLayout({
       <TooltipProvider delayDuration={300}>
         <div className={`${inter.className} antialiased relative min-h-screen`}>
           {/* Global Background */}
-          <div className="fixed inset-0 bg-gradient-to-br from-slate-50 via-white to-emerald-50/30 -z-10" />
-          
-          {/* Main Content */}
-          <main className="relative">
+          <div className="fixed top-0 left-1/2 -translate-x-1/2 w-3/4 h-1 bg-gradient-to-r from-transparent via-emerald-500/50 to-transparent blur-sm -z-10" />
+                    <main className="relative">
             {children}
           </main>
           
