@@ -112,26 +112,26 @@ export default function StudentCreationDialog() {
       name={name}
       render={({ field }) => (
         <FormItem className="w-full">
-          <FormLabel className="text-sm font-medium text-gray-700">{label}</FormLabel>
+          <FormLabel className="text-md font-medium text-emerald-900">{label}</FormLabel>
           <FormControl>
             <Input
               type={type}
               placeholder={placeholder || label}
-              className="rounded-lg border-gray-200 focus:ring-2 focus:ring-blue-500 transition-all duration-200"
+              className="rounded-lg border-green-600 text-white focus:ring-2 focus:ring-blue-500 transition-all duration-200"
               {...field}
               value={field.value ?? ""}
             />
           </FormControl>
-          <FormMessage className="text-xs" />
+          <FormMessage className="text-xs text-red-500" />
         </FormItem>
       )}
     />
   );
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 p-4 sm:p-6 lg:p-8">
+    <div className="min-h-screen bg-gradient-to-br from-green-500 via-yellow-600 to-emerald-700 p-4 sm:p-6 lg:p-8 rounded-lg shadow-lg">
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className="max-w-8xl mx-auto">
-        <Card className="backdrop-blur-sm bg-white/90 shadow-xl rounded-2xl overflow-hidden border-0">
+        <Card className="backdrop-blur-sm bg-gray-400/70 shadow-xl rounded-2xl overflow-hidden border-0">
           <CardHeader className="relative min-h-[100px] items-center">
             <Image
               src="https://res.cloudinary.com/dvvbxrs55/image/upload/v1737374740/hex-one_cihfwh.jpg"
@@ -240,7 +240,7 @@ export default function StudentCreationDialog() {
   {renderFormField("medicalProblem", "Medical Conditions (optional)")}
 </div>
 
-                <CardFooter className="p-6 bg-gray-50 flex justify-end gap-4">
+                <CardFooter className="p-6 bg-transparent flex justify-end gap-4">
                   <Button
                     type="button"
                     variant="outline"

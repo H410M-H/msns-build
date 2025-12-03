@@ -1,123 +1,105 @@
-// RegistrationCards.tsx
-"use client"
+"use client";
+
 import { motion } from "framer-motion";
-import { UserPlus, Users, type LucideIcon } from "lucide-react";
+import { UserPlus, Users, type LucideIcon, ArrowRight } from "lucide-react";
 import Link from "next/link";
-import Image from "next/image";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
 
-type IconType = LucideIcon
-
-interface Services {
-  title: string
-  description: string
-  icon: IconType
-  href: string
-  iconColor: string
-  gradientFrom: string
-  gradientTo: string
+interface Service {
+  title: string;
+  description: string;
+  icon: LucideIcon;
+  href: string;
+  iconColor: string;
+  bgColor: string;
+  borderColor: string;
+  hoverShadow: string;
 }
 
-const services: Services[] = [
+const services: Service[] = [
   {
     title: "Student Registration",
-    description: "Register new students and manage their admission process with ease.",
+    description: "Enroll new students and manage admission data.",
     icon: UserPlus,
     href: "/admin/users/student/create",
-    iconColor: "bg-emerald-100",
-    gradientFrom: "from-green-400",
-    gradientTo: "to-green-700",
+    iconColor: "text-emerald-400",
+    bgColor: "bg-emerald-500/10",
+    borderColor: "border-emerald-500/20",
+    hoverShadow: "hover:shadow-emerald-500/10",
   },
   {
     title: "Active Students",
-    description: "View and manage currently enrolled students' information.",
+    description: "View and manage currently enrolled students.",
     icon: Users,
     href: "/admin/users/student/view",
-    iconColor: "bg-blue-100",
-    gradientFrom: "from-blue-400",
-    gradientTo: "to-blue-700",
+    iconColor: "text-cyan-400",
+    bgColor: "bg-cyan-500/10",
+    borderColor: "border-cyan-500/20",
+    hoverShadow: "hover:shadow-cyan-500/10",
   },
   {
     title: "Employee Registration",
-    description: "Streamline the process of registering new faculty members.",
+    description: "Register new faculty and staff members.",
     icon: UserPlus,
     href: "/admin/users/faculty/create",
-    iconColor: "bg-purple-100",
-    gradientFrom: "from-purple-400",
-    gradientTo: "to-purple-700",
+    iconColor: "text-purple-400",
+    bgColor: "bg-purple-500/10",
+    borderColor: "border-purple-500/20",
+    hoverShadow: "hover:shadow-purple-500/10",
   },
   {
     title: "Active Employees",
-    description: "Access and manage current faculty member information.",
+    description: "Access faculty directory and information.",
     icon: Users,
     href: "/admin/users/faculty/view",
-    iconColor: "bg-orange-100",
-    gradientFrom: "from-orange-400",
-    gradientTo: "to-orange-700",
+    iconColor: "text-amber-400",
+    bgColor: "bg-amber-500/10",
+    borderColor: "border-amber-500/20",
+    hoverShadow: "hover:shadow-amber-500/10",
   },
 ];
 
 export default function RegistrationCards() {
   return (
-    <div className="relative min-h-[60vh] flex items-center justify-center rounded-md overflow-hidden">
-      {/* Background Image with Overlay */}
-      <div className="absolute inset-0">
-        <Image
-          width="1920"
-          height="1080"
-          src="https://res.cloudinary.com/dvvbxrs55/image/upload/v1729267628/Schoolview_zmv8rr.jpg"
-          sizes="100vw"
-          alt="School view background"
-          className="w-full h-full object-cover"
-          priority
-        />
-        <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" />
-      </div>
-
-      {/* Cards Grid */}
-      <div className="relative z-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8 max-w-7xl w-full px-4 py-12">
-        {services.map((service, index) => {
-          const Icon = service.icon
-          return (
+    <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 max-w-7xl mx-auto w-full">
+      {services.map((service, _index) => {
+        const Icon = service.icon;
+        return (
+          <Link href={service.href} key={service.title} className="group block h-full">
             <motion.div
-              key={index}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.1 }}
+              whileHover={{ y: -5 }}
+              transition={{ type: "spring", stiffness: 300 }}
+              className="h-full"
             >
-              <Link
-                href={service.href}
-                className="relative group block h-full transform transition-all duration-300 
-                  hover:z-20 focus:outline-none focus:ring-4 focus:ring-emerald-500/30 rounded-3xl"
-              >
-                {/* Card Container */}
-                <div className="relative h-full p-6 bg-white/90 backdrop-blur-lg shadow-2xl 
-                  rounded-3xl transition-transform duration-300 ease-in-out 
-                  group-hover:scale-105 group-hover:shadow-2xl
-                  border border-white/20">
-                  
-                  {/* Gradient Accent */}
-                  <div className={`absolute inset-0 bg-gradient-to-br ${service.gradientFrom} ${service.gradientTo} 
-                    opacity-0 group-hover:opacity-10 rounded-3xl transition-opacity duration-300`} />
-
-                  <div className="flex flex-col items-center text-center space-y-4">
-                    <div className={`p-4 rounded-2xl ${service.iconColor} transition-colors duration-300`}>
-                      <Icon className="h-8 w-8 text-gray-900" />
+              <Card className={`relative h-full overflow-hidden transition-all duration-500 bg-white/5 border ${service.borderColor} hover:border-opacity-50 hover:shadow-2xl ${service.hoverShadow} backdrop-blur-md`}>
+                
+                {/* Gradient overlay on hover */}
+                <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
+                
+                <CardHeader className="relative z-10 pb-2">
+                  <div className="flex items-start justify-between mb-4">
+                    <div className={`p-3 rounded-2xl ${service.bgColor} border border-white/5 group-hover:scale-110 transition-transform duration-500`}>
+                      <Icon className={`h-6 w-6 ${service.iconColor}`} />
                     </div>
-                    <h3 className="text-xl font-bold text-gray-900 
-                      group-hover:text-green-700 transition-colors duration-300">
-                      {service.title}
-                    </h3>
-                    <p className="text-gray-600 group-hover:text-gray-800 
-                      transition-colors duration-300">
-                      {service.description}
-                    </p>
+                    <div className={`p-2 rounded-full bg-white/5 text-white/40 group-hover:text-white group-hover:bg-white/10 transition-all`}>
+                        <ArrowRight className="h-4 w-4 -rotate-45 group-hover:rotate-0 transition-transform duration-300" />
+                    </div>
                   </div>
-                </div>
-              </Link>
+                  <CardTitle className="text-xl font-bold text-white tracking-tight group-hover:text-emerald-300 transition-colors">
+                    {service.title}
+                  </CardTitle>
+                </CardHeader>
+                
+                <CardContent className="relative z-10">
+                  <CardDescription className="text-emerald-100/50 text-sm leading-relaxed">
+                    {service.description}
+                  </CardDescription>
+                </CardContent>
+              </Card>
             </motion.div>
-          )
-        })}
-      </div>
+          </Link>
+        );
+      })}
     </div>
-  )
+  );
 }
