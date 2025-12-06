@@ -124,10 +124,16 @@ model FeeStudentClass {
     discount            Float        @default(0)
     discountByPercent   Float        @default(0)
     discountDescription String
+    month               Int          @default(1)
+    year                Int          @default(2024)
+    lateFee             Float        @default(0)
+    paidAt              DateTime?
     createdAt           DateTime     @default(now())
     updatedAt           DateTime     @updatedAt
     fees                Fees         @relation(fields: [feeId], references: [feeId])
     StudentClass        StudentClass @relation(fields: [studentClassId], references: [scId])
+
+    @@unique([studentClassId, feeId, month, year])
 }
 
 model Fees {
