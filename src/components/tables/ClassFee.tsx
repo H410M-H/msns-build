@@ -16,15 +16,14 @@ import {
   type ColumnDef,
   type SortingState,
 } from "@tanstack/react-table"
-import { ArrowUpDown, Download, RefreshCw, CheckCircle2, XCircle, Search, Printer } from "lucide-react"
+import { ArrowUpDown, Download, RefreshCw, CheckCircle2, XCircle, Search, Printer, Loader2 } from "lucide-react"
 import { toast } from "sonner"
 import { Skeleton } from "~/components/ui/skeleton"
 import { Badge } from "~/components/ui/badge"
 import { Checkbox } from "~/components/ui/checkbox"
-import { LateFeeDialog } from "../forms/fee/late-fee-dialog"
+import { LateFeeDialog } from "~/components/forms/fee/late-fee-dialog" // Corrected path assumption
 import { type ExportData, exportToCSV } from "~/lib/export-utils"
-import { FeeWaiverDialog } from "../forms/fee/fee-waiver-dialog"
-
+import { FeeWaiverDialog } from "~/components/forms/fee/fee-waiver-dialog" // Corrected path assumption
 
 export type FeeProps = {
   tuitionFee: number
@@ -63,7 +62,7 @@ export type ClassFeeProps = {
       studentName: string
       fatherMobile?: string
     }
-    class: {
+    class?: {
       grade: string
       section: string
     }
@@ -93,40 +92,84 @@ const months = [
 const currentYear = new Date().getFullYear()
 const years = Array.from({ length: 5 }, (_, i) => currentYear - 2 + i)
 
-export function ClassFeeTable({ classId, sessionId }: ClassFeeTableProps) {
+export function ClassFeeTable({ classId, sessionId: _sessionId }: ClassFeeTableProps) {
   const [sorting, setSorting] = useState<SortingState>([])
   const [globalFilter, setGlobalFilter] = useState("")
   const [rowSelection, setRowSelection] = useState({})
   const [isRefreshing, setIsRefreshing] = useState(false)
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1)
   const [selectedYear, setSelectedYear] = useState(currentYear)
+  const [isBatchUpdating, setIsBatchUpdating] = useState(false)
+  
   const utils = api.useUtils()
 
   const {
     data: classFeesData,
     isLoading,
     refetch,
-  } = api.fee.getFeeAssignmentsByClassAndSession.useQuery(
-    { classId, sessionId, month: selectedMonth, year: selectedYear },
-    { refetchOnWindowFocus: false },
+  } = api.fee.getClassFees.useQuery(
+    { classId, year: selectedYear },
+    { refetchOnWindowFocus: false, enabled: !!classId },
   )
 
-  const classFees = classFeesData as ClassFeeProps[] | undefined
+  const classFees = useMemo(() => {
+    // Robust check for undefined data
+    if (!classFeesData?.studentClasses) {
+        return [] as ClassFeeProps[];
+    }
+    
+    // Explicitly typed flatMap to avoid implicit 'any'
+    const assignments = classFeesData.studentClasses.flatMap((sc) => {
+      if (!sc.FeeStudentClass) return [];
+      
+      return sc.FeeStudentClass.map((f) => ({
+        ...f,
+        studentClass: {
+          student: sc.Students,
+          class: { grade: "", section: "" }
+        }
+      })) as ClassFeeProps[]; 
+    });
 
-  const { mutate: updatePayment } = api.fee.updatePaymentStatus.useMutation({
+    return assignments.filter((f) => f.month === selectedMonth);
+  }, [classFeesData, selectedMonth]);
+
+  const { mutateAsync: updatePayment } = api.fee.updateFeePayment.useMutation({
     onSuccess: async () => {
-      await utils.fee.getFeeAssignmentsByClassAndSession.invalidate()
-      toast.success("Payment status updated")
+       // Optional: await utils.fee.getClassFees.invalidate()
     },
   })
 
-  const { mutate: batchUpdate, isPending: isBatchUpdating } = api.fee.batchUpdatePaymentStatus.useMutation({
-    onSuccess: async (data: { updatedCount: number }) => {
-      await utils.fee.getFeeAssignmentsByClassAndSession.invalidate()
-      toast.success(`Updated ${data.updatedCount} records`)
-      setRowSelection({})
-    },
-  })
+  const handleBatchUpdate = async (markAllPaid: boolean) => {
+    const selectedIds = Object.keys(rowSelection);
+    if (selectedIds.length === 0) return;
+
+    setIsBatchUpdating(true);
+    try {
+      const selectedRows = table.getSelectedRowModel().rows.map(row => row.original);
+      
+      const promises = selectedRows.map(row => {
+        return updatePayment({
+          feeStudentClassId: row.sfcId,
+          tuitionPaid: markAllPaid,
+          examFundPaid: markAllPaid,
+          computerLabPaid: markAllPaid,
+          studentIdCardPaid: markAllPaid,
+          infoAndCallsPaid: markAllPaid,
+          paidAt: markAllPaid ? new Date() : undefined
+        });
+      });
+
+      await Promise.all(promises);
+      toast.success(`Updated ${selectedRows.length} records`);
+      setRowSelection({});
+      await utils.fee.getClassFees.invalidate();
+    } catch {
+      toast.error("Failed to update some records");
+    } finally {
+      setIsBatchUpdating(false);
+    }
+  };
 
   const handleRefresh = async () => {
     setIsRefreshing(true)
@@ -134,12 +177,45 @@ export function ClassFeeTable({ classId, sessionId }: ClassFeeTableProps) {
     setTimeout(() => setIsRefreshing(false), 1000)
   }
 
-  const handlePaymentToggle = (
+  const handlePaymentToggle = async (
     sfcId: string,
     feeType: "tuition" | "examFund" | "computerLab" | "studentIdCard" | "infoAndCalls",
     paid: boolean,
   ) => {
-    updatePayment({ sfcId, feeType, paid })
+    const payload: {
+      feeStudentClassId: string;
+      tuitionPaid?: boolean;
+      examFundPaid?: boolean;
+      computerLabPaid?: boolean;
+      studentIdCardPaid?: boolean;
+      infoAndCallsPaid?: boolean;
+    } = { feeStudentClassId: sfcId };
+
+    switch (feeType) {
+      case "tuition":
+        payload.tuitionPaid = paid;
+        break;
+      case "examFund":
+        payload.examFundPaid = paid;
+        break;
+      case "computerLab":
+        payload.computerLabPaid = paid;
+        break;
+      case "studentIdCard":
+        payload.studentIdCardPaid = paid;
+        break;
+      case "infoAndCalls":
+        payload.infoAndCallsPaid = paid;
+        break;
+    }
+
+    try {
+      await updatePayment(payload);
+      await utils.fee.getClassFees.invalidate();
+      toast.success("Payment status updated");
+    } catch {
+      toast.error("Failed to update payment");
+    }
   }
 
   const calculateTotalFee = (fee: FeeProps, lateFee = 0): number => {
@@ -333,7 +409,7 @@ export function ClassFeeTable({ classId, sessionId }: ClassFeeTableProps) {
     enableRowSelection: true,
   })
 
-  const selectedSfcIds = table.getSelectedRowModel().rows.map((row) => row.original.sfcId)
+  const selectedRowsCount = Object.keys(rowSelection).length
 
   const totals = useMemo(() => {
     const data = classFees ?? []
@@ -400,6 +476,19 @@ export function ClassFeeTable({ classId, sessionId }: ClassFeeTableProps) {
     toast.success("Fee data exported successfully")
   }
 
+  if (isLoading) {
+      return (
+          <div className="space-y-4">
+              <Skeleton className="h-12 w-full" />
+              <div className="rounded-lg border bg-white overflow-hidden">
+                   <div className="p-8 flex justify-center items-center">
+                       <Loader2 className="h-8 w-8 animate-spin text-slate-400" />
+                   </div>
+              </div>
+          </div>
+      )
+  }
+
   return (
     <div className="space-y-4">
       {/* Filters */}
@@ -440,20 +529,20 @@ export function ClassFeeTable({ classId, sessionId }: ClassFeeTableProps) {
           </Select>
         </div>
         <div className="flex items-center gap-2">
-          {selectedSfcIds.length > 0 && (
+          {selectedRowsCount > 0 && (
             <>
               <Button
                 size="sm"
-                onClick={() => batchUpdate({ sfcIds: selectedSfcIds, markAllPaid: true })}
+                onClick={() => handleBatchUpdate(true)}
                 disabled={isBatchUpdating}
                 className="bg-emerald-600 hover:bg-emerald-700"
               >
-                Mark {selectedSfcIds.length} as Paid
+                {isBatchUpdating ? <Loader2 className="h-4 w-4 animate-spin" /> : `Mark ${selectedRowsCount} Paid`}
               </Button>
               <Button
                 size="sm"
                 variant="outline"
-                onClick={() => batchUpdate({ sfcIds: selectedSfcIds, markAllPaid: false })}
+                onClick={() => handleBatchUpdate(false)}
                 disabled={isBatchUpdating}
               >
                 Mark Unpaid
@@ -485,19 +574,7 @@ export function ClassFeeTable({ classId, sessionId }: ClassFeeTableProps) {
             ))}
           </TableHeader>
           <TableBody>
-            {isLoading || isRefreshing ? (
-              Array(5)
-                .fill(0)
-                .map((_, i) => (
-                  <TableRow key={i}>
-                    {columns.map((_, j) => (
-                      <TableCell key={j}>
-                        <Skeleton className="h-4 w-full" />
-                      </TableCell>
-                    ))}
-                  </TableRow>
-                ))
-            ) : table.getRowModel().rows.length ? (
+             {table.getRowModel().rows.length ? (
               table.getRowModel().rows.map((row) => (
                 <TableRow key={row.id} className="hover:bg-slate-50">
                   {row.getVisibleCells().map((cell) => (

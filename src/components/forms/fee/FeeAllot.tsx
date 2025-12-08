@@ -20,6 +20,7 @@ type FeeAllotmentDialogProps = {
   sfcId: string
   studentClassId: string
   feeId: string
+  
   initialDiscount: number
   initialDiscountPercent: number
   initialDiscountDescription: string
@@ -42,7 +43,7 @@ export default function FeeAllotmentDialog({
 
   const { toast } = useToast()
 
-  const updateFeeAssignment = api.fee.updateFeeAssignment.useMutation({
+  const updateFeeAssignment = api.fee.updateFeePayment.useMutation({
     onSuccess: () => {
       toast({
         title: "Fee assignment updated successfully",
@@ -78,15 +79,15 @@ export default function FeeAllotmentDialog({
 
   const handleSubmit = () => {
     updateFeeAssignment.mutate({
-      sfcId,
-      discount: Number.parseFloat(discount),
-      discountbypercent: Number.parseFloat(discountbypercent),
-      discountDescription,
+      feeStudentClassId: sfcId,
+      discount: parseFloat(discount),
+      discountbypercent: parseFloat(discountbypercent),
+      discountDescription: discountDescription,
     })
   }
 
   const handleRemove = () => {
-    removeFeeAssignment.mutate({ sfcId })
+    removeFeeAssignment.mutate({ feeStudentClassId: sfcId })
   }
 
   return (

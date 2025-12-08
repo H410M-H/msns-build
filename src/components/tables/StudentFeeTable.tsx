@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useMemo, useState } from "react"
 import { api } from "~/trpc/react"
 import { FileSearch } from "lucide-react"
 import {
@@ -22,17 +22,59 @@ import { Skeleton } from "~/components/ui/skeleton"
 import { Badge } from "~/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card"
 
+// Define types to ensure safety
+type FeeAssignment = {
+  sfcId: string
+  studentClass: {
+    student: {
+      studentName: string
+      registrationNumber: string
+    }
+  }
+  fees: {
+    level: string
+    tuitionFee: number
+  }
+  discount: number
+  discountByPercent: number
+  lateFee: number
+  tuitionPaid: boolean
+}
+
 export function FeeAssignmentTable() {
   const [selectedSession, setSelectedSession] = useState<string>("")
   const [selectedClass, setSelectedClass] = useState<string>("")
 
   const { data: sessions, isLoading: isLoadingSessions } = api.session.getSessions.useQuery()
   const { data: classes, isLoading: isLoadingClasses } = api.class.getClasses.useQuery()
-  const { data: feeAssignments, isLoading: isLoadingFeeAssignments } =
-    api.fee.getFeeAssignmentsByClassAndSession.useQuery(
+  
+  const { data: classFeesData, isLoading: isLoadingFeeAssignments } =
+    api.fee.getClassFees.useQuery(
       { classId: selectedClass, sessionId: selectedSession },
-      { enabled: !!(selectedClass && selectedSession) },
+      { enabled: !!selectedClass && !!selectedSession },
     )
+
+  // Explicitly type the transformation result to avoid implicit 'any'
+  const feeAssignments: FeeAssignment[] = useMemo(() => {
+    if (!classFeesData?.studentClasses) return [];
+    
+    return classFeesData.studentClasses.flatMap((sc) => {
+      // Ensure FeeStudentClass exists before mapping
+      if (!sc.FeeStudentClass) return [];
+
+      return sc.FeeStudentClass.map((f) => ({
+        sfcId: f.sfcId,
+        studentClass: {
+          student: sc.Students,
+        },
+        fees: f.fees,
+        discount: f.discount,
+        discountByPercent: f.discountByPercent,
+        lateFee: f.lateFee,
+        tuitionPaid: f.tuitionPaid
+      })) as FeeAssignment[];
+    });
+  }, [classFeesData]);
 
   return (
     <Card className="shadow-sm">
@@ -56,9 +98,9 @@ export function FeeAssignmentTable() {
                   <SelectItem key={session.sessionId} value={session.sessionId}>
                     <div className="flex items-center gap-2">
                       <span>{session.sessionName}</span>
-                      <Badge variant="outline" className="ml-2">
-                        {session.sessionName}
-                      </Badge>
+                      {session.isActive && (
+                        <Badge variant="outline" className="ml-2 text-[10px] h-5">Active</Badge>
+                      )}
                     </div>
                   </SelectItem>
                 ))}
@@ -77,8 +119,8 @@ export function FeeAssignmentTable() {
                 {classes?.map((class_) => (
                   <SelectItem key={class_.classId} value={class_.classId}>
                     <div className="flex items-center gap-2">
-                      <span>Grade {class_.grade}</span>
-                      <Badge variant="outline" className="ml-2">
+                      <span>{class_.grade}</span>
+                      <Badge variant="outline" className="ml-2 text-[10px] h-5">
                         {class_.section}
                       </Badge>
                     </div>
@@ -117,62 +159,72 @@ export function FeeAssignmentTable() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {feeAssignments.map((assignment) => (
-                    <TableRow 
-                      key={assignment.sfcId}
-                      className="hover:bg-muted/50 transition-colors"
-                    >
-                      <TableCell>
-                        <div className="flex flex-col">
-                          <span className="font-medium">
-                            {assignment.studentClass.student.studentName}
-                          </span>
-                          <Badge 
-                            variant="outline" 
-                            className="w-fit text-xs font-mono"
-                          >
-                            Reg: {assignment.studentClass.student.registrationNumber}
-                          </Badge>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex flex-col">
-                          <span>{assignment.fees.level}</span>
-                          <span className="text-sm text-muted-foreground">
-                            {assignment.fees.level}
-                          </span>
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-right font-medium">
-                        ₹ {assignment.fees.tuitionFee.toLocaleString()}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex flex-col">
-                          <span className="text-red-600">
-                            - ₹ {assignment.discount.toLocaleString()}
-                          </span>
-                          <span className="text-sm text-muted-foreground">
-                            ({assignment.discountByPercent.toFixed(1)}%)
-                          </span>
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-right font-bold text-green-700">
-                        ₹ {(assignment.fees.tuitionFee - assignment.discount).toLocaleString()}
-                      </TableCell>
-                    </TableRow>
-                  ))}
+                  {feeAssignments.map((assignment) => {
+                    // Safe calculation with fallbacks
+                    const baseFee = assignment.fees.tuitionFee || 0;
+                    const discount = assignment.discount || 
+                      (assignment.discountByPercent > 0 ? (baseFee * assignment.discountByPercent) / 100 : 0);
+                    const finalAmount = baseFee - discount + (assignment.lateFee || 0);
+
+                    return (
+                      <TableRow 
+                        key={assignment.sfcId}
+                        className="hover:bg-muted/50 transition-colors"
+                      >
+                        <TableCell>
+                          <div className="flex flex-col">
+                            <span className="font-medium">
+                              {assignment.studentClass.student.studentName}
+                            </span>
+                            <Badge 
+                              variant="outline" 
+                              className="w-fit text-xs font-mono mt-1"
+                            >
+                              Reg: {assignment.studentClass.student.registrationNumber}
+                            </Badge>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex flex-col">
+                            <span>{assignment.fees.level}</span>
+                            <span className="text-sm text-muted-foreground">
+                              {assignment.fees.level} Type
+                            </span>
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-right font-medium">
+                          Rs. {baseFee.toLocaleString()}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex flex-col items-end">
+                            <span className="text-red-600">
+                              - Rs. {discount.toLocaleString()}
+                            </span>
+                            {assignment.discountByPercent > 0 && (
+                              <span className="text-xs text-muted-foreground">
+                                ({assignment.discountByPercent.toFixed(1)}%)
+                              </span>
+                            )}
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-right font-bold text-green-700">
+                          Rs. {finalAmount.toLocaleString()}
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
                 </TableBody>
               </Table>
             </div>
           </div>
         ) : (
-          <div className="flex flex-col items-center justify-center gap-4 p-12 text-center border-2 border-dashed rounded-lg">
-            <FileSearch className="h-12 w-12 text-muted-foreground" />
+          <div className="flex flex-col items-center justify-center gap-4 p-12 text-center border-2 border-dashed rounded-lg bg-slate-50/50">
+            <FileSearch className="h-12 w-12 text-muted-foreground/50" />
             <div className="space-y-1">
-              <h3 className="font-medium">No fee assignments found</h3>
+              <h3 className="font-medium text-slate-900">No fee assignments found</h3>
               <p className="text-sm text-muted-foreground">
                 {selectedClass && selectedSession 
-                  ? "Try selecting different filters" 
+                  ? "No students have fees assigned for this selection" 
                   : "Select a class and session to view assignments"}
               </p>
             </div>

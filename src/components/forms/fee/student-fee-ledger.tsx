@@ -32,6 +32,7 @@ interface LedgerEntry {
   outstanding: number
   isPaid: boolean
   lateFee?: number
+  fees: Record<string, any> // Add the 'fees' property; adjust the type as needed
   StudentClass: {
     Grades: {
       grade: string
@@ -49,15 +50,15 @@ interface StudentFeeLedgerProps {
   sessionId?: string
 }
 
-export function StudentFeeLedger({ sessionId }: StudentFeeLedgerProps) {
+export function StudentFeeLedger({ }: StudentFeeLedgerProps) {
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null)
   const [selectedReceipt, setSelectedReceipt] = useState<string | null>(null)
 
   const studentsQuery = api.student.getStudents.useQuery()
 
-  const ledgerQuery = api.fee.getStudentFeeLedger.useQuery(
-    { studentId: selectedStudentId!, sessionId },
+  const ledgerQuery = api.fee.getStudentFees.useQuery(
+    { studentId: selectedStudentId! },
     { enabled: !!selectedStudentId },
   )
 
@@ -277,8 +278,23 @@ export function StudentFeeLedger({ sessionId }: StudentFeeLedgerProps) {
                                   <DialogTitle>Fee Receipt</DialogTitle>
                                 </DialogHeader>
                                 <FeeReceipt
-                                  student={ledger.student!}
-                                  entry={entry}
+                                  student={{
+                                    ...ledger.student!,
+                                    fatherName: ledger.student!.fatherName ?? "",
+                                    fatherMobile: ledger.student!.fatherMobile ?? ""
+                                  }}
+                                  entry={{
+                                    ...entry,
+                                    fees: {
+                                      level: entry.fees?.level ?? "",
+                                      tuitionFee: entry.fees?.tuitionFee ?? 0,
+                                      examFund: entry.fees?.examFund ?? 0,
+                                      computerLabFund: entry.fees?.computerLabFund ?? null,
+                                      studentIdCardFee: entry.fees?.studentIdCardFee ?? 0,
+                                      infoAndCallsFee: entry.fees?.infoAndCallsFee ?? 0,
+                                      admissionFee: entry.fees?.admissionFee ?? 0,
+                                    }
+                                  }}
                                   className={entry.StudentClass.Grades.grade}
                                   section={entry.StudentClass.Grades.section}
                                 />

@@ -1,12 +1,14 @@
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
+import { type Prisma } from "@prisma/client";
 import {
   createTRPCRouter,
   protectedProcedure,
   publicProcedure,
 } from "~/server/api/trpc";
 
-// Define input schemas
+// --- Input Schemas ---
+
 const feeInputSchema = z.object({
   level: z.string(),
   admissionFee: z.number(),
@@ -22,28 +24,6 @@ const feeUpdateSchema = feeInputSchema.partial().extend({
   feeId: z.string(),
 });
 
-const studentClassFeeInputSchema = z.object({
-  studentClassId: z.string(),
-  feeId: z.string(),
-  discount: z.number().optional(),
-  discountByPercent: z.number().optional(),
-  discountDescription: z.string().optional(),
-  month: z.number(),
-  year: z.number(),
-  lateFee: z.number().optional(),
-});
-
-const bulkFeeUpdateSchema = z.object({
-  studentClassIds: z.array(z.string()),
-  feeId: z.string(),
-  discount: z.number().optional(),
-  discountByPercent: z.number().optional(),
-  discountDescription: z.string().optional(),
-  month: z.number(),
-  year: z.number(),
-  lateFee: z.number().optional(),
-});
-
 const paymentUpdateSchema = z.object({
   feeStudentClassId: z.string(),
   tuitionPaid: z.boolean().optional(),
@@ -52,38 +32,48 @@ const paymentUpdateSchema = z.object({
   studentIdCardPaid: z.boolean().optional(),
   infoAndCallsPaid: z.boolean().optional(),
   paidAt: z.date().optional(),
+  discount: z.number().optional(),
+  discountbypercent: z.number().optional(),
+  discountDescription: z.string().optional(),
 });
 
-// Helper function to safely extract error message from an unknown error type
 const getErrorMessage = (error: unknown): string => {
-  if (error instanceof Error) {
-    return error.message;
-  }
-  if (typeof error === 'string') {
-    return error;
-  }
+  if (error instanceof Error) return error.message;
   return 'An unknown error occurred.';
 };
 
+// --- Helper Types for Aggregation ---
+interface MonthlyFeeStats {
+  month: string;
+  monthNumber: number;
+  totalExpected: number;
+  totalCollected: number;
+  outstanding: number;
+  paidCount: number;
+  unpaidCount: number;
+  collectionRate: number;
+}
+
+interface ClassFeeGroup {
+  className: string;
+  studentCount: number;
+  totalExpected: number;
+  totalPaid: number;
+  payments: {
+    isPaid: boolean;
+    studentId: string;
+    amount: number;
+  }[];
+}
+
 export const feeRouter = createTRPCRouter({
-  // Create a new fee structure
+  // --- CRUD Operations ---
+
   createFee: protectedProcedure
     .input(feeInputSchema)
     .mutation(async ({ ctx, input }) => {
       try {
-        const fee = await ctx.db.fees.create({
-          data: {
-            level: input.level,
-            admissionFee: input.admissionFee,
-            tuitionFee: input.tuitionFee,
-            examFund: input.examFund,
-            computerLabFund: input.computerLabFund,
-            studentIdCardFee: input.studentIdCardFee,
-            infoAndCallsFee: input.infoAndCallsFee,
-            type: input.type,
-          },
-        });
-        return fee;
+        return await ctx.db.fees.create({ data: input });
       } catch (error) {
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
@@ -92,17 +82,15 @@ export const feeRouter = createTRPCRouter({
       }
     }),
 
-  // Update an existing fee structure
   updateFee: protectedProcedure
     .input(feeUpdateSchema)
     .mutation(async ({ ctx, input }) => {
       try {
         const { feeId, ...updateData } = input;
-        const fee = await ctx.db.fees.update({
+        return await ctx.db.fees.update({
           where: { feeId },
           data: updateData,
         });
-        return fee;
       } catch (error) {
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
@@ -111,169 +99,79 @@ export const feeRouter = createTRPCRouter({
       }
     }),
 
-  // Delete a fee structure
-  deleteFee: protectedProcedure
-    .input(z.object({ feeId: z.string() }))
+  deleteFeesByIds: protectedProcedure
+    .input(z.object({ feeIds: z.array(z.string()) }))
     .mutation(async ({ ctx, input }) => {
       try {
-        const fee = await ctx.db.fees.delete({
-          where: { feeId: input.feeId },
+         await ctx.db.fees.deleteMany({
+          where: { feeId: { in: input.feeIds } }
         });
-        return fee;
+        return { success: true };
       } catch (error) {
-        throw new TRPCError({
+         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
-          message: `Failed to delete fee: ${getErrorMessage(error)}`,
+          message: `Failed to delete fees: ${getErrorMessage(error)}`,
         });
       }
     }),
 
-  // Get all fees
   getAllFees: publicProcedure.query(async ({ ctx }) => {
-    try {
-      const fees = await ctx.db.fees.findMany({
-        orderBy: { level: "asc" },
-      });
-      return fees;
-    } catch (error) {
-      throw new TRPCError({
-        code: "INTERNAL_SERVER_ERROR",
-        message: `Failed to fetch fees: ${getErrorMessage(error)}`,
-      });
-    }
+    return await ctx.db.fees.findMany({ orderBy: { level: "asc" } });
   }),
 
-  // Get fee by ID
-  getFeeById: publicProcedure
-    .input(z.object({ feeId: z.string() }))
-    .query(async ({ ctx, input }) => {
-      try {
-        const fee = await ctx.db.fees.findUnique({
-          where: { feeId: input.feeId },
-        });
-        if (!fee) {
-          throw new TRPCError({
-            code: "NOT_FOUND",
-            message: "Fee not found",
-          });
-        }
-        return fee;
-      } catch (error) {
-        if (error instanceof TRPCError) {
-          throw error;
-        }
-        throw new TRPCError({
-          code: "INTERNAL_SERVER_ERROR",
-          message: `Failed to fetch fee: ${getErrorMessage(error)}`,
-        });
-      }
-    }),
+  // --- Assignment Logic ---
 
-  // Assign fee to student class
-  assignFeeToStudentClass: protectedProcedure
-    .input(studentClassFeeInputSchema)
+  assignFeeToClass: protectedProcedure
+    .input(z.object({
+      feeId: z.string(),
+      classId: z.string(),
+      sessionId: z.string(),
+      month: z.number(),
+      year: z.number(),
+    }))
     .mutation(async ({ ctx, input }) => {
       try {
-        // Check if fee assignment already exists
-        const existingAssignment = await ctx.db.feeStudentClass.findFirst({
+        const studentClasses = await ctx.db.studentClass.findMany({
           where: {
-            studentClassId: input.studentClassId,
-            feeId: input.feeId,
-            month: input.month,
-            year: input.year,
-          },
+            classId: input.classId,
+            sessionId: input.sessionId,
+          }
         });
 
-        if (existingAssignment) {
-          throw new TRPCError({
-            code: "CONFLICT",
-            message: "Fee already assigned to this student class for the given month and year",
-          });
-        }
+        let assignedCount = 0;
+        let skippedCount = 0;
 
-        const feeAssignment = await ctx.db.feeStudentClass.create({
-          data: {
-            studentClassId: input.studentClassId,
-            feeId: input.feeId,
-            discount: input.discount ?? 0,
-            discountByPercent: input.discountByPercent ?? 0,
-            discountDescription: input.discountDescription ?? "",
-            month: input.month,
-            year: input.year,
-            lateFee: input.lateFee ?? 0,
-          },
-          include: {
-            fees: true,
-            StudentClass: {
-              include: {
-                Students: true,
-                Grades: true,
-              },
-            },
-          },
-        });
-
-        return feeAssignment;
-      } catch (error) {
-        if (error instanceof TRPCError) {
-          throw error;
-        }
-        throw new TRPCError({
-          code: "INTERNAL_SERVER_ERROR",
-          message: `Failed to assign fee to student class: ${getErrorMessage(error)}`,
-        });
-      }
-    }),
-
-  // Bulk assign fee to multiple student classes
-  bulkAssignFeeToStudentClasses: protectedProcedure
-    .input(bulkFeeUpdateSchema)
-    .mutation(async ({ ctx, input }) => {
-      try {
-        const { studentClassIds, ...feeData } = input;
-        
-        const assignments = await Promise.all(
-          studentClassIds.map(async (studentClassId) => {
-            // Check if fee assignment already exists
-            const existingAssignment = await ctx.db.feeStudentClass.findFirst({
-              where: {
-                studentClassId,
-                feeId: feeData.feeId,
-                month: feeData.month,
-                year: feeData.year,
-              },
-            });
-
-            if (existingAssignment) {
-              // Update existing assignment
-              return ctx.db.feeStudentClass.update({
-                where: { sfcId: existingAssignment.sfcId },
-                data: {
-                  discount: feeData.discount ?? existingAssignment.discount,
-                  discountByPercent: feeData.discountByPercent ?? existingAssignment.discountByPercent,
-                  discountDescription: feeData.discountDescription ?? existingAssignment.discountDescription,
-                  lateFee: feeData.lateFee ?? existingAssignment.lateFee,
-                },
-              });
+        for (const sc of studentClasses) {
+          const existing = await ctx.db.feeStudentClass.findFirst({
+            where: {
+              studentClassId: sc.scId,
+              feeId: input.feeId,
+              month: input.month,
+              year: input.year,
             }
+          });
 
-            // Create new assignment
-            return ctx.db.feeStudentClass.create({
-              data: {
-                studentClassId,
-                feeId: feeData.feeId,
-                discount: feeData.discount ?? 0,
-                discountByPercent: feeData.discountByPercent ?? 0,
-                discountDescription: feeData.discountDescription ?? "",
-                month: feeData.month,
-                year: feeData.year,
-                lateFee: feeData.lateFee ?? 0,
-              },
-            });
-          })
-        );
+          if (existing) {
+            skippedCount++;
+            continue;
+          }
 
-        return assignments;
+          await ctx.db.feeStudentClass.create({
+            data: {
+              studentClassId: sc.scId,
+              feeId: input.feeId,
+              month: input.month,
+              year: input.year,
+              discount: 0,
+              discountByPercent: 0,
+              discountDescription: '',
+              lateFee: 0,
+            }
+          });
+          assignedCount++;
+        }
+
+        return { assignedCount, skippedCount };
       } catch (error) {
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
@@ -282,314 +180,440 @@ export const feeRouter = createTRPCRouter({
       }
     }),
 
-  // Update fee payment status
   updateFeePayment: protectedProcedure
     .input(paymentUpdateSchema)
     .mutation(async ({ ctx, input }) => {
       try {
-        const { feeStudentClassId, ...paymentData } = input;
+        // Destructure to separate the ID and the raw input data
+        const { feeStudentClassId, discountbypercent, ...rest } = input;
         
-        const updatedPayment = await ctx.db.feeStudentClass.update({
+        // Construct the update object cleanly
+        // Map 'discountbypercent' to the Prisma field 'discountByPercent'
+        const updateData = {
+          ...rest,
+          ...(discountbypercent !== undefined ? { discountByPercent: discountbypercent } : {}),
+        };
+
+        return await ctx.db.feeStudentClass.update({
           where: { sfcId: feeStudentClassId },
-          data: {
-            ...paymentData,
-            paidAt: paymentData.paidAt ?? new Date(),
-          },
-          include: {
-            fees: true,
-            StudentClass: {
-              include: {
-                Students: true,
-                Grades: true,
-              },
-            },
-          },
+          data: updateData,
         });
-
-        return updatedPayment;
       } catch (error) {
-        throw new TRPCError({
-          code: "INTERNAL_SERVER_ERROR",
-          message: `Failed to update fee payment: ${getErrorMessage(error)}`,
-        });
+        console.error("Error updating fee payment:", error);
+        throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Failed update" });
       }
     }),
-
-  // Get student fee details
-  getStudentFees: publicProcedure
-    .input(z.object({ studentId: z.string(), year: z.number().optional() }))
-    .query(async ({ ctx, input }) => {
-      try {
-        const studentClasses = await ctx.db.studentClass.findMany({
-          where: {
-            studentId: input.studentId,
-          },
-          include: {
-            Grades: true,
-            Sessions: true,
-            FeeStudentClass: {
-              where: input.year ? { year: input.year } : undefined,
-              include: {
-                fees: true,
-              },
-              orderBy: [
-                { year: "desc" },
-                { month: "desc" },
-              ],
-            },
-          },
-        });
-
-        return studentClasses;
-      } catch (error) {
-        throw new TRPCError({
-          code: "INTERNAL_SERVER_ERROR",
-          message: `Failed to fetch student fees: ${getErrorMessage(error)}`,
-        });
-      }
-    }),
-
-  // Get class fee details
-  getClassFees: publicProcedure
-    .input(z.object({ classId: z.string(), year: z.number().optional() }))
-    .query(async ({ ctx, input }) => {
-      try {
-        const studentClasses = await ctx.db.studentClass.findMany({
-          where: {
-            classId: input.classId,
-          },
-          include: {
-            Students: true,
-            FeeStudentClass: {
-              where: input.year ? { year: input.year } : undefined,
-              include: {
-                fees: true,
-              },
-            },
-          },
-        });
-
-        // Define types for reduce callbacks
-        interface FeeSummary {
-          totalExpected: number;
-          totalCollected: number;
-          outstanding: number;
-          totalStudents: number;
-        }
-
-        interface StudentClassFeeTotal {
-          totalExpected: number;
-          totalCollected: number;
-        }
-
-        // Create a type for the student class with included relations
-        type StudentClassWithFees = typeof studentClasses[0];
-
-        // Calculate fee summary with proper type annotations
-        const feeSummary = studentClasses.reduce<FeeSummary>(
-          (summary: FeeSummary, sc: StudentClassWithFees) => {
-            const studentFeeTotal = sc.FeeStudentClass.reduce<StudentClassFeeTotal>(
-              (total: StudentClassFeeTotal, fsc) => {
-                // Assert fsc to the expected type for safe property access
-                const typedFsc = fsc as NonNullable<typeof studentClasses[0]['FeeStudentClass'][0]>;
-                const fee = typedFsc.fees;
-                
-                const baseAmount = fee.tuitionFee + fee.examFund + (fee.computerLabFund ?? 0) + 
-                               fee.studentIdCardFee + fee.infoAndCallsFee;
-                const discountAmount = (baseAmount * (typedFsc.discountByPercent / 100)) + typedFsc.discount;
-                const finalAmount = baseAmount - discountAmount + typedFsc.lateFee;
-                
-                const collectedAmount = 
-                  ((typedFsc.tuitionPaid ? fee.tuitionFee : 0) +
-                   (typedFsc.examFundPaid ? fee.examFund : 0) +
-                   (typedFsc.computerLabPaid ? (fee.computerLabFund ?? 0) : 0) +
-                   (typedFsc.studentIdCardPaid ? fee.studentIdCardFee : 0) +
-                   (typedFsc.infoAndCallsPaid ? fee.infoAndCallsFee : 0) -
-                   discountAmount + typedFsc.lateFee);
-
-                return {
-                  totalExpected: total.totalExpected + finalAmount,
-                  totalCollected: total.totalCollected + collectedAmount,
-                };
-              },
-              { totalExpected: 0, totalCollected: 0 }
-            );
-
-            return {
-              totalExpected: summary.totalExpected + studentFeeTotal.totalExpected,
-              totalCollected: summary.totalCollected + studentFeeTotal.totalCollected,
-              outstanding: summary.outstanding + (studentFeeTotal.totalExpected - studentFeeTotal.totalCollected),
-              totalStudents: studentClasses.length,
-            };
-          },
-          { totalExpected: 0, totalCollected: 0, outstanding: 0, totalStudents: 0 }
-        );
-
-        return {
-          studentClasses,
-          feeSummary,
-        };
-      } catch (error) {
-        throw new TRPCError({
-          code: "INTERNAL_SERVER_ERROR",
-          message: `Failed to fetch class fees: ${getErrorMessage(error)}`,
-        });
-      }
-    }),
-
-  // Get fee summary for dashboard
-  getFeeSummary: protectedProcedure
-    .input(z.object({ year: z.number().optional() }))
-    .query(async ({ ctx, input }) => {
-      try {
-        const currentYear = input.year ?? new Date().getFullYear();
-        
-        const [fees, studentClasses, feeAssignments] = await Promise.all([
-          ctx.db.fees.findMany(),
-          ctx.db.studentClass.findMany({
-            include: {
-              Grades: true,
-              Students: true,
-            },
-          }),
-          ctx.db.feeStudentClass.findMany({
-            where: { year: currentYear },
-            include: {
-              fees: true,
-              StudentClass: {
-                include: {
-                  Grades: true,
-                  Students: true,
-                },
-              },
-            },
-          }),
-        ]);
-
-        // Calculate summary statistics with proper type annotations
-        interface FeeSummary {
-          totalFees: number;
-          totalStudents: number;
-          totalFeeAssignments: number;
-          totalExpectedRevenue: number;
-          totalCollectedRevenue: number;
-          outstandingRevenue: number;
-        }
-
-
-        const summary: FeeSummary = {
-          totalFees: fees.length,
-          totalStudents: studentClasses.length,
-          totalFeeAssignments: feeAssignments.length,
-          totalExpectedRevenue: feeAssignments.reduce((total: number, fa) => {
-            // Assert fa to the expected type for safe property access
-            const typedFa = fa;
-            const fee = typedFa.fees;
-
-            const baseAmount = fee.tuitionFee + fee.examFund + (fee.computerLabFund ?? 0) + 
-                             fee.studentIdCardFee + fee.infoAndCallsFee;
-            const discountAmount = (baseAmount * (typedFa.discountByPercent / 100)) + typedFa.discount;
-            return total + (baseAmount - discountAmount + typedFa.lateFee);
-          }, 0),
-          totalCollectedRevenue: feeAssignments.reduce((total: number, fa) => {
-            // Assert fa to the expected type for safe property access
-            const typedFa = fa;
-            const fee = typedFa.fees;
-
-            // The collected revenue calculation here is simplified to only count paid components
-            // based on the original structure. It should ideally account for the discount
-            // proportionally to the paid components, but maintaining original logic structure for now.
-            const collectedBaseAmount = 
-              (typedFa.tuitionPaid ? fee.tuitionFee : 0) +
-              (typedFa.examFundPaid ? fee.examFund : 0) +
-              (typedFa.computerLabPaid ? (fee.computerLabFund ?? 0) : 0) +
-              (typedFa.studentIdCardPaid ? fee.studentIdCardFee : 0) +
-              (typedFa.infoAndCallsPaid ? fee.infoAndCallsFee : 0);
-              
-            // A precise collected amount calculation is complex without clear business rules
-            // on how discounts apply to individual paid components. Using the original simplified
-            // calculation for collected revenue from getClassFees logic would be better, but
-            // for simplicity and resolving errors, we use the original logic which just sums paid components.
-            return total + collectedBaseAmount;
-          }, 0),
-          outstandingRevenue: 0,
-        };
-
-        // Note: The original logic in getFeeSummary did not subtract discount from collected revenue,
-        // which would cause outstandingRevenue to be inflated if not all components are paid.
-        // We calculate it based on the two computed totals.
-        summary.outstandingRevenue = summary.totalExpectedRevenue - summary.totalCollectedRevenue;
-
-        return summary;
-      } catch (error) {
-        throw new TRPCError({
-          code: "INTERNAL_SERVER_ERROR",
-          message: `Failed to fetch fee summary: ${getErrorMessage(error)}`,
-        });
-      }
-    }),
-
-  // Get fee assignments by month and year
-  getFeeAssignmentsByMonth: publicProcedure
-    .input(z.object({ month: z.number(), year: z.number() }))
-    .query(async ({ ctx, input }) => {
-      try {
-        const feeAssignments = await ctx.db.feeStudentClass.findMany({
-          where: {
-            month: input.month,
-            year: input.year,
-          },
-          include: {
-            fees: true,
-            StudentClass: {
-              include: {
-                Students: true,
-                Grades: true,
-              },
-            },
-          },
-          orderBy: {
-            StudentClass: {
-              Students: {
-                studentName: "asc",
-              },
-            },
-          },
-        });
-
-        return feeAssignments;
-      } catch (error) {
-        throw new TRPCError({
-          code: "INTERNAL_SERVER_ERROR",
-          message: `Failed to fetch fee assignments: ${getErrorMessage(error)}`,
-        });
-      }
-    }),
-
-  // Remove fee assignment
+    
   removeFeeAssignment: protectedProcedure
     .input(z.object({ feeStudentClassId: z.string() }))
     .mutation(async ({ ctx, input }) => {
       try {
-        const deletedAssignment = await ctx.db.feeStudentClass.delete({
+        return await ctx.db.feeStudentClass.delete({
           where: { sfcId: input.feeStudentClassId },
+        });
+      } catch (error) {
+         console.error("Error removing fee assignment:", error);
+         throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Failed delete" });
+      }
+    }),
+
+  applyLateFee: protectedProcedure
+    .input(z.object({ sfcId: z.string(), lateFeeAmount: z.number() }))
+    .mutation(async ({ ctx, input }) => {
+      try {
+        return await ctx.db.feeStudentClass.update({
+          where: { sfcId: input.sfcId },
+          data: { lateFee: input.lateFeeAmount }
+        });
+      } catch (error) {
+        console.error("Error applying late fee:", error);
+        throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Failed to apply late fee" });
+      }
+    }),
+
+  // --- Queries for Dashboard ---
+
+  getClassFeeSummary: protectedProcedure
+    .input(z.object({ sessionId: z.string(), year: z.number() }))
+    .query(async ({ ctx, input }) => {
+      try {
+        const classes = await ctx.db.grades.findMany({
+          orderBy: { category: "asc" },
           include: {
-            fees: true,
-            StudentClass: {
-              include: {
-                Students: true,
-                Grades: true,
-              },
-            },
-          },
+             _count: { select: { StudentClass: { where: { sessionId: input.sessionId } } } }
+          }
         });
 
-        return deletedAssignment;
-      } catch (error) {
-        throw new TRPCError({
-          code: "INTERNAL_SERVER_ERROR",
-          message: `Failed to remove fee assignment: ${getErrorMessage(error)}`,
+        const feeAssignments = await ctx.db.feeStudentClass.findMany({
+          where: {
+            year: input.year,
+            StudentClass: { sessionId: input.sessionId }
+          },
+          include: {
+            fees: true,
+            StudentClass: { include: { Grades: true } }
+          }
         });
+
+        const classData = classes.map(cls => {
+          const classFees = feeAssignments.filter(f => f.StudentClass.classId === cls.classId);
+          let totalExpected = 0;
+          let totalCollected = 0;
+          
+          const monthlyStats: MonthlyFeeStats[] = Array.from({ length: 12 }, (_, i) => ({
+             month: new Date(0, i).toLocaleString('default', { month: 'long' }),
+             monthNumber: i + 1,
+             totalExpected: 0,
+             totalCollected: 0,
+             outstanding: 0,
+             paidCount: 0,
+             unpaidCount: 0,
+             collectionRate: 0
+          }));
+
+          classFees.forEach(f => {
+            const fee = f.fees;
+            const base = fee.tuitionFee + fee.examFund + (fee.computerLabFund??0) + fee.studentIdCardFee + fee.infoAndCallsFee;
+            const discount = (base * (f.discountByPercent / 100)) + f.discount;
+            const due = base - discount + f.lateFee;
+            
+            let paid = 0;
+            if (f.tuitionPaid) paid += fee.tuitionFee;
+            if (f.examFundPaid) paid += fee.examFund;
+            if (f.computerLabPaid) paid += (fee.computerLabFund??0);
+            if (f.studentIdCardPaid) paid += fee.studentIdCardFee;
+            if (f.infoAndCallsPaid) paid += fee.infoAndCallsFee;
+            paid = Math.min(paid, due); 
+            
+            totalExpected += due;
+            totalCollected += paid;
+
+            const mIndex = f.month - 1;
+            if (monthlyStats[mIndex]) {
+               // TypeScript knows monthlyStats[mIndex] is defined here because of the if check
+               monthlyStats[mIndex].totalExpected += due;
+               monthlyStats[mIndex].totalCollected += paid;
+               if (paid >= due && due > 0) monthlyStats[mIndex].paidCount++;
+               else if (due > 0) monthlyStats[mIndex].unpaidCount++;
+            }
+          });
+          
+          monthlyStats.forEach(m => {
+            m.outstanding = m.totalExpected - m.totalCollected;
+            m.collectionRate = m.totalExpected > 0 ? (m.totalCollected / m.totalExpected) * 100 : 0;
+          });
+
+          return {
+            classId: cls.classId,
+            className: `${cls.grade} - ${cls.section}`,
+            category: cls.category,
+            studentCount: cls._count.StudentClass,
+            collectionRate: totalExpected > 0 ? (totalCollected / totalExpected) * 100 : 0,
+            yearlyTotals: {
+              totalExpected,
+              totalCollected,
+              outstanding: totalExpected - totalCollected,
+            },
+            monthlyData: monthlyStats
+          };
+        });
+
+        const grandTotals = classData.reduce((acc, curr) => ({
+           totalExpected: acc.totalExpected + curr.yearlyTotals.totalExpected,
+           totalCollected: acc.totalCollected + curr.yearlyTotals.totalCollected,
+           outstanding: acc.outstanding + curr.yearlyTotals.outstanding,
+           totalStudents: acc.totalStudents + curr.studentCount,
+           collectionRate: 0
+        }), { totalExpected: 0, totalCollected: 0, outstanding: 0, totalStudents: 0, collectionRate: 0 });
+
+        grandTotals.collectionRate = grandTotals.totalExpected > 0 
+           ? (grandTotals.totalCollected / grandTotals.totalExpected) * 100 
+           : 0;
+
+        return { classes: classData, grandTotals };
+
+      } catch (error) {
+        console.error("Error fetching class fee summary:", error);
+        throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Failed to fetch summary" });
       }
+    }),
+
+  getDefaultersList: protectedProcedure
+    .input(z.object({ sessionId: z.string(), month: z.number(), year: z.number() }))
+    .query(async ({ ctx, input }) => {
+       const defaulters = await ctx.db.feeStudentClass.findMany({
+         where: {
+           month: input.month,
+           year: input.year,
+           StudentClass: { sessionId: input.sessionId },
+           OR: [{ tuitionPaid: false }]
+         },
+         include: {
+           fees: true,
+           StudentClass: { include: { Students: true, Grades: true } }
+         }
+       });
+
+       return defaulters.map(f => {
+         const fee = f.fees;
+         const base = fee.tuitionFee + fee.examFund + (fee.computerLabFund??0) + fee.studentIdCardFee + fee.infoAndCallsFee;
+         const discount = (base * (f.discountByPercent / 100)) + f.discount;
+         const due = base - discount + f.lateFee;
+         
+         let paid = 0;
+         if (f.tuitionPaid) paid += fee.tuitionFee;
+         if (f.examFundPaid) paid += fee.examFund;
+         
+         if (paid >= due) return null;
+
+         return {
+           sfcId: f.sfcId,
+           student: {
+             studentName: f.StudentClass.Students.studentName,
+             registrationNumber: f.StudentClass.Students.registrationNumber,
+             fatherName: f.StudentClass.Students.fatherName,
+             fatherMobile: f.StudentClass.Students.fatherMobile,
+           },
+           class: {
+             grade: f.StudentClass.Grades.grade,
+             section: f.StudentClass.Grades.section,
+           },
+           dueAmount: due - paid,
+           unpaidItems: {
+             tuition: !f.tuitionPaid,
+             examFund: !f.examFundPaid,
+             computerLab: !f.computerLabPaid,
+             studentIdCard: !f.studentIdCardPaid,
+             infoAndCalls: !f.infoAndCallsPaid,
+           }
+         };
+       }).filter((d): d is NonNullable<typeof d> => d !== null);
+    }),
+
+  getFeeByEachMonth: protectedProcedure
+    .input(z.object({ month: z.number(), year: z.number() }))
+    .query(async ({ ctx, input }) => {
+      const assignments = await ctx.db.feeStudentClass.findMany({
+        where: { month: input.month, year: input.year },
+        include: { fees: true, StudentClass: { include: { Grades: true } } }
+      });
+
+      // Strongly typed map to avoid 'any'
+      const classMap = new Map<string, ClassFeeGroup>();
+      let grandExpected = 0;
+      let grandCollected = 0;
+
+      assignments.forEach(f => {
+        const className = `${f.StudentClass.Grades.grade} - ${f.StudentClass.Grades.section}`;
+        if (!classMap.has(className)) {
+          classMap.set(className, {
+            className,
+            studentCount: 0,
+            totalExpected: 0,
+            totalPaid: 0,
+            payments: []
+          });
+        }
+        
+        const entry = classMap.get(className);
+        // Ensure entry exists (though logic guarantees it, TypeScript needs help or assertion)
+        if (!entry) return;
+
+        const fee = f.fees;
+        const base = fee.tuitionFee + fee.examFund + (fee.computerLabFund??0) + fee.studentIdCardFee + fee.infoAndCallsFee;
+        const discount = (base * (f.discountByPercent / 100)) + f.discount;
+        const due = base - discount + f.lateFee;
+        
+        let paid = 0;
+        if (f.tuitionPaid) paid += fee.tuitionFee;
+        
+        entry.totalExpected += due;
+        entry.totalPaid += paid;
+        entry.studentCount++; 
+        entry.payments.push({
+          isPaid: paid >= due,
+          studentId: f.StudentClass.studentId,
+          amount: paid
+        });
+
+        grandExpected += due;
+        grandCollected += paid;
+      });
+
+      return {
+        grandExpected,
+        grandTotal: grandCollected,
+        outstanding: grandExpected - grandCollected,
+        feesByClass: Array.from(classMap.values())
+      };
+    }),
+
+  getFeeAnalytics: protectedProcedure
+    .input(z.object({ sessionId: z.string(), year: z.number() }))
+    .query(async ({ ctx, input }) => {
+      const assignments = await ctx.db.feeStudentClass.findMany({
+        where: { year: input.year, StudentClass: { sessionId: input.sessionId } },
+        include: { fees: true, StudentClass: { include: { Grades: true } } }
+      });
+
+      let totalCollected = 0;
+      let totalExpected = 0;
+      let totalDiscounts = 0;
+      let totalLateFees = 0;
+      
+      const monthlyData = new Map<number, {collected: number, expected: number}>();
+      const categoryData = new Map<string, number>();
+
+      assignments.forEach(f => {
+         const fee = f.fees;
+         const base = fee.tuitionFee + fee.examFund + (fee.computerLabFund??0);
+         const discount = (base * (f.discountByPercent / 100)) + f.discount;
+         const due = base - discount + f.lateFee;
+         const paid = f.tuitionPaid ? fee.tuitionFee : 0;
+
+         totalExpected += due;
+         totalCollected += paid;
+         totalDiscounts += discount;
+         totalLateFees += f.lateFee;
+
+         const mStats = monthlyData.get(f.month) ?? { collected: 0, expected: 0 };
+         mStats.collected += paid;
+         mStats.expected += due;
+         monthlyData.set(f.month, mStats);
+
+         const cat = f.StudentClass.Grades.category;
+         categoryData.set(cat, (categoryData.get(cat) ?? 0) + paid);
+      });
+
+      const monthlyTrend = Array.from({length: 12}, (_, i) => {
+         const m = i + 1;
+         const stats = monthlyData.get(m) ?? { collected: 0, expected: 0 };
+         return {
+           month: new Date(0, i).toLocaleString('default', { month: 'short' }),
+           collected: stats.collected,
+           outstanding: stats.expected - stats.collected
+         };
+      });
+
+      const categoryCollection = Array.from(categoryData.entries()).map(([k, v]) => ({
+        category: k,
+        collected: v
+      }));
+
+      return {
+        summary: {
+          collectionRate: totalExpected > 0 ? (totalCollected / totalExpected) * 100 : 0,
+          totalDiscounts,
+          totalLateFees,
+          totalOutstanding: totalExpected - totalCollected,
+        },
+        monthlyTrend,
+        categoryCollection
+      };
+    }),
+
+  getYearComparison: protectedProcedure
+    .input(z.object({ sessionId: z.string(), years: z.array(z.number()) }))
+    .query(async ({ ctx, input }) => {
+       const result = [];
+       for (const year of input.years) {
+          const assignments = await ctx.db.feeStudentClass.findMany({
+             where: { year, StudentClass: { sessionId: input.sessionId } },
+             include: { fees: true }
+          });
+          
+          let totalExpected = 0;
+          let totalCollected = 0;
+          
+          assignments.forEach(f => {
+             const fee = f.fees;
+             const base = fee.tuitionFee; 
+             const due = base - f.discount + f.lateFee;
+             const paid = f.tuitionPaid ? fee.tuitionFee : 0;
+             totalExpected += due;
+             totalCollected += paid;
+          });
+          
+          result.push({ year, totalExpected, totalCollected });
+       }
+       return result;
+    }),
+
+  getClassFees: publicProcedure
+    .input(z.object({ 
+      classId: z.string(), 
+      sessionId: z.string().optional(),
+      year: z.number().optional() 
+    }))
+    .query(async ({ ctx, input }) => {
+      // Strongly type the 'where' object using Prisma types
+      const where: Prisma.StudentClassWhereInput = { classId: input.classId };
+      if (input.sessionId) where.sessionId = input.sessionId;
+
+      const studentClasses = await ctx.db.studentClass.findMany({
+        where,
+        include: {
+          Students: true,
+          FeeStudentClass: {
+            where: input.year ? { year: input.year } : undefined,
+            include: {
+              fees: true,
+            },
+          },
+        },
+      });
+
+      return { studentClasses };
+    }),
+
+  getStudentFees: publicProcedure
+    .input(z.object({ studentId: z.string(), year: z.number().optional() }))
+    .query(async ({ ctx, input }) => {
+      const student = await ctx.db.students.findUnique({
+        where: { studentId: input.studentId }
+      });
+      
+      const studentClasses = await ctx.db.studentClass.findFirst({
+        where: { studentId: input.studentId },
+        include: {
+          Grades: true,
+          Sessions: true,
+          FeeStudentClass: {
+            where: input.year ? { year: input.year } : undefined,
+            include: { fees: true },
+            orderBy: [{ year: "desc" }, { month: "desc" }],
+          },
+        },
+      });
+
+      if (!studentClasses) return null;
+
+      const ledger = studentClasses.FeeStudentClass.map(f => {
+         const fee = f.fees;
+         const base = fee.tuitionFee + fee.examFund + (fee.computerLabFund??0) + fee.studentIdCardFee + fee.infoAndCallsFee;
+         const discount = (base * (f.discountByPercent / 100)) + f.discount;
+         const due = base - discount + f.lateFee;
+         let paid = 0;
+         if (f.tuitionPaid) paid += fee.tuitionFee;
+         
+         return {
+           sfcId: f.sfcId,
+           month: f.month,
+           year: f.year,
+           baseFee: base,
+           discountAmount: discount,
+           totalDue: due,
+           paidAmount: paid,
+           outstanding: due - paid,
+           isPaid: paid >= due,
+           lateFee: f.lateFee,
+           fees: fee,
+           StudentClass: {
+             Grades: studentClasses.Grades
+           }
+         };
+      });
+
+      return { student, ledger };
     }),
 });
