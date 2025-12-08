@@ -476,8 +476,6 @@ export const feeRouter = createTRPCRouter({
           outstandingRevenue: number;
         }
 
-        // Create a type for the fee assignment with included relations
-        type FeeAssignmentWithFees = typeof feeAssignments[0];
 
         const summary: FeeSummary = {
           totalFees: fees.length,
@@ -485,7 +483,7 @@ export const feeRouter = createTRPCRouter({
           totalFeeAssignments: feeAssignments.length,
           totalExpectedRevenue: feeAssignments.reduce((total: number, fa) => {
             // Assert fa to the expected type for safe property access
-            const typedFa = fa as FeeAssignmentWithFees;
+            const typedFa = fa;
             const fee = typedFa.fees;
 
             const baseAmount = fee.tuitionFee + fee.examFund + (fee.computerLabFund ?? 0) + 
@@ -495,7 +493,7 @@ export const feeRouter = createTRPCRouter({
           }, 0),
           totalCollectedRevenue: feeAssignments.reduce((total: number, fa) => {
             // Assert fa to the expected type for safe property access
-            const typedFa = fa as FeeAssignmentWithFees;
+            const typedFa = fa;
             const fee = typedFa.fees;
 
             // The collected revenue calculation here is simplified to only count paid components

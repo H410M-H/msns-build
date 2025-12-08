@@ -50,7 +50,7 @@ const categoryColors: Record<string, string> = {
   SSC_II: "bg-orange-100 text-orange-700 border-orange-200",
 }
 
-export function ClassFeeCards({ sessionId, year, classData, isLoading }: ClassFeeCardsProps) {
+export function ClassFeeCards({ sessionId, classData, isLoading }: ClassFeeCardsProps) {
   const [selectedClass, setSelectedClass] = useState<{ classId: string; className: string } | null>(null)
 
   if (isLoading) {
