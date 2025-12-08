@@ -53,17 +53,17 @@ export default function EmployeeCredDetails() {
     },
   }
 
-  const cardVariants = {
-    hidden: { y: 20, opacity: 0 },
-    visible: {
-      y: 0,
-      opacity: 1,
-      transition: {
-        type: "spring",
-        stiffness: 100,
-      },
-    },
-  }
+  // const cardVariants = {
+  //   hidden: { y: 20, opacity: 0 },
+  //   visible: {
+  //     y: 0,
+  //     opacity: 1,
+  //     transition: {
+  //       type: "spring",
+  //       stiffness: 100,
+  //     },
+  //   },
+  // }
 
   if (isLoading) {
     return (
@@ -114,7 +114,7 @@ export default function EmployeeCredDetails() {
             className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-6"
           >
             {filteredEmployees.map((employee) => (
-              <motion.div key={employee.employeeId} variants={cardVariants} className="w-full">
+              <motion.div key={employee.employeeId} className="w-full">
                 <Card className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200">
                   <CardContent className="p-6">
                     <div className="flex items-start justify-between mb-4">

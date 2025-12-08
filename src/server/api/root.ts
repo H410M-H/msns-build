@@ -1,7 +1,6 @@
 import { createCallerFactory, createTRPCRouter } from "~/server/api/trpc";
 import { StudentRouter } from "./routers/student";
 import { EmployeeRouter } from "./routers/employee";
-import { ReportRouter } from "./routers/report";
 import { SalaryRouter } from "./routers/salary";
 import { SessionRouter } from "./routers/session";
 import { subjectRouter } from "./routers/subject";
@@ -15,6 +14,7 @@ import { expensesRouter } from "./routers/expense";
 import { fingerRouter } from "./routers/finger";
 import { attendanceRouter } from "./routers/attendance";
 import { timetableRouter } from "./routers/timetable";
+import { reportRouter } from "./routers/report";
 
 export const appRouter = createTRPCRouter({
   user: UserRouter,
@@ -22,10 +22,10 @@ export const appRouter = createTRPCRouter({
   allotment: AllotmentRouter,
   student: StudentRouter,
   employee: EmployeeRouter,
-  report: ReportRouter,
   fee: feeRouter,
   expense: expensesRouter,
   salary: SalaryRouter,
+  report: reportRouter,
   session: SessionRouter,
   event: EventRouter,
   subject: subjectRouter,

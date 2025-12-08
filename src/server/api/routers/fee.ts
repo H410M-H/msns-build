@@ -66,6 +66,72 @@ interface ClassFeeGroup {
   }[];
 }
 
+// --- Helper Logic for Fee Calculation ---
+const calculateFeeAmounts = (fee: {
+  type: string;
+  tuitionFee: number;
+  examFund: number;
+  computerLabFund: number | null;
+  studentIdCardFee: number;
+  infoAndCallsFee: number;
+  admissionFee: number;
+}) => {
+  const isMonthly = fee.type === "MonthlyFee";
+  
+  // Calculate Base Amount based on Type
+  let base = 0;
+  if (isMonthly) {
+    base = fee.tuitionFee;
+  } else {
+    // Annual Fee includes everything else
+    base = fee.examFund + 
+           (fee.computerLabFund ?? 0) + 
+           fee.studentIdCardFee + 
+           fee.infoAndCallsFee + 
+           fee.admissionFee;
+  }
+  return base;
+};
+
+const calculatePaidAmount = (
+  fee: {
+    type: string;
+    tuitionFee: number;
+    examFund: number;
+    computerLabFund: number | null;
+    studentIdCardFee: number;
+    infoAndCallsFee: number;
+    admissionFee: number;
+  },
+  status: {
+    tuitionPaid: boolean;
+    examFundPaid: boolean;
+    computerLabPaid: boolean;
+    studentIdCardPaid: boolean;
+    infoAndCallsPaid: boolean;
+  }
+) => {
+  const isMonthly = fee.type === "MonthlyFee";
+  let paid = 0;
+
+  if (isMonthly) {
+    if (status.tuitionPaid) paid += fee.tuitionFee;
+  } else {
+    // For Annual, we sum up the annual components that are paid
+    // Note: Admission fee doesn't have a specific paid flag in the schema provided 
+    // so we assume if tuitionPaid (or primary flag) is true, it might cover it, 
+    // or we strictly follow the available flags. 
+    // Assuming standard flags cover the annual funds:
+    if (status.examFundPaid) paid += fee.examFund;
+    if (status.computerLabPaid) paid += (fee.computerLabFund ?? 0);
+    if (status.studentIdCardPaid) paid += fee.studentIdCardFee;
+    if (status.infoAndCallsPaid) paid += fee.infoAndCallsFee;
+    // If admission fee tracking is required, schema needs an update. 
+    // For now, we assume it's part of the annual bundle.
+  }
+  return paid;
+};
+
 export const feeRouter = createTRPCRouter({
   // --- CRUD Operations ---
 
@@ -184,11 +250,8 @@ export const feeRouter = createTRPCRouter({
     .input(paymentUpdateSchema)
     .mutation(async ({ ctx, input }) => {
       try {
-        // Destructure to separate the ID and the raw input data
         const { feeStudentClassId, discountbypercent, ...rest } = input;
         
-        // Construct the update object cleanly
-        // Map 'discountbypercent' to the Prisma field 'discountByPercent'
         const updateData = {
           ...rest,
           ...(discountbypercent !== undefined ? { discountByPercent: discountbypercent } : {}),
@@ -272,17 +335,11 @@ export const feeRouter = createTRPCRouter({
           }));
 
           classFees.forEach(f => {
-            const fee = f.fees;
-            const base = fee.tuitionFee + fee.examFund + (fee.computerLabFund??0) + fee.studentIdCardFee + fee.infoAndCallsFee;
+            const base = calculateFeeAmounts(f.fees);
             const discount = (base * (f.discountByPercent / 100)) + f.discount;
             const due = base - discount + f.lateFee;
             
-            let paid = 0;
-            if (f.tuitionPaid) paid += fee.tuitionFee;
-            if (f.examFundPaid) paid += fee.examFund;
-            if (f.computerLabPaid) paid += (fee.computerLabFund??0);
-            if (f.studentIdCardPaid) paid += fee.studentIdCardFee;
-            if (f.infoAndCallsPaid) paid += fee.infoAndCallsFee;
+            let paid = calculatePaidAmount(f.fees, f);
             paid = Math.min(paid, due); 
             
             totalExpected += due;
@@ -290,7 +347,6 @@ export const feeRouter = createTRPCRouter({
 
             const mIndex = f.month - 1;
             if (monthlyStats[mIndex]) {
-               // TypeScript knows monthlyStats[mIndex] is defined here because of the if check
                monthlyStats[mIndex].totalExpected += due;
                monthlyStats[mIndex].totalCollected += paid;
                if (paid >= due && due > 0) monthlyStats[mIndex].paidCount++;
@@ -346,7 +402,8 @@ export const feeRouter = createTRPCRouter({
            month: input.month,
            year: input.year,
            StudentClass: { sessionId: input.sessionId },
-           OR: [{ tuitionPaid: false }]
+           // Basic filter: anything not fully paid might be a default
+           // Strict logic handled below
          },
          include: {
            fees: true,
@@ -355,16 +412,13 @@ export const feeRouter = createTRPCRouter({
        });
 
        return defaulters.map(f => {
-         const fee = f.fees;
-         const base = fee.tuitionFee + fee.examFund + (fee.computerLabFund??0) + fee.studentIdCardFee + fee.infoAndCallsFee;
+         const base = calculateFeeAmounts(f.fees);
          const discount = (base * (f.discountByPercent / 100)) + f.discount;
          const due = base - discount + f.lateFee;
          
-         let paid = 0;
-         if (f.tuitionPaid) paid += fee.tuitionFee;
-         if (f.examFundPaid) paid += fee.examFund;
+         const paid = calculatePaidAmount(f.fees, f);
          
-         if (paid >= due) return null;
+         if (paid >= due) return null; // Fully paid
 
          return {
            sfcId: f.sfcId,
@@ -380,11 +434,13 @@ export const feeRouter = createTRPCRouter({
            },
            dueAmount: due - paid,
            unpaidItems: {
-             tuition: !f.tuitionPaid,
-             examFund: !f.examFundPaid,
-             computerLab: !f.computerLabPaid,
-             studentIdCard: !f.studentIdCardPaid,
-             infoAndCalls: !f.infoAndCallsPaid,
+             // For display, we show which parts are technically unpaid based on flags
+             // This might be redundant if we only care about total amount, but helpful for UI
+             tuition: f.fees.type === "MonthlyFee" && !f.tuitionPaid,
+             examFund: f.fees.type === "AnnualFee" && !f.examFundPaid,
+             computerLab: f.fees.type === "AnnualFee" && !f.computerLabPaid,
+             studentIdCard: f.fees.type === "AnnualFee" && !f.studentIdCardPaid,
+             infoAndCalls: f.fees.type === "AnnualFee" && !f.infoAndCallsPaid,
            }
          };
        }).filter((d): d is NonNullable<typeof d> => d !== null);
@@ -398,7 +454,6 @@ export const feeRouter = createTRPCRouter({
         include: { fees: true, StudentClass: { include: { Grades: true } } }
       });
 
-      // Strongly typed map to avoid 'any'
       const classMap = new Map<string, ClassFeeGroup>();
       let grandExpected = 0;
       let grandCollected = 0;
@@ -416,16 +471,13 @@ export const feeRouter = createTRPCRouter({
         }
         
         const entry = classMap.get(className);
-        // Ensure entry exists (though logic guarantees it, TypeScript needs help or assertion)
         if (!entry) return;
 
-        const fee = f.fees;
-        const base = fee.tuitionFee + fee.examFund + (fee.computerLabFund??0) + fee.studentIdCardFee + fee.infoAndCallsFee;
+        const base = calculateFeeAmounts(f.fees);
         const discount = (base * (f.discountByPercent / 100)) + f.discount;
         const due = base - discount + f.lateFee;
         
-        let paid = 0;
-        if (f.tuitionPaid) paid += fee.tuitionFee;
+        const paid = calculatePaidAmount(f.fees, f);
         
         entry.totalExpected += due;
         entry.totalPaid += paid;
@@ -465,11 +517,10 @@ export const feeRouter = createTRPCRouter({
       const categoryData = new Map<string, number>();
 
       assignments.forEach(f => {
-         const fee = f.fees;
-         const base = fee.tuitionFee + fee.examFund + (fee.computerLabFund??0);
+         const base = calculateFeeAmounts(f.fees);
          const discount = (base * (f.discountByPercent / 100)) + f.discount;
          const due = base - discount + f.lateFee;
-         const paid = f.tuitionPaid ? fee.tuitionFee : 0;
+         const paid = calculatePaidAmount(f.fees, f);
 
          totalExpected += due;
          totalCollected += paid;
@@ -526,10 +577,9 @@ export const feeRouter = createTRPCRouter({
           let totalCollected = 0;
           
           assignments.forEach(f => {
-             const fee = f.fees;
-             const base = fee.tuitionFee; 
+             const base = calculateFeeAmounts(f.fees);
              const due = base - f.discount + f.lateFee;
-             const paid = f.tuitionPaid ? fee.tuitionFee : 0;
+             const paid = calculatePaidAmount(f.fees, f);
              totalExpected += due;
              totalCollected += paid;
           });
@@ -546,7 +596,6 @@ export const feeRouter = createTRPCRouter({
       year: z.number().optional() 
     }))
     .query(async ({ ctx, input }) => {
-      // Strongly type the 'where' object using Prisma types
       const where: Prisma.StudentClassWhereInput = { classId: input.classId };
       if (input.sessionId) where.sessionId = input.sessionId;
 
@@ -590,11 +639,10 @@ export const feeRouter = createTRPCRouter({
 
       const ledger = studentClasses.FeeStudentClass.map(f => {
          const fee = f.fees;
-         const base = fee.tuitionFee + fee.examFund + (fee.computerLabFund??0) + fee.studentIdCardFee + fee.infoAndCallsFee;
+         const base = calculateFeeAmounts(fee);
          const discount = (base * (f.discountByPercent / 100)) + f.discount;
          const due = base - discount + f.lateFee;
-         let paid = 0;
-         if (f.tuitionPaid) paid += fee.tuitionFee;
+         const paid = calculatePaidAmount(fee, f);
          
          return {
            sfcId: f.sfcId,

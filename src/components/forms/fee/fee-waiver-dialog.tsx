@@ -66,7 +66,7 @@ export function FeeWaiverDialog({
   const [selectedReason, setSelectedReason] = useState("")
   const { toast } = useToast()
 
-  const updateWaiver = api.fee.updateFeeAssignment.useMutation({
+  const updateWaiver = api.fee.updateFeePayment.useMutation({
     onSuccess: () => {
       toast({
         title: "Fee waiver applied",
@@ -105,7 +105,7 @@ export function FeeWaiverDialog({
       : reason
 
     updateWaiver.mutate({
-      sfcId,
+      feeStudentClassId: sfcId, // Changed from sfcId to feeStudentClassId
       discount: waiverType === "fixed" ? discount : 0,
       discountbypercent: waiverType === "percent" ? discountPercent : 0,
       discountDescription: description,
@@ -114,7 +114,7 @@ export function FeeWaiverDialog({
 
   const handleRemoveWaiver = () => {
     updateWaiver.mutate({
-      sfcId,
+      feeStudentClassId: sfcId, // Changed from sfcId to feeStudentClassId
       discount: 0,
       discountbypercent: 0,
       discountDescription: "",

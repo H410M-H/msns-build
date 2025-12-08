@@ -44,9 +44,7 @@ export const ClassList = ({ sessionId }: { sessionId: string }) => {
   const groupedData = useMemo(() => {
     const grouped: Record<string, typeof classesData> = {};
     classesData?.forEach((item) => {
-      if (!grouped[item.category]) {
-        grouped[item.category] = [];
-      }
+      grouped[item.category] ??= [];
       grouped[item.category]?.push(item);
     });
     return grouped;

@@ -32,7 +32,17 @@ interface LedgerEntry {
   outstanding: number
   isPaid: boolean
   lateFee?: number
-  fees: Record<string, any> // Add the 'fees' property; adjust the type as needed
+  // Fix: Replaced Record<string, any> with specific type definition
+  fees: {
+    level?: string
+    tuitionFee?: number
+    examFund?: number
+    computerLabFund?: number | null
+    studentIdCardFee?: number
+    infoAndCallsFee?: number
+    admissionFee?: number
+    [key: string]: unknown
+  }
   StudentClass: {
     Grades: {
       grade: string
@@ -286,13 +296,13 @@ export function StudentFeeLedger({ }: StudentFeeLedgerProps) {
                                   entry={{
                                     ...entry,
                                     fees: {
-                                      level: entry.fees?.level ?? "",
-                                      tuitionFee: entry.fees?.tuitionFee ?? 0,
-                                      examFund: entry.fees?.examFund ?? 0,
-                                      computerLabFund: entry.fees?.computerLabFund ?? null,
-                                      studentIdCardFee: entry.fees?.studentIdCardFee ?? 0,
-                                      infoAndCallsFee: entry.fees?.infoAndCallsFee ?? 0,
-                                      admissionFee: entry.fees?.admissionFee ?? 0,
+                                      level: entry.fees.level ?? "",
+                                      tuitionFee: entry.fees.tuitionFee ?? 0,
+                                      examFund: entry.fees.examFund ?? 0,
+                                      computerLabFund: entry.fees.computerLabFund ?? null,
+                                      studentIdCardFee: entry.fees.studentIdCardFee ?? 0,
+                                      infoAndCallsFee: entry.fees.infoAndCallsFee ?? 0,
+                                      admissionFee: entry.fees.admissionFee ?? 0,
                                     }
                                   }}
                                   className={entry.StudentClass.Grades.grade}

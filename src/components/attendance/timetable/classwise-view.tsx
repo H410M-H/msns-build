@@ -116,9 +116,7 @@ export function ClasswiseView({
     const map: Record<string, Record<number, TimetableEntry>> = {}
     classTimetable?.forEach((entry) => {
       const typed = entry as TimetableEntry
-      if (!map[typed.dayOfWeek]) {
-        map[typed.dayOfWeek] = {}
-      }
+      // Fix: Removed redundant if check, rely on ??= in the assignment line
       (map[typed.dayOfWeek] ??= {})[typed.lectureNumber] = typed
     })
     return map

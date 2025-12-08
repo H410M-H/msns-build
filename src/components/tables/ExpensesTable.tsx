@@ -18,9 +18,11 @@ export interface Expense {
   title: string
   description?: string | null
   amount: number
-  category: string
+  category: string // Can be refined to specific enum if shared type is available
   month: number
   year: number
+  createdAt?: Date
+  updatedAt?: Date
 }
 
 interface ExpensesTableProps {
@@ -72,13 +74,17 @@ export function ExpensesTable({ onEdit, onDelete }: ExpensesTableProps) {
     year: new Date().getFullYear().toString(),
   })
 
-  const { data: expenses, isLoading, refetch } = api.expense.getAllExpenses.useQuery(
+  // The query returns { data: Expense[], meta: ... } based on the router definition
+  const { data: expensesResult, isLoading, refetch } = api.expense.getAllExpenses.useQuery(
     {
       month: filterMonth !== "ALL_MONTHS" ? parseInt(filterMonth) : undefined,
       category: filterCategory !== "ALL_CATEGORIES" ? filterCategory : undefined,
+      searchTerm: searchTerm || undefined, // Pass search to backend for efficiency
     },
     { enabled: status === "authenticated" }
   )
+
+  const expensesData = expensesResult?.data ?? []
 
   const createExpense = api.expense.createExpense.useMutation({
     onSuccess: async () => {
@@ -173,16 +179,21 @@ export function ExpensesTable({ onEdit, onDelete }: ExpensesTableProps) {
     }
   }
 
-  const filteredExpenses = (expenses ?? []).filter((expense) =>
-    expense.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    expense.description?.toLowerCase().includes(searchTerm.toLowerCase())
-  )
+  // Client-side fallback filter if needed, though backend handles search now
+  // We type explicitely to avoid implicit any
+  const filteredExpenses: Expense[] = expensesData.filter((expense: Expense) => {
+    const searchLower = searchTerm.toLowerCase()
+    const titleMatch = expense.title.toLowerCase().includes(searchLower)
+    const descMatch = expense.description?.toLowerCase().includes(searchLower) ?? false
+    return titleMatch || descMatch
+  })
 
-  const totalAmount = filteredExpenses.reduce((sum, expense) => sum + expense.amount, 0)
+  const totalAmount = filteredExpenses.reduce((sum: number, expense: Expense) => sum + expense.amount, 0)
 
   if (status === "loading") return <div>Loading...</div>
   if (status === "unauthenticated") {
-    window.location.href = "/api/auth/signin"
+    // Ideally use router.push, but window.location works for force redirect
+    if (typeof window !== "undefined") window.location.href = "/api/auth/signin"
     return null
   }
 
@@ -353,7 +364,7 @@ export function ExpensesTable({ onEdit, onDelete }: ExpensesTableProps) {
           <div className="text-center py-8">Loading expenses...</div>
         ) : filteredExpenses.length === 0 ? (
           <div className="text-center py-8 text-gray-500">
-            {expenses?.length === 0 ? "No expenses found" : "No expenses match your filters"}
+            {expensesData.length === 0 ? "No expenses found" : "No expenses match your filters"}
           </div>
         ) : (
           <div className="overflow-x-auto">

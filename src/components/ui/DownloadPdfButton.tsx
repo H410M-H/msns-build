@@ -1,140 +1,93 @@
 "use client"
 
+import { useState } from "react"
 import { Button } from "~/components/ui/button"
 import { api } from "~/trpc/react"
-import { useState } from "react"
-import { Loader2 } from "lucide-react"
+import { Loader2, FileDown } from "lucide-react"
+import { toast } from "sonner"
+import { cn } from "~/lib/utils"
 
-// Updated to match the reportType values expected by the backend
-type ReportType = "students" | "employees" | "classes" | "fees" | "sessions"
+export type ReportType = "students" | "employees" | "classes" | "fees" | "sessions"
 
 interface DownloadPdfButtonProps {
   reportType: ReportType
+  label?: string
+  className?: string
+  variant?: "default" | "destructive" | "outline" | "secondary" | "ghost" | "link"
 }
 
-// Type for the API response
-type GenerateReportResponse = {
-  pdf: unknown // The API might return different types
+// Explicitly define the response type
+interface ReportResponse {
+  pdf: string;
+  filename: string;
 }
 
-export function DownloadPdfButton({ reportType }: DownloadPdfButtonProps) {
-  const { mutateAsync: generateReport, isPending } = api.report.generateReport.useMutation()
-  const [downloading, setDownloading] = useState(false)
-
-  const handleDownload = async () => {
-    try {
-      setDownloading(true)
-      const result = (await generateReport({ reportType })) as GenerateReportResponse
-
-      // Check if PDF data exists
-      if (!result?.pdf) {
-        throw new Error("No PDF data received")
-      }
-
-      const pdfData = result.pdf
-
-      // Type guard functions for better type checking
-      const isUint8Array = (data: unknown): data is Uint8Array => {
-        return typeof data === "object" && data !== null && data.constructor?.name === "Uint8Array"
-      }
-
-      const isArrayLike = (data: unknown): data is ArrayLike<number> => {
-        return (
-          typeof data === "object" &&
-          data !== null &&
-          "length" in data &&
-          typeof (data as { length: unknown }).length === "number"
-        )
-      }
-
-      const isBuffer = (data: unknown): data is { buffer: ArrayBuffer } => {
-        return (
-          typeof data === "object" &&
-          data !== null &&
-          "buffer" in data &&
-          (data as { buffer: unknown }).buffer instanceof ArrayBuffer
-        )
-      }
-
-      // Convert to Uint8Array based on the data type
-      let finalPdfData: Uint8Array
-
-      if (isUint8Array(pdfData)) {
-        finalPdfData = pdfData
-      } else if (isBuffer(pdfData)) {
-        finalPdfData = new Uint8Array(pdfData.buffer)
-      } else if (Array.isArray(pdfData)) {
-        // Handle regular arrays of numbers
-        finalPdfData = new Uint8Array(pdfData)
-      } else if (isArrayLike(pdfData)) {
-        // Handle other array-like objects
-        const numbers: number[] = []
-        for (let i = 0; i < pdfData.length; i++) {
-          const item = (pdfData as unknown[])[i]
-          if (typeof item === "number") {
-            numbers.push(item)
-          }
+export function DownloadPdfButton({ 
+  reportType, 
+  label, 
+  className,
+  variant = "outline" 
+}: DownloadPdfButtonProps) {
+  const [isDownloading, setIsDownloading] = useState(false)
+  
+  const generateReport = api.report.generateReport.useMutation({
+    onSuccess: (data: ReportResponse) => {
+      try {
+        const binaryString = window.atob(data.pdf);
+        const len = binaryString.length;
+        const bytes = new Uint8Array(len);
+        for (let i = 0; i < len; i++) {
+          bytes[i] = binaryString.charCodeAt(i);
         }
-        finalPdfData = new Uint8Array(numbers)
-      } else if (typeof pdfData === "string") {
-        // Handle base64 encoded strings
-        try {
-          const binaryString = atob(pdfData)
-          const bytes = new Uint8Array(binaryString.length)
-          for (let i = 0; i < binaryString.length; i++) {
-            bytes[i] = binaryString.charCodeAt(i)
-          }
-          finalPdfData = bytes
-        } catch {
-          throw new Error("Invalid base64 PDF data")
-        }
-      } else {
-        throw new Error("Unsupported PDF data format")
+        
+        const blob = new Blob([bytes], { type: "application/pdf" });
+        const url = window.URL.createObjectURL(blob);
+        
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = data.filename ?? `${reportType}-report.pdf`;
+        
+        document.body.appendChild(link);
+        link.click();
+        
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+        
+        toast.success(`${label ?? reportType} report downloaded`);
+      } catch (error) {
+        console.error("PDF processing error:", error);
+        toast.error("Failed to process the report file");
+      } finally {
+        setIsDownloading(false);
       }
-
-      // Create blob and download
-      const blob = new Blob([finalPdfData], { type: "application/pdf" })
-
-      // Create download link
-      const link = document.createElement("a")
-      const blobUrl = URL.createObjectURL(blob)
-      link.href = blobUrl
-      link.download = `${reportType}-report-${new Date().toISOString().split("T")[0]}.pdf`
-
-      // Trigger download
-      document.body.appendChild(link)
-      link.click()
-      document.body.removeChild(link)
-
-      // Cleanup URL object
-      URL.revokeObjectURL(blobUrl)
-    } catch (error: unknown) {
-      let errorMessage = "Failed to generate PDF. Please try again."
-
-      // Safer error message extraction
-      if (typeof error === "object" && error !== null && "message" in error) {
-        const err = error as { message: string }
-        console.error("Error generating PDF:", err.message)
-        errorMessage = err.message
-      } else {
-        console.error("Unknown error occurred:", error)
-      }
-
-      alert(errorMessage)
-    } finally {
-      setDownloading(false)
+    },
+    // Fix: Use a structural type that matches TRPCClientErrorLike
+    onError: (error: { message: string }) => {
+      console.error("Report generation error:", error);
+      toast.error(error.message ?? "Failed to generate report");
+      setIsDownloading(false);
     }
+  });
+
+  const handleDownload = () => {
+    setIsDownloading(true);
+    generateReport.mutate({ reportType });
   }
 
   return (
     <Button
+      variant={variant}
+      size="sm"
+      className={cn("gap-2", className)}
       onClick={handleDownload}
-      disabled={isPending || downloading}
-      className="bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-2"
-      aria-busy={isPending || downloading}
+      disabled={isDownloading}
     >
-      {(isPending || downloading) && <Loader2 className="animate-spin h-4 w-4" />}
-      {isPending || downloading ? "Generating..." : `Download ${reportType} Report`}
+      {isDownloading ? (
+        <Loader2 className="h-4 w-4 animate-spin" />
+      ) : (
+        <FileDown className="h-4 w-4" />
+      )}
+      {label ?? `Download ${reportType.charAt(0).toUpperCase() + reportType.slice(1)} Report`}
     </Button>
   )
 }

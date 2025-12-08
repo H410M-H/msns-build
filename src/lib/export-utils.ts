@@ -26,8 +26,13 @@ export function generateCSV(data: ExportData): string {
       .map((col) => {
         const value = row[col.key]
         if (value === null || value === undefined) return ""
-        if (typeof value === "string" && value.includes(",")) return `"${value}"`
-        return String(value)
+        if (typeof value === "string") return value.includes(",") ? `"${value}"` : value
+        if (typeof value === "number" || typeof value === "boolean" || typeof value === "bigint") return String(value)
+        if (value instanceof Date) return value.toLocaleDateString()
+        // Fix: Explicitly handle objects to satisfy no-base-to-string
+        if (typeof value === "object") return JSON.stringify(value)
+        // Fallback for symbols or guaranteed primitives
+        return String(value as string | number | boolean | symbol | bigint)
       })
       .join(","),
   )
@@ -64,9 +69,17 @@ export function formatExportValue(value: unknown, format?: ExportColumn["format"
     case "percent":
       return `${Number(value).toFixed(1)}%`
     case "date":
-      return value instanceof Date ? value.toLocaleDateString() : String(value)
+      if (value instanceof Date) return value.toLocaleDateString()
+      // Fix: Handle non-Date objects before stringifying primitives
+      if (typeof value === "object") return JSON.stringify(value)
+      return String(value as string | number | boolean | symbol | bigint)
     default:
-      return String(value)
+      // Fix: Check for object type before converting to string
+      if (typeof value === "string") return value
+      if (typeof value === "number" || typeof value === "boolean" || typeof value === "bigint") return String(value)
+      if (value instanceof Date) return value.toLocaleDateString()
+      if (typeof value === "object") return JSON.stringify(value)
+      return String(value as string | number | boolean | symbol | bigint)
   }
 }
 
