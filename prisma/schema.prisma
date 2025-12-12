@@ -82,6 +82,7 @@ model Employees {
     BioMetric          BioMetric?
     ClassSubject       ClassSubject[]
     Timetable          Timetable[]
+    Salary           Salary[]
     SalaryAssignment   SalaryAssignment[]
     SalaryIncrement    SalaryIncrement[]
     EmployeeAttendance EmployeeAttendance[]
@@ -175,6 +176,26 @@ model Grades {
     Timetable    Timetable[]
 }
 
+model Salary {
+  id          String       @id @default(cuid())
+  employeeId  String
+  amount      Float
+  month       Int
+  year        Int
+  status      SalaryStatus @default(PENDING)
+  paymentDate DateTime?
+  deductions  Float        @default(0)
+  allowances  Float        @default(0)
+  bonus       Float        @default(0)
+  sessionId   String
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  // Relations
+  Employees   Employees    @relation(fields: [employeeId], references: [employeeId])
+  Sessions    Sessions     @relation(fields: [sessionId], references: [sessionId])
+}
+
 model SalaryAssignment {
     id           String    @id @default(cuid())
     employeeId   String
@@ -204,6 +225,7 @@ model Sessions {
     isActive         Boolean            @default(false)
     ClassSubject     ClassSubject[]
     Timetable        Timetable[]
+    Salary           Salary[]
     SalaryAssignment SalaryAssignment[]
     StudentClass     StudentClass[]
 }
@@ -340,6 +362,12 @@ enum Designation {
 enum FeeCategory {
     MonthlyFee
     AnnualFee
+}
+
+enum SalaryStatus {
+  PAID
+  PENDING
+  PARTIAL
 }
 
 enum ExpenseCategory {
