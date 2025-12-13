@@ -10,10 +10,9 @@ import {
   CardFooter 
 } from "~/components/ui/card";
 import { Button } from "~/components/ui/button";
-import { Badge } from "~/components/ui/badge"; // Assuming you have this installed
-import { Skeleton } from "~/components/ui/skeleton"; // Assuming you have this installed
+import { Badge } from "~/components/ui/badge"; 
+import { Skeleton } from "~/components/ui/skeleton"; 
 import { 
-  Users, 
   BookOpen, 
   Settings, 
   UserPlus, 
