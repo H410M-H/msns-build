@@ -19,7 +19,6 @@ interface AnnualSalarySlipProps {
     name: string
     designation: string
     registrationNumber: string
-    joiningDate?: Date
   }
   records: SalaryRecord[]
 }
@@ -113,19 +112,19 @@ export const AnnualSalarySlip = React.forwardRef<HTMLDivElement, AnnualSalarySli
         {/* Annual Totals Cards */}
         <div className="grid grid-cols-4 gap-4 mb-8">
           <div className="p-4 bg-blue-50 rounded-lg border border-blue-100 text-center">
-            <p className="text-xs text-blue-500 uppercase font-semibold mb-1">Total Basic</p>
+            <p className="text-[10px] text-blue-500 uppercase font-semibold mb-1">Total Basic</p>
             <p className="text-lg font-bold text-blue-900">{totals.basic.toLocaleString()}</p>
           </div>
           <div className="p-4 bg-green-50 rounded-lg border border-green-100 text-center">
-            <p className="text-xs text-green-500 uppercase font-semibold mb-1">Allowances + Bonus</p>
+            <p className="text-[10px] text-green-500 uppercase font-semibold mb-1">Allowances + Bonus</p>
             <p className="text-lg font-bold text-green-900">{(totals.allowances + totals.bonus).toLocaleString()}</p>
           </div>
           <div className="p-4 bg-red-50 rounded-lg border border-red-100 text-center">
-            <p className="text-xs text-red-500 uppercase font-semibold mb-1">Total Deductions</p>
+            <p className="text-[10px] text-red-500 uppercase font-semibold mb-1">Total Deductions</p>
             <p className="text-lg font-bold text-red-900">{totals.deductions.toLocaleString()}</p>
           </div>
           <div className="p-4 bg-indigo-50 rounded-lg border border-indigo-100 text-center">
-            <p className="text-xs text-indigo-500 uppercase font-semibold mb-1">Net Annual Pay</p>
+            <p className="text-[10px] text-indigo-500 uppercase font-semibold mb-1">Net Annual Pay</p>
             <p className="text-lg font-bold text-indigo-900">{totals.net.toLocaleString()}</p>
           </div>
         </div>
