@@ -18,7 +18,8 @@ import {
   AlertCircle,
   Banknote,
   Trash2,
-  Zap
+  Zap,
+  FileText
 } from "lucide-react"
 import {
   DropdownMenu,
@@ -38,6 +39,7 @@ import {
 import { toast } from "~/hooks/use-toast"
 import * as jsPDF from "jspdf"
 import * as html2canvas from "html2canvas-pro"
+import { AnnualSalaryDialog } from "../blocks/salary/AnnualSalaryDialog"
 
 // Defined interface based on the query output
 interface SalaryRecord {
@@ -82,6 +84,14 @@ export function PayrollTable({ month, year }: PayrollTableProps) {
   const [generatingId, setGeneratingId] = useState<string | null>(null)
   const [isBulkGenerating, setIsBulkGenerating] = useState(false)
   
+  // State for Annual Summary
+  const [annualEmployee, setAnnualEmployee] = useState<{
+    id: string; 
+    name: string; 
+    designation: string; 
+    registrationNumber: string;
+  } | null>(null)
+
   // Selection State
   const [selectedIds, setSelectedIds] = useState<string[]>([])
   
@@ -117,7 +127,7 @@ export function PayrollTable({ month, year }: PayrollTableProps) {
       setGeneratingId(null)
     },
     onError: (err) => {
-      toast({ title: "Error", description: err.message})
+      toast({ title: "Error", description: err.message, variant: "destructive" })
       setGeneratingId(null)
     }
   })
@@ -130,7 +140,7 @@ export function PayrollTable({ month, year }: PayrollTableProps) {
       setIsBulkGenerating(false)
     },
     onError: (err) => {
-      toast({ title: "Error", description: err.message})
+      toast({ title: "Error", description: err.message, variant: "destructive" })
       setIsBulkGenerating(false)
     }
   })
@@ -166,7 +176,6 @@ export function PayrollTable({ month, year }: PayrollTableProps) {
     if (!currentSessionId) return toast({ title: "Error", description: "No active session found" })
     
     setGeneratingId(employeeId)
-    // Sending amount 0 triggers the backend to auto-fill from assigned salary
     createSalaryMutation.mutate({
       employeeId,
       amount: 0, 
@@ -212,7 +221,6 @@ export function PayrollTable({ month, year }: PayrollTableProps) {
 
   const handleSelectAll = (checked: boolean) => {
     if (checked) {
-      // Only select "existing" salary records
       const allIds = salaryData?.salaries.map(s => s.id) ?? []
       setSelectedIds(allIds)
     } else {
@@ -273,7 +281,7 @@ export function PayrollTable({ month, year }: PayrollTableProps) {
   return (
     <div className="space-y-4">
       {/* Top Actions Bar */}
-      <div className="flex flex-colsm:flex-row sm:justify-between sm:items-center p-4">
+      <div className="flex flex-col gap-4 sm:flex-row sm:justify-between sm:items-center">
         {selectedIds.length > 0 ? (
           <div className="bg-red-50 p-2 rounded-lg flex items-center gap-4 px-4 border border-red-100 w-full sm:w-auto">
             <span className="text-sm font-medium text-red-700">{selectedIds.length} records selected</span>
@@ -288,16 +296,14 @@ export function PayrollTable({ month, year }: PayrollTableProps) {
             </Button>
           </div>
         ) : (
-          <div className="text-sm text-slate-500 hidden sm:block">
-            {/* Placeholder to keep layout balanced if needed */}
-          </div>
+          <div className="text-sm text-slate-500 hidden sm:block"></div>
         )}
 
         {missingEmployees && missingEmployees.length > 0 && (
           <Button 
             onClick={handleBulkGenerate} 
             disabled={isBulkGenerating}
-            className="w-full sm:w-auto gap-2 bg-indigo-600 hover:bg-indigo-700 text-white p-4"
+            className="w-full sm:w-auto gap-2 bg-indigo-600 hover:bg-indigo-700 text-white"
           >
             {isBulkGenerating ? <Loader2 className="w-4 h-4 animate-spin"/> : <Zap className="w-4 h-4" />}
             Generate All Pending ({missingEmployees.length})
@@ -417,6 +423,16 @@ export function PayrollTable({ month, year }: PayrollTableProps) {
                               <DropdownMenuItem onClick={() => setPreviewRecord(salary)}>
                                 <Eye className="mr-2 h-4 w-4" /> View Slip
                               </DropdownMenuItem>
+                              <DropdownMenuItem 
+                                onClick={() => setAnnualEmployee({
+                                  id: salary.Employees.employeeId,
+                                  name: salary.Employees.employeeName,
+                                  designation: salary.Employees.designation,
+                                  registrationNumber: salary.Employees.registrationNumber
+                                })}
+                              >
+                                <FileText className="mr-2 h-4 w-4" /> Annual Statement
+                              </DropdownMenuItem>
                               <DropdownMenuSeparator />
                               <DropdownMenuItem onClick={() => handleDelete(salary.id)} className="text-red-600 focus:text-red-600 focus:bg-red-50">
                                 <Trash2 className="mr-2 h-4 w-4" /> Delete Record
@@ -434,7 +450,7 @@ export function PayrollTable({ month, year }: PayrollTableProps) {
         </Table>
       </div>
 
-      {/* Slip Preview Dialog (No Changes needed here) */}
+      {/* Slip Preview Dialog */}
       <Dialog open={!!previewRecord} onOpenChange={(open) => !open && setPreviewRecord(null)}>
         <DialogContent className="max-w-3xl">
           <DialogHeader>
@@ -475,6 +491,15 @@ export function PayrollTable({ month, year }: PayrollTableProps) {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Annual Summary Dialog */}
+      {annualEmployee && (
+        <AnnualSalaryDialog 
+          open={!!annualEmployee} 
+          onOpenChange={(open) => !open && setAnnualEmployee(null)}
+          employee={annualEmployee}
+        />
+      )}
     </div>
   )
 }
