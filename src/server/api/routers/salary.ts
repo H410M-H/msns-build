@@ -39,6 +39,10 @@ const bulkPaySchema = z.object({
   paymentDate: z.date().optional(),
 });
 
+const bulkDeleteSchema = z.object({
+  ids: z.array(z.string()).min(1, "At least one ID required"),
+});
+
 const generateMonthlySalariesSchema = z.object({
   month: z.number().min(1).max(12),
   year: z.number(),
@@ -94,10 +98,30 @@ export const salaryRouter = createTRPCRouter({
         });
       }
 
+      // --- AUTO-FILL LOGIC START ---
+      let finalAmount = input.amount;
+
+      // If amount is 0, try to find the assigned salary for this employee
+      if (finalAmount === 0) {
+        const assignment = await ctx.db.salaryAssignment.findFirst({
+          where: { 
+            employeeId: input.employeeId,
+            // We ideally want the assignment valid for this session
+            sessionId: input.sessionId 
+          },
+          orderBy: { assignedDate: 'desc' }
+        });
+
+        if (assignment) {
+          finalAmount = assignment.totalSalary;
+        }
+      }
+      // --- AUTO-FILL LOGIC END ---
+
       return ctx.db.salary.create({
         data: {
           employeeId: input.employeeId,
-          amount: input.amount,
+          amount: finalAmount,
           month: input.month,
           year: input.year,
           status: input.status,
@@ -132,6 +156,16 @@ export const salaryRouter = createTRPCRouter({
       return ctx.db.salary.delete({ where: { id: input.id } });
     }),
 
+  bulkDelete: protectedProcedure
+    .input(bulkDeleteSchema)
+    .mutation(async ({ ctx, input }) => {
+      return ctx.db.salary.deleteMany({
+        where: {
+          id: { in: input.ids },
+        },
+      });
+    }),
+
   getAll: protectedProcedure
     .input(
       z.object({
@@ -157,7 +191,7 @@ export const salaryRouter = createTRPCRouter({
         take: input.limit + 1,
         cursor: input.cursor ? { id: input.cursor } : undefined,
         orderBy: { paymentDate: "desc" },
-        include: { Employees: true }, // Correct relation name from schema
+        include: { Employees: true },
       });
 
       let nextCursor: string | undefined = undefined;
@@ -383,7 +417,6 @@ export const salaryRouter = createTRPCRouter({
     });
   }),
 
-  // UPDATE Assignment (Editing)
   updateSalaryAssignment: protectedProcedure.input(salaryAssignmentUpdateSchema).mutation(async ({ ctx, input }) => {
     const current = await ctx.db.salaryAssignment.findUnique({ where: { id: input.id } });
     if (!current) throw new TRPCError({ code: "NOT_FOUND", message: "Assignment not found" });
@@ -403,14 +436,12 @@ export const salaryRouter = createTRPCRouter({
     });
   }),
 
-  // DELETE Assignment (Single)
   deleteSalaryAssignment: protectedProcedure
     .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
       return ctx.db.salaryAssignment.delete({ where: { id: input.id } });
     }),
 
-  // DELETE Assignment (Bulk)
   deleteBulkSalaryAssignments: protectedProcedure
     .input(z.object({ ids: z.array(z.string()) }))
     .mutation(async ({ ctx, input }) => {
