@@ -4,210 +4,285 @@ import { useMemo, useState } from "react";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "~/components/ui/tabs";
+import { ScrollArea, ScrollBar } from "~/components/ui/scroll-area";
 import { api } from "~/trpc/react";
 import Link from "next/link";
 import { ClassCreationDialog } from "../forms/class/ClassCreation";
-import { Search, RefreshCw } from "lucide-react";
+import { Search, RefreshCw, Users, BookOpen, Calendar, Banknote, AlertCircle } from "lucide-react";
 import { Checkbox } from "~/components/ui/checkbox";
 import { Skeleton } from "~/components/ui/skeleton";
 import { cn } from "~/lib/utils";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { ClassDeletionDialog } from "../forms/class/ClassDeletion";
+import { Badge } from "~/components/ui/badge";
 
 const categoryOrder = ["Montessori", "Primary", "Middle", "SSC_I", "SSC_II"];
+
+// refined color palette for better contrast and modernization
 const categoryColors: Record<string, string> = {
-  Montessori: "bg-gradient-to-r from-rose-100 to-rose-50 border-rose-200",
-  Primary: "bg-gradient-to-r from-indigo-100 to-indigo-50 border-indigo-200",
-  Middle: "bg-gradient-to-r from-emerald-100 to-emerald-50 border-emerald-200",
-  SSC_I: "bg-gradient-to-r from-amber-100 to-amber-50 border-amber-200",
-  SSC_II: "bg-gradient-to-r from-violet-100 to-violet-50 border-violet-200",
+  Montessori: "data-[state=active]:bg-rose-100 data-[state=active]:text-rose-900",
+  Primary: "data-[state=active]:bg-indigo-100 data-[state=active]:text-indigo-900",
+  Middle: "data-[state=active]:bg-emerald-100 data-[state=active]:text-emerald-900",
+  SSC_I: "data-[state=active]:bg-amber-100 data-[state=active]:text-amber-900",
+  SSC_II: "data-[state=active]:bg-violet-100 data-[state=active]:text-violet-900",
 };
+
 const sectionColors: Record<string, string> = {
-  ROSE: "bg-gradient-to-br from-rose-100 to-rose-200 text-rose-900",
-  TULIP: "bg-gradient-to-br from-amber-100 to-amber-200 text-amber-900",
+  ROSE: "bg-rose-50 text-rose-700 border-rose-200 hover:bg-rose-100",
+  TULIP: "bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100",
 };
 
 export const ClassList = ({ sessionId }: { sessionId: string }) => {
-  const [selectedClasses, setSelectedClasses] = useState<Set<string>>(
-    new Set(),
-  );
+  const [selectedClasses, setSelectedClasses] = useState<Set<string>>(new Set());
+  const [searchQuery, setSearchQuery] = useState("");
+  
   const {
     data: classesData,
     isLoading,
     refetch,
+    isRefetching
   } = api.class.getClasses.useQuery();
 
   const handleRefresh = async () => {
     await refetch();
   };
 
+  // Filter data based on search query before grouping
+  const filteredData = useMemo(() => {
+    if (!classesData) return [];
+    if (!searchQuery) return classesData;
+    return classesData.filter(c => 
+      c.grade.toLowerCase().includes(searchQuery.toLowerCase()) || 
+      c.section.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  }, [classesData, searchQuery]);
+
   const groupedData = useMemo(() => {
     const grouped: Record<string, typeof classesData> = {};
-    classesData?.forEach((item) => {
+    filteredData.forEach((item) => {
       grouped[item.category] ??= [];
       grouped[item.category]?.push(item);
     });
     return grouped;
-  }, [classesData]);
+  }, [filteredData]);
 
   const handleClassSelect = (classId: string) => {
-    setSelectedClasses(
-      (prev) =>
-        new Set(
-          prev.has(classId)
-            ? [...prev].filter((id) => id !== classId)
-            : [...prev, classId],
-        ),
-    );
+    setSelectedClasses((prev) => {
+      const next = new Set(prev);
+      if (next.has(classId)) next.delete(classId);
+      else next.add(classId);
+      return next;
+    });
   };
 
   return (
-    <div className="w-full">
+    <div className="w-full space-y-6">
       {/* Header Section */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="mb-8 rounded-2xl border border-slate-100/80 bg-white/80 p-6 shadow-lg backdrop-blur-lg"
-      >
-        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-          <div className="relative w-full flex-grow">
-            <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" />
-            <Input
-              placeholder="Search classes..."
-              className="h-12 rounded-xl border-2 border-slate-200/50 bg-white/50 pl-11 text-base backdrop-blur-sm focus:border-blue-300 focus:ring-2 focus:ring-blue-100/50"
-            />
-          </div>
-          <div className="flex items-center gap-3">
-            <Button
-              onClick={handleRefresh}
-              className="h-11 gap-2 rounded-xl border border-slate-200/60 bg-white/90 px-4 shadow-sm backdrop-blur-sm transition-all hover:border-slate-300/50 hover:bg-white"
-            >
-              <RefreshCw
-                className={`h-4 w-4 ${isLoading ? "animate-spin" : "animate-pulse"}`}
-              />
-              Refresh
-            </Button>
-            <ClassDeletionDialog classIds={Array.from(selectedClasses)} />
-            <ClassCreationDialog />
-          </div>
+      <div className="flex flex-col gap-4 rounded-xl border bg-card p-4 shadow-sm md:flex-row md:items-center md:justify-between">
+        <div className="relative w-full md:max-w-md">
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            placeholder="Search by grade or section..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-9 bg-background/50"
+          />
         </div>
-      </motion.div>
+        
+        <div className="flex flex-wrap items-center gap-2">
+           <Button
+            variant="outline"
+            size="sm"
+            onClick={handleRefresh}
+            className="gap-2"
+            disabled={isLoading || isRefetching}
+          >
+            <RefreshCw className={cn("h-4 w-4", (isLoading || isRefetching) && "animate-spin")} />
+            <span className="hidden sm:inline">Refresh</span>
+          </Button>
+          
+          <ClassDeletionDialog classIds={Array.from(selectedClasses)} />
+          <ClassCreationDialog />
+        </div>
+      </div>
 
       {/* Tabs Section */}
-      <Tabs defaultValue={categoryOrder[0]}>
-        <TabsList className="mb-6 flex w-full gap-1.5 bg-transparent pb-2">
-          {categoryOrder.map((category) => (
-            <TabsTrigger
-              key={category}
-              value={category}
-              className={cn(
-                "rounded-xl px-4 py-2.5 text-sm font-semibold",
-                "border border-slate-200/60 backdrop-blur-sm",
-                "transition-all hover:scale-[1.02] hover:shadow-sm",
-                "data-[state=active]:border-blue-300 data-[state=active]:bg-blue-50/50",
-                categoryColors[category],
-              )}
-            >
-              {category}
-            </TabsTrigger>
-          ))}
-        </TabsList>
+      <Tabs defaultValue={categoryOrder[0]} className="w-full">
+        <div className="sticky top-0 z-10 -mx-4 bg-background/95 px-4 py-2 backdrop-blur supports-[backdrop-filter]:bg-background/60 md:static md:mx-0 md:p-0 md:bg-transparent">
+          <ScrollArea className="w-full whitespace-nowrap rounded-lg border bg-muted/40 p-1">
+            <TabsList className="bg-transparent p-0">
+              {categoryOrder.map((category) => (
+                <TabsTrigger
+                  key={category}
+                  value={category}
+                  className={cn(
+                    "rounded-md px-4 py-2 text-sm font-medium transition-all data-[state=active]:shadow-sm",
+                    categoryColors[category]
+                  )}
+                >
+                  {category}
+                </TabsTrigger>
+              ))}
+            </TabsList>
+            <ScrollBar orientation="horizontal" className="invisible" />
+          </ScrollArea>
+        </div>
 
         {categoryOrder.map((category) => (
-          <TabsContent key={category} value={category} className="mt-4">
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-              {isLoading
-                ? Array(6)
-                    .fill(0)
-                    .map((_, i) => (
-                      <motion.div
-                        key={i}
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        transition={{ delay: i * 0.1 }}
-                      >
-                        <Skeleton className="h-44 animate-pulse rounded-xl bg-slate-100/50" />
-                      </motion.div>
-                    ))
-                : groupedData?.[category]?.map((classItem, index) => (
-                    <motion.div
-                      key={classItem.classId}
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: index * 0.1 }}
-                    >
-                      <div className="group relative rounded-xl border border-slate-100/80 bg-white/90 p-5 shadow-sm backdrop-blur-sm transition-all duration-300 hover:border-blue-100/50 hover:shadow-md">
-                        <div className="mb-4 flex items-start justify-between">
-                          <Checkbox
-                            checked={selectedClasses.has(classItem.classId)}
-                            onCheckedChange={() =>
-                              handleClassSelect(classItem.classId)
-                            }
-                            className="mt-1.5 h-5 w-5 border-2 border-slate-300/80 ring-offset-white/50 data-[state=checked]:border-blue-500"
-                          />
-                          <div>
-                            <h3 className="text-2xl font-bold text-slate-800">
-                              {classItem.grade}
-                            </h3>
-                            <span
-                              className={cn(
-                                "inline-block rounded-full px-3 py-1 text-xs font-medium",
-                                "border border-white/20 backdrop-blur-sm",
-                                sectionColors[classItem.section],
-                              )}
-                            >
-                              {classItem.section}
-                            </span>
-                          </div>
-                        </div>
-                        <div className="mb-4 flex justify-between text-sm">
-                          <span className="text-slate-500">Monthly Fee:</span>
-                          <span className="font-medium text-emerald-700">
-                            {classItem.fee.toFixed(2)} PKR
-                          </span>
-                        </div>
-                        <div className="mt-6 grid gap-2">
-                          <Button
-                            asChild
-                            size="sm"
-                            className="w-full rounded-lg border border-blue-200/50 bg-gradient-to-r from-blue-100 to-blue-50 text-blue-700 shadow-sm transition-all hover:from-blue-200 hover:to-blue-100"
-                          >
-                            <Link
-                              href={`/admin/sessions/class/?classId=${classItem.classId}&sessionId=${sessionId}`}
-                            >
-                              View Class
-                            </Link>
-                          </Button>
-                          <Button
-                            asChild
-                            size="sm"
-                            className="w-full rounded-lg border border-emerald-200/50 bg-gradient-to-r from-emerald-100 to-emerald-50 text-emerald-700 shadow-sm transition-all hover:from-emerald-200 hover:to-emerald-100"
-                          >
-                            <Link
-                              href={`/admin/sessions/fee/?classId=${classItem.classId}&sessionId=${sessionId}`}
-                            >
-                              Fee Details
-                            </Link>
-                          </Button>
-                          <Button
-                            asChild
-                            size="sm"
-                 
-                          >
-                            <Link
-                              href={`/admin/sessions/timetable/?classId=${classItem.classId}`}
-                            >
-                              Timetable
-                            </Link>
-                          </Button>
-                        </div>
-                      </div>
-                    </motion.div>
-                  ))}
-            </div>
+          <TabsContent key={category} value={category} className="mt-6 min-h-[300px]">
+             {isLoading ? (
+               <ClassListSkeleton />
+             ) : (
+               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                 <AnimatePresence mode="popLayout">
+                   {groupedData?.[category]?.length ? (
+                     groupedData[category]!.map((classItem, index) => (
+                       <ClassCard 
+                         key={classItem.classId}
+                         item={classItem}
+                         isSelected={selectedClasses.has(classItem.classId)}
+                         onSelect={() => handleClassSelect(classItem.classId)}
+                         sessionId={sessionId}
+                         index={index}
+                       />
+                     ))
+                   ) : (
+                     <motion.div 
+                       initial={{ opacity: 0 }} 
+                       animate={{ opacity: 1 }}
+                       className="col-span-full flex flex-col items-center justify-center py-12 text-center text-muted-foreground"
+                     >
+                       <div className="mb-4 rounded-full bg-muted p-4">
+                         <AlertCircle className="h-8 w-8 text-muted-foreground/50" />
+                       </div>
+                       <p className="text-lg font-medium">No classes found in {category}</p>
+                       <p className="text-sm">Create a new class to get started.</p>
+                     </motion.div>
+                   )}
+                 </AnimatePresence>
+               </div>
+             )}
           </TabsContent>
         ))}
       </Tabs>
     </div>
   );
 };
+
+// Extracted Card Component for cleaner code
+const ClassCard = ({ 
+  item, 
+  isSelected, 
+  onSelect, 
+  sessionId, 
+  index 
+}: { 
+  item: any, 
+  isSelected: boolean, 
+  onSelect: () => void, 
+  sessionId: string,
+  index: number 
+}) => {
+  return (
+    <motion.div
+      layout
+      initial={{ opacity: 0, scale: 0.95 }}
+      animate={{ opacity: 1, scale: 1 }}
+      exit={{ opacity: 0, scale: 0.95 }}
+      transition={{ duration: 0.2, delay: index * 0.05 }}
+      className={cn(
+        "group relative flex flex-col justify-between overflow-hidden rounded-xl border bg-card p-5 shadow-sm transition-all hover:shadow-md",
+        isSelected && "ring-2 ring-primary ring-offset-2"
+      )}
+    >
+      {/* Selection Checkbox */}
+      <div className="absolute right-4 top-4 z-10">
+        <Checkbox
+          checked={isSelected}
+          onCheckedChange={onSelect}
+          className="data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground"
+        />
+      </div>
+
+      <div className="space-y-4">
+        {/* Header */}
+        <div>
+          <h3 className="text-2xl font-bold tracking-tight text-foreground">
+            {item.grade}
+          </h3>
+          <Badge 
+            variant="outline" 
+            className={cn("mt-2 font-medium", sectionColors[item.section] || "bg-slate-100")}
+          >
+            {item.section}
+          </Badge>
+        </div>
+
+        {/* Info Grid */}
+        <div className="grid grid-cols-2 gap-3 rounded-lg bg-muted/30 p-3">
+          <div className="space-y-1">
+            <span className="text-xs text-muted-foreground">Monthly Fee</span>
+            <div className="flex items-center gap-1.5 font-semibold text-emerald-600">
+              <Banknote className="h-3.5 w-3.5" />
+              <span>{item.fee.toLocaleString()}</span>
+            </div>
+          </div>
+          {/* Placeholder for student count if available in future */}
+          <div className="space-y-1">
+            <span className="text-xs text-muted-foreground">Students</span>
+            <div className="flex items-center gap-1.5 font-medium text-foreground">
+              <Users className="h-3.5 w-3.5 text-muted-foreground" />
+              <span>--</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Actions */}
+      <div className="mt-5 grid grid-cols-2 gap-2">
+        <Button asChild size="sm" variant="outline" className="w-full text-xs">
+          <Link href={`/admin/sessions/class/?classId=${item.classId}&sessionId=${sessionId}`}>
+            <BookOpen className="mr-1.5 h-3.5 w-3.5" />
+            View
+          </Link>
+        </Button>
+        <Button asChild size="sm" variant="outline" className="w-full text-xs">
+          <Link href={`/admin/sessions/timetable/?classId=${item.classId}`}>
+            <Calendar className="mr-1.5 h-3.5 w-3.5" />
+            Timetable
+          </Link>
+        </Button>
+        <Button asChild size="sm" className="col-span-2 w-full text-xs bg-primary/90 hover:bg-primary">
+          <Link href={`/admin/sessions/fee/?classId=${item.classId}&sessionId=${sessionId}`}>
+            <Banknote className="mr-1.5 h-3.5 w-3.5" />
+            Manage Fees
+          </Link>
+        </Button>
+      </div>
+    </motion.div>
+  );
+};
+
+const ClassListSkeleton = () => (
+  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+    {Array.from({ length: 8 }).map((_, i) => (
+      <div key={i} className="flex h-[280px] flex-col justify-between rounded-xl border p-5">
+        <div className="space-y-3">
+          <div className="flex justify-between">
+            <Skeleton className="h-8 w-24" />
+            <Skeleton className="h-5 w-5 rounded" />
+          </div>
+          <Skeleton className="h-6 w-16 rounded-full" />
+          <Skeleton className="h-16 w-full rounded-lg" />
+        </div>
+        <div className="grid gap-2">
+          <div className="grid grid-cols-2 gap-2">
+            <Skeleton className="h-9 w-full" />
+            <Skeleton className="h-9 w-full" />
+          </div>
+          <Skeleton className="h-9 w-full" />
+        </div>
+      </div>
+    ))}
+  </div>
+);
