@@ -38,12 +38,13 @@ import {
   Building2,
   Phone,
   Mail,
-  Globe
+  Globe,
+  FileText
 } from "lucide-react"
 import { toast } from "~/hooks/use-toast"
 import * as jsPDF from "jspdf"
 import * as html2canvas from "html2canvas-pro"
-import Image from "next/image"
+import { AnnualSalarySlip } from "./AnnualSalarySlip"
 
 // Define proper type for salary record
 interface SalaryRecord {
@@ -98,6 +99,10 @@ export function SalaryHistoryDialog({
   const [isDownloading, setIsDownloading] = useState(false)
   const slipRef = useRef<HTMLDivElement>(null)
 
+  // State for Annual Slip Preview
+  const [showAnnualPreview, setShowAnnualPreview] = useState(false)
+  const annualRef = useRef<HTMLDivElement>(null)
+
   const utils = api.useUtils()
   
   const { data: history, isLoading } = api.salary.getEmployeeSalarySummary.useQuery(
@@ -125,7 +130,7 @@ export function SalaryHistoryDialog({
       setIsUpdating(null)
     },
     onError: (err) => {
-      toast({ title: "Error", description: err.message})
+      toast({ title: "Error", description: err.message, variant: "destructive" })
       setIsUpdating(null)
     }
   })
@@ -155,8 +160,8 @@ export function SalaryHistoryDialog({
   }
 
   // --- HTML to PDF Generation Logic ---
-  const handlePrint = () => {
-    const content = slipRef.current
+  const handlePrint = (ref: React.RefObject<HTMLDivElement>) => {
+    const content = ref.current
     if (!content) return
 
     const printWindow = window.open("", "_blank")
@@ -166,8 +171,9 @@ export function SalaryHistoryDialog({
       <!DOCTYPE html>
       <html>
         <head>
-          <title>Payslip - ${employeeName}</title>
+          <title>Salary Document</title>
           <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+          <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
           <style>
             body { font-family: 'Inter', sans-serif; padding: 20px; -webkit-print-color-adjust: exact; }
             @media print {
@@ -187,12 +193,12 @@ export function SalaryHistoryDialog({
     printWindow.document.close()
   }
 
-  const handleDownloadPdf = async () => {
-    if (!slipRef.current || !previewRecord) return
+  const handleDownloadPdf = async (ref: React.RefObject<HTMLDivElement>, filename: string) => {
+    if (!ref.current) return
 
     try {
       setIsDownloading(true)
-      const element = slipRef.current
+      const element = ref.current
       
       const canvas = await html2canvas.default(element, {
         scale: 2,
@@ -212,7 +218,7 @@ export function SalaryHistoryDialog({
       const pdfHeight = (canvas.height * pdfWidth) / canvas.width
 
       pdf.addImage(imgData, "PNG", 0, 10, pdfWidth, pdfHeight)
-      pdf.save(`Payslip-${employeeName}-${MONTHS[previewRecord.month - 1]?.label}-${previewRecord.year}.pdf`)
+      pdf.save(filename)
     } catch (error) {
       console.error("PDF Generation Error:", error)
       toast({ title: "Error", description: "Failed to generate PDF" })
@@ -220,6 +226,9 @@ export function SalaryHistoryDialog({
       setIsDownloading(false)
     }
   }
+
+  // Filter records for the Annual Slip
+  const annualRecords = history?.records.filter(r => r.year === Number(selectedYear)) || []
 
   return (
     <>
@@ -232,12 +241,13 @@ export function SalaryHistoryDialog({
             </DialogDescription>
           </DialogHeader>
 
-          {/* Generator Section */}
-          <div className="flex items-center gap-4 p-4 bg-slate-50 rounded-lg border">
+          {/* Generator & Actions Section */}
+          <div className="flex flex-col sm:flex-row items-center gap-4 p-4 bg-slate-50 rounded-lg border justify-between">
+            {/* Left: Generator */}
             <div className="flex items-center gap-2">
-              <span className="text-sm font-medium">Generate for:</span>
+              <span className="text-sm font-medium">Select Period:</span>
               <Select value={selectedMonth} onValueChange={setSelectedMonth}>
-                <SelectTrigger className="w-[120px] bg-white"><SelectValue /></SelectTrigger>
+                <SelectTrigger className="w-[110px] bg-white"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   {MONTHS.map(m => <SelectItem key={m.value} value={String(m.value)}>{m.label}</SelectItem>)}
                 </SelectContent>
@@ -248,10 +258,20 @@ export function SalaryHistoryDialog({
                   {[2023, 2024, 2025, 2026].map(y => <SelectItem key={y} value={String(y)}>{y}</SelectItem>)}
                 </SelectContent>
               </Select>
+              <Button onClick={handleGenerate} disabled={isGenerating} size="sm" className="ml-2">
+                {isGenerating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4 mr-2" />}
+                Generate
+              </Button>
             </div>
-            <Button onClick={handleGenerate} disabled={isGenerating} size="sm" className="ml-auto">
-              {isGenerating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4 mr-2" />}
-              Generate Slip
+
+            {/* Right: Annual Slip */}
+            <Button 
+              variant="outline" 
+              onClick={() => setShowAnnualPreview(true)}
+              className="gap-2 border-indigo-200 text-indigo-700 hover:bg-indigo-50"
+            >
+              <FileText className="w-4 h-4" />
+              Annual Statement ({selectedYear})
             </Button>
           </div>
 
@@ -342,7 +362,43 @@ export function SalaryHistoryDialog({
         </DialogContent>
       </Dialog>
 
-      {/* Payslip Preview Dialog */}
+      {/* -------------------- ANNUAL SLIP PREVIEW DIALOG -------------------- */}
+      <Dialog open={showAnnualPreview} onOpenChange={setShowAnnualPreview}>
+        <DialogContent className="max-w-4xl h-[90vh]">
+          <DialogHeader>
+            <DialogTitle>Annual Salary Statement ({selectedYear})</DialogTitle>
+          </DialogHeader>
+          
+          <div className="flex justify-center bg-gray-100 p-6 rounded-md overflow-auto h-full">
+            <AnnualSalarySlip 
+              ref={annualRef}
+              year={Number(selectedYear)}
+              employee={{
+                name: employeeName,
+                designation: designation,
+                registrationNumber: registrationNumber
+              }}
+              records={annualRecords as unknown as SalaryRecord[]}
+            />
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => handlePrint(annualRef)} className="gap-2">
+              <Printer className="w-4 h-4" /> Print
+            </Button>
+            <Button 
+              onClick={() => handleDownloadPdf(annualRef, `Annual-Statement-${employeeName}-${selectedYear}.pdf`)} 
+              disabled={isDownloading} 
+              className="gap-2 bg-indigo-600 hover:bg-indigo-700 text-white"
+            >
+              {isDownloading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
+              Download Annual PDF
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* -------------------- MONTHLY SLIP PREVIEW DIALOG -------------------- */}
       <Dialog open={!!previewRecord} onOpenChange={(open) => !open && setPreviewRecord(null)}>
         <DialogContent className="max-w-3xl">
           <DialogHeader>
@@ -362,7 +418,7 @@ export function SalaryHistoryDialog({
                   {/* Header Section */}
                   <div className="flex justify-between items-start border-b-2 border-emerald-100 pb-6 mb-6">
                     <div className="flex gap-4 items-center">
-                      <Image 
+                      <img 
                         src="https://res.cloudinary.com/dvvbxrs55/image/upload/v1729267533/Official_LOGO_grn_ic9ldd.png" 
                         alt="School Logo" 
                         className="w-20 h-20 object-contain drop-shadow-sm"
@@ -498,10 +554,10 @@ export function SalaryHistoryDialog({
           </div>
 
           <DialogFooter>
-            <Button variant="outline" onClick={handlePrint} className="gap-2 border-emerald-200 text-emerald-700 hover:bg-emerald-50">
+            <Button variant="outline" onClick={() => handlePrint(slipRef)} className="gap-2 border-emerald-200 text-emerald-700 hover:bg-emerald-50">
               <Printer className="w-4 h-4" /> Print Slip
             </Button>
-            <Button onClick={handleDownloadPdf} disabled={isDownloading} className="gap-2 bg-emerald-600 hover:bg-emerald-700 text-white">
+            <Button onClick={() => handleDownloadPdf(slipRef, `Payslip-${employeeName}-${previewRecord?.month}-${previewRecord?.year}.pdf`)} disabled={isDownloading} className="gap-2 bg-emerald-600 hover:bg-emerald-700 text-white">
               {isDownloading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
               Download PDF
             </Button>
