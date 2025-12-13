@@ -71,9 +71,10 @@ export const ClassList = ({ sessionId }: { sessionId: string }) => {
     filteredData.forEach((item) => {
       // Ensure we treat the item as ClassItem (assuming API returns matching shape)
       const typedItem = item as unknown as ClassItem;
-      if (!grouped[typedItem.category]) {
-        grouped[typedItem.category] = [];
-      }
+      
+      // FIX: Use nullish coalescing assignment (??=)
+      grouped[typedItem.category] ??= [];
+      
       grouped[typedItem.category]?.push(typedItem);
     });
     return grouped;
@@ -148,7 +149,7 @@ export const ClassList = ({ sessionId }: { sessionId: string }) => {
              ) : (
                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                  <AnimatePresence mode="popLayout">
-                   {/* Removed unnecessary assertion (!) and used optional chaining */}
+                   {/* Check if the category exists and has items */}
                    {groupedData[category]?.length ? (
                      groupedData[category]?.map((classItem, index) => (
                        <ClassCard 
@@ -226,7 +227,7 @@ const ClassCard = ({
           </h3>
           <Badge 
             variant="outline" 
-            className={cn("mt-2 font-medium", sectionColors[item.section] ?? "bg-slate-100")} // Replaced || with ??
+            className={cn("mt-2 font-medium", sectionColors[item.section] ?? "bg-slate-100")}
           >
             {item.section}
           </Badge>
