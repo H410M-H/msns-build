@@ -228,7 +228,7 @@ export function SalaryHistoryDialog({
   }
 
   // Filter records for the Annual Slip
-  const annualRecords = history?.records.filter(r => r.year === Number(selectedYear)) || []
+  const annualRecords = history?.records.filter(r => r.year === Number(selectedYear)) ?? []
 
   return (
     <>
@@ -418,6 +418,7 @@ export function SalaryHistoryDialog({
                   {/* Header Section */}
                   <div className="flex justify-between items-start border-b-2 border-emerald-100 pb-6 mb-6">
                     <div className="flex gap-4 items-center">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img 
                         src="https://res.cloudinary.com/dvvbxrs55/image/upload/v1729267533/Official_LOGO_grn_ic9ldd.png" 
                         alt="School Logo" 
