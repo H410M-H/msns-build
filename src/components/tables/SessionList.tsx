@@ -15,7 +15,7 @@ import {
   Search,
   BookOpen,
   CalendarClock,
-  CheckCircle2,
+  // CheckCircle2 removed
 } from "lucide-react";
 import { api } from "~/trpc/react";
 import Link from "next/link";
