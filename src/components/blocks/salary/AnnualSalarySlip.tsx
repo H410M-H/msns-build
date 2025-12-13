@@ -63,6 +63,7 @@ export const AnnualSalarySlip = React.forwardRef<HTMLDivElement, AnnualSalarySli
         {/* Header */}
         <div className="flex justify-between items-start border-b-2 border-indigo-100 pb-6 mb-8">
           <div className="flex gap-4 items-center">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img 
               src="https://res.cloudinary.com/dvvbxrs55/image/upload/v1729267533/Official_LOGO_grn_ic9ldd.png" 
               alt="School Logo" 
