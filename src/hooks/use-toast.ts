@@ -13,6 +13,7 @@ interface ToasterToast {
   action?: React.ReactNode
   duration?: number
   className?: string
+  variant?: "default" | "destructive"
 }
 
 type Action = 
@@ -126,7 +127,6 @@ function toast(props: Toast) {
     },
   })
 
-  // Fixed: Properly handle timeout with block syntax
   if (props.duration !== Infinity) {
     const delay = props.duration ?? DEFAULT_DISMISS_DELAY;
     const timeoutId = setTimeout(() => {
