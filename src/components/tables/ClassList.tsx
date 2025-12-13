@@ -16,9 +16,17 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ClassDeletionDialog } from "../forms/class/ClassDeletion";
 import { Badge } from "~/components/ui/badge";
 
+// Define the type to avoid 'any' errors
+interface ClassItem {
+  classId: string;
+  grade: string;
+  section: string;
+  category: string;
+  fee: number;
+}
+
 const categoryOrder = ["Montessori", "Primary", "Middle", "SSC_I", "SSC_II"];
 
-// refined color palette for better contrast and modernization
 const categoryColors: Record<string, string> = {
   Montessori: "data-[state=active]:bg-rose-100 data-[state=active]:text-rose-900",
   Primary: "data-[state=active]:bg-indigo-100 data-[state=active]:text-indigo-900",
@@ -51,17 +59,22 @@ export const ClassList = ({ sessionId }: { sessionId: string }) => {
   const filteredData = useMemo(() => {
     if (!classesData) return [];
     if (!searchQuery) return classesData;
-    return classesData.filter(c => 
+    return classesData.filter((c) => 
       c.grade.toLowerCase().includes(searchQuery.toLowerCase()) || 
       c.section.toLowerCase().includes(searchQuery.toLowerCase())
     );
   }, [classesData, searchQuery]);
 
   const groupedData = useMemo(() => {
-    const grouped: Record<string, typeof classesData> = {};
+    // Explicitly type the accumulator
+    const grouped: Record<string, ClassItem[]> = {};
     filteredData.forEach((item) => {
-      grouped[item.category] ??= [];
-      grouped[item.category]?.push(item);
+      // Ensure we treat the item as ClassItem (assuming API returns matching shape)
+      const typedItem = item as unknown as ClassItem;
+      if (!grouped[typedItem.category]) {
+        grouped[typedItem.category] = [];
+      }
+      grouped[typedItem.category]?.push(typedItem);
     });
     return grouped;
   }, [filteredData]);
@@ -135,8 +148,9 @@ export const ClassList = ({ sessionId }: { sessionId: string }) => {
              ) : (
                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                  <AnimatePresence mode="popLayout">
-                   {groupedData?.[category]?.length ? (
-                     groupedData[category]!.map((classItem, index) => (
+                   {/* Removed unnecessary assertion (!) and used optional chaining */}
+                   {groupedData[category]?.length ? (
+                     groupedData[category]?.map((classItem, index) => (
                        <ClassCard 
                          key={classItem.classId}
                          item={classItem}
@@ -177,7 +191,7 @@ const ClassCard = ({
   sessionId, 
   index 
 }: { 
-  item: any, 
+  item: ClassItem, // Typed correctly
   isSelected: boolean, 
   onSelect: () => void, 
   sessionId: string,
@@ -212,7 +226,7 @@ const ClassCard = ({
           </h3>
           <Badge 
             variant="outline" 
-            className={cn("mt-2 font-medium", sectionColors[item.section] || "bg-slate-100")}
+            className={cn("mt-2 font-medium", sectionColors[item.section] ?? "bg-slate-100")} // Replaced || with ??
           >
             {item.section}
           </Badge>
