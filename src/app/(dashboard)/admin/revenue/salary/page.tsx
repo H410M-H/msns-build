@@ -1,30 +1,31 @@
-"use client"
+"use client";
 
-import { useState } from 'react'
-import { api } from "~/trpc/react"
-import { 
-  BarChart3, 
-  Wallet, 
-  Users, 
-  Plus,
+import { useState } from "react";
+import { api } from "~/trpc/react";
+import {
+  BarChart3,
+  Wallet,
+  Users,
   Loader2,
   CheckCircle2,
-  AlertCircle
-} from "lucide-react"
+  AlertCircle,
+  Calendar,
+  DollarSign,
+} from "lucide-react";
 
-import { Button } from "~/components/ui/button"
-import { Separator } from "~/components/ui/separator"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select"
-import { useToast } from "~/hooks/use-toast"
+import { Button } from "~/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "~/components/ui/card";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
+import { Skeleton } from "~/components/ui/skeleton";
+import { useToast } from "~/hooks/use-toast";
 
 // Components
-import { SalaryAssignmentForm } from "~/components/forms/employee/SalaryAllotment"
-import { SalaryTable } from "~/components/tables/SalaryTable" // This displays SalaryAssignment
-import { PayrollTable } from "~/components/tables/PayrollTable" // New component below
-import { IncrementDialog } from "~/components/forms/employee/IncrementDialog" // New component below
-import { SalaryAnalytics } from "~/components/blocks/salary/SalaryAnalytics" // New component below
+import { SalaryAssignmentForm } from "~/components/forms/employee/SalaryAllotment";
+import { SalaryTable } from "~/components/tables/SalaryTable";
+import { PayrollTable } from "~/components/tables/PayrollTable";
+import { IncrementDialog } from "~/components/forms/employee/IncrementDialog";
+import { SalaryAnalytics } from "~/components/blocks/salary/SalaryAnalytics";
 
 const MONTHS = [
   { value: "1", label: "January" }, { value: "2", label: "February" },
@@ -33,205 +34,276 @@ const MONTHS = [
   { value: "7", label: "July" }, { value: "8", label: "August" },
   { value: "9", label: "September" }, { value: "10", label: "October" },
   { value: "11", label: "November" }, { value: "12", label: "December" }
-]
+];
 
 export default function SalaryPage() {
-  const { toast } = useToast()
-  const utils = api.useUtils()
-  
+  const { toast } = useToast();
+  const utils = api.useUtils();
+
   // State
-  const [selectedMonth, setSelectedMonth] = useState<string>(String(new Date().getMonth() + 1))
-  const [selectedYear, setSelectedYear] = useState<string>(String(new Date().getFullYear()))
-  const [isGenerating, setIsGenerating] = useState(false)
+  const [selectedMonth, setSelectedMonth] = useState<string>(String(new Date().getMonth() + 1));
+  const [selectedYear, setSelectedYear] = useState<string>(String(new Date().getFullYear()));
+  const [isGenerating, setIsGenerating] = useState(false);
 
-  // Queries for Stats
-  const { data: payrollCost } = api.salary.getTotalPayrollCost.useQuery({
-    month: Number(selectedMonth),
-    year: Number(selectedYear)
-  })
-  
-  const { data: pendingSalaries } = api.salary.getPendingSalaries.useQuery({
+  // Queries for Stats with Loading States
+  const { data: payrollCost, isLoading: loadingCost } = api.salary.getTotalPayrollCost.useQuery({
     month: Number(selectedMonth),
     year: Number(selectedYear),
-    sessionId: "default-session-id" // Replace with actual session logic
-  })
+  });
 
-  const { data: unpaidEmployees } = api.salary.getUnpaidEmployees.useQuery({
+  const { data: pendingSalaries, isLoading: loadingPending } = api.salary.getPendingSalaries.useQuery({
     month: Number(selectedMonth),
     year: Number(selectedYear),
-    sessionId: "default-session-id"
-  })
+    sessionId: "default-session-id", // Replace with dynamic session context
+  });
+
+  const { data: unpaidEmployees, isLoading: loadingUnpaid } = api.salary.getUnpaidEmployees.useQuery({
+    month: Number(selectedMonth),
+    year: Number(selectedYear),
+    sessionId: "default-session-id",
+  });
 
   // Mutations
   const generateMutation = api.salary.generateMonthlySalaries.useMutation({
     onSuccess: async (data) => {
       toast({
         title: "Payroll Generated",
-        description: `Successfully generated ${data.generatedCount} salary records for ${MONTHS[Number(selectedMonth)-1]?.label}.`,
-      })
-      await utils.salary.getAll.invalidate()
-      await utils.salary.getPendingSalaries.invalidate()
-      await utils.salary.getTotalPayrollCost.invalidate()
-      setIsGenerating(false)
+        description: `Successfully generated ${data.generatedCount} salary records for ${MONTHS[Number(selectedMonth) - 1]?.label}.`,
+      });
+      await Promise.all([
+        utils.salary.getAll.invalidate(),
+        utils.salary.getPendingSalaries.invalidate(),
+        utils.salary.getUnpaidEmployees.invalidate(),
+        utils.salary.getTotalPayrollCost.invalidate(),
+      ]);
+      setIsGenerating(false);
     },
     onError: (err) => {
-      toast({ title: "Error", description: err.message })
-      setIsGenerating(false)
-    }
-  })
+      toast({ title: "Error", description: err.message, variant: "destructive" });
+      setIsGenerating(false);
+    },
+  });
 
   const handleGeneratePayroll = () => {
-    setIsGenerating(true)
+    setIsGenerating(true);
     generateMutation.mutate({
       month: Number(selectedMonth),
       year: Number(selectedYear),
-      sessionId: "default-session-id" // Replace with session context
-    })
-  }
+      sessionId: "default-session-id",
+    });
+  };
+
+  // Define stats array dynamically
+  const stats = [
+    {
+      title: "Total Payroll",
+      value: loadingCost ? null : `Rs. ${(payrollCost?.totalPayroll ?? 0).toLocaleString()}`,
+      desc: `Paid in ${MONTHS[Number(selectedMonth) - 1]?.label}`,
+      icon: DollarSign,
+      color: "text-emerald-400",
+      bg: "bg-gradient-to-br from-emerald-600/20 to-teal-900/40 border-emerald-500/30",
+    },
+    {
+      title: "Pending Payouts",
+      value: loadingPending ? null : pendingSalaries?.length ?? 0,
+      desc: "Waiting for payment",
+      icon: AlertCircle,
+      color: "text-amber-400",
+      bg: "bg-slate-900/60 border-emerald-500/10",
+    },
+    {
+      title: "Unpaid Staff",
+      value: loadingUnpaid ? null : unpaidEmployees?.length ?? 0,
+      desc: "Not generated yet",
+      icon: Users,
+      color: "text-rose-400",
+      bg: "bg-slate-900/60 border-emerald-500/10",
+    },
+    {
+      title: "System Status",
+      value: "Active",
+      desc: "Payroll Operational",
+      icon: CheckCircle2,
+      color: "text-blue-400",
+      bg: "bg-slate-900/60 border-emerald-500/10",
+    },
+  ];
 
   return (
-    <main className="min-h-screen bg-slate-50/50 p-6 space-y-8">
-      {/* Header */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight text-slate-900">Compensation Management</h1>
-          <p className="text-slate-500">Manage salaries, run payroll, and track expenses.</p>
+    <section className="relative w-full overflow-x-hidden selection:bg-emerald-500/30">
+      <div className="relative z-10 flex flex-col space-y-8">
+        
+        {/* === Header & Controls === */}
+        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-6 bg-slate-900/40 p-6 rounded-2xl border border-emerald-500/10 backdrop-blur-sm shadow-xl">
+          <div className="space-y-2">
+            <h1 className="text-3xl font-serif font-bold tracking-tight text-white">
+              Compensation Management
+            </h1>
+            <p className="text-slate-400 max-w-xl">
+              Manage employee salaries, process monthly payrolls, and track compensation analytics.
+            </p>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-3 bg-slate-950/50 p-1.5 rounded-xl border border-emerald-500/20 shadow-inner">
+            <Select value={selectedMonth} onValueChange={setSelectedMonth}>
+              <SelectTrigger className="w-[140px] bg-slate-900 border-emerald-500/20 text-white focus:ring-emerald-500/50">
+                <Calendar className="w-4 h-4 mr-2 text-emerald-400" />
+                <SelectValue placeholder="Month" />
+              </SelectTrigger>
+              <SelectContent className="bg-slate-900 border-emerald-500/20 text-white">
+                {MONTHS.map((m) => (
+                  <SelectItem key={m.value} value={m.value}>
+                    {m.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            <Select value={selectedYear} onValueChange={setSelectedYear}>
+              <SelectTrigger className="w-[100px] bg-slate-900 border-emerald-500/20 text-white focus:ring-emerald-500/50">
+                <SelectValue placeholder="Year" />
+              </SelectTrigger>
+              <SelectContent className="bg-slate-900 border-emerald-500/20 text-white">
+                {[2024, 2025, 2026].map((y) => (
+                  <SelectItem key={y} value={String(y)}>
+                    {y}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            <Button
+              onClick={handleGeneratePayroll}
+              disabled={isGenerating}
+              className="bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg shadow-emerald-900/20 transition-all border-0"
+            >
+              {isGenerating ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <Wallet className="mr-2 h-4 w-4" />
+              )}
+              Generate Payroll
+            </Button>
+          </div>
         </div>
-        <div className="flex items-center gap-2">
-          <Select value={selectedMonth} onValueChange={setSelectedMonth}>
-            <SelectTrigger className="w-[140px] bg-white">
-              <SelectValue placeholder="Month" />
-            </SelectTrigger>
-            <SelectContent>
-              {MONTHS.map(m => <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>)}
-            </SelectContent>
-          </Select>
-          <Select value={selectedYear} onValueChange={setSelectedYear}>
-            <SelectTrigger className="w-[100px] bg-white">
-              <SelectValue placeholder="Year" />
-            </SelectTrigger>
-            <SelectContent>
-              {[2024, 2025, 2026].map(y => <SelectItem key={y} value={String(y)}>{y}</SelectItem>)}
-            </SelectContent>
-          </Select>
+
+        {/* === Stats Cards === */}
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          {stats.map((stat, i) => (
+            <Card
+              key={i}
+              className={`backdrop-blur-md shadow-lg transition-all border ${stat.bg}`}
+            >
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium text-slate-300">
+                  {stat.title}
+                </CardTitle>
+                <stat.icon className={`h-4 w-4 ${stat.color}`} />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-white">
+                  {stat.value ?? (
+                    <Skeleton className="h-8 w-24 bg-slate-800" />
+                  )}
+                </div>
+                <p className="text-xs text-slate-500 mt-1">{stat.desc}</p>
+              </CardContent>
+            </Card>
+          ))}
         </div>
+
+        {/* === Main Content Tabs === */}
+        <Tabs defaultValue="payroll" className="space-y-6">
+          <TabsList className="bg-slate-900/60 backdrop-blur-md border border-emerald-500/20 p-1 rounded-xl w-full sm:w-auto grid grid-cols-3 sm:inline-flex gap-2">
+            <TabsTrigger
+              value="payroll"
+              className="gap-2 data-[state=active]:bg-emerald-600 data-[state=active]:text-white text-slate-400"
+            >
+              <Wallet className="h-4 w-4" /> Payroll
+            </TabsTrigger>
+            <TabsTrigger
+              value="structures"
+              className="gap-2 data-[state=active]:bg-emerald-600 data-[state=active]:text-white text-slate-400"
+            >
+              <Users className="h-4 w-4" /> Salary Structures
+            </TabsTrigger>
+            <TabsTrigger
+              value="analytics"
+              className="gap-2 data-[state=active]:bg-emerald-600 data-[state=active]:text-white text-slate-400"
+            >
+              <BarChart3 className="h-4 w-4" /> Analytics
+            </TabsTrigger>
+          </TabsList>
+
+          {/* Tab 1: Monthly Payroll Processing */}
+          <TabsContent value="payroll" className="focus-visible:outline-none focus-visible:ring-0">
+            <Card className="border border-emerald-500/20 bg-slate-900/60 backdrop-blur-xl shadow-2xl overflow-hidden rounded-2xl">
+              <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-emerald-500/10 bg-slate-900/50 p-6">
+                <div>
+                  <CardTitle className="text-xl text-white">
+                    Payroll Processing
+                  </CardTitle>
+                  <CardDescription className="text-slate-400">
+                    Generate and manage monthly salary disbursements
+                  </CardDescription>
+                </div>
+              </CardHeader>
+              <CardContent className="p-0">
+                <PayrollTable
+                  month={Number(selectedMonth)}
+                  year={Number(selectedYear)}
+                />
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Tab 2: Salary Structures */}
+          <TabsContent value="structures" className="focus-visible:outline-none focus-visible:ring-0">
+            <Card className="border border-emerald-500/20 bg-slate-900/60 backdrop-blur-xl shadow-2xl overflow-hidden rounded-2xl">
+              <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-emerald-500/10 bg-slate-900/50 p-6">
+                <div>
+                  <CardTitle className="text-xl text-white">
+                    Employee Salary Structures
+                  </CardTitle>
+                  <CardDescription className="text-slate-400">
+                    Manage base salaries and increments
+                  </CardDescription>
+                </div>
+                <div className="flex gap-2">
+                  <IncrementDialog />
+                  <SalaryAssignmentForm />
+                </div>
+              </CardHeader>
+              <CardContent className="p-6">
+                <SalaryTable
+                  page={1}
+                  pageSize={10}
+                  setPage={() => ""}
+                  setPageSize={() => ""}
+                  searchTerm=""
+                />
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Tab 3: Analytics */}
+          <TabsContent value="analytics" className="focus-visible:outline-none focus-visible:ring-0">
+            <Card className="border border-emerald-500/20 bg-slate-900/60 backdrop-blur-xl shadow-2xl overflow-hidden rounded-2xl">
+              <CardHeader className="border-b border-emerald-500/10 bg-slate-900/50 p-6">
+                <CardTitle className="text-xl text-white">
+                  Financial Analytics
+                </CardTitle>
+                <CardDescription className="text-slate-400">
+                  Yearly breakdown of salary distribution
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="p-6">
+                <SalaryAnalytics year={Number(selectedYear)} />
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
       </div>
-
-      {/* Stats Cards */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card className="bg-gradient-to-br from-emerald-500 to-teal-600 text-white border-none shadow-lg">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-emerald-100">Total Payroll</CardTitle>
-            <Wallet className="h-4 w-4 text-emerald-100" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">Rs. {(payrollCost?.totalPayroll ?? 0).toLocaleString()}</div>
-            <p className="text-xs text-emerald-100/80">For {MONTHS[Number(selectedMonth)-1]?.label}</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Pending Payouts</CardTitle>
-            <AlertCircle className="h-4 w-4 text-orange-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{pendingSalaries?.length ?? 0}</div>
-            <p className="text-xs text-muted-foreground">Employees waiting for payment</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Unpaid Staff</CardTitle>
-            <Users className="h-4 w-4 text-slate-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{unpaidEmployees?.length ?? 0}</div>
-            <p className="text-xs text-muted-foreground">Not generated yet</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Payroll Status</CardTitle>
-            <CheckCircle2 className="h-4 w-4 text-blue-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">Active</div>
-            <p className="text-xs text-muted-foreground">System Operational</p>
-          </CardContent>
-        </Card>
-      </div>
-
-      <Separator />
-
-      {/* Main Content Tabs */}
-      <Tabs defaultValue="payroll" className="space-y-4">
-        <TabsList className="bg-white border">
-          <TabsTrigger value="payroll" className="gap-2"><Wallet className="h-4 w-4"/> Monthly Payroll</TabsTrigger>
-          <TabsTrigger value="structures" className="gap-2"><Users className="h-4 w-4"/> Salary Structures</TabsTrigger>
-          <TabsTrigger value="analytics" className="gap-2"><BarChart3 className="h-4 w-4"/> Analytics</TabsTrigger>
-        </TabsList>
-
-        {/* Tab 1: Monthly Payroll Processing */}
-        <TabsContent value="payroll" className="space-y-4">
-          <Card className="border-none shadow-md">
-            <CardHeader className="flex flex-row items-center justify-between bg-slate-50/50 rounded-t-xl border-b">
-              <div>
-                <CardTitle>Payroll Processing</CardTitle>
-                <CardDescription>Generate and manage monthly salary disbursements</CardDescription>
-              </div>
-              <div className="flex gap-2">
-                <Button 
-                  onClick={handleGeneratePayroll} 
-                  disabled={isGenerating}
-                  className="bg-emerald-600 hover:bg-emerald-700"
-                >
-                  {isGenerating ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Plus className="mr-2 h-4 w-4" />}
-                  Generate {MONTHS[Number(selectedMonth)-1]?.label} Payroll
-                </Button>
-              </div>
-            </CardHeader>
-            <CardContent className="p-0">
-              <PayrollTable 
-                month={Number(selectedMonth)} 
-                year={Number(selectedYear)} 
-              />
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        {/* Tab 2: Salary Structures (Assignments) */}
-        <TabsContent value="structures" className="space-y-4">
-          <Card className="border-none shadow-md">
-            <CardHeader className="flex flex-row items-center justify-between bg-slate-50/50 rounded-t-xl border-b">
-              <div>
-                <CardTitle>Employee Salary Structures</CardTitle>
-                <CardDescription>Manage base salaries and increments</CardDescription>
-              </div>
-              <div className="flex gap-2">
-                <IncrementDialog />
-                <SalaryAssignmentForm />
-              </div>
-            </CardHeader>
-            <CardContent className="p-6">
-              <SalaryTable 
-                page={1} 
-                pageSize={10} 
-                setPage={() => ""} 
-                setPageSize={() => ""} 
-                searchTerm="" 
-              />
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        {/* Tab 3: Analytics */}
-        <TabsContent value="analytics">
-          <SalaryAnalytics year={Number(selectedYear)} />
-        </TabsContent>
-      </Tabs>
-    </main>
-  )
+    </section>
+  );
 }

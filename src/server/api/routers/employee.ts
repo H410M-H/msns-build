@@ -5,12 +5,13 @@ import { generatePdf } from "~/lib/pdf-reports";
 import { userReg } from "~/lib/utils";
 import { hash } from "bcrypt";
 
+// Define schema locally
 const employeeSchema = z.object({
   employeeName: z.string().min(2).max(100),
   fatherName: z.string().min(2).max(100),
   gender: z.enum(["MALE", "FEMALE", "CUSTOM"]),
   dob: z.string(),
-  cnic: z.string().length(15),
+  cnic: z.string().min(13).max(15), 
   maritalStatus: z.enum(["Married", "Unmarried", "Widow", "Divorced"]),
   doj: z.string(),
   designation: z.enum([
@@ -29,10 +30,14 @@ const employeeSchema = z.object({
   cv: z.string().optional(),
 });
 
+type AccountTypeEnum = "ADMIN" | "PRINCIPAL" | "HEAD" | "CLERK" | "TEACHER" | "WORKER";
+
 export const EmployeeRouter = createTRPCRouter({
   getEmployees: publicProcedure.query(async ({ ctx }) => {
     try {
       return await ctx.db.employees.findMany({
+        // FIX: Changed from 'createdAt' (which doesn't exist) to 'employeeName'
+        orderBy: { employeeName: "asc" }, 
         include: {
           BioMetric: {
             select: {
@@ -49,25 +54,36 @@ export const EmployeeRouter = createTRPCRouter({
       });
     }
   }),
-  getAllEmployeesForTimeTable:
-    publicProcedure.query(async ({ ctx }) => {
-      try {
-        return await ctx.db.employees.findMany({
-          select: {
-            employeeId: true,
-            employeeName: true,
-            designation: true,
-            education: true
-          }
-        });
-      } catch (error) {
-        console.error(error);
-        throw new TRPCError({
-          code: "INTERNAL_SERVER_ERROR",
-          message: "Something went wrong.",
-        });
-      }
+
+  getAllEmployeesForTimeTable: publicProcedure.query(async ({ ctx }) => {
+    try {
+      return await ctx.db.employees.findMany({
+        select: {
+          employeeId: true,
+          employeeName: true,
+          designation: true,
+          education: true,
+        },
+      });
+    } catch (error) {
+      console.error(error);
+      throw new TRPCError({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "Something went wrong.",
+      });
+    }
+  }),
+
+  getEmployeeById: publicProcedure
+    .input(z.object({ employeeId: z.string().cuid() }))
+    .query(async ({ ctx, input }) => {
+      const employee = await ctx.db.employees.findUnique({
+        where: { employeeId: input.employeeId },
+      });
+      if (!employee) throw new TRPCError({ code: "NOT_FOUND" });
+      return employee;
     }),
+
   getUnAllocateEmployees: publicProcedure.query(async ({ ctx }) => {
     try {
       const employees = await ctx.db.employees.findMany({
@@ -90,11 +106,11 @@ export const EmployeeRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       try {
         const usersCount = await ctx.db.user.count({
-          where: {
-            accountType: input.designation as AccountTypeEnum,
-          },
+          where: { accountType: input.designation as AccountTypeEnum },
         });
+
         const userInfo = userReg(usersCount, input.designation);
+
         const newEmployee = await ctx.db.employees.create({
           data: {
             ...input,
@@ -102,6 +118,7 @@ export const EmployeeRouter = createTRPCRouter({
             admissionNumber: userInfo.admissionNumber,
           },
         });
+
         const password = await hash(userInfo.admissionNumber, 10);
         await ctx.db.user.create({
           data: {
@@ -117,7 +134,28 @@ export const EmployeeRouter = createTRPCRouter({
         console.error(error);
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
-          message: "Something went wrong",
+          message: "Failed to create employee",
+        });
+      }
+    }),
+
+  updateEmployee: publicProcedure
+    .input(employeeSchema.extend({ employeeId: z.string().cuid() }))
+    .mutation(async ({ ctx, input }) => {
+      try {
+        const { employeeId, ...data } = input;
+
+        return await ctx.db.employees.update({
+          where: { employeeId },
+          data: {
+            ...data,
+          },
+        });
+      } catch (error) {
+        console.error(error);
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to update employee",
         });
       }
     }),
@@ -126,7 +164,7 @@ export const EmployeeRouter = createTRPCRouter({
     .input(
       z.object({
         employeeIds: z.string().array(),
-      }),
+      })
     )
     .mutation(async ({ ctx, input }) => {
       try {
@@ -141,7 +179,7 @@ export const EmployeeRouter = createTRPCRouter({
         console.error(error);
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
-          message: "Something went wrong.",
+          message: "Failed to delete employees.",
         });
       }
     }),
@@ -157,7 +195,7 @@ export const EmployeeRouter = createTRPCRouter({
           "TEACHER",
           "WORKER",
         ]),
-      }),
+      })
     )
     .query(async ({ ctx, input }) => {
       try {
@@ -177,16 +215,34 @@ export const EmployeeRouter = createTRPCRouter({
     }),
 
   generateEmployeeReport: publicProcedure.query(async ({ ctx }) => {
-    const employees = await ctx.db.employees.findMany();
-    const headers = [
-      { key: "employeeId", label: "Employee ID" },
-      { key: "employeeName", label: "Employee Name" },
-      { key: "designation", label: "Designation" },
-      { key: "registrationNumber", label: "Registration Number" },
-    ];
+    try {
+      const employees = await ctx.db.employees.findMany();
+      // Map data to match report requirements
+      const reportData = employees.map(emp => ({
+        ...emp,
+        additionalContact: emp.additionalContact ?? "N/A",
+        profilePic: emp.profilePic ?? "",
+      }));
 
-    return {
-      pdf: await generatePdf(employees, headers, "Employee Report"),
-    };
+      const headers = [
+        { key: "employeeId", label: "Employee ID" },
+        { key: "employeeName", label: "Employee Name" },
+        { key: "designation", label: "Designation" },
+        { key: "registrationNumber", label: "Registration Number" },
+        { key: "mobileNo", label: "Mobile" },
+      ];
+
+      const pdfBuffer = await generatePdf(reportData, headers, "Employee Report");
+
+      return {
+        pdf: Buffer.from(pdfBuffer).toString("base64"),
+      };
+    } catch (error) {
+        console.error(error);
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to generate report",
+        });
+    }
   }),
 });

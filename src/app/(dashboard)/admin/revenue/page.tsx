@@ -12,16 +12,17 @@ import {
   SelectValue 
 } from "~/components/ui/select";
 import { motion, type Variants } from "framer-motion";
-import { Calendar, DollarSign, TrendingUp } from "lucide-react";
+import { Calendar, TrendingUp, Wallet, Filter } from "lucide-react";
 import { DownloadPdfButton } from "~/components/ui/DownloadPdfButton";
+import { Separator } from "~/components/ui/separator";
 
 export default function RevenuePage() {
   const breadcrumbs = [
     { href: "/admin", label: "Dashboard" },
-    { href: "/admin/revenue", label: "Revenue", current: true },
+    { href: "/admin/revenue", label: "Financial Overview", current: true },
   ];
 
-  // Animation Variants typed correctly
+  // Animation Variants
   const containerVariants: Variants = {
     hidden: { opacity: 0 },
     visible: {
@@ -44,106 +45,125 @@ export default function RevenuePage() {
 
   const handleEdit = (expense: Expense) => {
     console.log("Edit expense:", expense);
-    // Connect to your edit modal/sheet here
   };
 
   const handleDelete = (id: string) => {
     console.log("Delete expense with id:", id);
-    // Connect to your delete mutation here
   };
 
   return (
-    <div className="min-h-screen bg-slate-50/50">
-      {/* Background Decorator */}
-      <div className="fixed inset-0 -z-10 h-full w-full bg-white bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] [background-size:16px_16px] opacity-50" />
+    <section className="relative min-h-screen w-full bg-slate-950 overflow-x-hidden selection:bg-emerald-500/30">
       
-      <PageHeader breadcrumbs={breadcrumbs} />
+      {/* === GLOBAL GRID BACKGROUND === */}
+      <div className="fixed inset-0 z-0 pointer-events-none">
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(45,255,196,0.05)_1px,transparent_1px),linear-gradient(to_bottom,rgba(45,255,196,0.05)_1px,transparent_1px)] bg-[size:3rem_3rem] sm:bg-[size:4rem_4rem]" />
+        <div className="absolute inset-0 bg-gradient-to-br from-emerald-900/20 via-slate-950/80 to-slate-950" />
+        {/* Ambient Glow */}
+        <div className="absolute top-20 right-0 w-[500px] h-[500px] bg-emerald-500/10 rounded-full blur-[120px] opacity-40" />
+      </div>
+      
+      <div className="relative z-10 flex flex-col min-h-screen">
+        <PageHeader breadcrumbs={breadcrumbs} />
 
-      <motion.div 
-        className="container mx-auto py-8 px-4 sm:px-6 lg:px-8 space-y-8"
-        variants={containerVariants}
-        initial="hidden"
-        animate="visible"
-      >
-        {/* Page Title & Actions */}
         <motion.div 
-          variants={itemVariants}
-          className="flex flex-col md:flex-row md:items-center justify-between gap-4"
+          className="container mx-auto py-8 px-4 sm:px-6 lg:px-8 space-y-8 pt-20"
+          variants={containerVariants}
+          initial="hidden"
+          animate="visible"
         >
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight text-slate-900">
-              Financial Overview
-            </h1>
-            <p className="text-slate-500 mt-1">
-              Track your institution&apos;s revenue, expenses, and net income.
-            </p>
-          </div>
-          
-          <div className="flex items-center gap-2">
-            <Select defaultValue="this_year">
-              <SelectTrigger className="w-[140px] bg-white">
-                <Calendar className="w-4 h-4 mr-2 text-slate-500" />
-                <SelectValue placeholder="Period" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="this_month">This Month</SelectItem>
-                <SelectItem value="last_month">Last Month</SelectItem>
-                <SelectItem value="this_year">This Year</SelectItem>
-              </SelectContent>
-            </Select>
+          {/* === Page Header & Controls === */}
+          <motion.div 
+            variants={itemVariants}
+            className="flex flex-col lg:flex-row lg:items-end justify-between gap-6"
+          >
+            <div className="space-y-2">
+              <h1 className="text-3xl sm:text-4xl font-bold tracking-tight font-serif text-transparent bg-clip-text bg-gradient-to-r from-white via-emerald-200 to-emerald-400">
+                Financial Overview
+              </h1>
+              <p className="text-slate-400 text-sm sm:text-base max-w-xl">
+                Comprehensive tracking of institution revenue streams, operational expenses, and net income analysis.
+              </p>
+            </div>
             
-            <DownloadPdfButton 
-              reportType="fees" 
-              label="Export Report" 
-              variant="outline" 
-              className="bg-white"
-            />
-          </div>
-        </motion.div>
+            {/* Controls Toolbar */}
+            <div className="flex flex-wrap items-center gap-3 p-1.5 rounded-xl bg-slate-900/60 border border-emerald-500/20 backdrop-blur-md shadow-lg">
+              <Select defaultValue="this_year">
+                <SelectTrigger className="w-[160px] h-10 bg-slate-800/50 border-emerald-500/20 text-white focus:ring-emerald-500/50">
+                  <Calendar className="w-4 h-4 mr-2 text-emerald-400" />
+                  <SelectValue placeholder="Period" />
+                </SelectTrigger>
+                <SelectContent className="bg-slate-900 border-emerald-500/20 text-white">
+                  <SelectItem value="this_month">This Month</SelectItem>
+                  <SelectItem value="last_month">Last Month</SelectItem>
+                  <SelectItem value="this_year">This Year</SelectItem>
+                </SelectContent>
+              </Select>
+              
+              <Separator orientation="vertical" className="h-6 bg-emerald-500/20 hidden sm:block" />
 
-        {/* 1. Metrics Section */}
-        <motion.div variants={itemVariants}>
-          <RevenueCards />
-        </motion.div>
+              <DownloadPdfButton 
+                reportType="fees" 
+                label="Export Report" 
+                variant="default" 
+                className="h-10 bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg shadow-emerald-900/20 border-0"
+              />
+            </div>
+          </motion.div>
 
-        {/* 2. Main Content Section (Transactions) */}
-        <motion.div variants={itemVariants}>
-          <Card className="border-slate-200 shadow-sm bg-white overflow-hidden">
-            <CardHeader className="border-b border-slate-100 bg-slate-50/50 p-6">
-              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2">
-                    <div className="p-2 bg-teal-100 rounded-lg">
-                      <DollarSign className="w-5 h-5 text-teal-600" />
+          {/* === 1. Metrics Cards === */}
+          <motion.div variants={itemVariants} className="relative">
+             {/* Decorative blob behind cards */}
+             <div className="absolute inset-0 bg-emerald-500/5 blur-3xl -z-10" />
+             <RevenueCards />
+          </motion.div>
+
+          {/* === 2. Transactions Table Section === */}
+          <motion.div variants={itemVariants}>
+            <Card className="border border-emerald-500/20 bg-slate-900/60 backdrop-blur-xl shadow-2xl overflow-hidden rounded-2xl">
+              
+              <CardHeader className="border-b border-emerald-500/10 bg-slate-900/50 p-6">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                  <div className="flex items-start gap-4">
+                    <div className="p-3 rounded-xl bg-gradient-to-br from-emerald-500/20 to-teal-500/20 border border-emerald-500/30 shadow-inner">
+                      <Wallet className="w-6 h-6 text-emerald-400" />
                     </div>
-                    <CardTitle className="text-xl font-semibold text-slate-900">
-                      Expense Transactions
-                    </CardTitle>
+                    <div className="space-y-1">
+                      <CardTitle className="text-xl font-bold text-white flex items-center gap-2">
+                        Expense Transactions
+                      </CardTitle>
+                      <CardDescription className="text-slate-400">
+                        Detailed breakdown of operational expenses and salary disbursements.
+                      </CardDescription>
+                    </div>
                   </div>
-                  <CardDescription>
-                    A detailed list of all operational expenses and salaries.
-                  </CardDescription>
+                  
+                  {/* Status Badge / Filter Placeholder */}
+                  <div className="flex items-center gap-2">
+                    <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-emerald-500/10 border border-emerald-500/20 rounded-full text-xs font-medium text-emerald-400">
+                      <TrendingUp className="w-3.5 h-3.5" />
+                      <span>Live Updates</span>
+                    </div>
+                    <div className="p-2 rounded-lg bg-slate-800/50 border border-emerald-500/20 text-slate-400 hover:text-white cursor-pointer transition-colors">
+                        <Filter className="w-4 h-4" />
+                    </div>
+                  </div>
                 </div>
-                
-                {/* Visual Flair / Badge */}
-                <div className="hidden md:flex items-center gap-2 px-3 py-1 bg-teal-50 border border-teal-100 rounded-full text-xs font-medium text-teal-700">
-                  <TrendingUp className="w-3 h-3" />
-                  Live Data
+              </CardHeader>
+              
+              <CardContent className="p-0">
+                <div className="p-4 sm:p-6 overflow-x-auto">
+                  {/* Ensure ExpensesTable handles dark mode styling internally or via global CSS */}
+                  <ExpensesTable
+                    onEdit={handleEdit}
+                    onDelete={handleDelete}
+                  />
                 </div>
-              </div>
-            </CardHeader>
-            
-            <CardContent className="p-0">
-              <div className="p-6">
-                <ExpensesTable
-                  onEdit={handleEdit}
-                  onDelete={handleDelete}
-                />
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          </motion.div>
+
         </motion.div>
-      </motion.div>
-    </div>
+      </div>
+    </section>
   );
 }

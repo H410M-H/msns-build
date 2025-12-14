@@ -34,234 +34,122 @@ import {
 import { Checkbox } from "~/components/ui/checkbox";
 import { EmployeeDeletionDialog } from "../forms/employee/EmployeeDeletion";
 import { CSVUploadDialog } from "../forms/student/FileInput";
-import { DotSquareIcon, Fingerprint, RefreshCcw } from "lucide-react";
-import { cn } from "~/lib/utils";
+import { DotSquareIcon, RefreshCcw, Pencil, Eye, FileText, Plus, LayoutGrid } from "lucide-react"; // Added LayoutGrid icon
+import type { Employees } from "@prisma/client";
+import { EmployeeEditDialog } from "../forms/employee/EmployeeEditDialog";
 
-// Use the exact type structure from your Prisma schema
-type EmployeeFromDB = {
-  employeeId: string;
-  registrationNumber: string;
-  employeeName: string;
-  fatherName: string;
-  admissionNumber: string;
-  gender: "MALE" | "FEMALE" | "CUSTOM";
-  dob: string;
-  cnic: string;
-  maritalStatus: "Married" | "Unmarried" | "Widow" | "Divorced";
-  doj: string;
-  designation:
-    | "PRINCIPAL"
-    | "ADMIN"
-    | "HEAD"
-    | "CLERK"
-    | "TEACHER"
-    | "WORKER"
-    | "NONE"
-    | "ALL"
-    | "STUDENT"
-    | "FACULTY";
-  residentialAddress: string;
-  mobileNo: string;
-  additionalContact?: string | null;
-  education: string;
-  isAssign: boolean;
-  profilePic?: string | null;
+// Define the shape of data including relations
+type EmployeeData = Employees & {
   BioMetric: { fingerId: string } | null;
-  cv?: string | null;
 };
-
-const columns = [
-  {
-    id: "select",
-    header: ({ table }) => (
-      <Checkbox
-        checked={
-          table.getIsAllPageRowsSelected() ||
-          (table.getIsSomePageRowsSelected() && "indeterminate")
-        }
-        onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-        aria-label="Select all"
-      />
-    ),
-    cell: ({ row }) => (
-      <Checkbox
-        checked={row.getIsSelected()}
-        onCheckedChange={(value) => row.toggleSelected(!!value)}
-        aria-label="Select row"
-      />
-    ),
-    enableSorting: false,
-    enableHiding: false,
-  },
-  {
-    id: "registrationNumber",
-    accessorFn: (row: EmployeeFromDB) => row.registrationNumber,
-    header: "Reg #",
-    cell: ({ getValue }) => (
-      <div className="font-medium">{getValue() as string}</div>
-    ),
-  },
-  {
-    id: "employeeName",
-    accessorFn: (row: EmployeeFromDB) => row.employeeName,
-    header: "Name",
-    cell: ({ getValue }) => (
-      <div className="font-bold">{getValue() as string}</div>
-    ),
-  },
-  {
-    id: "fatherName",
-    accessorFn: (row: EmployeeFromDB) => row.fatherName,
-    header: "Father Name",
-    cell: ({ getValue }) => <span>{getValue() as string}</span>,
-  },
-  {
-    id: "gender",
-    accessorFn: (row: EmployeeFromDB) => row.gender,
-    header: "Gender",
-    cell: ({ getValue }) => <span>{getValue() as string}</span>,
-  },
-  {
-    id: "dob",
-    accessorFn: (row: EmployeeFromDB) => row.dob,
-    header: "Date of Birth",
-    cell: ({ getValue }) => {
-      const dateStr = getValue() as string;
-      if (dateStr === "none") return <span>Not provided</span>;
-      const date = new Date(dateStr);
-      return <span>{date.toLocaleDateString()}</span>;
-    },
-  },
-  {
-    id: "designation",
-    accessorFn: (row: EmployeeFromDB) => row.designation,
-    header: "Designation",
-    cell: ({ getValue }) => (
-      <span className="rounded-full bg-blue-100 px-2 py-1 text-xs text-blue-800">
-        {getValue() as string}
-      </span>
-    ),
-  },
-  {
-    id: "mobileNo",
-    accessorFn: (row: EmployeeFromDB) => row.mobileNo,
-    header: "Mobile",
-    cell: ({ getValue }) => {
-      const mobile = getValue() as string;
-      return <span>{mobile === "none" ? "Not provided" : mobile}</span>;
-    },
-  },
-  {
-    id: "doj",
-    accessorFn: (row: EmployeeFromDB) => row.doj,
-    header: "Date of Joining",
-    cell: ({ getValue }) => {
-      const dateStr = getValue() as string;
-      if (dateStr === "none") return <span>Not provided</span>;
-      const date = new Date(dateStr);
-      return <span>{date.toLocaleDateString()}</span>;
-    },
-  },
-  {
-    id: "education",
-    accessorFn: (row: EmployeeFromDB) => row.education,
-    header: "Education",
-    cell: ({ getValue }) => {
-      const education = getValue() as string;
-      return <span>{education === "none" ? "Not provided" : education}</span>;
-    },
-  },
-  {
-    id: "maritalStatus",
-    accessorFn: (row: EmployeeFromDB) => row.maritalStatus,
-    header: "Marital Status",
-    cell: ({ getValue }) => <span>{getValue() as string}</span>,
-  },
-  {
-    id: "isAssign",
-    accessorFn: (row: EmployeeFromDB) => row.isAssign,
-    header: "Assignment Status",
-    cell: ({ getValue }) => (
-      <span
-        className={`rounded-full px-2 py-1 text-xs ${
-          getValue()
-            ? "bg-green-100 text-green-800"
-            : "bg-yellow-100 text-yellow-800"
-        }`}
-      >
-        {getValue() ? "Assigned" : "Unassigned"}
-      </span>
-    ),
-  },
-  {
-    id: "biometric",
-    header: "Bio metric",
-    cell: ({ row }) => (
-      <div className="flex items-center gap-2">
-        <Link
-          href={`/admin/users/faculty/bio-metric?employeeId=${row.original.employeeId}&employeeName=${row.original.employeeName}`}
-        >
-          <Fingerprint
-            className={cn(
-              "h-4 w-4",
-              row.original.BioMetric ? "text-green-500" : "text-red-500",
-            )}
-          />
-        </Link>
-      </div>
-    ),
-  },
-  {
-    id: "actions",
-    header: "Actions",
-    enableHiding: false,
-    cell: ({ row }: { row: { original: EmployeeFromDB } }) => (
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button variant="ghost" className="h-8 w-8 p-0">
-            <DotSquareIcon className="h-4 w-4" />
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
-          <DropdownMenuLabel>Actions</DropdownMenuLabel>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem asChild>
-            <Link href={`/dashboard/employee/edit/${row.original.employeeId}`}>
-              Edit
-            </Link>
-          </DropdownMenuItem>
-          <DropdownMenuItem asChild>
-            <Link href={`/dashboard/employee/view/${row.original.employeeId}`}>
-              View Details
-            </Link>
-          </DropdownMenuItem>
-          {/* <DropdownMenuItem asChild>
-            <Link
-              href={`/admin/users/faculty/bio-metric?employeeId=${row.original.employeeId}&employeeName=${row.original.employeeName}`}
-            >
-              Bio Metric
-            </Link>
-          </DropdownMenuItem> */}
-          {row.original.cv && (
-            <DropdownMenuItem asChild>
-              <Link href={row.original.cv} target="_blank">
-                View CV
-              </Link>
-            </DropdownMenuItem>
-          )}
-        </DropdownMenuContent>
-      </DropdownMenu>
-    ),
-  },
-] satisfies ColumnDef<EmployeeFromDB, unknown>[];
 
 export function EmployeeTable() {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [rowSelection, setRowSelection] = useState({});
+  const [editingEmployee, setEditingEmployee] = useState<Employees | null>(null);
+
   const { data: employees, refetch } = api.employee.getEmployees.useQuery();
 
-  const table = useReactTable<EmployeeFromDB>({
-    data: employees ?? [],
+  const columns: ColumnDef<EmployeeData>[] = [
+    {
+      id: "select",
+      header: ({ table }) => (
+        <Checkbox
+          checked={table.getIsAllPageRowsSelected() || (table.getIsSomePageRowsSelected() && "indeterminate")}
+          onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+          aria-label="Select all"
+          className="border-emerald-500/50 data-[state=checked]:bg-emerald-600 data-[state=checked]:text-white"
+        />
+      ),
+      cell: ({ row }) => (
+        <Checkbox
+          checked={row.getIsSelected()}
+          onCheckedChange={(value) => row.toggleSelected(!!value)}
+          aria-label="Select row"
+          className="border-emerald-500/50 data-[state=checked]:bg-emerald-600 data-[state=checked]:text-white"
+        />
+      ),
+      enableSorting: false,
+      enableHiding: false,
+    },
+    {
+      accessorKey: "registrationNumber",
+      header: "Reg #",
+      cell: ({ row }) => <span className="font-mono text-xs text-emerald-200/70">{row.original.registrationNumber}</span>,
+    },
+    {
+      accessorKey: "employeeName",
+      header: "Name",
+      cell: ({ row }) => <span className="font-semibold text-white">{row.original.employeeName}</span>,
+    },
+    {
+      accessorKey: "fatherName",
+      header: "Father Name",
+      cell: ({ row }) => <span className="text-slate-300">{row.original.fatherName}</span>,
+    },
+    {
+      accessorKey: "designation",
+      header: "Designation",
+      cell: ({ row }) => (
+        <span className="rounded-md bg-emerald-500/10 px-2 py-1 text-[10px] font-bold text-emerald-400 border border-emerald-500/20">
+          {row.original.designation}
+        </span>
+      ),
+    },
+    {
+      accessorKey: "mobileNo",
+      header: "Mobile",
+      cell: ({ row }) => <span className="font-mono text-xs text-slate-400">{row.original.mobileNo}</span>,
+    },
+    {
+      accessorKey: "isAssign",
+      header: "Status",
+      cell: ({ row }) => (
+        <span className={`rounded-full px-2 py-0.5 text-[10px] font-medium border ${
+            row.original.isAssign 
+            ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" 
+            : "bg-yellow-500/10 text-yellow-400 border-yellow-500/20"
+        }`}>
+          {row.original.isAssign ? "Active" : "Pending"}
+        </span>
+      ),
+    },
+    {
+      id: "actions",
+      header: "Actions",
+      cell: ({ row }) => (
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" className="h-8 w-8 p-0 text-slate-400 hover:text-white hover:bg-emerald-500/20">
+              <DotSquareIcon className="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="bg-slate-900 border-emerald-500/20 text-slate-200">
+            <DropdownMenuLabel>Actions</DropdownMenuLabel>
+            <DropdownMenuSeparator className="bg-emerald-500/20" />
+            <DropdownMenuItem onClick={() => setEditingEmployee(row.original)} className="cursor-pointer hover:bg-emerald-500/20 focus:bg-emerald-500/20">
+              <Pencil className="mr-2 h-3.5 w-3.5" /> Edit
+            </DropdownMenuItem>
+            <DropdownMenuItem asChild className="hover:bg-emerald-500/20 focus:bg-emerald-500/20 cursor-pointer">
+              <Link href={`/dashboard/employee/view/${row.original.employeeId}`}>
+                <Eye className="mr-2 h-3.5 w-3.5" /> View Details
+              </Link>
+            </DropdownMenuItem>
+            {row.original.cv && (
+              <DropdownMenuItem asChild className="hover:bg-emerald-500/20 focus:bg-emerald-500/20 cursor-pointer">
+                <Link href={row.original.cv} target="_blank">
+                  <FileText className="mr-2 h-3.5 w-3.5" /> View CV
+                </Link>
+              </DropdownMenuItem>
+            )}
+          </DropdownMenuContent>
+        </DropdownMenu>
+      ),
+    },
+  ];
+
+  const table = useReactTable({
+    data: (employees as EmployeeData[]) ?? [],
     columns,
     onSortingChange: setSorting,
     getCoreRowModel: getCoreRowModel(),
@@ -273,71 +161,59 @@ export function EmployeeTable() {
   });
 
   return (
-    <div className="w-full">
-      <div className="flex items-center justify-between p-4">
-        <div className="flex items-center gap-2">
+    <div className="w-full space-y-4">
+      {/* Table Controls */}
+      <div className="flex flex-col xl:flex-row items-center justify-between gap-4 rounded-xl border border-emerald-500/20 bg-slate-900/60 backdrop-blur-md p-4 shadow-lg">
+        <div className="flex w-full items-center gap-2 xl:max-w-md">
           <Input
-            placeholder="Search name"
-            value={
-              (table.getColumn("employeeName")?.getFilterValue() as string) ??
-              ""
-            }
-            onChange={(e) =>
-              table.getColumn("employeeName")?.setFilterValue(e.target.value)
-            }
-            className="max-w-sm"
-          />
-          <Input
-            placeholder="Search by designation"
-            value={
-              (table.getColumn("designation")?.getFilterValue() as string) ?? ""
-            }
-            onChange={(e) =>
-              table.getColumn("designation")?.setFilterValue(e.target.value)
-            }
-            className="max-w-sm"
+            placeholder="Filter by name..."
+            value={(table.getColumn("employeeName")?.getFilterValue() as string) ?? ""}
+            onChange={(e) => table.getColumn("employeeName")?.setFilterValue(e.target.value)}
+            className="h-10 bg-slate-950/50 border-emerald-500/30 text-white placeholder:text-slate-500 focus:ring-emerald-500"
           />
         </div>
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => refetch()}
-            className="shrink-0"
+        
+        <div className="flex flex-wrap items-center gap-2 justify-end w-full xl:w-auto">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={() => refetch()} 
+            className="h-10 border-emerald-500/30 text-emerald-400 bg-slate-800/50 hover:bg-emerald-900/30 hover:text-emerald-300 hover:border-emerald-500/50"
           >
-            <RefreshCcw className="h-4 w-4" />
+            <RefreshCcw className="mr-2 h-4 w-4" /> Refresh
           </Button>
-          <EmployeeDeletionDialog
-            employeeIds={table
-              .getSelectedRowModel()
-              .rows.map((row) => row.original.employeeId)
-              .filter(Boolean)}
+          
+          <EmployeeDeletionDialog 
+            employeeIds={table.getSelectedRowModel().rows.map(r => r.original.employeeId)} 
           />
+          
           <CSVUploadDialog />
-          <Button asChild>
-            <Link href="/admin/users/faculty/create">Create</Link>
+          
+          {/* Create Button */}
+          <Button asChild size="sm" className="h-10 bg-emerald-600 hover:bg-emerald-500 text-white border-0 shadow-lg shadow-emerald-900/20">
+            <Link href="/admin/users/faculty/create">
+                <Plus className="h-4 w-4 mr-2" /> New Employee
+            </Link>
           </Button>
-                    <Button asChild>
-            <Link href="/admin/attendance">Attendance</Link>
-          </Button>
-          <Button asChild>
-            <Link href="/admin/users/faculty/edit">View Cards</Link>
+
+          {/* ADDED: View Cards Button */}
+          <Button asChild size="sm" variant="secondary" className="h-10 bg-slate-700 text-slate-200 hover:bg-slate-600 hover:text-white border border-slate-600">
+            <Link href="/admin/users/faculty/edit">
+                <LayoutGrid className="h-4 w-4 mr-2" /> View Cards
+            </Link>
           </Button>
         </div>
       </div>
-      <div className="rounded-md border p-4">
+
+      {/* Table */}
+      <div className="rounded-xl border border-emerald-500/20 bg-slate-900/60 shadow-xl backdrop-blur-sm overflow-hidden">
         <Table>
-          <TableHeader>
+          <TableHeader className="bg-emerald-950/40">
             {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id}>
+              <TableRow key={headerGroup.id} className="border-emerald-500/20 hover:bg-transparent">
                 {headerGroup.headers.map((header) => (
-                  <TableHead key={header.id}>
-                    {header.isPlaceholder
-                      ? null
-                      : flexRender(
-                          header.column.columnDef.header,
-                          header.getContext(),
-                        )}
+                  <TableHead key={header.id} className="text-emerald-100/70 font-semibold h-11">
+                    {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
                   </TableHead>
                 ))}
               </TableRow>
@@ -346,51 +222,62 @@ export function EmployeeTable() {
           <TableBody>
             {table.getRowModel().rows.length ? (
               table.getRowModel().rows.map((row) => (
-                <TableRow key={row.id}>
+                <TableRow key={row.id} className="border-emerald-500/10 hover:bg-emerald-900/10 transition-colors data-[state=selected]:bg-emerald-900/20">
                   {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext(),
-                      )}
+                    <TableCell key={cell.id} className="py-3">
+                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
                     </TableCell>
                   ))}
                 </TableRow>
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={columns.length} className="text-center">
-                  No results.
+                <TableCell colSpan={columns.length} className="h-32 text-center text-slate-500">
+                  No employees found.
                 </TableCell>
               </TableRow>
             )}
           </TableBody>
         </Table>
       </div>
-      <div className="flex items-center justify-between py-4">
-        <span className="text-sm">
-          {table.getFilteredSelectedRowModel().rows.length} of{" "}
-          {table.getFilteredRowModel().rows.length} row(s) selected.
+
+      {/* Pagination */}
+      <div className="flex items-center justify-between py-4 px-2">
+        <span className="text-sm text-slate-400">
+          {table.getFilteredSelectedRowModel().rows.length} of {table.getFilteredRowModel().rows.length} row(s) selected.
         </span>
         <div className="flex gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => table.previousPage()}
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={() => table.previousPage()} 
             disabled={!table.getCanPreviousPage()}
+            className="border-emerald-500/30 bg-slate-800 text-slate-300 hover:bg-emerald-900/20 hover:text-white"
           >
             Previous
           </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => table.nextPage()}
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={() => table.nextPage()} 
             disabled={!table.getCanNextPage()}
+            className="border-emerald-500/30 bg-slate-800 text-slate-300 hover:bg-emerald-900/20 hover:text-white"
           >
             Next
           </Button>
         </div>
       </div>
+
+      {/* Edit Dialog Logic */}
+      {editingEmployee && (
+        <EmployeeEditDialog 
+          employee={editingEmployee} 
+          onClose={() => {
+            setEditingEmployee(null);
+            void refetch();
+          }} 
+        />
+      )}
     </div>
   );
 }

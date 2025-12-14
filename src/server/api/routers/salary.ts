@@ -30,7 +30,9 @@ const getSalariesInputSchema = z.object({
   page: z.number().int().positive(),
   pageSize: z.number().int().positive(),
   searchTerm: z.string().optional(),
-  sortField: z.enum(["employeeName", "baseSalary", "totalSalary", "assignedDate"]).optional(),
+  sortField: z
+    .enum(["employeeName", "baseSalary", "totalSalary", "assignedDate"])
+    .optional(),
   sortOrder: z.enum(["asc", "desc"]).optional(),
 });
 
@@ -75,9 +77,8 @@ const salaryUpdateSchema = z.object({
 // ====================== Router ======================
 
 export const salaryRouter = createTRPCRouter({
-  
   // ----------------------------------------------------------------
-  // Monthly Salary Records (The "Salary" Model)
+  // Monthly Salary Records (The "Salary" Model) - PAYROLL
   // ----------------------------------------------------------------
 
   create: protectedProcedure
@@ -104,12 +105,11 @@ export const salaryRouter = createTRPCRouter({
       // If amount is 0, try to find the assigned salary for this employee
       if (finalAmount === 0) {
         const assignment = await ctx.db.salaryAssignment.findFirst({
-          where: { 
+          where: {
             employeeId: input.employeeId,
-            // We ideally want the assignment valid for this session
-            sessionId: input.sessionId 
+            sessionId: input.sessionId,
           },
-          orderBy: { assignedDate: 'desc' }
+          orderBy: { assignedDate: "desc" },
         });
 
         if (assignment) {
@@ -156,6 +156,7 @@ export const salaryRouter = createTRPCRouter({
       return ctx.db.salary.delete({ where: { id: input.id } });
     }),
 
+  // Used for Payroll Table Bulk Delete
   bulkDelete: protectedProcedure
     .input(bulkDeleteSchema)
     .mutation(async ({ ctx, input }) => {
@@ -204,7 +205,9 @@ export const salaryRouter = createTRPCRouter({
     }),
 
   getPendingSalaries: protectedProcedure
-    .input(z.object({ month: z.number(), year: z.number(), sessionId: z.string() }))
+    .input(
+      z.object({ month: z.number(), year: z.number(), sessionId: z.string() })
+    )
     .query(async ({ ctx, input }) => {
       return ctx.db.salary.findMany({
         where: {
@@ -287,23 +290,35 @@ export const salaryRouter = createTRPCRouter({
       });
 
       const monthlyData: number[] = new Array(12).fill(0) as number[];
-      
+
       salaries.forEach((s) => {
         const idx = s.month - 1;
         if (idx >= 0 && idx < 12) {
           const currentTotal = monthlyData[idx] ?? 0;
-          monthlyData[idx] = currentTotal + s.amount + (s.allowances ?? 0) + (s.bonus ?? 0);
+          monthlyData[idx] =
+            currentTotal +
+            s.amount +
+            (s.allowances ?? 0) +
+            (s.bonus ?? 0);
         }
       });
 
       return monthlyData.map((amount, index) => ({
-        month: new Date(2000, index).toLocaleString("default", { month: "short" }),
+        month: new Date(2000, index).toLocaleString("default", {
+          month: "short",
+        }),
         amount,
       }));
     }),
 
   getTotalPayrollCost: protectedProcedure
-    .input(z.object({ month: z.number().optional(), year: z.number(), sessionId: z.string().optional() }))
+    .input(
+      z.object({
+        month: z.number().optional(),
+        year: z.number(),
+        sessionId: z.string().optional(),
+      })
+    )
     .query(async ({ ctx, input }) => {
       const where: Prisma.SalaryWhereInput = {
         year: input.year,
@@ -317,15 +332,20 @@ export const salaryRouter = createTRPCRouter({
         _sum: { amount: true, allowances: true, bonus: true },
       });
 
-      const total = (result._sum?.amount ?? 0) + (result._sum?.allowances ?? 0) + (result._sum?.bonus ?? 0);
+      const total =
+        (result._sum?.amount ?? 0) +
+        (result._sum?.allowances ?? 0) +
+        (result._sum?.bonus ?? 0);
       return { totalPayroll: total };
     }),
 
   getUnpaidEmployees: protectedProcedure
-    .input(z.object({ month: z.number(), year: z.number(), sessionId: z.string() }))
+    .input(
+      z.object({ month: z.number(), year: z.number(), sessionId: z.string() })
+    )
     .query(async ({ ctx, input }) => {
       const allEmployees = await ctx.db.employees.findMany({
-        where: { designation: { not: "NONE" } }, 
+        where: { designation: { not: "NONE" } },
       });
 
       const paidSalaries = await ctx.db.salary.findMany({
@@ -348,7 +368,9 @@ export const salaryRouter = createTRPCRouter({
       })
     )
     .query(async ({ ctx, input }) => {
-      const where: Prisma.SalaryWhereInput = { employeeId: input.employeeId };
+      const where: Prisma.SalaryWhereInput = {
+        employeeId: input.employeeId,
+      };
       if (input.year) where.year = input.year;
 
       const salaries = await ctx.db.salary.findMany({
@@ -358,7 +380,15 @@ export const salaryRouter = createTRPCRouter({
 
       const totalPaid = salaries
         .filter((s) => s.status === "PAID")
-        .reduce((sum, s) => sum + s.amount + (s.allowances ?? 0) + (s.bonus ?? 0) - (s.deductions ?? 0), 0);
+        .reduce(
+          (sum, s) =>
+            sum +
+            s.amount +
+            (s.allowances ?? 0) +
+            (s.bonus ?? 0) -
+            (s.deductions ?? 0),
+          0
+        );
 
       return { records: salaries, totalPaid };
     }),
@@ -381,7 +411,10 @@ export const salaryRouter = createTRPCRouter({
         where.month = input.month;
         where.year = input.year;
       } else {
-        throw new TRPCError({ code: "BAD_REQUEST", message: "Insufficient data" });
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Insufficient data",
+        });
       }
 
       const salary = await ctx.db.salary.findFirst({
@@ -389,7 +422,11 @@ export const salaryRouter = createTRPCRouter({
         include: { Employees: true },
       });
 
-      if (!salary) throw new TRPCError({ code: "NOT_FOUND", message: "Salary record not found" });
+      if (!salary)
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Salary record not found",
+        });
 
       const netPay =
         salary.amount +
@@ -401,40 +438,59 @@ export const salaryRouter = createTRPCRouter({
     }),
 
   // ----------------------------------------------------------------
-  // Salary Assignments & Increments (The "SalaryAssignment" Model)
+  // Salary Assignments & Increments (The "SalaryAssignment" Model) - STRUCTURES
   // ----------------------------------------------------------------
 
-  assignSalary: protectedProcedure.input(salaryAssignmentSchema).mutation(async ({ ctx, input }) => {
-    return ctx.db.salaryAssignment.create({
-      data: {
-        employeeId: input.employeeId,
-        baseSalary: input.baseSalary,
-        increment: input.increment,
-        sessionId: input.sessionId,
-        totalSalary: input.baseSalary + input.increment,
-        assignedDate: new Date(),
-      },
-    });
-  }),
+  // NEW: This fixes the client error in SalaryTable
+  deleteSalariesByIds: protectedProcedure
+    .input(z.object({ ids: z.string().array() }))
+    .mutation(async ({ ctx, input }) => {
+      return ctx.db.salaryAssignment.deleteMany({
+        where: { id: { in: input.ids } },
+      });
+    }),
 
-  updateSalaryAssignment: protectedProcedure.input(salaryAssignmentUpdateSchema).mutation(async ({ ctx, input }) => {
-    const current = await ctx.db.salaryAssignment.findUnique({ where: { id: input.id } });
-    if (!current) throw new TRPCError({ code: "NOT_FOUND", message: "Assignment not found" });
+  assignSalary: protectedProcedure
+    .input(salaryAssignmentSchema)
+    .mutation(async ({ ctx, input }) => {
+      return ctx.db.salaryAssignment.create({
+        data: {
+          employeeId: input.employeeId,
+          baseSalary: input.baseSalary,
+          increment: input.increment,
+          sessionId: input.sessionId,
+          totalSalary: input.baseSalary + input.increment,
+          assignedDate: new Date(),
+        },
+      });
+    }),
 
-    const baseSalary = input.baseSalary ?? current.baseSalary;
-    const increment = input.increment ?? current.increment;
-    const totalSalary = baseSalary + increment;
+  updateSalaryAssignment: protectedProcedure
+    .input(salaryAssignmentUpdateSchema)
+    .mutation(async ({ ctx, input }) => {
+      const current = await ctx.db.salaryAssignment.findUnique({
+        where: { id: input.id },
+      });
+      if (!current)
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Assignment not found",
+        });
 
-    return ctx.db.salaryAssignment.update({
-      where: { id: input.id },
-      data: {
-        baseSalary,
-        increment,
-        totalSalary,
-        sessionId: input.sessionId ?? current.sessionId,
-      },
-    });
-  }),
+      const baseSalary = input.baseSalary ?? current.baseSalary;
+      const increment = input.increment ?? current.increment;
+      const totalSalary = baseSalary + increment;
+
+      return ctx.db.salaryAssignment.update({
+        where: { id: input.id },
+        data: {
+          baseSalary,
+          increment,
+          totalSalary,
+          sessionId: input.sessionId ?? current.sessionId,
+        },
+      });
+    }),
 
   deleteSalaryAssignment: protectedProcedure
     .input(z.object({ id: z.string() }))
@@ -459,33 +515,38 @@ export const salaryRouter = createTRPCRouter({
       });
     }),
 
-  addSalaryIncrement: protectedProcedure.input(salaryIncrementSchema).mutation(async ({ ctx, input }) => {
-    const currentAssignment = await ctx.db.salaryAssignment.findFirst({
-      where: { employeeId: input.employeeId },
-      orderBy: { assignedDate: "desc" },
-    });
+  addSalaryIncrement: protectedProcedure
+    .input(salaryIncrementSchema)
+    .mutation(async ({ ctx, input }) => {
+      const currentAssignment = await ctx.db.salaryAssignment.findFirst({
+        where: { employeeId: input.employeeId },
+        orderBy: { assignedDate: "desc" },
+      });
 
-    if (!currentAssignment) {
-      throw new TRPCError({ code: "NOT_FOUND", message: "No salary assignment found for this employee" });
-    }
+      if (!currentAssignment) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "No salary assignment found for this employee",
+        });
+      }
 
-    await ctx.db.salaryIncrement.create({
-      data: {
-        employeeId: input.employeeId,
-        incrementAmount: input.incrementAmount,
-        reason: input.reason,
-        effectiveDate: input.effectiveDate,
-      },
-    });
+      await ctx.db.salaryIncrement.create({
+        data: {
+          employeeId: input.employeeId,
+          incrementAmount: input.incrementAmount,
+          reason: input.reason,
+          effectiveDate: input.effectiveDate,
+        },
+      });
 
-    return ctx.db.salaryAssignment.update({
-      where: { id: currentAssignment.id },
-      data: {
-        increment: currentAssignment.increment + input.incrementAmount,
-        totalSalary: currentAssignment.totalSalary + input.incrementAmount,
-      },
-    });
-  }),
+      return ctx.db.salaryAssignment.update({
+        where: { id: currentAssignment.id },
+        data: {
+          increment: currentAssignment.increment + input.incrementAmount,
+          totalSalary: currentAssignment.totalSalary + input.incrementAmount,
+        },
+      });
+    }),
 
   getCurrentSalary: protectedProcedure
     .input(z.object({ employeeId: z.string().min(1) }))
@@ -497,42 +558,49 @@ export const salaryRouter = createTRPCRouter({
       });
 
       if (!salary) {
-        throw new TRPCError({ code: "NOT_FOUND", message: "No salary assigned" });
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "No salary assigned",
+        });
       }
       return salary;
     }),
 
-  getSalaries: protectedProcedure.input(getSalariesInputSchema).query(async ({ ctx, input }) => {
-    const { page, pageSize, searchTerm, sortField, sortOrder } = input;
+  getSalaries: protectedProcedure
+    .input(getSalariesInputSchema)
+    .query(async ({ ctx, input }) => {
+      const { page, pageSize, searchTerm, sortField, sortOrder } = input;
 
-    const where: Prisma.SalaryAssignmentWhereInput = {};
+      const where: Prisma.SalaryAssignmentWhereInput = {};
 
-    if (searchTerm) {
-      where.Employees = {
-        employeeName: { contains: searchTerm, mode: "insensitive" },
-      };
-    }
-
-    let orderBy: Prisma.SalaryAssignmentOrderByWithRelationInput = { assignedDate: "desc" };
-    if (sortField && sortOrder) {
-      if (sortField === "employeeName") {
-        orderBy = { Employees: { employeeName: sortOrder } };
-      } else {
-        orderBy = { [sortField]: sortOrder };
+      if (searchTerm) {
+        where.Employees = {
+          employeeName: { contains: searchTerm, mode: "insensitive" },
+        };
       }
-    }
 
-    const [salaries, totalCount] = await Promise.all([
-      ctx.db.salaryAssignment.findMany({
-        where,
-        take: pageSize,
-        skip: (page - 1) * pageSize,
-        orderBy,
-        include: { Employees: true, Sessions: true },
-      }),
-      ctx.db.salaryAssignment.count({ where }),
-    ]);
+      let orderBy: Prisma.SalaryAssignmentOrderByWithRelationInput = {
+        assignedDate: "desc",
+      };
+      if (sortField && sortOrder) {
+        if (sortField === "employeeName") {
+          orderBy = { Employees: { employeeName: sortOrder } };
+        } else {
+          orderBy = { [sortField]: sortOrder };
+        }
+      }
 
-    return { salaries, totalCount };
-  }),
+      const [salaries, totalCount] = await Promise.all([
+        ctx.db.salaryAssignment.findMany({
+          where,
+          take: pageSize,
+          skip: (page - 1) * pageSize,
+          orderBy,
+          include: { Employees: true, Sessions: true },
+        }),
+        ctx.db.salaryAssignment.count({ where }),
+      ]);
+
+      return { salaries, totalCount };
+    }),
 });

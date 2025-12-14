@@ -1,19 +1,21 @@
+import { ScrollArea } from "~/components/ui/scroll-area";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "~/components/ui/card";
+import { ClassFeeTable } from "~/components/tables/ClassFee";
 import { PageHeader } from "~/components/blocks/nav/PageHeader";
-import { ClassAllotmentTable } from "~/components/tables/ClassAlotment";
-import { BookOpen, Users } from "lucide-react";
+import { Coins, Receipt } from "lucide-react";
 
 type PageProps = {
-  searchParams: Promise<{ classId: string; sessionId: string; }>;
+  searchParams: Promise<{ classId: string; sessionId: string }>;
 };
 
-export default async function ClassDetailsPage({ searchParams }: PageProps) {
+export default async function FeeDetailsPage({ searchParams }: PageProps) {
   const searchProps = await searchParams;
   
   const breadcrumbs = [
     { href: "/admin", label: "Dashboard" },
+    { href: "/admin/sessions", label: "Sessions" },
     { href: `/admin/sessions/${searchProps.sessionId}`, label: "Session Details" },
-    { href: "#", label: "Class Roster", current: true },
+    { href: "#", label: "Fee Structure", current: true },
   ];
 
   return (
@@ -30,44 +32,46 @@ export default async function ClassDetailsPage({ searchParams }: PageProps) {
 
         <div className="flex-1 container mx-auto px-4 sm:px-6 lg:px-8 py-8 pt-20">
           
-          <div className="max-w-[1920px] mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+          <div className="max-w-[1920px] mx-auto space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
             
             {/* Header Section */}
             <div className="flex flex-col gap-2">
                 <h1 className="text-3xl font-serif font-bold tracking-tight text-white flex items-center gap-3">
                     <span className="p-2 rounded-xl bg-emerald-500/10 border border-emerald-500/20 shadow-lg shadow-emerald-900/20">
-                        <BookOpen className="w-6 h-6 text-emerald-400" />
+                        <Coins className="w-6 h-6 text-emerald-400" />
                     </span>
-                    Class Details
+                    Fee Details
                 </h1>
                 <p className="text-slate-400 ml-1 max-w-2xl">
-                    Manage student enrollments, view allotment details, and oversee class composition for the current academic session.
+                    Manage fee structures, update amounts, and track payment records for this specific class within the active session.
                 </p>
             </div>
 
-            {/* Main Content Card */}
+            {/* Main Card */}
             <Card className="border border-emerald-500/20 bg-slate-900/60 backdrop-blur-xl shadow-2xl overflow-hidden rounded-2xl">
                 <CardHeader className="border-b border-emerald-500/10 bg-slate-900/50 p-6">
                     <div className="flex items-center justify-between">
                         <div className="space-y-1">
                             <CardTitle className="text-xl text-white flex items-center gap-2 font-semibold">
-                                <Users className="w-5 h-5 text-emerald-400" />
-                                Student Allotment Registry
+                                <Receipt className="w-5 h-5 text-emerald-400" />
+                                Class Fee Registry
                             </CardTitle>
                             <CardDescription className="text-slate-400">
-                                Detailed list of students currently assigned to this class.
+                                Detailed breakdown of fees assigned to this class.
                             </CardDescription>
                         </div>
                     </div>
                 </CardHeader>
                 
                 <CardContent className="p-0">
-                    <div className="p-6">
-                        <ClassAllotmentTable 
-                            classId={searchProps.classId} 
-                            sessionId={searchProps.sessionId} 
-                        />
-                    </div>
+                    <ScrollArea className="h-[calc(100vh-300px)] w-full">
+                        <div className="p-6">
+                            <ClassFeeTable 
+                                sessionId={searchProps.sessionId} 
+                                classId={searchProps.classId} 
+                            />
+                        </div>
+                    </ScrollArea>
                 </CardContent>
             </Card>
 

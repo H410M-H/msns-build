@@ -6,7 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { type z } from "zod";
 import { api } from "~/trpc/react";
 import { toast } from "~/hooks/use-toast";
-import { Loader2 } from "lucide-react";
+import { Loader2, X } from "lucide-react";
 import { Button } from "~/components/ui/button";
 import {
     Form,
@@ -19,7 +19,9 @@ import {
 import { Input } from "~/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
 import type { Students } from "@prisma/client";
-import { studentSchema } from "~/server/api/routers/student";
+// IMPORT FROM NEW SHARED FILE TO AVOID 'FS' ERROR
+import { studentSchema } from "~/lib/schemas/student";
+
 type StudentEditFormProps = {
     student: Students;
     onClose: () => void;
@@ -69,229 +71,222 @@ export function StudentEditDialog({ student, onClose }: StudentEditFormProps) {
 
     const onSubmit = (values: z.infer<typeof studentSchema>) => {
         updateStudent.mutate({
-            ...(values as { studentId: string; studentMobile: string; fatherMobile: string; studentName: string; gender: "MALE" | "FEMALE" | "CUSTOM"; dateOfBirth: string; fatherName: string; studentCNIC: string; /* ... 13 more ... */ }),
-            fatherCNIC: "",
-            caste: "",
-            currentAddress: "",
-            permanentAddress: ""
+            studentId: student.studentId, 
+            studentName: values.studentName,
+            fatherName: values.fatherName,
+            gender: values.gender,
+            dateOfBirth: values.dateOfBirth,
+            // Schema helper now handles transform to "", but safety check helps
+            studentCNIC: values.studentCNIC ?? "",
+            fatherCNIC: values.fatherCNIC ?? "",
+            studentMobile: values.studentMobile,
+            fatherMobile: values.fatherMobile,
+            caste: values.caste,
+            currentAddress: values.currentAddress,
+            permanentAddress: values.permanentAddress,
+            medicalProblem: values.medicalProblem ?? "",
+            profilePic: values.profilePic ?? ""
         });
     };
 
+    const inputClasses = "bg-slate-950/50 border-emerald-500/30 text-white placeholder:text-slate-500 focus:border-emerald-500 focus:ring-emerald-500";
+    const labelClasses = "text-emerald-100/90";
+
     return (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4">
-            <div className="bg-white rounded-lg p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-                <h2 className="text-2xl font-bold mb-4">Edit Student Details</h2>
-                <Form {...form}>
-                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            {/* Student Name */}
-                            <FormField
-                                control={form.control}
-                                name="studentName"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Student Name</FormLabel>
-                                        <FormControl>
-                                            <Input {...field} />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-black/80 backdrop-blur-sm">
+            <div className="relative bg-slate-900 border border-emerald-500/20 rounded-xl w-full max-w-3xl max-h-[90vh] overflow-hidden flex flex-col shadow-2xl">
+                
+                <div className="flex items-center justify-between px-6 py-4 border-b border-emerald-500/20 bg-slate-900/50">
+                    <h2 className="text-xl font-bold text-white">Edit Student Details</h2>
+                    <Button variant="ghost" size="icon" onClick={onClose} className="text-slate-400 hover:text-white hover:bg-white/10">
+                        <X className="h-5 w-5" />
+                    </Button>
+                </div>
 
-                            {/* Father's Name */}
-                            <FormField
-                                control={form.control}
-                                name="fatherName"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Father Name</FormLabel>
-                                        <FormControl>
-                                            <Input {...field} />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
+                <div className="flex-1 overflow-y-auto p-6 scrollbar-thin scrollbar-thumb-emerald-600/20 scrollbar-track-transparent">
+                    <Form {...form}>
+                        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                                <FormField
+                                    control={form.control}
+                                    name="studentName"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel className={labelClasses}>Student Name</FormLabel>
+                                            <FormControl><Input {...field} className={inputClasses} /></FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
 
-                            {/* Gender Select */}
-                            <FormField
-                                control={form.control}
-                                name="gender"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Gender</FormLabel>
-                                        <Select onValueChange={(value: string) => field.onChange(value)} value={(field.value as string) ?? ''}>
-                                            <FormControl>
-                                                <SelectTrigger>
-                                                    <SelectValue placeholder="Select gender" />
-                                                </SelectTrigger>
-                                            </FormControl>
-                                            <SelectContent>
-                                                <SelectItem value="MALE">Male</SelectItem>
-                                                <SelectItem value="FEMALE">Female</SelectItem>
-                                                <SelectItem value="CUSTOM">Other</SelectItem>
-                                            </SelectContent>
-                                        </Select>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
+                                <FormField
+                                    control={form.control}
+                                    name="fatherName"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel className={labelClasses}>Father Name</FormLabel>
+                                            <FormControl><Input {...field} className={inputClasses} /></FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
 
-                            {/* Date of Birth */}
-                            <FormField
-                                control={form.control}
-                                name="dateOfBirth"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Date of Birth</FormLabel>
-                                        <FormControl>
-                                            <Input type="date" {...field} />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
+                                <FormField
+                                    control={form.control}
+                                    name="gender"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel className={labelClasses}>Gender</FormLabel>
+                                            <Select onValueChange={field.onChange} value={field.value as string}>
+                                                <FormControl>
+                                                    <SelectTrigger className={inputClasses}>
+                                                        <SelectValue placeholder="Select gender" />
+                                                    </SelectTrigger>
+                                                </FormControl>
+                                                <SelectContent className="bg-slate-900 border-emerald-500/30 text-white">
+                                                    <SelectItem value="MALE">Male</SelectItem>
+                                                    <SelectItem value="FEMALE">Female</SelectItem>
+                                                    <SelectItem value="CUSTOM">Other</SelectItem>
+                                                </SelectContent>
+                                            </Select>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
 
-                            {/* Student CNIC */}
-                            <FormField
-                                control={form.control}
-                                name="studentCNIC"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Student CNIC</FormLabel>
-                                        <FormControl>
-                                            <Input placeholder="XXXXX-XXXXXXX-X" {...field} />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
+                                <FormField
+                                    control={form.control}
+                                    name="dateOfBirth"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel className={labelClasses}>Date of Birth</FormLabel>
+                                            <FormControl><Input type="date" {...field} className={inputClasses} /></FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
 
-                            {/* Father CNIC */}
-                            <FormField
-                                control={form.control}
-                                name="fatherCNIC"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Father CNIC</FormLabel>
-                                        <FormControl>
-                                            <Input placeholder="XXXXX-XXXXXXX-X" {...field} />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
+                                <FormField
+                                    control={form.control}
+                                    name="studentCNIC"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel className={labelClasses}>Student CNIC (Optional)</FormLabel>
+                                            <FormControl><Input placeholder="XXXXX-XXXXXXX-X" {...field} value={field.value ?? ""} className={inputClasses} /></FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
 
-                            {/* Student Mobile */}
-                            <FormField
-                                control={form.control}
-                                name="studentMobile"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Student Mobile</FormLabel>
-                                        <FormControl>
-                                            <Input placeholder="03XX-XXXXXXX" {...field} />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
+                                <FormField
+                                    control={form.control}
+                                    name="fatherCNIC"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel className={labelClasses}>Father CNIC (Optional)</FormLabel>
+                                            <FormControl><Input placeholder="XXXXX-XXXXXXX-X" {...field} value={field.value ?? ""} className={inputClasses} /></FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
 
-                            {/* Father Mobile */}
-                            <FormField
-                                control={form.control}
-                                name="fatherMobile"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Father Mobile</FormLabel>
-                                        <FormControl>
-                                            <Input placeholder="03XX-XXXXXXX" {...field} />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
+                                <FormField
+                                    control={form.control}
+                                    name="studentMobile"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel className={labelClasses}>Student Mobile</FormLabel>
+                                            <FormControl><Input placeholder="03XX-XXXXXXX" {...field} className={inputClasses} /></FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
 
-                            {/* Caste */}
-                            <FormField
-                                control={form.control}
-                                name="caste"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Caste</FormLabel>
-                                        <FormControl>
-                                            <Input {...field} />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
+                                <FormField
+                                    control={form.control}
+                                    name="fatherMobile"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel className={labelClasses}>Father Mobile</FormLabel>
+                                            <FormControl><Input placeholder="03XX-XXXXXXX" {...field} className={inputClasses} /></FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
 
-                            {/* Current Address */}
-                            <FormField
-                                control={form.control}
-                                name="currentAddress"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Current Address</FormLabel>
-                                        <FormControl>
-                                            <Input {...field} />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
+                                <FormField
+                                    control={form.control}
+                                    name="caste"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel className={labelClasses}>Caste</FormLabel>
+                                            <FormControl><Input {...field} className={inputClasses} /></FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
 
-                            {/* Permanent Address */}
-                            <FormField
-                                control={form.control}
-                                name="permanentAddress"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Permanent Address</FormLabel>
-                                        <FormControl>
-                                            <Input {...field} />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
+                                <FormField
+                                    control={form.control}
+                                    name="currentAddress"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel className={labelClasses}>Current Address</FormLabel>
+                                            <FormControl><Input {...field} className={inputClasses} /></FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
 
-                            {/* Medical Problems */}
-                            <FormField
-                                control={form.control}
-                                name="medicalProblem"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Medical Conditions</FormLabel>
-                                        <FormControl>
-                                            <Input placeholder="Optional" {...field} />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                        </div>
+                                <FormField
+                                    control={form.control}
+                                    name="permanentAddress"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel className={labelClasses}>Permanent Address</FormLabel>
+                                            <FormControl><Input {...field} className={inputClasses} /></FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
 
-                        <div className="flex justify-end gap-4">
-                            <Button
-                                type="button"
-                                variant="outline"
-                                onClick={onClose}
-                                disabled={updateStudent.isPending}
-                            >
-                                Cancel
-                            </Button>
-                            <Button type="submit" disabled={updateStudent.isPending}>
-                                {updateStudent.isPending && (
-                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                )}
-                                Save Changes
-                            </Button>
-                        </div>
-                    </form>
-                </Form>
+                                <FormField
+                                    control={form.control}
+                                    name="medicalProblem"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel className={labelClasses}>Medical Conditions</FormLabel>
+                                            <FormControl><Input placeholder="Optional" {...field} value={field.value ?? ""} className={inputClasses} /></FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                            </div>
+
+                            <div className="flex justify-end gap-4 pt-4 border-t border-emerald-500/20">
+                                <Button
+                                    type="button"
+                                    variant="ghost"
+                                    onClick={onClose}
+                                    disabled={updateStudent.isPending}
+                                    className="text-slate-300 hover:text-white hover:bg-white/10"
+                                >
+                                    Cancel
+                                </Button>
+                                <Button 
+                                    type="submit" 
+                                    disabled={updateStudent.isPending}
+                                    className="bg-emerald-600 hover:bg-emerald-500 text-white"
+                                >
+                                    {updateStudent.isPending && (
+                                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                    )}
+                                    Save Changes
+                                </Button>
+                            </div>
+                        </form>
+                    </Form>
+                </div>
             </div>
         </div>
     );

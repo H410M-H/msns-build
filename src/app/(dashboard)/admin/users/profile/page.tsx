@@ -1,4 +1,3 @@
-// Suggested File: src/app/(dashboard)/admin/users/account/settings/page.tsx (based on error reports)
 "use client"
 
 import ProfileForm from "~/components/blocks/account-details/ProfileForm"

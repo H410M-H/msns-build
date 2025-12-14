@@ -1,9 +1,8 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link"; // Import Link
+import Link from "next/link";
 import {
-  Briefcase,
   Calendar,
   DollarSignIcon,
   Home,
@@ -12,7 +11,9 @@ import {
   Package,
   Settings,
   User,
-  Sparkles,
+  Users,
+  ShieldCheck,
+  GraduationCap
 } from "lucide-react";
 import {
   Sidebar,
@@ -20,301 +21,158 @@ import {
   SidebarFooter,
   SidebarHeader,
   SidebarRail,
+  useSidebar,
 } from "~/components/ui/sidebar";
 import { useSession } from "next-auth/react";
 import { useMemo } from "react";
 import { NavMain } from "./nav-main";
 import { NavUser } from "./nav-user";
+import { cn } from "~/lib/utils";
 
-// Define type explicitly to handle undefined case
+// Define NavItem type if not imported globally
+type NavItem = {
+  title: string;
+  url: string;
+  icon?: React.ComponentType<{ className?: string }>;
+  isActive?: boolean;
+  items?: {
+    title: string;
+    url: string;
+  }[];
+};
+
 type NavigationConfig = Record<string, NavItem[] | undefined>;
+
+// Icon mapping for cleaner data structure
+const Icons = {
+  Dashboard: Home,
+  Session: Calendar,
+  Revenue: DollarSignIcon,
+  Registration: List,
+  Profile: User,
+  Faculty: Users,
+  Student: GraduationCap,
+  Admin: ShieldCheck,
+  Settings: Settings,
+};
 
 const data: NavigationConfig = {
   ADMIN: [
+    { title: "Dashboard", url: "/admin", icon: Icons.Dashboard },
+    { title: "Session", url: "/admin/sessions", icon: Package },
+    { title: "Revenue", url: "/admin/revenue", icon: Icons.Revenue },
     {
-      title: "Dashboard",
-      url: "/admin",
-      icon: Briefcase,
-    },
-    {
-      title: "Session",
-      url: "/admin/sessions",
-      icon: Package,
-    },
-    {
-      title: "Revenue",
-      url: "/admin/revenue",
-      icon: DollarSignIcon,
-    },
-    {
-      title: "Registeration",
+      title: "Registration",
       url: "/admin/users",
-      icon: List,
+      icon: Icons.Registration,
       items: [
-        {
-          url: "/admin/users/faculty/view",
-          title: "Manage Faculty",
-        },
-        {
-          url: "/admin/users/student/view",
-          title: "Manage Students",
-        }
+        { url: "/admin/users/faculty/view", title: "Manage Faculty" },
+        { url: "/admin/users/student/view", title: "Manage Students" },
       ],
     },
-    {
-      title: "Profile",
-      url: "/admin/users/profile",
-      icon: User,
-    },
+    { title: "Profile", url: "/admin/users/profile", icon: Icons.Profile },
   ],
   HEAD: [
-    {
-      title: "Dashboard",
-      url: "/head",
-      icon: Briefcase,
-    },
-    {
-      title: "Session",
-      url: "/admin/sessions",
-      icon: ListOrdered,
-    },
+    { title: "Dashboard", url: "/head", icon: Icons.Dashboard },
+    { title: "Session", url: "/admin/sessions", icon: ListOrdered },
     {
       title: "Students",
       url: "/admin/users/student/view",
-      icon: User,
+      icon: Icons.Student,
       items: [
-        {
-          title: "All Students",
-          url: "/admin/users/student/view",
-        },
-        {
-          title: "Create Student",
-          url: "/admin/users/student/create",
-        },
+        { title: "All Students", url: "/admin/users/student/view" },
+        { title: "Create Student", url: "/admin/users/student/create" },
       ],
     },
     {
       title: "Faculty",
       url: "/admin/users/faculty/view",
-      icon: User,
+      icon: Icons.Faculty,
       items: [
-        {
-          title: "All Employees",
-          url: "/admin/users/faculty/view",
-        },
-        {
-          title: "Create Student",
-          url: "/admin/users/faculty/create",
-        },
+        { title: "All Employees", url: "/admin/users/faculty/view" },
+        { title: "Create Employee", url: "/admin/users/faculty/create" },
+      ],
+    },
+    { title: "Profile", url: "/admin/users/profile", icon: Icons.Profile },
+  ],
+  PRINCIPAL: [
+    { title: "Dashboard", url: "/principal", icon: Icons.Dashboard },
+    { title: "Session", url: "/admin/sessions", icon: Calendar },
+    {
+      title: "Students",
+      url: "/admin/users/student/view",
+      icon: Icons.Student,
+      items: [
+        { title: "All Students", url: "/admin/users/student/view" },
+        { title: "Create Student", url: "/admin/users/student/create" },
       ],
     },
     {
-      title: "Profile",
-      url: "/admin/users/profile",
-      icon: User,
+      title: "Faculty",
+      url: "/admin/users/faculty/view",
+      icon: Icons.Faculty,
+      items: [
+        { title: "All Employees", url: "/admin/users/faculty/view" },
+        { title: "Attendance", url: "/admin/attendance" },
+        { title: "Create Employee", url: "/admin/users/faculty/create" },
+      ],
     },
+    { title: "Profile", url: "/admin/users/account/profile", icon: Icons.Profile },
+  ],
+  TEACHER: [
+    { title: "Dashboard", url: "/teacher", icon: Icons.Dashboard },
+    { title: "Attendance", url: "/admin/attendance", icon: Calendar },
+    { title: "Students", url: "/admin/users/student/view", icon: Icons.Student },
+    { title: "Profile", url: "/admin/users/profile", icon: Icons.Profile },
+  ],
+  CLERK: [
+    { title: "Dashboard", url: "/clerk", icon: Icons.Dashboard },
+    { title: "Fee Collection", url: "/admin/revenue", icon: Icons.Revenue },
+    { title: "Students", url: "/admin/users/student/view", icon: Icons.Student },
+    { title: "Profile", url: "/admin/users/profile", icon: Icons.Profile },
   ],
   NONE: [],
-  PRINCIPAL: [
-     {
-      title: "Dashboard",
-      url: "/principal",
-      icon: Home,
-    },
-    {
-      title: "Session",
-      url: "/admin/sessions",
-      icon: Calendar,
-    },
-    {
-      title: "Students",
-      url: "/admin/users/student/view",
-      icon: User,
-      items: [
-        {
-          title: "All Students",
-          url: "/admin/users/student/view",
-        },
-        {
-          title: "Create Student",
-          url: "/admin/users/student/create",
-        },
-      ],
-    },
-    {
-      title: "Faculty",
-      url: "/admin/users/faculty/view",
-      icon: User,
-      items: [
-        {
-          title: "All Employees",
-          url: "/admin/users/faculty/view",
-        },
-        {
-          title: "Attendance",
-          url: "/admin/attendance",
-        },
-        {
-          title: "Create Employee",
-          url: "/admin/users/faculty/create",
-        },
-      ],
-    },
-    {
-      title: "Profile",
-      url: "/admin/users/account/profile",
-      icon: User,
-    },
-  ],
   ALL: [],
-  CLERK:  [
-     {
-      title: "Dashboard",
-      url: "/principal",
-      icon: Home,
-    },
-    {
-      title: "Session",
-      url: "/admin/sessions",
-      icon: Calendar,
-    },
-    {
-      title: "Students",
-      url: "/admin/users/student/view",
-      icon: User,
-      items: [
-        {
-          title: "All Students",
-          url: "/admin/users/student/view",
-        },
-        {
-          title: "Create Student",
-          url: "/admin/users/student/create",
-        },
-      ],
-    },
-    {
-      title: "Faculty",
-      url: "/admin/users/faculty/view",
-      icon: User,
-      items: [
-        {
-          title: "All Employees",
-          url: "/admin/users/faculty/view",
-        },
-        {
-          title: "Create Student",
-          url: "/admin/users/faculty/create",
-        },
-      ],
-    },
-    {
-      title: "Profile",
-      url: "/admin/users/profile",
-      icon: User,
-    },
-    {
-      title: "Settings",
-      url: "/admin/users/profile",
-      icon: Settings,
-    },
-  ],
-  TEACHER:  [
-     {
-      title: "Dashboard",
-      url: "/principal",
-      icon: Home,
-    },
-    {
-      title: "Session",
-      url: "/admin/sessions",
-      icon: Calendar,
-    },
-    {
-      title: "Students",
-      url: "/admin/users/student/view",
-      icon: User,
-      items: [
-        {
-          title: "All Students",
-          url: "/admin/users/student/view",
-        },
-        {
-          title: "Create Student",
-          url: "/admin/users/student/create",
-        },
-      ],
-    },
-    {
-      title: "Faculty",
-      url: "/admin/users/faculty/view",
-      icon: User,
-      items: [
-        {
-          title: "All Employees",
-          url: "/admin/users/faculty/view",
-        },
-        {
-          title: "Create Student",
-          url: "/admin/users/faculty/create",
-        },
-      ],
-    },
-    {
-      title: "Profile",
-      url: "/admin/users/profile",
-      icon: User,
-    },
-    {
-      title: "Settings",
-      url: "/admin/users/profile",
-      icon: Settings,
-    },
-  ],
   WORKER: [],
-  STUDENT: []
+  STUDENT: [],
 };
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const session = useSession();
+  const { state } = useSidebar();
 
-  // Fix: Explicitly return NavItem[] to resolve TS error
-  // Also ensures stability by not relying on potentially undefined indexing
   const items = useMemo<NavItem[]>(() => {
     const accountType = (session?.data?.user?.accountType) ?? "NONE";
-    const navItems = data[accountType];
-    return navItems ?? [];
+    return data[accountType] ?? [];
   }, [session?.data?.user?.accountType]);
 
   return (
-    <Sidebar 
-      collapsible="icon" 
-      {...props} 
-      // Override CSS variables for Light Gray / Light Yellow / Green Theme
-      style={{
-        "--sidebar-background": "#f8fafc", // Slate-50 (Light Gray background)
-        "--sidebar-foreground": "#334155", // Slate-700 (Dark Gray text)
-        "--sidebar-primary": "#10b981", // Emerald-500 (Green primary icons)
-        "--sidebar-primary-foreground": "#ffffff", // White text on primary
-        "--sidebar-accent": "#fef9c3", // Yellow-100 (Light Yellow accent background)
-        "--sidebar-accent-foreground": "#15803d", // Green-700 (Dark Green accent text)
-        "--sidebar-border": "#e2e8f0", // Slate-200 (Light Gray border)
-        "--sidebar-ring": "#10b981", // Emerald-500
-      } as React.CSSProperties}
-      className="border-r border-slate-200 bg-slate-50/95 backdrop-blur-sm z-50 shadow-xl"
+    <Sidebar
+      collapsible="icon"
+      {...props}
+      className="border-r border-emerald-500/20 bg-slate-950 text-white shadow-2xl transition-all duration-300"
     >
+      {/* Background Texture for Sidebar */}
+      <div className="absolute inset-0 z-0 pointer-events-none opacity-50">
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(45,255,196,0.02)_1px,transparent_1px),linear-gradient(to_bottom,rgba(45,255,196,0.02)_1px,transparent_1px)] bg-[size:2rem_2rem]" />
+      </div>
+
       {/* Sidebar Header */}
-      <SidebarHeader className="relative h-24 flex items-center justify-center p-4 border-b border-slate-200 bg-white/50">
-        <div className="relative w-full h-16 flex items-center justify-center group">
-          {/* Light yellow glow effect on hover */}
-          <div className="absolute inset-0 bg-yellow-200/40 blur-xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-          <Link href="https://msns.edu.pk" target="_blank" rel="noopener noreferrer">
+      <SidebarHeader className="relative z-10 h-24 flex items-center justify-center p-4 border-b border-emerald-500/20 bg-slate-900/50 backdrop-blur-xl">
+        <div className={cn(
+            "relative flex items-center justify-center transition-all duration-300 group",
+            state === "collapsed" ? "w-10 h-10" : "w-full h-16"
+        )}>
+          {/* Emerald Glow Effect */}
+          <div className="absolute inset-0 bg-emerald-500/20 blur-2xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+          
+          <Link href="https://msns.edu.pk" target="_blank" rel="noopener noreferrer" className="relative z-10 w-full h-full">
             <Image
-              className="object-contain relative z-10 drop-shadow-sm transition-transform duration-300 group-hover:scale-105 cursor-pointer"
+              className="object-contain drop-shadow-lg transition-transform duration-300 group-hover:scale-105"
               src="https://res.cloudinary.com/dvvbxrs55/image/upload/v1729267533/Official_LOGO_grn_ic9ldd.png"
               alt="Institution Logo"
               fill
-              sizes="(max-width: 768px) 100px, 150px"
+              sizes="(max-width: 768px) 50px, 150px"
               priority
             />
           </Link>
@@ -322,43 +180,31 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarHeader>
 
       {/* Sidebar Content */}
-      <SidebarContent className="py-6 scrollbar-thin scrollbar-thumb-slate-200 scrollbar-track-transparent">
+      <SidebarContent className="relative z-10 py-6 scrollbar-thin scrollbar-thumb-emerald-500/20 scrollbar-track-transparent">
         <NavMain items={items} />
-        
-        {/* Quick Actions Section */}
-        <div className="mt-8 px-3">
-            <div className="text-xs font-bold text-slate-400 px-2 mb-2 uppercase tracking-wider">
-                Quick Access
-            </div>
-            <div className="space-y-1">
-                <button className="flex items-center w-full px-3 py-2 text-sm rounded-lg text-slate-600 hover:bg-yellow-50 hover:text-green-700 transition-all duration-200 group border border-transparent hover:border-yellow-200">
-                    <Sparkles className="mr-2 h-4 w-4 text-yellow-500 group-hover:text-green-600 transition-colors" />
-                    <span>Recent Activity</span>
-                </button>
-                <button className="flex items-center w-full px-3 py-2 text-sm rounded-lg text-slate-600 hover:bg-yellow-50 hover:text-green-700 transition-all duration-200 group border border-transparent hover:border-yellow-200">
-                    <Settings className="mr-2 h-4 w-4 text-yellow-500 group-hover:text-green-600 transition-colors" />
-                    <span>System Status</span>
-                </button>
-            </div>
-        </div>
       </SidebarContent>
 
       {/* Sidebar Footer */}
-      <SidebarFooter className="p-4 border-t border-slate-200 bg-white/50">
-        <div className="flex items-center justify-between mb-3 px-1">
-          <span className="text-xs font-medium text-green-600 bg-green-50 px-2 py-0.5 rounded-full border border-green-100">
-            System Online
-          </span>
-          <span className="flex h-2 w-2 relative">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
-          </span>
-        </div>
+      <SidebarFooter className="relative z-10 p-4 border-t border-emerald-500/20 bg-slate-900/50 backdrop-blur-xl">
+        
+        {/* System Status - Only show when expanded */}
+        {state !== "collapsed" && (
+            <div className="flex items-center justify-between mb-4 px-2 py-1.5 rounded-lg bg-emerald-950/30 border border-emerald-500/20">
+            <span className="text-[10px] font-semibold text-emerald-400 uppercase tracking-wider">
+                System Online
+            </span>
+            <div className="flex h-2 w-2 relative">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+            </div>
+            </div>
+        )}
+
         <NavUser />
       </SidebarFooter>
 
       {/* Styled Rail */}
-      <SidebarRail className="hover:bg-slate-100 hover:w-1 transition-all" />
+      <SidebarRail className="hover:bg-emerald-500/20 hover:w-1 transition-all" />
     </Sidebar>
   );
 }
