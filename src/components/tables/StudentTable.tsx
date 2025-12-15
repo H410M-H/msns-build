@@ -33,6 +33,13 @@ import {
   getFilteredRowModel,
   flexRender,
 } from "@tanstack/react-table";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "~/components/ui/select";
 import { CSVUploadDialog } from "../forms/student/FileInput"; 
 import { StudentDeletionDialog } from "../forms/student/StudentDeletion"; 
 import { StudentEditDialog } from "../forms/student/StudentEdit"; 
@@ -55,7 +62,11 @@ export const StudentTable = () => {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [rowSelection, setRowSelection] = useState({});
   const [editingStudent, setEditingStudent] = useState<StudentProps | null>(null);
+  
+  // Note: Since pagination is client-side here, we fetch all students.
+  // For massive datasets (10k+), consider implementing server-side pagination in the TRPC router.
   const { data: students, refetch, isLoading } = api.student.getStudents.useQuery();
+  
   const columns = useMemo<ColumnDef<StudentProps>[]>(
     () => [
       {
@@ -114,14 +125,13 @@ export const StudentTable = () => {
           const dateValue = row.getValue("dateOfBirth");
           if (!dateValue || dateValue === "none") return <span className="text-slate-500 italic">N/A</span>;
           const date = new Date(dateValue as string);
-          return <span className="text-slate-300">{date.toLocaleDateString()}</span>;
+          return <span className="text-slate-300">{!isNaN(date.getTime()) ? date.toLocaleDateString() : dateValue as string}</span>;
         },
       },
       {
         accessorKey: "gender",
         header: "Gender",
         cell: ({ row }) => {
-          // FIX: Access via row.original to get precise type from Prisma
           const gender = row.original.gender; 
           
           return (
@@ -130,7 +140,6 @@ export const StudentTable = () => {
               gender === 'FEMALE' ? 'bg-pink-900/30 text-pink-300' : 
               'bg-purple-900/30 text-purple-300'
             }`}>
-              {/* Now safe to call .toLowerCase() directly */}
               {gender ? gender.toLowerCase() : "N/A"}
             </span>
           );
@@ -216,7 +225,8 @@ export const StudentTable = () => {
                 .rows.map((row) => row.original.studentId)
                 .filter(Boolean)}
             />
-            <CSVUploadDialog />
+            {/* Added onSuccess prop to refetch data after upload */}
+            <CSVUploadDialog onSuccess={() => refetch()} />
             <DownloadPdfButton reportType="students" />
             
             <Button asChild size="sm" className="bg-emerald-600 hover:bg-emerald-500 text-white">
@@ -288,10 +298,33 @@ export const StudentTable = () => {
 
       {/* Table Footer */}
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between px-2">
-        <div className="text-sm text-slate-400">
-          Showing {table.getFilteredRowModel().rows.length} students • {table.getFilteredSelectedRowModel().rows.length}{" "}
-          selected
+        <div className="flex flex-col md:flex-row items-center gap-4 text-sm text-slate-400">
+          <span>
+            Showing {table.getFilteredRowModel().rows.length} students • {table.getFilteredSelectedRowModel().rows.length} selected
+          </span>
+          
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-slate-500">Rows per page</span>
+            <Select
+              value={`${table.getState().pagination.pageSize}`}
+              onValueChange={(value) => {
+                table.setPageSize(Number(value));
+              }}
+            >
+              <SelectTrigger className="h-8 w-[80px] bg-slate-900 border-emerald-500/20 text-slate-200">
+                <SelectValue placeholder={table.getState().pagination.pageSize} />
+              </SelectTrigger>
+              <SelectContent side="top" className="bg-slate-900 border-emerald-500/20 text-slate-200">
+                {[10, 20, 50, 100, 1000].map((pageSize) => (
+                  <SelectItem key={pageSize} value={`${pageSize}`}>
+                    {pageSize}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         </div>
+
         <div className="flex gap-2">
           <Button
             variant="outline"

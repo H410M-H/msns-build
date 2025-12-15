@@ -44,4 +44,18 @@ export const studentSchema = z.object({
   profilePic: z.string().nullish().transform(v => v ?? ""),
 });
 
+// Added this schema for Bulk Import
+export const studentCSVSchema = z.object({
+  studentName: z.string(),
+  fatherName: z.string().optional(),
+  dateOfBirth: z.string().optional(),
+  dateOfAdmission: z.string().optional(),
+  address: z.string().optional(),
+  contactNumber: z.string().optional(),
+  fatherOccupation: z.string().optional(),
+  caste: z.string().optional(),
+  registrationNumber: z.string().optional(),
+});
+
 export type StudentSchema = z.infer<typeof studentSchema>;
+export type StudentCSVSchema = z.infer<typeof studentCSVSchema>;

@@ -4,7 +4,10 @@ import React, { useState } from 'react';
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Upload, FileType } from "lucide-react";
+import { Upload, FileSpreadsheet } from "lucide-react";
+import { api } from "~/trpc/react";
+import { useToast } from "~/hooks/use-toast";
+import { type StudentCSVSchema } from "~/lib/schemas/student";
 
 import { Button } from "~/components/ui/button";
 import {
@@ -28,64 +31,167 @@ import {
 import { Input } from "~/components/ui/input";
 import { Progress } from "~/components/ui/progress";
 
+// FIX: We explicitly cast the schema to z.ZodType<File>
+// This tells TypeScript "This is a File" while keeping the runtime check safe for the server.
 const formSchema = z.object({
-  csvFile: z.any()
+  csvFile: (typeof window === 'undefined' 
+    ? z.any() 
+    : z.instanceof(File, { message: "A CSV file is required" })) as z.ZodType<File>
 });
 
 type FormValues = z.infer<typeof formSchema>;
 
-export const CSVUploadDialog: React.FC = () => {
+interface CSVUploadDialogProps {
+  onSuccess?: () => void;
+}
+
+export const CSVUploadDialog: React.FC<CSVUploadDialogProps> = ({ onSuccess }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState(0);
+  const { toast } = useToast();
+  const utils = api.useUtils();
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
   });
 
-  const onSubmit = async (data: FormValues) => {
-    setIsUploading(true);
-    setUploadProgress(0);
+  const bulkCreate = api.student.bulkCreate.useMutation({
+    onSuccess: (data) => {
+      toast({ 
+        title: "Import Successful", 
+        description: `Successfully imported ${data.count} students.` 
+      });
+      void utils.student.getStudents.invalidate();
+      if (onSuccess) onSuccess();
+      setIsOpen(false);
+      form.reset();
+    },
+    onError: (error) => {
+      console.error(error);
+      toast({ 
+        title: "Import Failed", 
+        description: error.message || "Failed to import students.", 
+        variant: "destructive" 
+      });
+    },
+    onSettled: () => {
+      setIsUploading(false);
+    }
+  });
 
-    const formData = new FormData();
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-    formData.append('csvFile', data.csvFile);
+  const splitCSVLine = (line: string) => {
+    const values: string[] = [];
+    let current = '';
+    let inQuote = false;
+    
+    for (const char of line) {
+      if (char === '"') {
+        inQuote = !inQuote;
+      } else if (char === ',' && !inQuote) {
+        values.push(current.trim().replace(/^"|"$/g, ''));
+        current = '';
+      } else {
+        current += char;
+      }
+    }
+    
+    values.push(current.trim().replace(/^"|"$/g, ''));
+    return values;
+  };
 
-    try {
-      const response = await fetch('/api/upload/student', {
-        method: 'POST',
-        body: formData,
+  const parseCSV = (text: string): StudentCSVSchema[] => {
+    const lines = text.split(/\r\n|\n/).filter(l => l.trim().length > 0);
+    
+    if (lines.length < 2) return [];
+
+    const headerLine = lines[0];
+    if (!headerLine) return [];
+
+    const headers = splitCSVLine(headerLine).map(h => h.toLowerCase().trim().replace(/^"|"$/g, ''));
+    
+    const mapHeader = (h: string): keyof StudentCSVSchema | null => {
+      if (h === 'student name') return 'studentName';
+      if (h === "father's name" || h === "father name") return 'fatherName';
+      if (h === 'date of birth' || h === 'dob') return 'dateOfBirth';
+      if (h === 'date of admission' || h === 'admission date') return 'dateOfAdmission';
+      if (h === 'address') return 'address';
+      if (h === 'contact numbers' || h === 'contact number' || h === 'mobile') return 'contactNumber';
+      if (h === 'father occupation' || h === 'occupation') return 'fatherOccupation';
+      if (h === 'caste') return 'caste';
+      if (h.includes('reg') || h === 'registration number') return 'registrationNumber';
+      return null;
+    };
+
+    const schemaKeys = headers.map(mapHeader);
+    const result: StudentCSVSchema[] = [];
+
+    for (const line of lines.slice(1)) {
+      if (!line) continue;
+
+      const values = splitCSVLine(line);
+      const obj: Record<string, string> = {};
+      let hasData = false;
+
+      schemaKeys.forEach((key, index) => {
+        if (key && values[index]) {
+          let val = values[index].trim();
+          if ((key === 'dateOfBirth' || key === 'dateOfAdmission') && val.includes(',')) {
+             val = val.replace(/^[A-Za-z]+,\s*/, '');
+          }
+          obj[key] = val;
+          hasData = true;
+        }
       });
 
-      if (!response.ok) {
-        throw new Error('Upload failed');
+      if (hasData && obj.studentName) {
+         result.push(obj as unknown as StudentCSVSchema);
+      }
+    }
+    return result;
+  };
+
+  const onSubmit = async (data: FormValues) => {
+    setIsUploading(true);
+    try {
+      // Valid type check to prevent runtime errors and satisfy strict linting
+      if (!data.csvFile || !(data.csvFile instanceof File)) {
+        throw new Error("Invalid file selected.");
       }
 
-      // Handle successful upload
-      console.log('Upload successful');
+      // Now safe to call .text() because data.csvFile is strictly typed as File
+      const text = await data.csvFile.text();
+      const parsedData = parseCSV(text);
+
+      if (parsedData.length === 0) {
+        throw new Error("No valid student data found. Please check your CSV headers.");
+      }
+
+      await bulkCreate.mutateAsync(parsedData);
     } catch (error) {
-      console.error('Error uploading CSV:', error);
-      // Handle error (e.g., show error message to user)
-    } finally {
+      console.error('Error processing CSV:', error);
+      toast({ 
+        title: "Error", 
+        description: error instanceof Error ? error.message : "Failed to parse CSV file", 
+        variant: "destructive" 
+      });
       setIsUploading(false);
-      setUploadProgress(100);
-      setIsOpen(false); // Close the dialog after upload attempt
     }
   };
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button>
-          <FileType className="mr-2 h-4 w-4" />
-          Upload CSV
+        <Button variant="outline" className="gap-2 border-emerald-500/20 text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/10">
+          <FileSpreadsheet className="h-4 w-4" />
+          Bulk Upload
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[425px] bg-slate-900 border-emerald-500/20 text-slate-200">
         <DialogHeader>
-          <DialogTitle>Upload CSV</DialogTitle>
-          <DialogDescription>
-            Upload a CSV file containing student data. The file should be less than 5MB.
+          <DialogTitle className="text-emerald-400">Upload Student CSV</DialogTitle>
+          <DialogDescription className="text-slate-400">
+            Upload a CSV file.<br/>
+            Expected Headers: <b>Student Name, Father&apos;s Name, Date of Admission</b>, etc.
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
@@ -93,40 +199,51 @@ export const CSVUploadDialog: React.FC = () => {
             <FormField
               control={form.control}
               name="csvFile"
-              render={({ field }) => (
+              render={({ field: { value: _value, onChange, ...fieldProps } }) => (
                 <FormItem>
-                  <FormLabel>Student Data CSV</FormLabel>
+                  <FormLabel>Select File</FormLabel>
                   <FormControl>
                     <Input
+                      {...fieldProps}
                       type="file"
                       accept=".csv"
-                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                        const file = e.target.files?.[0];
-                        if (file) {
-                          field.onChange(file);
-                        }
+                      className="bg-slate-950 border-emerald-500/30 text-slate-200 file:text-emerald-400 file:hover:text-emerald-300"
+                      onChange={(event) => {
+                        const file = event.target.files?.[0];
+                        if (file) onChange(file);
                       }}
                     />
                   </FormControl>
-                  <FormDescription>Select a CSV file to upload</FormDescription>
+                  <FormDescription className="text-slate-500">
+                    Max 5MB. Standard CSV format.
+                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
             />
             {isUploading && (
-              <Progress value={uploadProgress} className="w-full" />
+              <div className="space-y-2">
+                <Progress value={undefined} className="h-1 bg-slate-800 w-full" >
+                    <div className="h-full bg-emerald-500 animate-indeterminate" />
+                </Progress>
+                <p className="text-xs text-center text-emerald-500 animate-pulse">Processing...</p>
+              </div>
             )}
             <DialogFooter>
-              <Button type="submit" disabled={isUploading}>
+              <Button 
+                type="submit" 
+                disabled={isUploading}
+                className="bg-emerald-600 hover:bg-emerald-500 text-white w-full sm:w-auto"
+              >
                 {isUploading ? (
                   <>
                     <Upload className="mr-2 h-4 w-4 animate-spin" />
-                    Uploading...
+                    Importing...
                   </>
                 ) : (
                   <>
                     <Upload className="mr-2 h-4 w-4" />
-                    Upload
+                    Start Import
                   </>
                 )}
               </Button>

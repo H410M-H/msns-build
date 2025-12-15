@@ -5,8 +5,7 @@ import { generatePdf } from "~/lib/pdf-reports";
 import { type Prisma } from "@prisma/client";
 import { userReg } from "~/lib/utils";
 import { hash } from "bcrypt";
-// IMPORT FROM SHARED FILE
-import { studentSchema } from "~/lib/schemas/student";
+import { studentSchema, studentCSVSchema } from "~/lib/schemas/student";
 
 type StudentReportData = {
   studentId: string;
@@ -216,6 +215,108 @@ export const StudentRouter = createTRPCRouter({
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
           message: "Failed to update student",
+        });
+      }
+    }),
+
+  bulkCreate: publicProcedure
+    .input(z.array(studentCSVSchema))
+    .mutation(async ({ ctx, input }) => {
+      try {
+        // 1. Get initial count to generate sequential IDs
+        let usersCount = await ctx.db.user.count({ where: { accountType: "STUDENT" } });
+        
+        const studentsData = [];
+        const usersData = [];
+
+        // Helper to parse dates from various CSV formats
+        const parseDate = (dateStr?: string) => {
+          if (!dateStr) return null;
+          // Try to parse standard string (e.g. "January 30, 1995")
+          const d = new Date(dateStr);
+          if (!isNaN(d.getTime())) return d;
+          
+          // Try parsing "DD/MM/YYYY" which often appears in CSVs
+          const parts = dateStr.split('/');
+          if (parts.length === 3) {
+             const [day, month, year] = parts;
+             // Construct YYYY-MM-DD
+             const d2 = new Date(`${year}-${month}-${day}`);
+             if (!isNaN(d2.getTime())) return d2;
+          }
+          return null;
+        };
+
+        // Use standard for...of loop for async operations
+        for (const student of input) {
+           // Generate Sequential ID using the exact logic from createStudent
+           const userInfo = userReg(usersCount, "STUDENT");
+           
+           // Hash password (using admission number as password)
+           const password = await hash(userInfo.admissionNumber, 10);
+           
+           // Parse Dates
+           const dob = parseDate(student.dateOfBirth);
+           // Use Date of Admission for createdAt if available, else now
+           const admissionDate = parseDate(student.dateOfAdmission) ?? new Date();
+
+           studentsData.push({
+              studentName: student.studentName,
+              fatherName: student.fatherName ?? "",
+              // Store DOB as a string (if schema requires string) or keep valid date format
+              dateOfBirth: dob ? dob.toLocaleDateString() : (student.dateOfBirth ?? "none"), 
+              currentAddress: student.address ?? "none", 
+              studentMobile: student.contactNumber ?? "none", 
+              fatherProfession: student.fatherOccupation ?? "none", 
+              caste: student.caste ?? "none",
+              
+              // Generated IDs
+              registrationNumber: userInfo.accountId,
+              admissionNumber: userInfo.admissionNumber,
+              
+              // Defaults
+              gender: "MALE" as const, // Or you could try to guess from name/CSV if column exists
+              profilePic: "/user.jpg",
+              studentCNIC: "0000-0000000-0",
+              fatherCNIC: "0000-0000000-0",
+              fatherMobile: "none",
+              permanentAddress: "none",
+              
+              // Timestamps
+              createdAt: admissionDate, 
+              updatedAt: new Date(),
+           });
+
+           usersData.push({
+             accountId: userInfo.accountId,
+             username: userInfo.username,
+             email: userInfo.email.toLowerCase(),
+             password: password,
+             accountType: "STUDENT" as const,
+           });
+
+           // Increment count for next student
+           usersCount++;
+        }
+
+        // 3. Perform Transactional Write
+        const result = await ctx.db.$transaction([
+          ctx.db.students.createMany({ 
+            data: studentsData, 
+            skipDuplicates: true 
+          }),
+          ctx.db.user.createMany({ 
+            data: usersData, 
+            skipDuplicates: true 
+          })
+        ]);
+
+        return { count: result[0].count };
+      } catch (error) {
+        console.error("Bulk create error:", error);
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to import students",
         });
       }
     }),
