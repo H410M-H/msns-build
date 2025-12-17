@@ -43,10 +43,30 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "~/components/ui/dialog";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "~/components/ui/form";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { useToast } from "~/hooks/use-toast";
+
 import { CSVUploadDialog } from "../forms/student/FileInput";
 import { StudentDeletionDialog } from "../forms/student/StudentDeletion";
 import { StudentEditDialog } from "../forms/student/StudentEdit";
-import { PlusCircle, RefreshCw, Search, Pencil, Copy, Settings2, IdCard } from "lucide-react";
+import { PlusCircle, RefreshCw, Search, Pencil, Copy, Settings2, IdCard, UserPlus, Loader2 } from "lucide-react";
 import { Skeleton } from "~/components/ui/skeleton";
 import { DownloadPdfButton } from "../ui/DownloadPdfButton";
 import type { Students } from "@prisma/client";
@@ -80,11 +100,147 @@ function useDebounce<T>(value: T, delay: number): T {
   return debouncedValue;
 }
 
+// --- Add To Class Dialog ---
+const addToClassSchema = z.object({
+  classId: z.string().min(1, "Class is required"),
+  sessionId: z.string().min(1, "Session is required"),
+})
+
+function AddToClassDialog({ 
+  student, 
+  open, 
+  onOpenChange 
+}: { 
+  student: StudentProps | null
+  open: boolean
+  onOpenChange: (open: boolean) => void 
+}) {
+  const { toast } = useToast()
+  const utils = api.useUtils()
+
+  const form = useForm<z.infer<typeof addToClassSchema>>({
+    resolver: zodResolver(addToClassSchema),
+    defaultValues: {
+      classId: "",
+      sessionId: "",
+    },
+  })
+
+  // Queries
+  const { data: sessions, isLoading: sessionsLoading } = api.session.getSessions.useQuery()
+  const { data: classes, isLoading: classesLoading } = api.class.getClasses.useQuery()
+
+  const addToClass = api.allotment.addToClass.useMutation({
+    onSuccess: async () => {
+      toast({ title: "Success", description: "Student added to class successfully." })
+      await utils.allotment.invalidate() // Invalidate allotment data
+      onOpenChange(false)
+      form.reset()
+    },
+    onError: (error) => {
+      toast({ title: "Error", description: error.message, variant: "destructive" })
+    },
+  })
+
+  const onSubmit = (values: z.infer<typeof addToClassSchema>) => {
+    if (!student) return
+    addToClass.mutate({
+      studentId: student.studentId,
+      classId: values.classId,
+      sessionId: values.sessionId,
+    })
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-[425px] bg-slate-900 border-emerald-500/20 text-slate-200">
+        <DialogHeader>
+          <DialogTitle className="text-emerald-400">Add to Class</DialogTitle>
+          <p className="text-sm text-slate-400">
+            Assign <span className="text-white font-medium">{student?.studentName}</span> to a class.
+          </p>
+        </DialogHeader>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            
+            {/* Session Select */}
+            <FormField
+              control={form.control}
+              name="sessionId"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Session</FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger className="bg-slate-950 border-emerald-500/30 text-slate-200" disabled={sessionsLoading}>
+                        <SelectValue placeholder={sessionsLoading ? "Loading..." : "Select Session"} />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent className="bg-slate-900 border-emerald-500/20 text-slate-200">
+                      {sessions?.map((session) => (
+                        <SelectItem key={session.sessionId} value={session.sessionId}>
+                          {session.sessionName}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {/* Class Select */}
+            <FormField
+              control={form.control}
+              name="classId"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Class</FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger className="bg-slate-950 border-emerald-500/30 text-slate-200" disabled={classesLoading}>
+                        <SelectValue placeholder={classesLoading ? "Loading..." : "Select Class"} />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent className="bg-slate-900 border-emerald-500/20 text-slate-200">
+                      {classes?.map((cls) => (
+                        <SelectItem key={cls.classId} value={cls.classId}>
+                          Grade {cls.grade} {cls.section ? `(${cls.section})` : ""}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <DialogFooter>
+              <Button 
+                type="submit" 
+                disabled={addToClass.isPending}
+                className="bg-emerald-600 hover:bg-emerald-500 text-white w-full sm:w-auto"
+              >
+                {addToClass.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                Add to Class
+              </Button>
+            </DialogFooter>
+          </form>
+        </Form>
+      </DialogContent>
+    </Dialog>
+  )
+}
+
+// --- Main Table Component ---
 export const StudentTable = () => {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [rowSelection, setRowSelection] = useState({});
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
+  
+  // Dialog States
   const [editingStudent, setEditingStudent] = useState<StudentProps | null>(null);
+  const [studentToAssign, setStudentToAssign] = useState<StudentProps | null>(null);
   
   // Search State
   const [globalFilter, setGlobalFilter] = useState("");
@@ -190,16 +346,26 @@ export const StudentTable = () => {
                 <span className="sr-only">Open menu</span>
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="bg-slate-900 border-emerald-500/20 text-slate-200 w-48 shadow-xl">
+            <DropdownMenuContent align="end" className="bg-slate-900 border-emerald-500/20 text-slate-200 w-56 shadow-xl">
               <DropdownMenuLabel>Actions</DropdownMenuLabel>
               <DropdownMenuSeparator className="bg-emerald-500/20" />
+              
+              <DropdownMenuItem 
+                onClick={() => setStudentToAssign(row.original)}
+                className="cursor-pointer hover:bg-emerald-500/20 focus:bg-emerald-500/20 text-emerald-400"
+              >
+                <UserPlus className="mr-2 h-3.5 w-3.5" />
+                Add to Class
+              </DropdownMenuItem>
+              
               <DropdownMenuItem 
                 onClick={() => setEditingStudent(row.original)}
                 className="cursor-pointer hover:bg-emerald-500/20 focus:bg-emerald-500/20"
               >
-                <Pencil className="mr-2 h-3.5 w-3.5 text-emerald-400" />
+                <Pencil className="mr-2 h-3.5 w-3.5" />
                 Edit Student
               </DropdownMenuItem>
+              
               <DropdownMenuItem 
                 onClick={() => {
                     void navigator.clipboard.writeText(row.original.admissionNumber || "");
@@ -309,7 +475,7 @@ export const StudentTable = () => {
             <CSVUploadDialog onSuccess={() => refetch()} />
             <DownloadPdfButton reportType="students" />
             
-            {/* Added View Cards Button */}
+            {/* View Cards Button */}
             <Button asChild size="sm" className="bg-slate-700 hover:bg-slate-600 text-slate-200 border border-emerald-500/30">
               <Link href="/admin/users/student/edit" className="flex items-center gap-2">
                 <IdCard className="h-3.5 w-3.5" />
@@ -457,6 +623,13 @@ export const StudentTable = () => {
           }}
         />
       )}
+
+      {/* Add To Class Dialog Logic */}
+      <AddToClassDialog 
+        student={studentToAssign} 
+        open={!!studentToAssign} 
+        onOpenChange={(open) => !open && setStudentToAssign(null)} 
+      />
     </div>
   );
 };
