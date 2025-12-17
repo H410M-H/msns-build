@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { type z } from "zod";
@@ -19,8 +19,13 @@ import {
 import { Input } from "~/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
 import type { Students } from "@prisma/client";
-// IMPORT FROM NEW SHARED FILE TO AVOID 'FS' ERROR
 import { studentSchema } from "~/lib/schemas/student";
+
+// --- Types ---
+interface UploadResponse {
+    url: string;
+    error?: string;
+}
 
 type StudentEditFormProps = {
     student: Students;
@@ -28,6 +33,9 @@ type StudentEditFormProps = {
 };
 
 export function StudentEditDialog({ student, onClose }: StudentEditFormProps) {
+    const [selectedFile, setSelectedFile] = useState<File | null>(null);
+    const [isUploading, setIsUploading] = useState(false);
+
     const form = useForm<z.infer<typeof studentSchema>>({
         resolver: zodResolver(studentSchema as z.ZodType<z.infer<typeof studentSchema>>),
         defaultValues: {
@@ -73,44 +81,80 @@ export function StudentEditDialog({ student, onClose }: StudentEditFormProps) {
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file) {
-            // Check file size (e.g., limit to 2MB to prevent large payload errors)
-            if (file.size > 2 * 1024 * 1024) {
-                toast({
-                    title: "File too large",
-                    description: "Please select an image smaller than 2MB.",
-                    variant: "destructive",
-                });
+            if (file.size > 5 * 1024 * 1024) { 
+                toast({ title: "File too large", description: "Max 5MB allowed", variant: "destructive" });
                 return;
             }
+            
+            setSelectedFile(file);
 
             const reader = new FileReader();
             reader.onloadend = () => {
-                const result = reader.result as string;
-                form.setValue("profilePic", result);
+                form.setValue("profilePic", reader.result as string); 
             };
             reader.readAsDataURL(file);
         }
     };
 
-    const onSubmit = (values: z.infer<typeof studentSchema>) => {
-        updateStudent.mutate({
-            studentId: student.studentId, 
-            studentName: values.studentName,
-            fatherName: values.fatherName,
-            gender: values.gender,
-            dateOfBirth: values.dateOfBirth,
-            studentCNIC: values.studentCNIC ?? "",
-            fatherCNIC: values.fatherCNIC ?? "",
-            studentMobile: values.studentMobile,
-            fatherMobile: values.fatherMobile,
-            caste: values.caste,
-            currentAddress: values.currentAddress,
-            permanentAddress: values.permanentAddress,
-            medicalProblem: values.medicalProblem ?? "",
-            profilePic: values.profilePic ?? ""
+    // --- FIX: Strictly typed upload function ---
+    const uploadFile = async (file: File): Promise<string> => {
+        const formData = new FormData();
+        formData.append("file", file);
+
+        const response = await fetch("/api/v1/upload", {
+            method: "POST",
+            body: formData,
         });
+
+        if (!response.ok) throw new Error("File upload failed");
+        
+        // Cast the unknown json to our defined interface
+        const data = (await response.json()) as UploadResponse;
+        return data.url; 
     };
 
+    const onSubmit = async (values: z.infer<typeof studentSchema>) => {
+        try {
+            let finalProfilePic = values.profilePic;
+
+            if (selectedFile) {
+                setIsUploading(true);
+                try {
+                    // This is now type-safe
+                    finalProfilePic = await uploadFile(selectedFile);
+                } catch (error) {
+                    console.error(error);
+                    toast({ title: "Upload Failed", description: "Could not upload profile picture.", variant: "destructive" });
+                    setIsUploading(false);
+                    return;
+                }
+                setIsUploading(false);
+            }
+
+            updateStudent.mutate({
+                studentId: student.studentId, 
+                studentName: values.studentName,
+                fatherName: values.fatherName,
+                gender: values.gender,
+                dateOfBirth: values.dateOfBirth,
+                studentCNIC: values.studentCNIC ?? "",
+                fatherCNIC: values.fatherCNIC ?? "",
+                studentMobile: values.studentMobile,
+                fatherMobile: values.fatherMobile,
+                caste: values.caste,
+                currentAddress: values.currentAddress,
+                permanentAddress: values.permanentAddress,
+                medicalProblem: values.medicalProblem ?? "",
+                profilePic: finalProfilePic ?? ""
+            });
+
+        } catch (error) {
+            setIsUploading(false);
+            console.error("Submission error", error);
+        }
+    };
+
+    const isLoading = isUploading || updateStudent.isPending;
     const inputClasses = "bg-slate-950/50 border-emerald-500/30 text-white placeholder:text-slate-500 focus:border-emerald-500 focus:ring-emerald-500";
     const labelClasses = "text-emerald-100/90";
 
@@ -129,13 +173,12 @@ export function StudentEditDialog({ student, onClose }: StudentEditFormProps) {
                     <Form {...form}>
                         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                             
-                            {/* Profile Picture Section */}
                             <div className="flex flex-col items-center gap-4 pb-6 border-b border-emerald-500/10">
                                 <div className="relative h-28 w-28 rounded-full overflow-hidden border-2 border-emerald-500/50 bg-slate-800 shadow-lg shadow-emerald-500/10 group">
                                     {form.watch("profilePic") ? (
                                         // eslint-disable-next-line @next/next/no-img-element
                                         <img 
-                                            src={form.watch("profilePic")} 
+                                            src={form.watch("profilePic") || ""} 
                                             alt="Profile" 
                                             className="h-full w-full object-cover transition-transform group-hover:scale-105" 
                                         />
@@ -156,20 +199,27 @@ export function StudentEditDialog({ student, onClose }: StudentEditFormProps) {
                                         <Camera className="mr-2 h-4 w-4" />
                                         Change Photo
                                     </Button>
-                                    <Input 
+                                    
+                                    {/* --- FIX: Added aria-label for accessibility --- */}
+                                    <input 
                                         id="profile-upload"
                                         type="file" 
                                         accept="image/*"
-                                        className="hidden" 
+                                        className="hidden"
+                                        aria-label="Upload profile picture"
                                         onChange={handleFileChange}
                                     />
+                                    
                                     {form.watch("profilePic") && (
                                          <Button
                                             type="button"
                                             variant="ghost"
                                             size="sm"
                                             className="text-red-400 hover:text-red-300 hover:bg-red-500/10"
-                                            onClick={() => form.setValue("profilePic", "")}
+                                            onClick={() => {
+                                                form.setValue("profilePic", "");
+                                                setSelectedFile(null);
+                                            }}
                                          >
                                             <Trash2 className="h-4 w-4" />
                                             <span className="sr-only">Remove photo</span>
@@ -340,20 +390,20 @@ export function StudentEditDialog({ student, onClose }: StudentEditFormProps) {
                                     type="button"
                                     variant="ghost"
                                     onClick={onClose}
-                                    disabled={updateStudent.isPending}
+                                    disabled={isLoading}
                                     className="text-slate-300 hover:text-white hover:bg-white/10"
                                 >
                                     Cancel
                                 </Button>
                                 <Button 
                                     type="submit" 
-                                    disabled={updateStudent.isPending}
+                                    disabled={isLoading}
                                     className="bg-emerald-600 hover:bg-emerald-500 text-white"
                                 >
-                                    {updateStudent.isPending && (
+                                    {isLoading && (
                                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                                     )}
-                                    Save Changes
+                                    {isUploading ? "Uploading..." : "Save Changes"}
                                 </Button>
                             </div>
                         </form>
