@@ -400,7 +400,7 @@ export const ClassAllotmentTable = ({ classId, sessionId }: ClassAllotmentTableP
                         className="w-full mt-1 bg-slate-50 hover:bg-slate-100 text-slate-600 hover:text-emerald-600 border border-slate-200"
                         onClick={(e) => e.stopPropagation()} // Prevent triggering selection
                     >
-                        <Link href={`/students/${row.original.Students.studentId}`}>View Profile</Link>
+                        <Link href={`/admin/users/student/${row.original.Students.studentId}`}>View Profile</Link>
                     </Button>
                 </div>
               </div>

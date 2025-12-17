@@ -66,7 +66,18 @@ import { useToast } from "~/hooks/use-toast";
 import { CSVUploadDialog } from "../forms/student/FileInput";
 import { StudentDeletionDialog } from "../forms/student/StudentDeletion";
 import { StudentEditDialog } from "../forms/student/StudentEdit";
-import { PlusCircle, RefreshCw, Search, Pencil, Copy, Settings2, IdCard, UserPlus, Loader2 } from "lucide-react";
+import { 
+  PlusCircle, 
+  RefreshCw, 
+  Search, 
+  Pencil, 
+  Copy, 
+  Settings2, 
+  IdCard, 
+  UserPlus, 
+  Loader2, 
+  ArrowUpDown 
+} from "lucide-react";
 import { Skeleton } from "~/components/ui/skeleton";
 import { DownloadPdfButton } from "../ui/DownloadPdfButton";
 import type { Students } from "@prisma/client";
@@ -276,17 +287,50 @@ export const StudentTable = () => {
       },
       {
         accessorKey: "registrationNumber",
-        header: "Reg #",
+        header: ({ column }) => {
+          return (
+            <Button
+              variant="ghost"
+              onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+              className="hover:bg-emerald-500/20 hover:text-white px-2 -ml-2 font-semibold text-emerald-100/80"
+            >
+              Reg #
+              <ArrowUpDown className="ml-2 h-3 w-3" />
+            </Button>
+          )
+        },
         cell: ({ row }) => <span className="font-mono text-emerald-200 text-xs sm:text-sm">{row.getValue("registrationNumber")}</span>,
       },
       {
         accessorKey: "admissionNumber",
-        header: "Adm #",
+        header: ({ column }) => {
+          return (
+            <Button
+              variant="ghost"
+              onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+              className="hover:bg-emerald-500/20 hover:text-white px-2 -ml-2 font-semibold text-emerald-100/80"
+            >
+              Adm #
+              <ArrowUpDown className="ml-2 h-3 w-3" />
+            </Button>
+          )
+        },
         cell: ({ row }) => <span className="font-mono text-slate-300 text-xs sm:text-sm">{row.getValue("admissionNumber")}</span>,
       },
       {
         accessorKey: "studentName",
-        header: "Student Name",
+        header: ({ column }) => {
+          return (
+            <Button
+              variant="ghost"
+              onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+              className="hover:bg-emerald-500/20 hover:text-white px-2 -ml-2 font-semibold text-emerald-100/80"
+            >
+              Student Name
+              <ArrowUpDown className="ml-2 h-3 w-3" />
+            </Button>
+          )
+        },
         cell: ({ row }) => (
             <div className="flex flex-col">
                 <span className="font-medium text-white">{row.getValue("studentName")}</span>
@@ -296,7 +340,18 @@ export const StudentTable = () => {
       },
       {
         accessorKey: "fatherName",
-        header: "Father Name",
+        header: ({ column }) => {
+          return (
+            <Button
+              variant="ghost"
+              onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+              className="hover:bg-emerald-500/20 hover:text-white px-2 -ml-2 font-semibold text-emerald-100/80"
+            >
+              Father Name
+              <ArrowUpDown className="ml-2 h-3 w-3" />
+            </Button>
+          )
+        },
         cell: ({ row }) => <span className="text-slate-300">{row.getValue("fatherName")}</span>,
         meta: { className: "hidden md:table-cell" }, 
       },

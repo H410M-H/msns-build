@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "~/components/ui/card";
 import { PageHeader } from "~/components/blocks/nav/PageHeader";
 import { ClassAllotmentTable } from "~/components/tables/ClassAlotment";
-import { BookOpen, Users } from "lucide-react";
+import { Users } from "lucide-react";
 
 type PageProps = {
   searchParams: Promise<{ classId: string; sessionId: string; }>;
@@ -33,7 +33,7 @@ export default async function ClassDetailsPage({ searchParams }: PageProps) {
           <div className="max-w-[1920px] mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
             
             {/* Header Section */}
-            <div className="flex flex-col gap-2">
+            {/* <div className="flex flex-col gap-2">
                 <h1 className="text-3xl font-serif font-bold tracking-tight text-white flex items-center gap-3">
                     <span className="p-2 rounded-xl bg-emerald-500/10 border border-emerald-500/20 shadow-lg shadow-emerald-900/20">
                         <BookOpen className="w-6 h-6 text-emerald-400" />
@@ -43,7 +43,7 @@ export default async function ClassDetailsPage({ searchParams }: PageProps) {
                 <p className="text-slate-400 ml-1 max-w-2xl">
                     Manage student enrollments, view allotment details, and oversee class composition for the current academic session.
                 </p>
-            </div>
+            </div> */}
 
             {/* Main Content Card */}
             <Card className="border border-emerald-500/20 bg-slate-900/60 backdrop-blur-xl shadow-2xl overflow-hidden rounded-2xl">

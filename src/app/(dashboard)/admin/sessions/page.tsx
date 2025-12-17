@@ -26,13 +26,13 @@ import { Skeleton } from "~/components/ui/skeleton";
 import { motion, useReducedMotion } from "framer-motion";
 import { Button } from "~/components/ui/button";
 
-// 🎯 Define proper TypeScript interfaces
+// --- Types ---
 interface StatType {
   title: string;
   value: number;
   icon: React.ComponentType<{ className?: string }>;
-  color: string; // Gradient for icon background
-  textColor: string; // Color for text accents
+  color: string;
+  textColor: string;
   borderColor: string;
   change?: string;
   trend?: "up" | "down";
@@ -46,14 +46,14 @@ interface ErrorFallbackProps {
   resetErrorBoundary: () => void;
 }
 
-// 🎯 LAZY LOAD HEAVY COMPONENTS
+// --- Lazy Load ---
 const LazySessionList = lazy(() =>
   import("~/components/tables/SessionList").then((module) => ({
     default: module.SessionList as React.ComponentType,
   }))
 );
 
-// 🎯 OPTIMIZED AnimatedNumber component
+// --- Optimized Number Animation ---
 const OptimizedAnimatedNumber = ({ value }: { value: number }) => {
   const [displayValue, setDisplayValue] = useState(0);
   const [isMounted, setIsMounted] = useState(false);
@@ -61,7 +61,6 @@ const OptimizedAnimatedNumber = ({ value }: { value: number }) => {
 
   useEffect(() => {
     setIsMounted(true);
-
     if (typeof value !== "number" || prefersReducedMotion) return;
 
     const duration = 1500;
@@ -71,7 +70,6 @@ const OptimizedAnimatedNumber = ({ value }: { value: number }) => {
     const animate = () => {
       const elapsed = Date.now() - startTime;
       const progress = Math.min(elapsed / duration, 1);
-
       const easedProgress =
         progress < 0.5
           ? 2 * progress * progress
@@ -90,10 +88,7 @@ const OptimizedAnimatedNumber = ({ value }: { value: number }) => {
     };
 
     requestAnimationFrame(animate);
-
-    return () => {
-      setDisplayValue(0);
-    };
+    return () => setDisplayValue(0);
   }, [value, prefersReducedMotion]);
 
   if (prefersReducedMotion || !isMounted) {
@@ -103,7 +98,7 @@ const OptimizedAnimatedNumber = ({ value }: { value: number }) => {
   return <span>{displayValue.toLocaleString()}</span>;
 };
 
-// 🎯 STATS COMPONENT (Glassmorphism & Dark Theme)
+// --- Stat Card Component ---
 const StatCard = React.memo(
   ({ stat, index, isLoading }: { stat: StatType; index: number; isLoading: boolean }) => {
     const Icon = stat.icon;
@@ -118,17 +113,13 @@ const StatCard = React.memo(
           stiffness: 300,
           damping: 20,
         }}
-        whileHover={{
-          scale: 1.03,
-          y: -4,
-        }}
+        whileHover={{ scale: 1.03, y: -4 }}
         whileTap={{ scale: 0.98 }}
         className="h-full"
       >
         <Card
           className={`group relative flex h-full flex-col justify-between overflow-hidden rounded-2xl border ${stat.borderColor} bg-white/5 p-4 sm:p-6 shadow-xl backdrop-blur-md transition-all duration-300 hover:bg-white/10 hover:shadow-2xl hover:shadow-emerald-900/20`}
         >
-          {/* Decorative Gradient Blob inside card */}
           <div
             className={`absolute -right-6 -top-6 h-24 w-24 rounded-full bg-gradient-to-br ${stat.color} opacity-20 blur-2xl transition-all duration-500 group-hover:opacity-40`}
           />
@@ -149,10 +140,7 @@ const StatCard = React.memo(
             </div>
             <motion.div
               className={`flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-xl bg-gradient-to-br ${stat.color} shadow-lg text-white`}
-              whileHover={{
-                rotate: [0, -10, 10, 0],
-                scale: 1.1,
-              }}
+              whileHover={{ rotate: [0, -10, 10, 0], scale: 1.1 }}
               transition={{ type: "spring", stiffness: 300 }}
             >
               <Icon className="h-4 w-4 sm:h-5 sm:w-5" />
@@ -190,23 +178,18 @@ const StatCard = React.memo(
     );
   }
 );
-
 StatCard.displayName = "StatCard";
 
-// 🎯 SKELETON LOADER COMPONENT (Dark Theme)
+// --- Skeleton Component ---
 const DashboardSkeleton = () => (
   <div className="min-h-screen bg-gradient-to-br from-[#344a3f] via-[#12251b] to-[#02131b]">
     <div className="px-4 py-6 sm:px-6 lg:px-8">
-      <div className="mb-6">
-        <Skeleton className="h-8 w-64 bg-white/10" />
-      </div>
-
+      <Skeleton className="h-8 w-64 mb-6 bg-white/10" />
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5 mb-6">
         {Array.from({ length: 5 }).map((_, i) => (
           <Skeleton key={i} className="h-32 rounded-2xl bg-white/5 border border-white/10" />
         ))}
       </div>
-
       <div className="rounded-3xl bg-white/5 border border-white/10 p-6">
         <Skeleton className="h-8 w-64 mb-4 bg-white/10" />
         <div className="space-y-3">
@@ -219,37 +202,30 @@ const DashboardSkeleton = () => (
   </div>
 );
 
-// 🎯 ERROR BOUNDARY COMPONENT
-const ErrorFallback = ({ error, resetErrorBoundary }: ErrorFallbackProps) => {
-  const errorMessage =
-    error instanceof Error
-      ? error.message
-      : error.message || "Failed to load dashboard data";
-
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#344a3f] via-[#12251b] to-[#02131b]">
-      <Card className="max-w-md bg-black/40 backdrop-blur-xl border border-red-500/30 text-white shadow-2xl">
-        <CardContent className="pt-6">
-          <div className="flex flex-col items-center text-center">
-            <div className="bg-red-500/10 p-3 rounded-full mb-4">
-              <AlertCircle className="h-10 w-10 text-red-400" />
-            </div>
-            <h3 className="text-xl font-bold text-white mb-2">System Error</h3>
-            <p className="text-sm text-red-200/80 mb-6">{errorMessage}</p>
-            <Button
-              onClick={resetErrorBoundary}
-              className="bg-gradient-to-r from-red-600 to-orange-600 text-white hover:from-red-500 hover:to-orange-500 border-0 shadow-lg"
-            >
-              Retry Connection
-            </Button>
+// --- Error Fallback Component ---
+const ErrorFallback = ({ error, resetErrorBoundary }: ErrorFallbackProps) => (
+  <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#344a3f] via-[#12251b] to-[#02131b]">
+    <Card className="max-w-md bg-black/40 backdrop-blur-xl border border-red-500/30 text-white shadow-2xl">
+      <CardContent className="pt-6">
+        <div className="flex flex-col items-center text-center">
+          <div className="bg-red-500/10 p-3 rounded-full mb-4">
+            <AlertCircle className="h-10 w-10 text-red-400" />
           </div>
-        </CardContent>
-      </Card>
-    </div>
-  );
-};
+          <h3 className="text-xl font-bold text-white mb-2">System Error</h3>
+          <p className="text-sm text-red-200/80 mb-6">{error.message}</p>
+          <Button
+            onClick={resetErrorBoundary}
+            className="bg-gradient-to-r from-red-600 to-orange-600 text-white hover:from-red-500 hover:to-orange-500 border-0 shadow-lg"
+          >
+            Retry Connection
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
+  </div>
+);
 
-// 🎯 MAIN COMPONENT
+// --- Main Page Component ---
 export default function SessionFeePage() {
   const breadcrumbs = [
     { href: "/admin", label: "Dashboard" },
@@ -260,57 +236,29 @@ export default function SessionFeePage() {
   const [isMobile, setIsMobile] = useState(false);
   const prefersReducedMotion = useReducedMotion();
 
-  // 🎯 Detect mobile on mount
   useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
-
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
     checkMobile();
-
-    let resizeTimer: NodeJS.Timeout;
-    const handleResize = () => {
-      clearTimeout(resizeTimer);
-      resizeTimer = setTimeout(checkMobile, 100);
-    };
-
+    
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
     window.addEventListener("resize", handleResize);
-    return () => {
-      window.removeEventListener("resize", handleResize);
-    };
+    return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  // 🎯 PARALLEL API CALLS
-  const { data: sessionData, isLoading: sessionLoading, error: sessionError } =
-    api.session.getActiveSession.useQuery(undefined, { staleTime: 5 * 60 * 1000 });
+  const queryOptions = { staleTime: 5 * 60 * 1000 };
+  const { data: sessionData, isLoading: sessionLoading, error: sessionError } = api.session.getActiveSession.useQuery(undefined, queryOptions);
+  const { data: classData, isLoading: classLoading } = api.class.getClasses.useQuery(undefined, queryOptions);
+  const { data: employeeData, isLoading: employeeLoading } = api.employee.getEmployees.useQuery(undefined, queryOptions);
+  const { data: feeData, isLoading: feeLoading } = api.fee.getAllFees.useQuery(undefined, queryOptions);
+  const { data: studentData, isLoading: studentLoading } = api.student.getStudents.useQuery(undefined, queryOptions);
+  const { data: subjectData, isLoading: subjectLoading } = api.subject.getAllSubjects.useQuery(undefined, queryOptions);
 
-  const { data: classData, isLoading: classLoading } = api.class.getClasses.useQuery(
-    undefined,
-    { staleTime: 5 * 60 * 1000 }
-  );
-
-  const { data: employeeData, isLoading: employeeLoading } =
-    api.employee.getEmployees.useQuery(undefined, { staleTime: 5 * 60 * 1000 });
-
-  const { data: feeData, isLoading: feeLoading } = api.fee.getAllFees.useQuery(
-    undefined,
-    { staleTime: 5 * 60 * 1000 }
-  );
-
-  const { data: studentData, isLoading: studentLoading } =
-    api.student.getStudents.useQuery(undefined, { staleTime: 5 * 60 * 1000 });
-
-  const { data: subjectData, isLoading: subjectLoading } =
-    api.subject.getAllSubjects.useQuery(undefined, { staleTime: 5 * 60 * 1000 });
-
-  // 🎯 Compute derived data
   const { totalRevenue, avgRevenuePerStudent } = useMemo(() => {
     const total = feeData?.reduce((acc, fee) => acc + fee.tuitionFee, 0) ?? 0;
     const avg = studentData?.length ? total / studentData.length : 0;
     return { totalRevenue: total, avgRevenuePerStudent: avg };
   }, [feeData, studentData]);
 
-  // 🎯 Memoize stats array with DARK THEME COLORS
   const stats: StatType[] = useMemo(
     () => [
       {
@@ -371,72 +319,36 @@ export default function SessionFeePage() {
         isLoading: feeLoading,
       },
     ],
-    [
-      studentData,
-      classData,
-      employeeData,
-      subjectData,
-      totalRevenue,
-      studentLoading,
-      classLoading,
-      employeeLoading,
-      subjectLoading,
-      feeLoading,
-      avgRevenuePerStudent,
-    ]
+    [studentData, classData, employeeData, subjectData, totalRevenue, studentLoading, classLoading, employeeLoading, subjectLoading, feeLoading, avgRevenuePerStudent]
   );
 
-  // 🎯 Loading state
-  const isLoading =
-    sessionLoading ||
-    classLoading ||
-    employeeLoading ||
-    feeLoading ||
-    studentLoading ||
-    subjectLoading;
+  const isLoading = sessionLoading || classLoading || employeeLoading || feeLoading || studentLoading || subjectLoading;
 
-  // 🎯 Error state
   if (sessionError) {
-    const error =
-      sessionError instanceof Error
-        ? sessionError
-        : new Error(sessionError?.message || "Failed to load session data");
-
-    return (
-      <ErrorFallback error={error} resetErrorBoundary={() => window.location.reload()} />
-    );
+    const error = sessionError instanceof Error ? sessionError : new Error(sessionError?.message || "Failed to load data");
+    return <ErrorFallback error={error} resetErrorBoundary={() => window.location.reload()} />;
   }
 
-  // 🎯 Show skeleton while loading
-  if (isLoading) {
-    return <DashboardSkeleton />;
-  }
+  if (isLoading) return <DashboardSkeleton />;
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-[#344a3f] via-[#12251b] to-[#02131b]">
-      {/* 🎯 OPTIMIZED GRID BACKGROUND */}
+      {/* Background Pattern */}
       <div className="absolute inset-0 z-0 pointer-events-none">
         <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(45,255,196,0.05)_1px,transparent_1px),linear-gradient(to_bottom,rgba(45,255,196,0.05)_1px,transparent_1px)] bg-[size:3rem_3rem] sm:bg-[size:4rem_4rem]" />
         <div className="absolute inset-0 bg-gradient-to-br from-emerald-900/40 via-black/20 to-black/60" />
       </div>
 
-      {/* 🎯 AMBIENT GLOW EFFECTS */}
       {!prefersReducedMotion && !isMobile && (
         <>
           <motion.div
             className="absolute left-[10%] top-[10%] h-[30rem] w-[30rem] rounded-full bg-emerald-500/10 blur-[80px]"
-            animate={{
-              y: [0, 30, 0],
-              opacity: [0.1, 0.2, 0.1],
-            }}
+            animate={{ y: [0, 30, 0], opacity: [0.1, 0.2, 0.1] }}
             transition={{ duration: 15, repeat: Infinity, ease: "easeInOut" }}
           />
           <motion.div
             className="absolute bottom-[10%] right-[10%] h-[25rem] w-[25rem] rounded-full bg-cyan-500/10 blur-[80px]"
-            animate={{
-              y: [0, -30, 0],
-              opacity: [0.1, 0.2, 0.1],
-            }}
+            animate={{ y: [0, -30, 0], opacity: [0.1, 0.2, 0.1] }}
             transition={{ duration: 12, repeat: Infinity, ease: "easeInOut", delay: 2 }}
           />
         </>
@@ -445,15 +357,13 @@ export default function SessionFeePage() {
       <div className="relative z-10 px-4 py-6 sm:px-6 lg:px-8">
         <PageHeader breadcrumbs={breadcrumbs} />
 
-        {/* 🎯 MOBILE VIEW TOGGLE */}
+        {/* Mobile View Toggle */}
         <div className="lg:hidden mb-6">
           <div className="flex items-center justify-center gap-2 bg-white/5 backdrop-blur-md rounded-2xl p-1.5 border border-white/10">
             <Button
               onClick={() => setActiveView("overview")}
               className={`flex-1 px-4 py-2.5 rounded-xl font-semibold transition-all text-sm ${
-                activeView === "overview"
-                  ? "bg-emerald-600 text-white shadow-lg shadow-emerald-900/50"
-                  : "bg-transparent text-emerald-100/60 hover:text-emerald-100"
+                activeView === "overview" ? "bg-emerald-600 text-white shadow-lg" : "bg-transparent text-emerald-100/60"
               }`}
             >
               Overview
@@ -461,9 +371,7 @@ export default function SessionFeePage() {
             <Button
               onClick={() => setActiveView("details")}
               className={`flex-1 px-4 py-2.5 rounded-xl font-semibold transition-all text-sm ${
-                activeView === "details"
-                  ? "bg-emerald-600 text-white shadow-lg shadow-emerald-900/50"
-                  : "bg-transparent text-emerald-100/60 hover:text-emerald-100"
+                activeView === "details" ? "bg-emerald-600 text-white shadow-lg" : "bg-transparent text-emerald-100/60"
               }`}
             >
               Details
@@ -471,16 +379,10 @@ export default function SessionFeePage() {
           </div>
         </div>
 
-        {/* 🎯 MAIN DASHBOARD CONTENT */}
         <div className="flex-1 space-y-6 lg:space-y-8">
-          
-          {/* OVERVIEW SECTION */}
-          <div className={`${activeView === "overview" ? "block" : "hidden lg:block"}`}>
+          {/* OVERVIEW */}
+          <div className={activeView === "overview" ? "block" : "hidden lg:block"}>
             <div className="bg-black/20 backdrop-blur-xl rounded-[2.5rem] border border-white/5 shadow-2xl overflow-hidden relative">
-              
-              {/* Internal Glow */}
-              <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 h-1 bg-gradient-to-r from-transparent via-emerald-500/50 to-transparent blur-sm" />
-
               <div className="p-6 sm:p-8 md:p-10 relative z-10">
                 <div className="mb-8 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
                   <div>
@@ -488,38 +390,31 @@ export default function SessionFeePage() {
                       Session <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-cyan-400">Insights</span>
                     </h1>
                     <p className="text-emerald-100/60 mt-2 text-sm sm:text-base font-medium max-w-2xl">
-                      Real-time academic metrics and financial overview for the current active session.
+                      Real-time academic metrics and financial overview.
                     </p>
                   </div>
                   {sessionData && (
                     <div className="hidden sm:block text-right">
-                        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-500/10 border border-emerald-500/20 backdrop-blur-md">
-                            <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                            <span className="text-sm font-semibold text-emerald-100">
-                                Active: {sessionData.sessionName}
-                            </span>
-                        </div>
+                      <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-500/10 border border-emerald-500/20 backdrop-blur-md">
+                        <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                        <span className="text-sm font-semibold text-emerald-100">
+                          Active: {sessionData.sessionName}
+                        </span>
+                      </div>
                     </div>
                   )}
                 </div>
 
-                {/* 🎯 STATS GRID */}
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
                   {stats.map((stat, index) => (
-                    <StatCard
-                      key={index}
-                      stat={stat}
-                      index={index}
-                      isLoading={stat.isLoading ?? false}
-                    />
+                    <StatCard key={index} stat={stat} index={index} isLoading={stat.isLoading ?? false} />
                   ))}
                 </div>
 
-                {/* Mobile Specific Action */}
                 <div className="lg:hidden mt-8">
                   <Button
                     onClick={() => setActiveView("details")}
-                    className="w-full py-4 bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-2xl font-bold shadow-lg shadow-emerald-900/30 active:scale-95 transition-transform flex items-center justify-center gap-2"
+                    className="w-full py-4 bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-2xl font-bold shadow-lg flex items-center justify-center gap-2"
                   >
                     View All Details <Target className="h-4 w-4" />
                   </Button>
@@ -528,35 +423,29 @@ export default function SessionFeePage() {
             </div>
           </div>
 
-          {/* DETAILS SECTION */}
-          <div className={`${activeView === "details" ? "block" : "hidden lg:block"}`}>
+          {/* DETAILS */}
+          <div className={activeView === "details" ? "block" : "hidden lg:block"}>
             <div className="bg-black/20 backdrop-blur-xl rounded-[2.5rem] border border-white/5 shadow-2xl overflow-hidden relative">
               <div className="p-0 sm:p-2 relative z-10">
                 <Card className="border-0 bg-transparent shadow-none">
                   <div className="p-6 sm:px-8 pt-8 flex items-center gap-4 border-b border-white/5 pb-6 mb-2">
-                    <div className="rounded-2xl bg-gradient-to-br from-emerald-500 to-cyan-600 p-3 shadow-lg shadow-emerald-900/20">
+                    <div className="rounded-2xl bg-gradient-to-br from-emerald-500 to-cyan-600 p-3 shadow-lg">
                       <School className="h-6 w-6 text-white" />
                     </div>
                     <div>
-                      <CardTitle className="text-xl sm:text-2xl font-bold text-white">
-                        Session Management
-                      </CardTitle>
+                      <CardTitle className="text-xl sm:text-2xl font-bold text-white">Session Management</CardTitle>
                       <CardDescription className="text-emerald-100/50 text-xs sm:text-sm mt-1">
                         Manage academic terms, view detailed lists, and configure session parameters.
                       </CardDescription>
                     </div>
                   </div>
 
-                  {/* 🎯 LAZY LOADED TABLE CONTAINER */}
                   <div className="p-2 sm:p-6">
                     <Suspense
                       fallback={
                         <div className="space-y-4 p-4">
                           {Array.from({ length: 5 }).map((_, i) => (
-                            <Skeleton
-                              key={i}
-                              className="h-16 rounded-xl bg-white/5 border border-white/10"
-                            />
+                            <Skeleton key={i} className="h-16 rounded-xl bg-white/5 border border-white/10" />
                           ))}
                         </div>
                       }
@@ -570,27 +459,25 @@ export default function SessionFeePage() {
                   </div>
                 </Card>
 
-                {/* Mobile Back Button */}
                 <div className="lg:hidden p-6 pt-0">
-                  <button
+                  <Button
                     onClick={() => setActiveView("overview")}
                     className="w-full py-4 bg-white/5 border border-white/10 text-white rounded-2xl font-bold active:scale-95 transition-transform"
                   >
                     Back to Overview
-                  </button>
+                  </Button>
                 </div>
               </div>
             </div>
           </div>
         </div>
 
-        {/* 🎯 FLOATING ACTION BUTTON (Mobile) */}
+        {/* Floating Toggle (Mobile) */}
         <div className="lg:hidden fixed bottom-6 right-6 z-50">
           <motion.button
             whileTap={{ scale: 0.9 }}
             onClick={() => setActiveView(activeView === "overview" ? "details" : "overview")}
-            className="flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-emerald-500 to-cyan-500 text-white shadow-2xl shadow-emerald-500/40 border border-white/20 backdrop-blur-md"
-            aria-label="Toggle view"
+            className="flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-emerald-500 to-cyan-500 text-white shadow-2xl border border-white/20 backdrop-blur-md"
           >
             <BarChart3 className="h-6 w-6" />
           </motion.button>
