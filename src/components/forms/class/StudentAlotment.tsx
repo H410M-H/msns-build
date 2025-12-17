@@ -19,13 +19,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "~/components/ui/dialog"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "~/components/ui/select"
+// Removed Select imports as we are now using Command/Popover for everything
 import {
   Command,
   CommandEmpty,
@@ -61,12 +55,13 @@ interface AllotmentDialogProps {
 export default function AllotmentDialog({
   open,
   onOpenChange,
-  sessions,
+  sessions = [], // Default to empty array to prevent crashes
   classId,
   children,
 }: AllotmentDialogProps) {
-  // State for the Combobox (Student Search)
+  // State for the Comboboxes
   const [studentOpen, setStudentOpen] = useState(false)
+  const [sessionOpen, setSessionOpen] = useState(false)
   
   const form = useForm<AllotmentSchemaType>({
     resolver: zodResolver(AllotmentSchema),
@@ -81,13 +76,11 @@ export default function AllotmentDialog({
   const { toast } = useToast()
 
   // Fetch unallocated students
-  // Note: For true "server-side" search on huge datasets, you would pass a search term here.
-  // For now, we fetch 100 and filter on the client side with the Command component.
   const { data: unallocatedStudentsData, isLoading: studentsLoading } = 
     api.student.getUnAllocateStudents.useQuery(
       {
         page: 1,
-        pageSize: 100, // You might want to increase this limit if you have many unallocated students
+        pageSize: 100, 
       },
       {
         enabled: open, 
@@ -100,8 +93,9 @@ export default function AllotmentDialog({
         title: "Success",
         description: "Student has been successfully allotted to the class.",
       })
+      // Reset logic: keep session, clear student
       form.reset({
-        sessionId: form.getValues("sessionId"), // Keep the session selected for convenience
+        sessionId: form.getValues("sessionId"), 
         studentId: "",
         classId,
       })
@@ -128,6 +122,8 @@ export default function AllotmentDialog({
   const unallocatedStudents = unallocatedStudentsData?.data?.map(student => ({
     studentId: student.studentId,
     studentName: student.studentName,
+    fatherName: student.fatherName,
+    admissionNumber: student.admissionNumber
   })) ?? []
 
   // Reset form when dialog opens/closes
@@ -153,30 +149,60 @@ export default function AllotmentDialog({
         </DialogHeader>
 
         <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-4 py-2">
-          {/* Session Select (Standard Select is fine here) */}
-          <div className="space-y-2">
-            <Label htmlFor="session-select">Session</Label>
-            <Select
-              onValueChange={(value) => form.setValue("sessionId", value)}
-              value={form.watch("sessionId")}
-            >
-              <SelectTrigger id="session-select">
-                <SelectValue placeholder="Select session" />
-              </SelectTrigger>
-              <SelectContent>
-                {sessions.length > 0 ? (
-                  sessions.map((session) => (
-                    <SelectItem key={session.sessionId} value={session.sessionId}>
-                      {session.sessionName}
-                    </SelectItem>
-                  ))
-                ) : (
-                  <SelectItem value="none" disabled>
-                    No sessions available
-                  </SelectItem>
-                )}
-              </SelectContent>
-            </Select>
+          
+          {/* IMPROVED: Session Dropdown (Combobox) */}
+          <div className="space-y-2 flex flex-col">
+            <Label>Session</Label>
+            <Popover open={sessionOpen} onOpenChange={setSessionOpen}>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  role="combobox"
+                  aria-expanded={sessionOpen}
+                  className={cn(
+                    "w-full justify-between",
+                    !form.watch("sessionId") && "text-muted-foreground"
+                  )}
+                >
+                  {form.watch("sessionId")
+                    ? sessions.find(
+                        (session) => session.sessionId === form.watch("sessionId")
+                      )?.sessionName
+                    : "Select session..."}
+                  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-[400px] p-0" align="start">
+                <Command>
+                  <CommandInput placeholder="Search session..." />
+                  <CommandList>
+                    <CommandEmpty>No session found.</CommandEmpty>
+                    <CommandGroup>
+                      {sessions.map((session) => (
+                        <CommandItem
+                          key={session.sessionId}
+                          value={session.sessionName}
+                          onSelect={() => {
+                            form.setValue("sessionId", session.sessionId)
+                            setSessionOpen(false)
+                          }}
+                        >
+                          <Check
+                            className={cn(
+                              "mr-2 h-4 w-4",
+                              form.watch("sessionId") === session.sessionId
+                                ? "opacity-100"
+                                : "opacity-0"
+                            )}
+                          />
+                          {session.sessionName}
+                        </CommandItem>
+                      ))}
+                    </CommandGroup>
+                  </CommandList>
+                </Command>
+              </PopoverContent>
+            </Popover>
             {form.formState.errors.sessionId && (
               <p className="text-sm text-red-500">
                 {form.formState.errors.sessionId.message}
@@ -194,7 +220,7 @@ export default function AllotmentDialog({
                   role="combobox"
                   aria-expanded={studentOpen}
                   className={cn(
-                    "w-full justify-between",
+                    "w-full justify-between h-auto min-h-[40px]", 
                     !form.watch("studentId") && "text-muted-foreground"
                   )}
                   disabled={studentsLoading}
@@ -209,14 +235,14 @@ export default function AllotmentDialog({
               </PopoverTrigger>
               <PopoverContent className="w-[400px] p-0" align="start">
                 <Command>
-                  <CommandInput placeholder="Search student name..." />
+                  <CommandInput placeholder="Search by name, father, or adm no..." />
                   <CommandList>
                     <CommandEmpty>No student found.</CommandEmpty>
                     <CommandGroup>
                       {unallocatedStudents.map((student) => (
                         <CommandItem
                           key={student.studentId}
-                          value={student.studentName} // This is what is searched against
+                          value={`${student.studentName} ${student.fatherName} ${student.admissionNumber ?? ''}`}
                           onSelect={() => {
                             form.setValue("studentId", student.studentId)
                             setStudentOpen(false)
@@ -224,13 +250,20 @@ export default function AllotmentDialog({
                         >
                           <Check
                             className={cn(
-                              "mr-2 h-4 w-4",
+                              "mr-2 h-4 w-4 shrink-0", 
                               form.watch("studentId") === student.studentId
                                 ? "opacity-100"
                                 : "opacity-0"
                             )}
                           />
-                          {student.studentName}
+                          <div className="flex flex-col">
+                            <span className="font-medium">{student.studentName}</span>
+                            <span className="text-xs text-muted-foreground">
+                              {student.fatherName && `S/O ${student.fatherName}`}
+                              {student.fatherName && student.admissionNumber && " • "}
+                              {student.admissionNumber && `Adm: ${student.admissionNumber}`}
+                            </span>
+                          </div>
                         </CommandItem>
                       ))}
                     </CommandGroup>

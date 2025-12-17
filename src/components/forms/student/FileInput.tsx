@@ -31,8 +31,6 @@ import {
 import { Input } from "~/components/ui/input";
 import { Progress } from "~/components/ui/progress";
 
-// FIX: We explicitly cast the schema to z.ZodType<File>
-// This tells TypeScript "This is a File" while keeping the runtime check safe for the server.
 const formSchema = z.object({
   csvFile: (typeof window === 'undefined' 
     ? z.any() 
@@ -102,30 +100,62 @@ export const CSVUploadDialog: React.FC<CSVUploadDialogProps> = ({ onSuccess }) =
   const parseCSV = (text: string): StudentCSVSchema[] => {
     const lines = text.split(/\r\n|\n/).filter(l => l.trim().length > 0);
     
-    if (lines.length < 2) return [];
+    if (lines.length < 1) return [];
 
-    const headerLine = lines[0];
-    if (!headerLine) return [];
+    // Helper to normalize strings for comparison (remove spaces, special chars, lowercase)
+    const normalize = (str: string) => str.toLowerCase().replace(/[^a-z0-9]/g, '');
 
-    const headers = splitCSVLine(headerLine).map(h => h.toLowerCase().trim().replace(/^"|"$/g, ''));
+    // Identify the header row
+    let headerRowIndex = -1;
+    let headers: string[] = [];
+
+    // We scan the first few lines to find a row that looks like a header
+   for (let i = 0; i < Math.min(lines.length, 20); i++) {
+        const line = lines[i]; // Access the line safely
+        if (!line) continue;   // Skip if undefined to satisfy TypeScript
+
+        const potentialHeaders = splitCSVLine(line);
+        const normalizedHeaders = potentialHeaders.map(normalize);
+        
+        // Check for presence of key columns
+        const hasStudentName = normalizedHeaders.some(h => h.includes('studentname') || h.includes('nameofstudent'));
+        const hasFatherName = normalizedHeaders.some(h => h.includes('father'));
+        const hasAdmission = normalizedHeaders.some(h => h.includes('admission'));
+
+        if ((hasStudentName && hasFatherName) || (hasStudentName && hasAdmission)) {
+            headerRowIndex = i;
+            headers = potentialHeaders.map(h => h.toLowerCase().trim().replace(/^"|"$/g, ''));
+            break;
+        }
+    }
+    // --- FIX ENDS HERE ---
+
+    if (headerRowIndex === -1) {
+        console.error("Could not find a valid header row.");
+        return [];
+    }
     
     const mapHeader = (h: string): keyof StudentCSVSchema | null => {
-      if (h === 'student name') return 'studentName';
-      if (h === "father's name" || h === "father name") return 'fatherName';
-      if (h === 'date of birth' || h === 'dob') return 'dateOfBirth';
-      if (h === 'date of admission' || h === 'admission date') return 'dateOfAdmission';
-      if (h === 'address') return 'address';
-      if (h === 'contact numbers' || h === 'contact number' || h === 'mobile') return 'contactNumber';
-      if (h === 'father occupation' || h === 'occupation') return 'fatherOccupation';
-      if (h === 'caste') return 'caste';
-      if (h.includes('reg') || h === 'registration number') return 'registrationNumber';
+      const normalizedH = normalize(h);
+
+      if (normalizedH.includes('studentname') || normalizedH.includes('nameofstudent')) return 'studentName';
+      if (normalizedH === 'fathersname' || normalizedH === 'fathername') return 'fatherName';
+      if (normalizedH === 'dateofbirth' || normalizedH === 'dob') return 'dateOfBirth';
+      if (normalizedH.includes('dateofadmission') || normalizedH.includes('admissiondate')) return 'dateOfAdmission';
+      if (normalizedH === 'address' || normalizedH === 'residence') return 'address';
+      if (normalizedH.includes('contact') || normalizedH.includes('mobile')) return 'contactNumber';
+      if (normalizedH.includes('occupation') || normalizedH.includes('0ccupation')) return 'fatherOccupation';
+      if (normalizedH.includes('caste') || normalizedH.includes('tribe')) return 'caste';
+      if (normalizedH.includes('reg') || normalizedH === 'registrationnumber') return 'registrationNumber';
+      
       return null;
     };
 
     const schemaKeys = headers.map(mapHeader);
     const result: StudentCSVSchema[] = [];
 
-    for (const line of lines.slice(1)) {
+    // Start iterating from the line AFTER the header
+    for (const line of lines.slice(headerRowIndex + 1)) {
       if (!line) continue;
 
       const values = splitCSVLine(line);
@@ -133,13 +163,20 @@ export const CSVUploadDialog: React.FC<CSVUploadDialogProps> = ({ onSuccess }) =
       let hasData = false;
 
       schemaKeys.forEach((key, index) => {
-        if (key && values[index]) {
-          let val = values[index].trim();
-          if ((key === 'dateOfBirth' || key === 'dateOfAdmission') && val.includes(',')) {
-             val = val.replace(/^[A-Za-z]+,\s*/, '');
+        const rawVal = values[index]; // Capture value safely
+        if (key && rawVal) {
+          let val = rawVal.trim();
+          
+          if ((key === 'dateOfBirth' || key === 'dateOfAdmission')) {
+             if (val.includes(',')) {
+               val = val.replace(/^[A-Za-z]+,\s*/, '');
+             }
           }
-          obj[key] = val;
-          hasData = true;
+
+          if (val.length > 0) {
+              obj[key] = val;
+              hasData = true;
+          }
         }
       });
 
@@ -153,12 +190,10 @@ export const CSVUploadDialog: React.FC<CSVUploadDialogProps> = ({ onSuccess }) =
   const onSubmit = async (data: FormValues) => {
     setIsUploading(true);
     try {
-      // Valid type check to prevent runtime errors and satisfy strict linting
       if (!data.csvFile || !(data.csvFile instanceof File)) {
         throw new Error("Invalid file selected.");
       }
 
-      // Now safe to call .text() because data.csvFile is strictly typed as File
       const text = await data.csvFile.text();
       const parsedData = parseCSV(text);
 
@@ -191,7 +226,7 @@ export const CSVUploadDialog: React.FC<CSVUploadDialogProps> = ({ onSuccess }) =
           <DialogTitle className="text-emerald-400">Upload Student CSV</DialogTitle>
           <DialogDescription className="text-slate-400">
             Upload a CSV file.<br/>
-            Expected Headers: <b>Student Name, Father&apos;s Name, Date of Admission</b>, etc.
+            Supports standard and 2025-2026 admission list formats.
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
