@@ -173,12 +173,34 @@ export const StudentRouter = createTRPCRouter({
             fatherCNIC: true,
             studentMobile: true,
             fatherMobile: true,
+            admissionNumber: true,
+            registrationNumber: true,
             caste: true,
             currentAddress: true,
             permanentAddress: true,
             medicalProblem: true,
             profilePic: true,
             isAssign: true,
+            createdAt: true,
+            // Added missing fields to match Prisma Model type
+            updatedAt: true,
+            fatherProfession: true,
+            bloodGroup: true,
+            guardianName: true,
+            
+            // Include Class Details
+            StudentClass: {
+              include: {
+                Grades: true,
+                Sessions: true,
+              },
+              orderBy: {
+                Sessions: {
+                  sessionName: 'desc' 
+                }
+              },
+              take: 1 
+            }
           },
         });
         if (!student) throw new TRPCError({ code: "NOT_FOUND" });
@@ -225,8 +247,10 @@ export const StudentRouter = createTRPCRouter({
       try {
         let usersCount = await ctx.db.user.count({ where: { accountType: "STUDENT" } });
         
-        const studentsData = [];
-        const usersData = [];
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const studentsData: any[] = [];
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const usersData: any[] = [];
 
         const parseDate = (dateStr?: string) => {
           if (!dateStr) return null;
@@ -248,26 +272,23 @@ export const StudentRouter = createTRPCRouter({
            const dob = parseDate(student.dateOfBirth);
            const admissionDate = parseDate(student.dateOfAdmission) ?? new Date();
            studentsData.push({
-              studentName: student.studentName,
-              fatherName: student.fatherName ?? "",
-              // Store DOB as a string (if schema requires string) or keep valid date format
-              dateOfBirth: dob ? dob.toLocaleDateString() : (student.dateOfBirth ?? ""), 
-              currentAddress: student.address ?? "", 
-              studentMobile: student.contactNumber ?? "", 
-              fatherProfession: student.fatherOccupation ?? "", 
-              caste: student.caste ?? "none",
-              registrationNumber: userInfo.accountId,
-              admissionNumber: userInfo.admissionNumber,
-              gender: "MALE" as const, // Or you could try to guess from name/CSV if column exists
-              profilePic: "",
-              studentCNIC: "0000-0000000-0",
-              fatherCNIC: "0000-0000000-0",
-              fatherMobile: "none",
-              permanentAddress: "none",
-              
-              // Timestamps
-              createdAt: admissionDate, 
-              updatedAt: new Date(),
+             studentName: student.studentName,
+             fatherName: student.fatherName ?? "",
+             dateOfBirth: dob ? dob.toLocaleDateString() : (student.dateOfBirth ?? ""), 
+             currentAddress: student.address ?? "", 
+             studentMobile: student.contactNumber ?? "", 
+             fatherProfession: student.fatherOccupation ?? "", 
+             caste: student.caste ?? "none",
+             registrationNumber: userInfo.accountId,
+             admissionNumber: userInfo.admissionNumber,
+             gender: "MALE",
+             profilePic: "",
+             studentCNIC: "0000-0000000-0",
+             fatherCNIC: "0000-0000000-0",
+             fatherMobile: "none",
+             permanentAddress: "none",
+             createdAt: admissionDate, 
+             updatedAt: new Date(),
            });
 
            usersData.push({
@@ -275,14 +296,12 @@ export const StudentRouter = createTRPCRouter({
              username: userInfo.username,
              email: userInfo.email.toLowerCase(),
              password: password,
-             accountType: "STUDENT" as const,
+             accountType: "STUDENT",
            });
 
-           // Increment count for next student
            usersCount++;
         }
 
-        // 3. Perform Transactional Write
         const result = await ctx.db.$transaction([
           ctx.db.students.createMany({ 
             data: studentsData, 
