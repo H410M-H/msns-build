@@ -1,12 +1,21 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
+import { cn } from "~/lib/utils";
+import { api } from "~/trpc/react";
+
+// --- Components ---
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { Card, CardContent, CardFooter, CardHeader } from "~/components/ui/card";
 import { Badge } from "~/components/ui/badge";
 import { Checkbox } from "~/components/ui/checkbox";
 import { Separator } from "~/components/ui/separator";
+import { SessionCreationDialog } from "../forms/annualSession/SessionCreation";
+import SessionDeletionDialog from "../forms/annualSession/SessionDeletion";
+
+// --- Icons ---
 import {
   CalendarDays,
   RefreshCcw,
@@ -15,12 +24,8 @@ import {
   Search,
   BookOpen,
   CalendarClock,
+  FilterX
 } from "lucide-react";
-import { api } from "~/trpc/react";
-import Link from "next/link";
-import { SessionCreationDialog } from "../forms/annualSession/SessionCreation";
-import SessionDeletionDialog from "../forms/annualSession/SessionDeletion";
-import { cn } from "~/lib/utils";
 
 // Helper to format dates cleanly
 const formatDate = (dateString: Date | string) => {
@@ -60,193 +65,183 @@ export const SessionList = () => {
   };
 
   return (
-    <div className="relative min-h-screen w-full bg-slate-950 overflow-hidden">
+    // ⚡️ OPTIMIZED WRAPPER: Removed fixed backgrounds & unnecessary padding
+    <div className="w-full space-y-6">
       
-      {/* === GLOBAL GRID BACKGROUND === */}
-      <div className="absolute inset-0 z-0 pointer-events-none">
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(45,255,196,0.05)_1px,transparent_1px),linear-gradient(to_bottom,rgba(45,255,196,0.05)_1px,transparent_1px)] bg-[size:3rem_3rem]" />
-        <div className="absolute inset-0 bg-gradient-to-br from-emerald-900/20 via-slate-950/80 to-slate-950" />
-      </div>
+      {/* === Header & Controls === */}
+      <div className="flex flex-col gap-4 rounded-xl border border-white/5 bg-slate-900/40 backdrop-blur-md p-4 shadow-sm md:flex-row md:items-center md:justify-between">
+        <div className="relative w-full md:max-w-md group">
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400 group-focus-within:text-emerald-400 transition-colors" />
+          <Input
+            placeholder="Search sessions..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-10 bg-slate-950/50 border-white/10 text-white placeholder:text-slate-500 focus:ring-emerald-500/50 focus:border-emerald-500/50 h-10 transition-all rounded-lg"
+          />
+        </div>
 
-      <div className="relative z-10 container mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
-        
-        {/* === Header & Controls === */}
-        <div className="flex flex-col gap-4 rounded-2xl border border-emerald-500/10 bg-slate-900/60 backdrop-blur-xl p-4 shadow-xl md:flex-row md:items-center md:justify-between">
-          <div className="relative w-full md:max-w-md group">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-emerald-500/50 group-focus-within:text-emerald-400 transition-colors" />
-            <Input
-              placeholder="Search sessions..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 bg-slate-950/50 border-emerald-500/20 text-white placeholder:text-slate-500 focus:ring-emerald-500/50 focus:border-emerald-500/50 h-10 transition-all rounded-xl"
-            />
-          </div>
-
-          <div className="flex flex-wrap items-center gap-2 self-end md:self-auto">
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={() => refetch()}
-              disabled={isRefetching}
-              className={cn(
-                "shrink-0 h-10 w-10 border-emerald-500/20 bg-slate-900/50 text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/10 rounded-xl",
-                isRefetching && "animate-spin"
-              )}
-            >
-              <RefreshCcw className="h-4 w-4" />
-            </Button>
-            
-            {/* Batch Actions */}
-            {selectedSessions.size > 0 && (
-               <SessionDeletionDialog
+        <div className="flex flex-wrap items-center gap-2 self-end md:self-auto">
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => refetch()}
+            disabled={isRefetching}
+            className={cn(
+              "shrink-0 h-10 w-10 border-white/10 bg-slate-900/50 text-slate-300 hover:text-emerald-400 hover:bg-emerald-500/10 rounded-lg transition-colors",
+              isRefetching && "animate-spin text-emerald-500"
+            )}
+          >
+            <RefreshCcw className="h-4 w-4" />
+          </Button>
+          
+          {/* Batch Actions */}
+          {selectedSessions.size > 0 && (
+             <SessionDeletionDialog
                sessionIds={Array.from(selectedSessions)}
                onSuccess={() => setSelectedSessions(new Set())}
              />
-            )}
+          )}
 
-            <SessionCreationDialog />
+          <SessionCreationDialog />
+        </div>
+      </div>
+
+      {/* === Selection Bar (Conditional) === */}
+      {filteredSessions.length > 0 && selectedSessions.size > 0 && (
+        <div className="flex items-center justify-between rounded-lg border border-emerald-500/20 bg-emerald-500/5 px-4 py-2 backdrop-blur-sm animate-in fade-in slide-in-from-top-1">
+          <div className="flex items-center gap-3">
+            <Checkbox
+              id="select-all"
+              checked={selectedSessions.size === filteredSessions.length}
+              onCheckedChange={toggleAllSessions}
+              className="border-emerald-500/50 data-[state=checked]:bg-emerald-600 data-[state=checked]:text-white"
+            />
+            <label
+              htmlFor="select-all"
+              className="text-sm font-medium text-emerald-100 cursor-pointer select-none"
+            >
+              Select All
+            </label>
+          </div>
+          <div className="text-sm text-emerald-300 font-mono">
+            <span className="font-bold">{selectedSessions.size}</span> selected
           </div>
         </div>
+      )}
 
-        {/* === Selection Bar === */}
-        {filteredSessions.length > 0 && (
-          <div className="flex items-center justify-between rounded-xl border border-emerald-500/10 bg-emerald-950/20 px-4 py-3 backdrop-blur-sm animate-in fade-in slide-in-from-top-2">
-            <div className="flex items-center gap-3">
-              <Checkbox
-                id="select-all"
-                checked={
-                  filteredSessions.length > 0 &&
-                  selectedSessions.size === filteredSessions.length
-                }
-                onCheckedChange={toggleAllSessions}
-                className="border-emerald-500/50 data-[state=checked]:bg-emerald-600 data-[state=checked]:text-white"
-              />
-              <label
-                htmlFor="select-all"
-                className="text-sm font-medium text-emerald-100/70 cursor-pointer select-none hover:text-emerald-400 transition-colors"
-              >
-                Select All Sessions
-              </label>
-            </div>
-            <div className="text-sm text-emerald-400/80 font-mono">
-              <span className="font-bold text-emerald-400">{selectedSessions.size}</span> selected
-            </div>
-          </div>
-        )}
+      {/* === Grid Layout === */}
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 p-4">
+        {filteredSessions.map((session) => {
+          const isSelected = selectedSessions.has(session.sessionId);
+          
+          return (
+            <Card
+              key={session.sessionId}
+              className={cn(
+                "group relative flex flex-col overflow-hidden transition-all duration-300",
+                "bg-slate-900/40 backdrop-blur-sm border border-white/5",
+                "hover:border-emerald-500/30 hover:shadow-xl hover:shadow-emerald-900/10 hover:-translate-y-1 rounded-xl",
+                isSelected && "ring-1 ring-emerald-500 bg-emerald-900/10 border-emerald-500/30"
+              )}
+            >
+              {/* Active Selection Indicator */}
+              {isSelected && <div className="absolute top-0 right-0 w-0 h-0 border-t-[40px] border-t-emerald-600 border-l-[40px] border-l-transparent z-20 pointer-events-none" />}
 
-        {/* === Grid Layout === */}
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {filteredSessions.map((session) => {
-            const isSelected = selectedSessions.has(session.sessionId);
-            
-            return (
-              <Card
-                key={session.sessionId}
-                className={cn(
-                  "group relative flex flex-col overflow-hidden transition-all duration-300 bg-slate-900/40 backdrop-blur-md border border-emerald-500/10 hover:border-emerald-500/30 hover:shadow-2xl hover:shadow-emerald-900/20 hover:-translate-y-1 rounded-2xl",
-                  isSelected && "ring-2 ring-emerald-500 ring-offset-2 ring-offset-slate-950 bg-emerald-900/10"
-                )}
-              >
-                {/* Decorative Top Gradient */}
-                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-emerald-600 to-teal-600 opacity-0 group-hover:opacity-100 transition-opacity" />
+              {/* Decorative Top Gradient */}
+              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-emerald-600 to-teal-600 opacity-0 group-hover:opacity-100 transition-opacity" />
 
-                <CardHeader className="pb-3 pt-5 relative">
-                  <div className="absolute right-4 top-4 z-10">
-                    <Checkbox
-                      checked={isSelected}
-                      onCheckedChange={() => toggleSessionSelection(session.sessionId)}
-                      className="border-emerald-500/30 data-[state=checked]:bg-emerald-600 data-[state=checked]:text-white h-5 w-5"
-                    />
+              <CardHeader className="pb-3 pt-5 relative">
+                <div className="absolute right-4 top-4 z-10">
+                  <Checkbox
+                    checked={isSelected}
+                    onCheckedChange={() => toggleSessionSelection(session.sessionId)}
+                    className="border-white/20 data-[state=checked]:bg-emerald-600 data-[state=checked]:text-white h-5 w-5 rounded-md"
+                  />
+                </div>
+                
+                <div className="flex items-start justify-between pr-8">
+                  <div className="space-y-2">
+                    <Badge 
+                      variant="secondary" 
+                      className="mb-1 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/20 px-2 py-0.5 text-[10px] uppercase tracking-wide"
+                    >
+                      Active
+                    </Badge>
+                    <h3 className="line-clamp-1 text-lg font-bold tracking-tight text-white group-hover:text-emerald-300 transition-colors">
+                      {session.sessionName}
+                    </h3>
+                  </div>
+                </div>
+              </CardHeader>
+
+              <CardContent className="flex-1 pb-4">
+                <div className="rounded-lg bg-black/20 border border-white/5 p-3 space-y-3">
+                  <div className="flex items-center gap-2 text-[10px] font-bold text-emerald-500/70 uppercase tracking-wider">
+                    <CalendarClock className="h-3 w-3" />
+                    Duration
                   </div>
                   
-                  <div className="flex items-start justify-between pr-8">
-                    <div className="space-y-2">
-                      <Badge 
-                        variant="secondary" 
-                        className="mb-1 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/20"
-                      >
-                        Active Session
-                      </Badge>
-                      <h3 className="line-clamp-1 text-xl font-bold tracking-tight text-white group-hover:text-emerald-300 transition-colors">
-                        {session.sessionName}
-                      </h3>
+                  <div className="flex items-center justify-between text-xs">
+                    <div className="flex flex-col">
+                      <span className="text-[10px] text-slate-500">FROM</span>
+                      <span className="font-mono text-slate-200">{formatDate(session.sessionFrom)}</span>
+                    </div>
+                    <ArrowRight className="h-3 w-3 text-emerald-500/30" />
+                    <div className="flex flex-col text-right">
+                      <span className="text-[10px] text-slate-500">TO</span>
+                      <span className="font-mono text-slate-200">{formatDate(session.sessionTo)}</span>
                     </div>
                   </div>
-                </CardHeader>
+                </div>
+              </CardContent>
 
-                <CardContent className="flex-1 pb-4">
-                  <div className="rounded-xl bg-slate-950/50 border border-emerald-500/5 p-4 space-y-4">
-                    <div className="flex items-center gap-2 text-xs font-semibold text-emerald-500/70 uppercase tracking-wider">
-                      <CalendarClock className="h-3.5 w-3.5" />
-                      Academic Duration
-                    </div>
-                    
-                    <div className="flex items-center justify-between text-sm">
-                      <div className="flex flex-col gap-1">
-                        <span className="text-[10px] uppercase text-slate-500 font-bold">Starts</span>
-                        <span className="font-mono text-slate-200">{formatDate(session.sessionFrom)}</span>
-                      </div>
-                      <div className="h-px flex-1 mx-3 bg-gradient-to-r from-emerald-500/20 to-emerald-500/20 relative top-1">
-                        <ArrowRight className="absolute -top-2 left-1/2 -translate-x-1/2 h-4 w-4 text-emerald-500/40" />
-                      </div>
-                      <div className="flex flex-col gap-1 text-right">
-                        <span className="text-[10px] uppercase text-slate-500 font-bold">Ends</span>
-                        <span className="font-mono text-slate-200">{formatDate(session.sessionTo)}</span>
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
+              <Separator className="bg-white/5" />
 
-                <Separator className="bg-emerald-500/10" />
-
-                <CardFooter className="grid grid-cols-2 gap-3 bg-slate-950/30 p-4">
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    className="w-full border-emerald-500/20 text-slate-300 hover:text-white hover:bg-emerald-500/10 hover:border-emerald-500/40 bg-transparent transition-all" 
-                    asChild
-                  >
-                    <Link href={`/admin/sessions/timetable?sessionId=${session.sessionId}`}>
-                      <CalendarDays className="mr-2 h-3.5 w-3.5" />
-                      Timetable
-                    </Link>
-                  </Button>
-                  <Button 
-                    size="sm" 
-                    className="w-full bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg shadow-emerald-900/20 border-0 transition-all" 
-                    asChild
-                  >
-                    <Link href={`/admin/sessions/${session.sessionId}`}>
-                      <BookOpen className="mr-2 h-3.5 w-3.5" />
-                      Details
-                    </Link>
-                  </Button>
-                </CardFooter>
-              </Card>
-            );
-          })}
-        </div>
-
-        {/* === Empty State === */}
-        {filteredSessions.length === 0 && (
-          <div className="flex flex-col items-center justify-center rounded-3xl border border-dashed border-emerald-500/20 bg-slate-900/20 py-20 text-center animate-in fade-in-50 backdrop-blur-sm">
-            <div className="mb-6 rounded-full bg-slate-900 p-6 border border-emerald-500/20 shadow-xl shadow-emerald-900/10">
-              <GraduationCap className="h-12 w-12 text-emerald-500/50" />
-            </div>
-            <h3 className="text-2xl font-bold text-white mb-2">No sessions found</h3>
-            <p className="text-slate-400 max-w-sm mb-8">
-              {searchTerm
-                ? "No results for your search. Try clearing filters."
-                : "Get started by creating your first academic session."}
-            </p>
-            {!searchTerm && (
-              <div className="scale-110">
-                <SessionCreationDialog />
-              </div>
-            )}
-          </div>
-        )}
+              <CardFooter className="grid grid-cols-2 gap-2 bg-slate-950/20 p-3">
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="w-full text-slate-200 hover:text-white hover:bg-white/5 h-8 text-xs" 
+                  asChild
+                >
+                  <Link href={`/admin/sessions/timetable?sessionId=${session.sessionId}`}>
+                    <CalendarDays className="mr-2 h-3.5 w-3.5" />
+                    TimeTable
+                  </Link>
+                </Button>
+                <Button 
+                  size="sm" 
+                  className="w-full bg-emerald-600 hover:bg-emerald-500 text-white border-0 h-8 text-xs font-semibold shadow-md shadow-emerald-900/20" 
+                  asChild
+                >
+                  <Link href={`/admin/sessions/${session.sessionId}`}>
+                    <BookOpen className="mr-2 h-3.5 w-3.5" />
+                    Details
+                  </Link>
+                </Button>
+              </CardFooter>
+            </Card>
+          );
+        })}
       </div>
+
+      {/* === Empty State === */}
+      {filteredSessions.length === 0 && (
+        <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-white/10 bg-slate-900/20 py-16 text-center animate-in fade-in-50">
+          <div className="mb-4 rounded-full bg-slate-800/50 p-4 border border-white/5">
+            {searchTerm ? <FilterX className="h-8 w-8 text-slate-500" /> : <GraduationCap className="h-8 w-8 text-emerald-500/50" />}
+          </div>
+          <h3 className="text-xl font-bold text-white mb-1">
+             {searchTerm ? "No matching sessions" : "No sessions found"}
+          </h3>
+          <p className="text-slate-400 text-sm max-w-xs mb-6">
+            {searchTerm
+              ? "We couldn't find any session matching your search. Try clearing filters."
+              : "Get started by creating your first academic session."}
+          </p>
+          {!searchTerm && <SessionCreationDialog />}
+        </div>
+      )}
     </div>
   );
 };

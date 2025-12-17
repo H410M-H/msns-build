@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
-import { motion, useReducedMotion } from "framer-motion";
-import { CalendarRange } from "lucide-react";
+import { motion } from "framer-motion";
+import { CalendarRange, Layers, Info } from "lucide-react";
+import { Suspense } from "react";
 
 import { PageHeader } from "~/components/blocks/nav/PageHeader";
 import { ClassList } from "~/components/tables/ClassList";
@@ -14,20 +14,12 @@ import {
   CardTitle,
   CardDescription,
 } from "~/components/ui/card";
+import { Skeleton } from "~/components/ui/skeleton";
+import { Badge } from "~/components/ui/badge";
 
 export default function SessionDetailPage() {
   const params = useParams();
   const sessionId = params?.sessionId as string;
-  const [isMobile, setIsMobile] = useState(false);
-  const prefersReducedMotion = useReducedMotion();
-
-  // Detect mobile for conditional rendering
-  useEffect(() => {
-    const checkMobile = () => setIsMobile(window.innerWidth < 1024);
-    checkMobile();
-    window.addEventListener("resize", checkMobile);
-    return () => window.removeEventListener("resize", checkMobile);
-  }, []);
 
   const breadcrumbs = [
     { href: "/admin", label: "Dashboard" },
@@ -40,71 +32,71 @@ export default function SessionDetailPage() {
   ];
 
   return (
-    <div className="relative min-h-screen w-full overflow-x-hidden bg-gradient-to-br from-[#344a3f] via-[#12251b] to-[#02131b]">
-      {/* 🎯 OPTIMIZED GRID BACKGROUND (Dark Theme) */}
-      <div className="absolute inset-0 z-0 pointer-events-none">
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(45,255,196,0.05)_1px,transparent_1px),linear-gradient(to_bottom,rgba(45,255,196,0.05)_1px,transparent_1px)] bg-[size:3rem_3rem] sm:bg-[size:4rem_4rem]" />
-        <div className="absolute inset-0 bg-gradient-to-br from-emerald-900/40 via-black/20 to-black/60" />
-      </div>
+    // Wrapper: Full width, standard spacing
+    <div className="w-full space-y-6">
+      
+      <PageHeader breadcrumbs={breadcrumbs} />
 
-      {/* 🎯 AMBIENT GLOW EFFECTS */}
-      {!prefersReducedMotion && !isMobile && (
-        <>
-          <motion.div
-            className="absolute left-[10%] top-[10%] h-[30rem] w-[30rem] rounded-full bg-emerald-500/10 blur-[80px]"
-            animate={{
-              y: [0, 30, 0],
-              opacity: [0.1, 0.2, 0.1],
-            }}
-            transition={{ duration: 15, repeat: Infinity, ease: "easeInOut" }}
-          />
-          <motion.div
-            className="absolute bottom-[10%] right-[10%] h-[25rem] w-[25rem] rounded-full bg-cyan-500/10 blur-[80px]"
-            animate={{
-              y: [0, -30, 0],
-              opacity: [0.1, 0.2, 0.1],
-            }}
-            transition={{ duration: 12, repeat: Infinity, ease: "easeInOut", delay: 2 }}
-          />
-        </>
-      )}
-
-      <div className="relative z-10 px-4 py-6 sm:px-6 lg:px-8 max-w-[100vw]">
-        <PageHeader breadcrumbs={breadcrumbs} />
-
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="mt-6"
-        >
-          {/* Glassmorphism Card */}
-          <Card className="border border-white/10 bg-white/5 backdrop-blur-xl shadow-2xl rounded-[2rem] overflow-hidden">
-            <CardHeader className="border-b border-white/10 p-6 sm:p-8 bg-gradient-to-r from-emerald-900/20 to-transparent">
-              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-                <div className="p-3 rounded-2xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 shadow-lg shadow-emerald-900/20">
-                  <CalendarRange className="h-8 w-8" />
-                </div>
-                <div className="space-y-1">
-                  <CardTitle className="text-2xl sm:text-3xl font-bold text-white tracking-tight">
-                    Session Overview
-                  </CardTitle>
-                  <CardDescription className="text-emerald-100/60 font-medium text-sm sm:text-base">
-                    Manage classes, student allocations, and fee structures for this academic session
-                  </CardDescription>
-                </div>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, ease: "easeOut" }}
+      >
+        {/* Header Section: Clean & Professional */}
+        <div className="mb-8 flex flex-col justify-between gap-4 md:flex-row md:items-end border-b border-white/5 pb-6">
+          <div>
+            <div className="flex items-center gap-3 mb-2">
+              <div className="p-2 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                 <CalendarRange className="h-6 w-6" />
               </div>
-            </CardHeader>
+              <h1 className="text-3xl font-bold tracking-tight text-white">Session Overview</h1>
+            </div>
+            <p className="text-slate-400 max-w-2xl pl-1">
+              Manage classes, student allocations, and fee structures for this academic session.
+            </p>
+          </div>
+          
+          <div className="flex items-center gap-2">
+             <Badge variant="outline" className="border-emerald-500/20 bg-emerald-500/5 text-emerald-300 px-3 py-1">
+               <Info className="mr-1 h-3 w-3" /> Active Session
+             </Badge>
+          </div>
+        </div>
 
-            <CardContent className="p-6 sm:p-8">
-              <div className="bg-black/20 rounded-2xl border border-white/5 p-4 sm:p-6 shadow-inner">
-                {/* Passed sessionId to ClassList */}
-                <ClassList sessionId={sessionId} />
-              </div>
-            </CardContent>
-          </Card>
-        </motion.div>
-      </div>
+        {/* Main Content Card */}
+        <Card className="border border-white/5 bg-slate-900/40 backdrop-blur-md shadow-xl overflow-hidden">
+          <CardHeader className="border-b border-white/5 px-6 py-4 bg-black/20">
+            <div className="flex items-center gap-2">
+               <Layers className="h-5 w-5 text-emerald-500" />
+               <div>
+                  <CardTitle className="text-lg font-medium text-white">Class Management</CardTitle>
+                  <CardDescription className="text-slate-400 text-xs">Configure classes assigned to this session</CardDescription>
+               </div>
+            </div>
+          </CardHeader>
+
+          <CardContent className="p-0">
+            {/* Suspense Wrapper for Data Table */}
+            <Suspense 
+              fallback={
+                <div className="p-6 space-y-4">
+                  <div className="flex items-center justify-between">
+                     <Skeleton className="h-10 w-48 bg-white/5" />
+                     <Skeleton className="h-10 w-32 bg-white/5" />
+                  </div>
+                  <Skeleton className="h-[400px] w-full rounded-xl bg-white/5" />
+                </div>
+              }
+            >
+               {/* Table Container */}
+               <div className="overflow-hidden">
+                 <ClassList sessionId={sessionId} />
+               </div>
+            </Suspense>
+          </CardContent>
+        </Card>
+
+      </motion.div>
     </div>
   );
 }

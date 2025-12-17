@@ -1,22 +1,34 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import Link from "next/link";
+import { motion, AnimatePresence } from "framer-motion";
+import { api } from "~/trpc/react";
+import { cn } from "~/lib/utils";
+
+// --- Components ---
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "~/components/ui/tabs";
 import { ScrollArea, ScrollBar } from "~/components/ui/scroll-area";
-import { api } from "~/trpc/react";
-import Link from "next/link";
-import { ClassCreationDialog } from "../forms/class/ClassCreation";
-import { Search, RefreshCw, Users, BookOpen, Calendar, Banknote, AlertCircle } from "lucide-react";
 import { Checkbox } from "~/components/ui/checkbox";
 import { Skeleton } from "~/components/ui/skeleton";
-import { cn } from "~/lib/utils";
-import { motion, AnimatePresence } from "framer-motion";
-import { ClassDeletionDialog } from "../forms/class/ClassDeletion";
 import { Badge } from "~/components/ui/badge";
+import { ClassCreationDialog } from "../forms/class/ClassCreation";
+import { ClassDeletionDialog } from "../forms/class/ClassDeletion";
 
-// Define the type to avoid 'any' errors
+// --- Icons ---
+import { 
+  Search, 
+  RefreshCw, 
+  Users, 
+  BookOpen, 
+  Calendar, 
+  Banknote, 
+  AlertCircle 
+} from "lucide-react";
+
+// --- Types ---
 interface ClassItem {
   classId: string;
   grade: string;
@@ -27,17 +39,20 @@ interface ClassItem {
 
 const categoryOrder = ["Montessori", "Primary", "Middle", "SSC_I", "SSC_II"];
 
+// Optimized Colors for Dark Theme
 const categoryColors: Record<string, string> = {
-  Montessori: "data-[state=active]:bg-rose-100 data-[state=active]:text-rose-900",
-  Primary: "data-[state=active]:bg-indigo-100 data-[state=active]:text-indigo-900",
-  Middle: "data-[state=active]:bg-emerald-100 data-[state=active]:text-emerald-900",
-  SSC_I: "data-[state=active]:bg-amber-100 data-[state=active]:text-amber-900",
-  SSC_II: "data-[state=active]:bg-violet-100 data-[state=active]:text-violet-900",
+  Montessori: "data-[state=active]:bg-rose-500/10 data-[state=active]:text-rose-400 hover:text-rose-300",
+  Primary: "data-[state=active]:bg-indigo-500/10 data-[state=active]:text-indigo-400 hover:text-indigo-300",
+  Middle: "data-[state=active]:bg-emerald-500/10 data-[state=active]:text-emerald-400 hover:text-emerald-300",
+  SSC_I: "data-[state=active]:bg-amber-500/10 data-[state=active]:text-amber-400 hover:text-amber-300",
+  SSC_II: "data-[state=active]:bg-violet-500/10 data-[state=active]:text-violet-400 hover:text-violet-300",
 };
 
 const sectionColors: Record<string, string> = {
-  ROSE: "bg-rose-50 text-rose-700 border-rose-200 hover:bg-rose-100",
-  TULIP: "bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100",
+  ROSE: "bg-rose-500/10 text-rose-400 border-rose-500/20",
+  TULIP: "bg-amber-500/10 text-amber-400 border-amber-500/20",
+  // Default fallback for others
+  DEFAULT: "bg-slate-500/10 text-slate-400 border-slate-500/20"
 };
 
 export const ClassList = ({ sessionId }: { sessionId: string }) => {
@@ -55,7 +70,6 @@ export const ClassList = ({ sessionId }: { sessionId: string }) => {
     await refetch();
   };
 
-  // Filter data based on search query before grouping
   const filteredData = useMemo(() => {
     if (!classesData) return [];
     if (!searchQuery) return classesData;
@@ -66,15 +80,10 @@ export const ClassList = ({ sessionId }: { sessionId: string }) => {
   }, [classesData, searchQuery]);
 
   const groupedData = useMemo(() => {
-    // Explicitly type the accumulator
     const grouped: Record<string, ClassItem[]> = {};
     filteredData.forEach((item) => {
-      // Ensure we treat the item as ClassItem (assuming API returns matching shape)
       const typedItem = item as unknown as ClassItem;
-      
-      // FIX: Use nullish coalescing assignment (??=)
       grouped[typedItem.category] ??= [];
-      
       grouped[typedItem.category]?.push(typedItem);
     });
     return grouped;
@@ -92,14 +101,14 @@ export const ClassList = ({ sessionId }: { sessionId: string }) => {
   return (
     <div className="w-full space-y-6">
       {/* Header Section */}
-      <div className="flex flex-col gap-4 rounded-xl border bg-card p-4 shadow-sm md:flex-row md:items-center md:justify-between">
-        <div className="relative w-full md:max-w-md">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+      <div className="flex flex-col gap-4 rounded-xl border border-white/5 bg-slate-900/40 p-4 shadow-sm backdrop-blur-md md:flex-row md:items-center md:justify-between">
+        <div className="relative w-full md:max-w-md group">
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500 group-focus-within:text-emerald-400 transition-colors" />
           <Input
             placeholder="Search by grade or section..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-9 bg-background/50"
+            className="pl-9 bg-slate-950/50 border-white/10 text-white placeholder:text-slate-500 focus:ring-emerald-500/50 focus:border-emerald-500/50 h-10 rounded-lg transition-all"
           />
         </div>
         
@@ -108,7 +117,7 @@ export const ClassList = ({ sessionId }: { sessionId: string }) => {
             variant="outline"
             size="sm"
             onClick={handleRefresh}
-            className="gap-2"
+            className="gap-2 border-white/10 bg-slate-900/50 text-slate-300 hover:text-emerald-400 hover:bg-emerald-500/10 transition-colors"
             disabled={isLoading || isRefetching}
           >
             <RefreshCw className={cn("h-4 w-4", (isLoading || isRefetching) && "animate-spin")} />
@@ -122,15 +131,15 @@ export const ClassList = ({ sessionId }: { sessionId: string }) => {
 
       {/* Tabs Section */}
       <Tabs defaultValue={categoryOrder[0]} className="w-full">
-        <div className="sticky top-0 z-10 -mx-4 bg-background/95 px-4 py-2 backdrop-blur supports-[backdrop-filter]:bg-background/60 md:static md:mx-0 md:p-0 md:bg-transparent">
-          <ScrollArea className="w-full whitespace-nowrap rounded-lg border bg-muted/40 p-1">
+        <div className="sticky top-0 z-10 -mx-4 bg-slate-950/80 px-4 py-2 backdrop-blur-md md:static md:mx-0 md:p-0 md:bg-transparent">
+          <ScrollArea className="w-full whitespace-nowrap rounded-lg border border-white/5 bg-slate-900/40 p-1">
             <TabsList className="bg-transparent p-0">
               {categoryOrder.map((category) => (
                 <TabsTrigger
                   key={category}
                   value={category}
                   className={cn(
-                    "rounded-md px-4 py-2 text-sm font-medium transition-all data-[state=active]:shadow-sm",
+                    "rounded-md px-4 py-2 text-sm font-medium transition-all text-slate-400 hover:text-slate-200",
                     categoryColors[category]
                   )}
                 >
@@ -143,13 +152,12 @@ export const ClassList = ({ sessionId }: { sessionId: string }) => {
         </div>
 
         {categoryOrder.map((category) => (
-          <TabsContent key={category} value={category} className="mt-6 min-h-[300px]">
+          <TabsContent key={category} value={category} className="mt-6 min-h-[300px] outline-none">
              {isLoading ? (
                <ClassListSkeleton />
              ) : (
                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                  <AnimatePresence mode="popLayout">
-                   {/* Check if the category exists and has items */}
                    {groupedData[category]?.length ? (
                      groupedData[category]?.map((classItem, index) => (
                        <ClassCard 
@@ -165,12 +173,12 @@ export const ClassList = ({ sessionId }: { sessionId: string }) => {
                      <motion.div 
                        initial={{ opacity: 0 }} 
                        animate={{ opacity: 1 }}
-                       className="col-span-full flex flex-col items-center justify-center py-12 text-center text-muted-foreground"
+                       className="col-span-full flex flex-col items-center justify-center py-16 text-center text-slate-500 border border-dashed border-white/10 rounded-xl bg-slate-900/20"
                      >
-                       <div className="mb-4 rounded-full bg-muted p-4">
-                         <AlertCircle className="h-8 w-8 text-muted-foreground/50" />
+                       <div className="mb-4 rounded-full bg-slate-900 p-4 border border-white/5">
+                         <AlertCircle className="h-8 w-8 text-slate-600" />
                        </div>
-                       <p className="text-lg font-medium">No classes found in {category}</p>
+                       <p className="text-lg font-medium text-slate-300">No classes found in {category}</p>
                        <p className="text-sm">Create a new class to get started.</p>
                      </motion.div>
                    )}
@@ -184,7 +192,7 @@ export const ClassList = ({ sessionId }: { sessionId: string }) => {
   );
 };
 
-// Extracted Card Component for cleaner code
+// --- Extracted Card Component ---
 const ClassCard = ({ 
   item, 
   isSelected, 
@@ -192,7 +200,7 @@ const ClassCard = ({
   sessionId, 
   index 
 }: { 
-  item: ClassItem, // Typed correctly
+  item: ClassItem,
   isSelected: boolean, 
   onSelect: () => void, 
   sessionId: string,
@@ -206,47 +214,51 @@ const ClassCard = ({
       exit={{ opacity: 0, scale: 0.95 }}
       transition={{ duration: 0.2, delay: index * 0.05 }}
       className={cn(
-        "group relative flex flex-col justify-between overflow-hidden rounded-xl border bg-card p-5 shadow-sm transition-all hover:shadow-md",
-        isSelected && "ring-2 ring-primary ring-offset-2"
+        "group relative flex flex-col justify-between overflow-hidden rounded-xl border transition-all duration-300",
+        "bg-slate-900/40 backdrop-blur-sm border-white/5",
+        "hover:border-emerald-500/30 hover:shadow-xl hover:shadow-emerald-900/10 hover:-translate-y-1",
+        isSelected && "ring-1 ring-emerald-500 bg-emerald-900/10 border-emerald-500/30"
       )}
     >
+      {/* Decorative Gradient */}
+      <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-emerald-600 to-teal-600 opacity-0 group-hover:opacity-100 transition-opacity" />
+
       {/* Selection Checkbox */}
       <div className="absolute right-4 top-4 z-10">
         <Checkbox
           checked={isSelected}
           onCheckedChange={onSelect}
-          className="data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground"
+          className="border-white/20 data-[state=checked]:bg-emerald-600 data-[state=checked]:text-white h-5 w-5 rounded-md"
         />
       </div>
 
-      <div className="space-y-4">
+      <div className="p-5 space-y-4">
         {/* Header */}
         <div>
-          <h3 className="text-2xl font-bold tracking-tight text-foreground">
+          <h3 className="text-2xl font-bold tracking-tight text-white group-hover:text-emerald-300 transition-colors">
             {item.grade}
           </h3>
           <Badge 
             variant="outline" 
-            className={cn("mt-2 font-medium", sectionColors[item.section] ?? "bg-slate-100")}
+            className={cn("mt-2 font-medium border", sectionColors[item.section] ?? sectionColors.DEFAULT)}
           >
             {item.section}
           </Badge>
         </div>
 
         {/* Info Grid */}
-        <div className="grid grid-cols-2 gap-3 rounded-lg bg-muted/30 p-3">
+        <div className="grid grid-cols-2 gap-3 rounded-lg bg-black/20 border border-white/5 p-3">
           <div className="space-y-1">
-            <span className="text-xs text-muted-foreground">Monthly Fee</span>
-            <div className="flex items-center gap-1.5 font-semibold text-emerald-600">
+            <span className="text-[10px] uppercase text-slate-500 font-bold tracking-wider">Monthly Fee</span>
+            <div className="flex items-center gap-1.5 font-mono font-semibold text-emerald-400">
               <Banknote className="h-3.5 w-3.5" />
               <span>{item.fee.toLocaleString()}</span>
             </div>
           </div>
-          {/* Placeholder for student count if available in future */}
           <div className="space-y-1">
-            <span className="text-xs text-muted-foreground">Students</span>
-            <div className="flex items-center gap-1.5 font-medium text-foreground">
-              <Users className="h-3.5 w-3.5 text-muted-foreground" />
+            <span className="text-[10px] uppercase text-slate-500 font-bold tracking-wider">Students</span>
+            <div className="flex items-center gap-1.5 font-medium text-slate-300">
+              <Users className="h-3.5 w-3.5 text-slate-500" />
               <span>--</span>
             </div>
           </div>
@@ -254,20 +266,20 @@ const ClassCard = ({
       </div>
 
       {/* Actions */}
-      <div className="mt-5 grid grid-cols-2 gap-2">
-        <Button asChild size="sm" variant="outline" className="w-full text-xs">
+      <div className="p-4 pt-0 grid grid-cols-2 gap-2 mt-auto">
+        <Button asChild size="sm" variant="outline" className="w-full text-xs border-white/10 bg-white/5 text-slate-300 hover:text-white hover:bg-white/10 h-8">
           <Link href={`/admin/sessions/class/?classId=${item.classId}&sessionId=${sessionId}`}>
             <BookOpen className="mr-1.5 h-3.5 w-3.5" />
             View
           </Link>
         </Button>
-        <Button asChild size="sm" variant="outline" className="w-full text-xs">
+        <Button asChild size="sm" variant="outline" className="w-full text-xs border-white/10 bg-white/5 text-slate-300 hover:text-white hover:bg-white/10 h-8">
           <Link href={`/admin/sessions/timetable/?classId=${item.classId}`}>
             <Calendar className="mr-1.5 h-3.5 w-3.5" />
-            Timetable
+            Time
           </Link>
         </Button>
-        <Button asChild size="sm" className="col-span-2 w-full text-xs bg-primary/90 hover:bg-primary">
+        <Button asChild size="sm" className="col-span-2 w-full text-xs bg-emerald-600 hover:bg-emerald-500 text-white border-0 h-8 shadow-md shadow-emerald-900/20">
           <Link href={`/admin/sessions/fee/?classId=${item.classId}&sessionId=${sessionId}`}>
             <Banknote className="mr-1.5 h-3.5 w-3.5" />
             Manage Fees
@@ -278,24 +290,25 @@ const ClassCard = ({
   );
 };
 
+// --- Skeleton Loader ---
 const ClassListSkeleton = () => (
   <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
     {Array.from({ length: 8 }).map((_, i) => (
-      <div key={i} className="flex h-[280px] flex-col justify-between rounded-xl border p-5">
+      <div key={i} className="flex h-[280px] flex-col justify-between rounded-xl border border-white/5 bg-slate-900/40 p-5">
         <div className="space-y-3">
           <div className="flex justify-between">
-            <Skeleton className="h-8 w-24" />
-            <Skeleton className="h-5 w-5 rounded" />
+            <Skeleton className="h-8 w-24 bg-white/10" />
+            <Skeleton className="h-5 w-5 rounded bg-white/10" />
           </div>
-          <Skeleton className="h-6 w-16 rounded-full" />
-          <Skeleton className="h-16 w-full rounded-lg" />
+          <Skeleton className="h-6 w-16 rounded-full bg-white/10" />
+          <Skeleton className="h-16 w-full rounded-lg bg-white/5" />
         </div>
         <div className="grid gap-2">
           <div className="grid grid-cols-2 gap-2">
-            <Skeleton className="h-9 w-full" />
-            <Skeleton className="h-9 w-full" />
+            <Skeleton className="h-8 w-full bg-white/10" />
+            <Skeleton className="h-8 w-full bg-white/10" />
           </div>
-          <Skeleton className="h-9 w-full" />
+          <Skeleton className="h-8 w-full bg-white/10" />
         </div>
       </div>
     ))}

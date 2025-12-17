@@ -1,10 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { Button } from "~/components/ui/button";
-import { Input } from "~/components/ui/input";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "~/components/ui/table";
-import { api } from "~/trpc/react";
 import {
   type ColumnDef,
   flexRender,
@@ -16,69 +12,114 @@ import {
   type SortingState,
 } from "@tanstack/react-table";
 import { type ClassCategory, type FeeCategory } from "@prisma/client";
-import { RefreshCcw } from "lucide-react";
+import { 
+  RefreshCcw, 
+  Search, 
+  Users, 
+  User, 
+  Phone, 
+  MapPin, 
+} from "lucide-react";
 
+import { Button } from "~/components/ui/button";
+import { Input } from "~/components/ui/input";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "~/components/ui/table";
+import { Badge } from "~/components/ui/badge";
+import { Skeleton } from "~/components/ui/skeleton";
+import { api } from "~/trpc/react";
+import { cn } from "~/lib/utils";
+
+// --- Types ---
 type StudentClassProps = {
-    sfcId: string
-    studentClassId: string
-    feeId: string
-    discount: number
-    discountbypercent: number
-    discountDescription: string
-    createdAt: Date
-    updatedAt: Date
-    fee: {
-      feeId: string
-      level: string
-      type: FeeCategory
-      tuitionFee: number
-      examFund: number
-      computerLabFund: number | null
-      studentIdCardFee: number
-      infoAndCallsFee: number
-      admissionFee: number
-      createdAt: Date
-      updatedAt: Date
-    }
-    ClassStudent: {
-      student: {
-        studentId: string
-        registrationNumber: string
-        studentName: string
-        studentMobile: string
-        fatherMobile: string
-        gender: string
-        dateOfBirth: string
-        fatherName: string
-        studentCNIC: string
-        fatherCNIC: string
-        fatherProfession: string
-        address: string
-        isAssign: boolean
-        createdAt?: Date
-        updatedAt?: Date
-      }
-      }
-      class: {
-        classId: string
-        grade: string
-        section: string
-        category: ClassCategory
-        fee: number
-      }
-    }
-
+  sfcId: string;
+  studentClassId: string;
+  feeId: string;
+  discount: number;
+  discountbypercent: number;
+  discountDescription: string;
+  createdAt: Date;
+  updatedAt: Date;
+  fee: {
+    feeId: string;
+    level: string;
+    type: FeeCategory;
+    tuitionFee: number;
+    examFund: number;
+    computerLabFund: number | null;
+    studentIdCardFee: number;
+    infoAndCallsFee: number;
+    admissionFee: number;
+    createdAt: Date;
+    updatedAt: Date;
+  };
+  ClassStudent: {
+    student: {
+      studentId: string;
+      registrationNumber: string;
+      studentName: string;
+      studentMobile: string;
+      fatherMobile: string;
+      gender: string;
+      dateOfBirth: string;
+      fatherName: string;
+      studentCNIC: string;
+      fatherCNIC: string;
+      fatherProfession: string;
+      address: string;
+      isAssign: boolean;
+      createdAt?: Date;
+      updatedAt?: Date;
+    };
+  };
+  class: {
+    classId: string;
+    grade: string;
+    section: string;
+    category: ClassCategory;
+    fee: number;
+  };
+};
 
 type ClassStudentTableProps = {
   classId: string;
   sessionId: string;
 };
 
+// --- Helper Components ---
+const TableSkeleton = () => (
+  <div className="space-y-4">
+    <div className="flex items-center justify-between">
+       <Skeleton className="h-10 w-64 bg-white/5" />
+       <Skeleton className="h-10 w-24 bg-white/5" />
+    </div>
+    <div className="rounded-xl border border-white/5 bg-slate-900/40">
+      <div className="border-b border-white/5 p-4">
+        <div className="grid grid-cols-6 gap-4">
+          {Array.from({ length: 6 }).map((_, i) => (
+             <Skeleton key={i} className="h-6 w-full bg-white/5" />
+          ))}
+        </div>
+      </div>
+      <div className="p-4 space-y-4">
+         {Array.from({ length: 5 }).map((_, i) => (
+           <Skeleton key={i} className="h-12 w-full bg-white/5" />
+         ))}
+      </div>
+    </div>
+  </div>
+);
+
 export function ClassStudentTable({ classId, sessionId }: ClassStudentTableProps) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [globalFilter, setGlobalFilter] = useState("");
 
-  const { refetch: refetchClassStudents } = api.allotment.getStudentsByClassAndSession.useQuery(
+  // Fetch data
+  const { 
+    data: studentsData, 
+    isLoading, 
+    isRefetching, 
+    refetch: refetchClassStudents 
+  } = api.allotment.getStudentsByClassAndSession.useQuery(
     { classId, sessionId },
     {
       refetchOnWindowFocus: false,
@@ -90,42 +131,95 @@ export function ClassStudentTable({ classId, sessionId }: ClassStudentTableProps
     {
       accessorFn: (row) => row.ClassStudent.student.registrationNumber,
       id: "registrationNumber",
-      header: "Registration Number",
+      header: "Reg. No",
+      cell: ({ row }) => (
+        <span className="font-mono text-emerald-400 font-medium">
+          {row.original.ClassStudent.student.registrationNumber}
+        </span>
+      ),
     },
     {
       accessorFn: (row) => row.ClassStudent.student.studentName,
       id: "studentName",
       header: "Student Name",
+      cell: ({ row }) => (
+        <div className="flex items-center gap-2">
+           <div className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-800 text-slate-400 border border-white/10">
+             <User className="h-4 w-4" />
+           </div>
+           <span className="font-medium text-white">{row.original.ClassStudent.student.studentName}</span>
+        </div>
+      ),
     },
     {
       accessorFn: (row) => row.ClassStudent.student.gender,
       id: "gender",
       header: "Gender",
-    },
-    {
-      accessorFn: (row) => row.ClassStudent.student.studentMobile,
-      id: "studentMobile",
-      header: "Student Mobile",
-    },
-    {
-      accessorFn: (row) => row.ClassStudent.student.fatherMobile,
-      id: "fatherMobile",
-      header: "Father Mobile",
+      cell: ({ row }) => (
+        <Badge variant="outline" className={cn(
+          "bg-white/5 border-white/10",
+          row.original.ClassStudent.student.gender === "Male" ? "text-blue-400" : "text-pink-400"
+        )}>
+          {row.original.ClassStudent.student.gender}
+        </Badge>
+      ),
     },
     {
       accessorFn: (row) => row.ClassStudent.student.fatherName,
       id: "fatherName",
       header: "Father Name",
+      cell: ({ row }) => (
+        <span className="text-slate-300">{row.original.ClassStudent.student.fatherName}</span>
+      ),
+    },
+    {
+      id: "contact",
+      header: "Contact",
+      cell: ({ row }) => (
+        <div className="flex flex-col text-xs text-slate-400">
+           <div className="flex items-center gap-1.5">
+             <Phone className="h-3 w-3 text-emerald-500/50" />
+             <span>{row.original.ClassStudent.student.studentMobile}</span>
+           </div>
+           {row.original.ClassStudent.student.fatherMobile && (
+             <div className="flex items-center gap-1.5 mt-0.5">
+               <Phone className="h-3 w-3 text-slate-600" />
+               <span>{row.original.ClassStudent.student.fatherMobile}</span>
+             </div>
+           )}
+        </div>
+      ),
     },
     {
       accessorFn: (row) => row.ClassStudent.student.address,
       id: "address",
       header: "Address",
+      cell: ({ row }) => (
+        <div className="flex items-center gap-1.5 max-w-[200px] truncate" title={row.original.ClassStudent.student.address}>
+           <MapPin className="h-3 w-3 text-slate-500 flex-shrink-0" />
+           <span className="text-sm text-slate-400 truncate">{row.original.ClassStudent.student.address}</span>
+        </div>
+      ),
     },
+    {
+      id: "discount",
+      header: "Fee Status",
+      cell: ({ row }) => (
+         <div className="flex items-center gap-1.5">
+            {row.original.discount > 0 ? (
+               <Badge variant="secondary" className="bg-amber-500/10 text-amber-400 border border-amber-500/20 text-[10px]">
+                  {row.original.discount}% Off
+               </Badge>
+            ) : (
+               <span className="text-xs text-slate-500">Standard</span>
+            )}
+         </div>
+      )
+    }
   ];
 
   const table = useReactTable({
-    data: [],
+    data: (studentsData as unknown as StudentClassProps[]) ?? [], // Fixed: Wired up data
     columns,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
@@ -139,30 +233,40 @@ export function ClassStudentTable({ classId, sessionId }: ClassStudentTableProps
     onGlobalFilterChange: setGlobalFilter,
   });
 
+  if (isLoading) return <TableSkeleton />;
+
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <Input
-          placeholder="Search students..."
-          value={globalFilter ?? ""}
-          onChange={(event) => setGlobalFilter(event.target.value)}
-          className="max-w-sm"
-        />
-                  <Button
-            variant="outline"
-            size="sm"
-            onClick={() => refetchClassStudents()}
-          >
-            <RefreshCcw className="h-4 w-4" />
-          </Button>
+      {/* --- Controls --- */}
+      <div className="flex items-center justify-between gap-4 rounded-xl border border-white/5 bg-slate-900/40 p-3 backdrop-blur-md">
+        <div className="relative w-full max-w-sm group">
+           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500 group-focus-within:text-emerald-400 transition-colors" />
+           <Input
+             placeholder="Search students..."
+             value={globalFilter ?? ""}
+             onChange={(event) => setGlobalFilter(event.target.value)}
+             className="pl-9 bg-slate-950/50 border-white/10 text-white placeholder:text-slate-500 focus:ring-emerald-500/50 focus:border-emerald-500/50 h-9 rounded-lg"
+           />
+        </div>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => refetchClassStudents()}
+          className="h-9 w-9 p-0 border-white/10 bg-slate-900/50 text-slate-300 hover:text-emerald-400 hover:bg-emerald-500/10"
+          disabled={isRefetching}
+        >
+          <RefreshCcw className={cn("h-4 w-4", isRefetching && "animate-spin")} />
+        </Button>
       </div>
-      <div className="rounded-md border">
+
+      {/* --- Table --- */}
+      <div className="rounded-xl border border-white/5 bg-slate-900/40 backdrop-blur-sm overflow-hidden shadow-xl">
         <Table>
-          <TableHeader>
+          <TableHeader className="bg-white/5">
             {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id}>
+              <TableRow key={headerGroup.id} className="border-white/5 hover:bg-transparent">
                 {headerGroup.headers.map((header) => (
-                  <TableHead key={header.id}>
+                  <TableHead key={header.id} className="text-slate-400 font-semibold h-11">
                     {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
                   </TableHead>
                 ))}
@@ -172,27 +276,53 @@ export function ClassStudentTable({ classId, sessionId }: ClassStudentTableProps
           <TableBody>
             {table.getRowModel().rows?.length ? (
               table.getRowModel().rows.map((row) => (
-                <TableRow key={row.id} data-state={row.getIsSelected() && "selected"}>
+                <TableRow 
+                  key={row.id} 
+                  data-state={row.getIsSelected() && "selected"}
+                  className="border-white/5 hover:bg-white/5 transition-colors group"
+                >
                   {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</TableCell>
+                    <TableCell key={cell.id} className="py-3">
+                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                    </TableCell>
                   ))}
                 </TableRow>
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={columns.length} className="h-24 text-center">
-                  No students found in this class.
+                <TableCell colSpan={columns.length} className="h-64 text-center">
+                   <div className="flex flex-col items-center justify-center text-slate-500">
+                      <div className="mb-4 rounded-full bg-slate-900 p-4 border border-white/5">
+                        <Users className="h-8 w-8 text-slate-600" />
+                      </div>
+                      <p className="text-lg font-medium text-slate-300">No students found</p>
+                      <p className="text-sm">There are no students assigned to this class yet.</p>
+                   </div>
                 </TableCell>
               </TableRow>
             )}
           </TableBody>
         </Table>
       </div>
-      <div className="flex items-center justify-end space-x-2 py-4">
-        <Button variant="outline" size="sm" onClick={() => table.previousPage()} disabled={!table.getCanPreviousPage()}>
+
+      {/* --- Pagination --- */}
+      <div className="flex items-center justify-end space-x-2">
+        <Button 
+          variant="outline" 
+          size="sm" 
+          onClick={() => table.previousPage()} 
+          disabled={!table.getCanPreviousPage()}
+          className="border-white/10 bg-slate-900/50 text-slate-300 hover:bg-white/10 h-8 text-xs"
+        >
           Previous
         </Button>
-        <Button variant="outline" size="sm" onClick={() => table.nextPage()} disabled={!table.getCanNextPage()}>
+        <Button 
+          variant="outline" 
+          size="sm" 
+          onClick={() => table.nextPage()} 
+          disabled={!table.getCanNextPage()}
+          className="border-white/10 bg-slate-900/50 text-slate-300 hover:bg-white/10 h-8 text-xs"
+        >
           Next
         </Button>
       </div>
