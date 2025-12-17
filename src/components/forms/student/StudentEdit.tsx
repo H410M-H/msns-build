@@ -6,7 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { type z } from "zod";
 import { api } from "~/trpc/react";
 import { toast } from "~/hooks/use-toast";
-import { Loader2, X } from "lucide-react";
+import { Loader2, X, Camera, Trash2 } from "lucide-react";
 import { Button } from "~/components/ui/button";
 import {
     Form,
@@ -59,6 +59,7 @@ export function StudentEditDialog({ student, onClose }: StudentEditFormProps) {
             toast({
                 title: "Error",
                 description: error.message,
+                variant: "destructive",
             });
         },
     });
@@ -69,6 +70,28 @@ export function StudentEditDialog({ student, onClose }: StudentEditFormProps) {
         }
     }, [student.profilePic, form]);
 
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            // Check file size (e.g., limit to 2MB to prevent large payload errors)
+            if (file.size > 2 * 1024 * 1024) {
+                toast({
+                    title: "File too large",
+                    description: "Please select an image smaller than 2MB.",
+                    variant: "destructive",
+                });
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                const result = reader.result as string;
+                form.setValue("profilePic", result);
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+
     const onSubmit = (values: z.infer<typeof studentSchema>) => {
         updateStudent.mutate({
             studentId: student.studentId, 
@@ -76,7 +99,6 @@ export function StudentEditDialog({ student, onClose }: StudentEditFormProps) {
             fatherName: values.fatherName,
             gender: values.gender,
             dateOfBirth: values.dateOfBirth,
-            // Schema helper now handles transform to "", but safety check helps
             studentCNIC: values.studentCNIC ?? "",
             fatherCNIC: values.fatherCNIC ?? "",
             studentMobile: values.studentMobile,
@@ -106,6 +128,56 @@ export function StudentEditDialog({ student, onClose }: StudentEditFormProps) {
                 <div className="flex-1 overflow-y-auto p-6 scrollbar-thin scrollbar-thumb-emerald-600/20 scrollbar-track-transparent">
                     <Form {...form}>
                         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                            
+                            {/* Profile Picture Section */}
+                            <div className="flex flex-col items-center gap-4 pb-6 border-b border-emerald-500/10">
+                                <div className="relative h-28 w-28 rounded-full overflow-hidden border-2 border-emerald-500/50 bg-slate-800 shadow-lg shadow-emerald-500/10 group">
+                                    {form.watch("profilePic") ? (
+                                        // eslint-disable-next-line @next/next/no-img-element
+                                        <img 
+                                            src={form.watch("profilePic")} 
+                                            alt="Profile" 
+                                            className="h-full w-full object-cover transition-transform group-hover:scale-105" 
+                                        />
+                                    ) : (
+                                        <div className="h-full w-full flex items-center justify-center bg-emerald-900/20 text-emerald-500">
+                                            <span className="text-3xl font-bold">{form.getValues("studentName")?.charAt(0).toUpperCase() ?? "S"}</span>
+                                        </div>
+                                    )}
+                                </div>
+                                <div className="flex items-center gap-3">
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        size="sm"
+                                        className="border-emerald-500/30 text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/10"
+                                        onClick={() => document.getElementById('profile-upload')?.click()}
+                                    >
+                                        <Camera className="mr-2 h-4 w-4" />
+                                        Change Photo
+                                    </Button>
+                                    <Input 
+                                        id="profile-upload"
+                                        type="file" 
+                                        accept="image/*"
+                                        className="hidden" 
+                                        onChange={handleFileChange}
+                                    />
+                                    {form.watch("profilePic") && (
+                                         <Button
+                                            type="button"
+                                            variant="ghost"
+                                            size="sm"
+                                            className="text-red-400 hover:text-red-300 hover:bg-red-500/10"
+                                            onClick={() => form.setValue("profilePic", "")}
+                                         >
+                                            <Trash2 className="h-4 w-4" />
+                                            <span className="sr-only">Remove photo</span>
+                                         </Button>
+                                    )}
+                                </div>
+                            </div>
+
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                                 <FormField
                                     control={form.control}

@@ -223,43 +223,30 @@ export const StudentRouter = createTRPCRouter({
     .input(z.array(studentCSVSchema))
     .mutation(async ({ ctx, input }) => {
       try {
-        // 1. Get initial count to generate sequential IDs
         let usersCount = await ctx.db.user.count({ where: { accountType: "STUDENT" } });
         
         const studentsData = [];
         const usersData = [];
 
-        // Helper to parse dates from various CSV formats
         const parseDate = (dateStr?: string) => {
           if (!dateStr) return null;
-          // Try to parse standard string (e.g. "January 30, 1995")
           const d = new Date(dateStr);
           if (!isNaN(d.getTime())) return d;
           
-          // Try parsing "DD/MM/YYYY" which often appears in CSVs
           const parts = dateStr.split('/');
           if (parts.length === 3) {
              const [day, month, year] = parts;
-             // Construct YYYY-MM-DD
              const d2 = new Date(`${year}-${month}-${day}`);
              if (!isNaN(d2.getTime())) return d2;
           }
           return null;
         };
 
-        // Use standard for...of loop for async operations
         for (const student of input) {
-           // Generate Sequential ID using the exact logic from createStudent
            const userInfo = userReg(usersCount, "STUDENT");
-           
-           // Hash password (using admission number as password)
            const password = await hash(userInfo.admissionNumber, 10);
-           
-           // Parse Dates
            const dob = parseDate(student.dateOfBirth);
-           // Use Date of Admission for createdAt if available, else now
            const admissionDate = parseDate(student.dateOfAdmission) ?? new Date();
-
            studentsData.push({
               studentName: student.studentName,
               fatherName: student.fatherName ?? "",
@@ -269,14 +256,10 @@ export const StudentRouter = createTRPCRouter({
               studentMobile: student.contactNumber ?? "none", 
               fatherProfession: student.fatherOccupation ?? "none", 
               caste: student.caste ?? "none",
-              
-              // Generated IDs
               registrationNumber: userInfo.accountId,
               admissionNumber: userInfo.admissionNumber,
-              
-              // Defaults
               gender: "MALE" as const, // Or you could try to guess from name/CSV if column exists
-              profilePic: "/user.jpg",
+              profilePic: "",
               studentCNIC: "0000-0000000-0",
               fatherCNIC: "0000-0000000-0",
               fatherMobile: "none",
