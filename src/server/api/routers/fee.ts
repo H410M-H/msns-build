@@ -184,9 +184,6 @@ export const feeRouter = createTRPCRouter({
   getAllFees: publicProcedure.query(async ({ ctx }) => {
     return await ctx.db.fees.findMany({ orderBy: { level: "asc" } });
   }),
-
-  // --- Assignment Logic ---
-
   assignFeeToClass: protectedProcedure
     .input(z.object({
       feeId: z.string(),
@@ -246,26 +243,55 @@ export const feeRouter = createTRPCRouter({
       }
     }),
 
-  updateFeePayment: protectedProcedure
-    .input(paymentUpdateSchema)
-    .mutation(async ({ ctx, input }) => {
-      try {
-        const { feeStudentClassId, discountbypercent, ...rest } = input;
-        
-        const updateData = {
-          ...rest,
-          ...(discountbypercent !== undefined ? { discountByPercent: discountbypercent } : {}),
-        };
+updateFeePayment: protectedProcedure
+  .input(paymentUpdateSchema)
+  .mutation(async ({ ctx, input }) => {
+    try {
+      const { feeStudentClassId, discountbypercent, ...rest } = input;
+      
+      const currentRecord = await ctx.db.feeStudentClass.findUnique({
+        where: { sfcId: feeStudentClassId }
+      });
 
-        return await ctx.db.feeStudentClass.update({
-          where: { sfcId: feeStudentClassId },
-          data: updateData,
+      if (!currentRecord) throw new TRPCError({ code: "NOT_FOUND" });
+
+      const updateData = {
+        ...rest,
+        ...(discountbypercent !== undefined ? { discountByPercent: discountbypercent } : {}),
+      };
+
+      // logic: update current month
+      const updated = await ctx.db.feeStudentClass.update({
+        where: { sfcId: feeStudentClassId },
+        data: updateData,
+      });
+
+      // logic: propagate annual fees to all months of the same year
+      const annualFields = ['examFundPaid', 'computerLabPaid', 'studentIdCardPaid', 'infoAndCallsPaid'];
+      const annualUpdates: Record<string, boolean> = {};
+      
+      annualFields.forEach(field => {
+        if (rest[field as keyof typeof rest] !== undefined) {
+          annualUpdates[field] = rest[field as keyof typeof rest] as boolean;
+        }
+      });
+
+      if (Object.keys(annualUpdates).length > 0) {
+        await ctx.db.feeStudentClass.updateMany({
+          where: {
+            studentClassId: currentRecord.studentClassId,
+            year: currentRecord.year,
+          },
+          data: annualUpdates,
         });
-      } catch (error) {
-        console.error("Error updating fee payment:", error);
-        throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Failed update" });
       }
-    }),
+
+      return updated;
+    } catch (error) {
+      console.error(error);
+      throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Failed update" });
+    }
+  }),
     
   removeFeeAssignment: protectedProcedure
     .input(z.object({ feeStudentClassId: z.string() }))
@@ -589,31 +615,51 @@ export const feeRouter = createTRPCRouter({
        return result;
     }),
 
-  getClassFees: publicProcedure
-    .input(z.object({ 
-      classId: z.string(), 
-      sessionId: z.string().optional(),
-      year: z.number().optional() 
-    }))
-    .query(async ({ ctx, input }) => {
-      const where: Prisma.StudentClassWhereInput = { classId: input.classId };
-      if (input.sessionId) where.sessionId = input.sessionId;
+getClassFees: publicProcedure
+  .input(z.object({ 
+    classId: z.string(), 
+    sessionId: z.string().optional(),
+    year: z.number().optional() 
+  }))
+  .query(async ({ ctx, input }) => {
+    const where: Prisma.StudentClassWhereInput = { classId: input.classId };
+    if (input.sessionId) where.sessionId = input.sessionId;
 
-      const studentClasses = await ctx.db.studentClass.findMany({
-        where,
-        include: {
-          Students: true,
-          FeeStudentClass: {
-            where: input.year ? { year: input.year } : undefined,
-            include: {
-              fees: true,
-            },
-          },
+    const studentClasses = await ctx.db.studentClass.findMany({
+      where,
+      include: {
+        Students: true,
+        FeeStudentClass: {
+          where: input.year ? { year: input.year } : undefined,
+          include: { fees: true },
         },
-      });
+      },
+    });
 
-      return { studentClasses };
-    }),
+    // Post-processing: Apply Annual Fee Persistence
+    const processedClasses = studentClasses.map((sc) => {
+      // Find if any annual fees were paid in any month of this year
+      const paidAnnuals = {
+        exam: sc.FeeStudentClass.some(f => f.examFundPaid),
+        lab: sc.FeeStudentClass.some(f => f.computerLabPaid),
+        idCard: sc.FeeStudentClass.some(f => f.studentIdCardPaid),
+        info: sc.FeeStudentClass.some(f => f.infoAndCallsPaid),
+      };
+
+      const updatedFees = sc.FeeStudentClass.map(f => ({
+        ...f,
+        // Override status: If paid once in the year, it's paid for every month
+        examFundPaid: paidAnnuals.exam || f.examFundPaid,
+        computerLabPaid: paidAnnuals.lab || f.computerLabPaid,
+        studentIdCardPaid: paidAnnuals.idCard || f.studentIdCardPaid,
+        infoAndCallsPaid: paidAnnuals.info || f.infoAndCallsPaid,
+      }));
+
+      return { ...sc, FeeStudentClass: updatedFees };
+    });
+
+    return { studentClasses: processedClasses };
+  }),
 
   getStudentFees: publicProcedure
     .input(z.object({ studentId: z.string(), year: z.number().optional() }))

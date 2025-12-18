@@ -26,7 +26,7 @@ model User {
 }
 
 model Timetable {
-    timetableId   String   @id @default(cuid())
+    timetableId   String    @id @default(cuid())
     classId       String
     subjectId     String
     employeeId    String
@@ -35,15 +35,15 @@ model Timetable {
     lectureNumber Int
     startTime     String
     endTime       String
-    createdAt     DateTime @default(now())
-    updatedAt     DateTime @updatedAt
-    
+    createdAt     DateTime  @default(now())
+    updatedAt     DateTime  @updatedAt
+
     // Relations
     Grades    Grades    @relation(fields: [classId], references: [classId])
     Subject   Subject   @relation(fields: [subjectId], references: [subjectId])
     Employees Employees @relation(fields: [employeeId], references: [employeeId])
     Sessions  Sessions  @relation(fields: [sessionId], references: [sessionId])
-    
+
     // Unique constraint to prevent duplicate entries for same class, day, and lecture
     @@unique([classId, sessionId, dayOfWeek, lectureNumber])
 }
@@ -82,7 +82,7 @@ model Employees {
     BioMetric          BioMetric?
     ClassSubject       ClassSubject[]
     Timetable          Timetable[]
-    Salary           Salary[]
+    Salary             Salary[]
     SalaryAssignment   SalaryAssignment[]
     SalaryIncrement    SalaryIncrement[]
     EmployeeAttendance EmployeeAttendance[]
@@ -177,23 +177,23 @@ model Grades {
 }
 
 model Salary {
-  id          String       @id @default(cuid())
-  employeeId  String
-  amount      Float
-  month       Int
-  year        Int
-  status      SalaryStatus @default(PENDING)
-  paymentDate DateTime?
-  deductions  Float        @default(0)
-  allowances  Float        @default(0)
-  bonus       Float        @default(0)
-  sessionId   String
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
+    id          String       @id @default(cuid())
+    employeeId  String
+    amount      Float
+    month       Int
+    year        Int
+    status      SalaryStatus @default(PENDING)
+    paymentDate DateTime?
+    deductions  Float        @default(0)
+    allowances  Float        @default(0)
+    bonus       Float        @default(0)
+    sessionId   String
+    createdAt   DateTime     @default(now())
+    updatedAt   DateTime     @updatedAt
 
-  // Relations
-  Employees   Employees    @relation(fields: [employeeId], references: [employeeId])
-  Sessions    Sessions     @relation(fields: [sessionId], references: [sessionId])
+    // Relations
+    Employees Employees @relation(fields: [employeeId], references: [employeeId])
+    Sessions  Sessions  @relation(fields: [sessionId], references: [sessionId])
 }
 
 model SalaryAssignment {
@@ -359,15 +359,29 @@ enum Designation {
     FACULTY
 }
 
+enum FeePayment {
+    ADMISSION
+    TUITION
+    EXAM
+    LAB
+    CARD
+    CALLS
+}
+
+enum FeeType {
+    MONTHLY
+    ANNUAL
+}
+
 enum FeeCategory {
     MonthlyFee
     AnnualFee
 }
 
 enum SalaryStatus {
-  PAID
-  PENDING
-  PARTIAL
+    PAID
+    PENDING
+    PARTIAL
 }
 
 enum ExpenseCategory {
@@ -441,11 +455,11 @@ enum ReminderType {
 
 // New enum for timetable days
 enum DayOfWeek {
-  Monday
-  Tuesday
-  Wednesday
-  Thursday
-  Friday
-  Saturday
-  Sunday
+    Monday
+    Tuesday
+    Wednesday
+    Thursday
+    Friday
+    Saturday
+    Sunday
 }
