@@ -262,7 +262,7 @@ export default function EmployeeCreationDialog() {
                   {renderFormField("fatherName", "Father's Name")}
                   {renderFormField("cnic", "CNIC", "text", "xxxxx-xxxxxxx-x", true)}
                   {renderFormField("dob", "Date of Birth", "date")}
-                  {renderFormField("mobileNo", "Mobile Number", "tel", "03xx-xxxxxxx")}
+                  {renderFormField("mobileNo", "Mobile Number", "tel", "03xxxxxxxxx")}
                   
                   <FormField
                     control={form.control}

@@ -24,7 +24,7 @@ const employeeSchema = z.object({
   ]),
   residentialAddress: z.string(),
   mobileNo: z.string().max(13),
-  additionalContact: z.string().max(13).optional(),
+  additionalContact: z.string().max(25).optional(),
   education: z.string().min(2).max(100),
   profilePic: z.string().optional(),
   cv: z.string().optional(),
