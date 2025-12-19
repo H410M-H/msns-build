@@ -15,7 +15,6 @@ import {
 
 import { PageHeader } from "~/components/blocks/nav/PageHeader";
 import { WelcomeSection } from "~/components/blocks/dashboard/welcome";
-import { AdminSection } from "~/components/blocks/dashboard/admin";
 import { StatsCards } from "~/components/cards/StatCard";
 import { Skeleton } from "~/components/ui/skeleton";
 
@@ -28,6 +27,7 @@ import {
 } from "~/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import { Button } from "~/components/ui/button";
+import { ClerkSection } from "~/components/blocks/dashboard/clerk";
 
 // --- Lazy Load Heavy Tables ---
 const EventsTable = lazy(() => import("~/components/tables/EventsTable"));
@@ -151,7 +151,7 @@ export default function DashboardPage() {
 
             <div className="p-4 sm:p-6 w-full">
               <TabsContent value="management" className="mt-0 focus-visible:outline-none w-full">
-                <AdminSection />
+                <ClerkSection />
               </TabsContent>
 
               <TabsContent value="events" className="mt-0 focus-visible:outline-none w-full">

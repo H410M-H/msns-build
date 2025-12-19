@@ -119,18 +119,37 @@ const data: NavigationConfig = {
     },
     { title: "Profile", url: "/admin/users/account/profile", icon: Icons.Profile },
   ],
+    CLERK: [
+    { title: "Dashboard", url: "/clerk", icon: Icons.Dashboard },
+    { title: "Session", url: "/clerk/sessions", icon: Calendar },
+    {
+      title: "Students",
+      url: "/clerk/users/student/view",
+      icon: Icons.Student,
+      items: [
+        { title: "All Students", url: "/clerk/users/student/view" },
+        { title: "Create Student", url: "/clerk/users/student/create" },
+      ],
+    },
+    {
+      title: "Faculty",
+      url: "/clerk/users/faculty/view",
+      icon: Icons.Faculty,
+      items: [
+        { title: "All Employees", url: "/admin/users/faculty/view" },
+        { title: "Attendance", url: "/admin/attendance" },
+        { title: "Create Employee", url: "/admin/users/faculty/create" },
+      ],
+    },
+    { title: "Profile", url: "/admin/users/account/profile", icon: Icons.Profile },
+  ],
   TEACHER: [
     { title: "Dashboard", url: "/teacher", icon: Icons.Dashboard },
-    { title: "Attendance", url: "/admin/attendance", icon: Calendar },
-    { title: "Students", url: "/admin/users/student/view", icon: Icons.Student },
-    { title: "Profile", url: "/admin/users/profile", icon: Icons.Profile },
+    { title: "Attendance", url: "/clerk/attendance", icon: Calendar },
+    { title: "Students", url: "/clerk/users/student/view", icon: Icons.Student },
+    { title: "Profile", url: "/clerk/users/profile", icon: Icons.Profile },
   ],
-  CLERK: [
-    { title: "Dashboard", url: "/clerk", icon: Icons.Dashboard },
-    { title: "Fee Collection", url: "/admin/revenue", icon: Icons.Revenue },
-    { title: "Students", url: "/admin/users/student/view", icon: Icons.Student },
-    { title: "Profile", url: "/admin/users/profile", icon: Icons.Profile },
-  ],
+
   NONE: [],
   ALL: [],
   WORKER: [],
