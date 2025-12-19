@@ -1,4 +1,3 @@
-// src/app/(dashboard)/teacher/page.tsx
 "use client";
 
 import { lazy, Suspense } from "react";
@@ -61,11 +60,12 @@ export default function TeacherDashboard() {
   const breadcrumbs = [{ href: "/teacher", label: "Dashboard", current: true }];
 
   return (
+    // Ensure w-full is present to fill the layout
     <div className="w-full space-y-8">
       <PageHeader breadcrumbs={breadcrumbs} />
       
       {/* Top Section */}
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-12 w-full">
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -80,7 +80,7 @@ export default function TeacherDashboard() {
           transition={{ delay: 0.1 }}
           className="lg:col-span-4"
         >
-          <div className="h-full">
+          <div className="h-full w-full">
             <ProfileSection /> 
           </div>
         </motion.div>
@@ -91,7 +91,7 @@ export default function TeacherDashboard() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.2 }}
-        className="grid grid-cols-1 md:grid-cols-3 gap-6"
+        className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full"
       >
         {TEACHER_ANALYTICS.map((stat, idx) => {
           const Icon = stat.icon;
@@ -119,7 +119,7 @@ export default function TeacherDashboard() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.3 }}
-        className="rounded-[2rem] border border-white/5 bg-slate-900/40 backdrop-blur-xl shadow-2xl overflow-hidden"
+        className="w-full rounded-[2rem] border border-white/5 bg-slate-900/40 backdrop-blur-xl shadow-2xl overflow-hidden"
       >
          <Tabs defaultValue="classes" className="w-full">
             <div className="flex flex-col sm:flex-row items-center justify-between gap-4 border-b border-white/5 px-6 py-4 bg-black/20">
@@ -134,13 +134,13 @@ export default function TeacherDashboard() {
               </TabsList>
             </div>
 
-            <div className="p-4 sm:p-6">
-              <TabsContent value="classes" className="mt-0 focus-visible:outline-none">
+            <div className="p-4 sm:p-6 w-full">
+              <TabsContent value="classes" className="mt-0 focus-visible:outline-none w-full">
                 <TeacherSection />
               </TabsContent>
 
-              <TabsContent value="events" className="mt-0 focus-visible:outline-none">
-                <Card className="border-0 bg-transparent shadow-none">
+              <TabsContent value="events" className="mt-0 focus-visible:outline-none w-full">
+                <Card className="border-0 bg-transparent shadow-none w-full">
                   <div className="flex items-center justify-between mb-6">
                     <div>
                       <h3 className="text-lg font-medium text-white">Upcoming Events</h3>
@@ -148,7 +148,7 @@ export default function TeacherDashboard() {
                     </div>
                   </div>
                   <Suspense fallback={<Skeleton className="h-[300px] w-full rounded-xl bg-slate-800/50" />}>
-                      <div className="rounded-xl border border-white/5 bg-black/20 overflow-hidden">
+                      <div className="rounded-xl border border-white/5 bg-black/20 overflow-hidden w-full">
                         <EventsTable />
                       </div>
                   </Suspense>
