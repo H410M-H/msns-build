@@ -1,3 +1,4 @@
+// File: src/app/(dashboard)/admin/revenue/fee/page.tsx
 "use client";
 
 import { PageHeader } from "~/components/blocks/nav/PageHeader";
@@ -8,28 +9,38 @@ export default function FeePage() {
   const breadcrumbs = [
     { href: "/admin", label: "Dashboard" },
     { href: "/admin/revenue", label: "Revenue" },
-    { href: "/admin/revenue/fee", label: "Fee Management", current: true },
+    { href: "#", label: "Fee Management", current: true },
   ];
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-indigo-50/50 to-blue-50/50">
+    <div className="w-full space-y-6 relative">
       <PageHeader breadcrumbs={breadcrumbs} />
       
-      {/* Animated background elements matching Revenue theme */}
-      <motion.div 
-        className="fixed -top-40 -right-32 h-96 w-96 rounded-full bg-blue-200/30 blur-3xl -z-10"
-        animate={{ rotate: 360 }}
-        transition={{ duration: 60, repeat: Infinity, ease: "linear" }}
-      />
-      <motion.div 
-        className="fixed -bottom-40 -left-32 h-96 w-96 rounded-full bg-indigo-200/30 blur-3xl -z-10"
-        animate={{ rotate: -360 }}
-        transition={{ duration: 60, repeat: Infinity, ease: "linear" }}
-      />
+      {/* Animated background elements - Theme Adapted */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none -z-10">
+        <motion.div 
+          className="absolute -top-[20%] -right-[10%] h-[500px] w-[500px] rounded-full bg-emerald-100/50 dark:bg-emerald-500/5 blur-[120px]"
+          animate={{ 
+            scale: [1, 1.1, 1],
+            opacity: [0.3, 0.5, 0.3],
+            rotate: 360 
+          }}
+          transition={{ duration: 60, repeat: Infinity, ease: "linear" }}
+        />
+        <motion.div 
+          className="absolute -bottom-[20%] -left-[10%] h-[500px] w-[500px] rounded-full bg-blue-100/50 dark:bg-blue-500/5 blur-[120px]"
+          animate={{ 
+            scale: [1.1, 1, 1.1],
+            opacity: [0.3, 0.5, 0.3],
+            rotate: -360 
+          }}
+          transition={{ duration: 60, repeat: Infinity, ease: "linear" }}
+        />
+      </div>
 
-      <div className="container mx-auto py-8 px-4 sm:px-6 lg:px-8 pt-20">
+      <div className="w-full animate-in fade-in slide-in-from-bottom-4 duration-700">
         <FeeDashboard />
       </div>
-    </main>
+    </div>
   );
 }

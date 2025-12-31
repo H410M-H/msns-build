@@ -1,3 +1,4 @@
+// File: src/app/(dashboard)/admin/revenue/salary/page.tsx
 "use client";
 
 import { useState } from "react";
@@ -100,57 +101,56 @@ export default function SalaryPage() {
       value: loadingCost ? null : `Rs. ${(payrollCost?.totalPayroll ?? 0).toLocaleString()}`,
       desc: `Paid in ${MONTHS[Number(selectedMonth) - 1]?.label}`,
       icon: DollarSign,
-      color: "text-emerald-400",
-      bg: "bg-gradient-to-br from-emerald-600/20 to-teal-900/40 border-emerald-500/30",
+      color: "text-emerald-600 dark:text-emerald-400",
+      bg: "bg-emerald-50 border-emerald-200 dark:bg-emerald-500/10 dark:border-emerald-500/30",
     },
     {
       title: "Pending Payouts",
       value: loadingPending ? null : pendingSalaries?.length ?? 0,
       desc: "Waiting for payment",
       icon: AlertCircle,
-      color: "text-amber-400",
-      bg: "bg-slate-900/60 border-emerald-500/10",
+      color: "text-amber-600 dark:text-amber-400",
+      bg: "bg-amber-50 border-amber-200 dark:bg-amber-500/10 dark:border-amber-500/30",
     },
     {
       title: "Unpaid Staff",
       value: loadingUnpaid ? null : unpaidEmployees?.length ?? 0,
       desc: "Not generated yet",
       icon: Users,
-      color: "text-rose-400",
-      bg: "bg-slate-900/60 border-emerald-500/10",
+      color: "text-rose-600 dark:text-rose-400",
+      bg: "bg-rose-50 border-rose-200 dark:bg-rose-500/10 dark:border-rose-500/30",
     },
     {
       title: "System Status",
       value: "Active",
       desc: "Payroll Operational",
       icon: CheckCircle2,
-      color: "text-blue-400",
-      bg: "bg-slate-900/60 border-emerald-500/10",
+      color: "text-blue-600 dark:text-blue-400",
+      bg: "bg-blue-50 border-blue-200 dark:bg-blue-500/10 dark:border-blue-500/30",
     },
   ];
 
   return (
-    <section className="relative w-full overflow-x-hidden selection:bg-emerald-500/30">
-      <div className="relative z-10 flex flex-col space-y-8">
+    <div className="w-full space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
         
         {/* === Header & Controls === */}
-        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-6 bg-slate-900/40 p-6 rounded-2xl border border-emerald-500/10 backdrop-blur-sm shadow-xl">
+        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-6 bg-white dark:bg-slate-900/40 p-6 rounded-2xl border border-slate-200 dark:border-emerald-500/10 backdrop-blur-sm shadow-sm dark:shadow-xl transition-colors">
           <div className="space-y-2">
-            <h1 className="text-3xl font-serif font-bold tracking-tight text-white">
+            <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
               Compensation Management
             </h1>
-            <p className="text-slate-400 max-w-xl">
+            <p className="text-slate-500 dark:text-slate-400 max-w-xl">
               Manage employee salaries, process monthly payrolls, and track compensation analytics.
             </p>
           </div>
 
-          <div className="flex flex-wrap items-center gap-3 bg-slate-950/50 p-1.5 rounded-xl border border-emerald-500/20 shadow-inner">
+          <div className="flex flex-wrap items-center gap-3 bg-slate-50 dark:bg-slate-950/50 p-1.5 rounded-xl border border-slate-200 dark:border-emerald-500/20 shadow-inner">
             <Select value={selectedMonth} onValueChange={setSelectedMonth}>
-              <SelectTrigger className="w-[140px] bg-slate-900 border-emerald-500/20 text-white focus:ring-emerald-500/50">
-                <Calendar className="w-4 h-4 mr-2 text-emerald-400" />
+              <SelectTrigger className="w-[140px] bg-white border-slate-200 text-slate-700 dark:bg-slate-900 dark:border-emerald-500/20 dark:text-white">
+                <Calendar className="w-4 h-4 mr-2 text-emerald-600 dark:text-emerald-400" />
                 <SelectValue placeholder="Month" />
               </SelectTrigger>
-              <SelectContent className="bg-slate-900 border-emerald-500/20 text-white">
+              <SelectContent className="bg-white border-slate-200 text-slate-700 dark:bg-slate-900 dark:border-emerald-500/20 dark:text-white">
                 {MONTHS.map((m) => (
                   <SelectItem key={m.value} value={m.value}>
                     {m.label}
@@ -160,10 +160,10 @@ export default function SalaryPage() {
             </Select>
 
             <Select value={selectedYear} onValueChange={setSelectedYear}>
-              <SelectTrigger className="w-[100px] bg-slate-900 border-emerald-500/20 text-white focus:ring-emerald-500/50">
+              <SelectTrigger className="w-[100px] bg-white border-slate-200 text-slate-700 dark:bg-slate-900 dark:border-emerald-500/20 dark:text-white">
                 <SelectValue placeholder="Year" />
               </SelectTrigger>
-              <SelectContent className="bg-slate-900 border-emerald-500/20 text-white">
+              <SelectContent className="bg-white border-slate-200 text-slate-700 dark:bg-slate-900 dark:border-emerald-500/20 dark:text-white">
                 {[2024, 2025, 2026].map((y) => (
                   <SelectItem key={y} value={String(y)}>
                     {y}
@@ -175,7 +175,7 @@ export default function SalaryPage() {
             <Button
               onClick={handleGeneratePayroll}
               disabled={isGenerating}
-              className="bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg shadow-emerald-900/20 transition-all border-0"
+              className="bg-emerald-600 hover:bg-emerald-700 text-white shadow-md shadow-emerald-200 dark:shadow-emerald-900/20 transition-all border-0 dark:hover:bg-emerald-500"
             >
               {isGenerating ? (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -192,18 +192,18 @@ export default function SalaryPage() {
           {stats.map((stat, i) => (
             <Card
               key={i}
-              className={`backdrop-blur-md shadow-lg transition-all border ${stat.bg}`}
+              className={`backdrop-blur-md shadow-sm dark:shadow-lg transition-all border ${stat.bg}`}
             >
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium text-slate-300">
+                <CardTitle className="text-sm font-medium text-slate-600 dark:text-slate-300">
                   {stat.title}
                 </CardTitle>
                 <stat.icon className={`h-4 w-4 ${stat.color}`} />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-white">
+                <div className="text-2xl font-bold text-slate-900 dark:text-white">
                   {stat.value ?? (
-                    <Skeleton className="h-8 w-24 bg-slate-800" />
+                    <Skeleton className="h-8 w-24 bg-slate-200 dark:bg-slate-800" />
                   )}
                 </div>
                 <p className="text-xs text-slate-500 mt-1">{stat.desc}</p>
@@ -214,22 +214,22 @@ export default function SalaryPage() {
 
         {/* === Main Content Tabs === */}
         <Tabs defaultValue="payroll" className="space-y-6">
-          <TabsList className="bg-slate-900/60 backdrop-blur-md border border-emerald-500/20 p-1 rounded-xl w-full sm:w-auto grid grid-cols-3 sm:inline-flex gap-2">
+          <TabsList className="bg-slate-100 p-1 border border-slate-200 rounded-xl w-full sm:w-auto grid grid-cols-3 sm:inline-flex gap-2 dark:bg-slate-900/60 dark:border-emerald-500/20">
             <TabsTrigger
               value="payroll"
-              className="gap-2 data-[state=active]:bg-emerald-600 data-[state=active]:text-white text-slate-400"
+              className="gap-2 data-[state=active]:bg-white data-[state=active]:text-emerald-700 data-[state=active]:shadow-sm text-slate-500 dark:data-[state=active]:bg-emerald-600 dark:data-[state=active]:text-white dark:text-slate-400 transition-all"
             >
               <Wallet className="h-4 w-4" /> Payroll
             </TabsTrigger>
             <TabsTrigger
               value="structures"
-              className="gap-2 data-[state=active]:bg-emerald-600 data-[state=active]:text-white text-slate-400"
+              className="gap-2 data-[state=active]:bg-white data-[state=active]:text-emerald-700 data-[state=active]:shadow-sm text-slate-500 dark:data-[state=active]:bg-emerald-600 dark:data-[state=active]:text-white dark:text-slate-400 transition-all"
             >
               <Users className="h-4 w-4" /> Salary Structures
             </TabsTrigger>
             <TabsTrigger
               value="analytics"
-              className="gap-2 data-[state=active]:bg-emerald-600 data-[state=active]:text-white text-slate-400"
+              className="gap-2 data-[state=active]:bg-white data-[state=active]:text-emerald-700 data-[state=active]:shadow-sm text-slate-500 dark:data-[state=active]:bg-emerald-600 dark:data-[state=active]:text-white dark:text-slate-400 transition-all"
             >
               <BarChart3 className="h-4 w-4" /> Analytics
             </TabsTrigger>
@@ -237,13 +237,13 @@ export default function SalaryPage() {
 
           {/* Tab 1: Monthly Payroll Processing */}
           <TabsContent value="payroll" className="focus-visible:outline-none focus-visible:ring-0">
-            <Card className="border border-emerald-500/20 bg-slate-900/60 backdrop-blur-xl shadow-2xl overflow-hidden rounded-2xl">
-              <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-emerald-500/10 bg-slate-900/50 p-6">
+            <Card className="border border-slate-200 bg-white dark:border-emerald-500/20 dark:bg-slate-900/60 backdrop-blur-xl shadow-sm dark:shadow-2xl overflow-hidden rounded-2xl transition-colors">
+              <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-slate-100 dark:border-emerald-500/10 bg-slate-50/50 dark:bg-slate-900/50 p-6">
                 <div>
-                  <CardTitle className="text-xl text-white">
+                  <CardTitle className="text-xl text-slate-900 dark:text-white">
                     Payroll Processing
                   </CardTitle>
-                  <CardDescription className="text-slate-400">
+                  <CardDescription className="text-slate-500 dark:text-slate-400">
                     Generate and manage monthly salary disbursements
                   </CardDescription>
                 </div>
@@ -259,13 +259,13 @@ export default function SalaryPage() {
 
           {/* Tab 2: Salary Structures */}
           <TabsContent value="structures" className="focus-visible:outline-none focus-visible:ring-0">
-            <Card className="border border-emerald-500/20 bg-slate-900/60 backdrop-blur-xl shadow-2xl overflow-hidden rounded-2xl">
-              <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-emerald-500/10 bg-slate-900/50 p-6">
+            <Card className="border border-slate-200 bg-white dark:border-emerald-500/20 dark:bg-slate-900/60 backdrop-blur-xl shadow-sm dark:shadow-2xl overflow-hidden rounded-2xl transition-colors">
+              <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-slate-100 dark:border-emerald-500/10 bg-slate-50/50 dark:bg-slate-900/50 p-6">
                 <div>
-                  <CardTitle className="text-xl text-white">
+                  <CardTitle className="text-xl text-slate-900 dark:text-white">
                     Employee Salary Structures
                   </CardTitle>
-                  <CardDescription className="text-slate-400">
+                  <CardDescription className="text-slate-500 dark:text-slate-400">
                     Manage base salaries and increments
                   </CardDescription>
                 </div>
@@ -288,12 +288,12 @@ export default function SalaryPage() {
 
           {/* Tab 3: Analytics */}
           <TabsContent value="analytics" className="focus-visible:outline-none focus-visible:ring-0">
-            <Card className="border border-emerald-500/20 bg-slate-900/60 backdrop-blur-xl shadow-2xl overflow-hidden rounded-2xl">
-              <CardHeader className="border-b border-emerald-500/10 bg-slate-900/50 p-6">
-                <CardTitle className="text-xl text-white">
+            <Card className="border border-slate-200 bg-white dark:border-emerald-500/20 dark:bg-slate-900/60 backdrop-blur-xl shadow-sm dark:shadow-2xl overflow-hidden rounded-2xl transition-colors">
+              <CardHeader className="border-b border-slate-100 dark:border-emerald-500/10 bg-slate-50/50 dark:bg-slate-900/50 p-6">
+                <CardTitle className="text-xl text-slate-900 dark:text-white">
                   Financial Analytics
                 </CardTitle>
-                <CardDescription className="text-slate-400">
+                <CardDescription className="text-slate-500 dark:text-slate-400">
                   Yearly breakdown of salary distribution
                 </CardDescription>
               </CardHeader>
@@ -303,7 +303,6 @@ export default function SalaryPage() {
             </Card>
           </TabsContent>
         </Tabs>
-      </div>
-    </section>
+    </div>
   );
 }

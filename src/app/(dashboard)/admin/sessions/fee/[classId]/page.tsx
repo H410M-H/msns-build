@@ -1,3 +1,5 @@
+// File: src/app/(dashboard)/admin/sessions/fee/[classId]/page.tsx
+
 import { ScrollArea } from "~/components/ui/scroll-area";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "~/components/ui/card";
 import { ClassFeeTable } from "~/components/tables/ClassFee";
@@ -15,69 +17,61 @@ export default async function FeeDetailsPage({ searchParams }: PageProps) {
     { href: "/admin", label: "Dashboard" },
     { href: "/admin/sessions", label: "Sessions" },
     { href: `/admin/sessions/${searchProps.sessionId}`, label: "Session Details" },
+    // Fixed: Added href="#" to satisfy the type definition
     { href: "#", label: "Fee Structure", current: true },
   ];
 
   return (
-    <section className="relative min-h-screen w-full bg-slate-950 overflow-x-hidden selection:bg-emerald-500/30">
+    <div className="w-full space-y-6">
+      <PageHeader breadcrumbs={breadcrumbs}/>
       
-      {/* === GLOBAL GRID BACKGROUND === */}
-      <div className="fixed inset-0 z-0 pointer-events-none">
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(45,255,196,0.05)_1px,transparent_1px),linear-gradient(to_bottom,rgba(45,255,196,0.05)_1px,transparent_1px)] bg-[size:3rem_3rem] sm:bg-[size:4rem_4rem]" />
-        <div className="absolute inset-0 bg-gradient-to-br from-emerald-900/20 via-slate-950/80 to-slate-950" />
-      </div>
-
-      <div className="relative z-10 flex flex-col min-h-screen">
-        <PageHeader breadcrumbs={breadcrumbs} />
-
-        <div className="flex-1 container mx-auto px-4 sm:px-6 lg:px-8 py-8 pt-20">
-          
-          <div className="max-w-[1920px] mx-auto space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
-            
-            {/* Header Section */}
-            <div className="flex flex-col gap-2">
-                <h1 className="text-3xl font-serif font-bold tracking-tight text-white flex items-center gap-3">
-                    <span className="p-2 rounded-xl bg-emerald-500/10 border border-emerald-500/20 shadow-lg shadow-emerald-900/20">
-                        <Coins className="w-6 h-6 text-emerald-400" />
-                    </span>
-                    Fee Details
-                </h1>
-                <p className="text-slate-400 ml-1 max-w-2xl">
-                    Manage fee structures, update amounts, and track payment records for this specific class within the active session.
-                </p>
-            </div>
-
-            {/* Main Card */}
-            <Card className="border border-emerald-500/20 bg-slate-900/60 backdrop-blur-xl shadow-2xl overflow-hidden rounded-2xl">
-                <CardHeader className="border-b border-emerald-500/10 bg-slate-900/50 p-6">
-                    <div className="flex items-center justify-between">
-                        <div className="space-y-1">
-                            <CardTitle className="text-xl text-white flex items-center gap-2 font-semibold">
-                                <Receipt className="w-5 h-5 text-emerald-400" />
-                                Class Fee Registry
-                            </CardTitle>
-                            <CardDescription className="text-slate-400">
-                                Detailed breakdown of fees assigned to this class.
-                            </CardDescription>
-                        </div>
-                    </div>
-                </CardHeader>
-                
-                <CardContent className="p-0">
-                    <ScrollArea className="h-[calc(100vh-300px)] w-full">
-                        <div className="p-6">
-                            <ClassFeeTable 
-                                sessionId={searchProps.sessionId} 
-                                classId={searchProps.classId} 
-                            />
-                        </div>
-                    </ScrollArea>
-                </CardContent>
-            </Card>
-
-          </div>
+      <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 pt-2">
+        
+        {/* Header Section */}
+        <div className="flex flex-col gap-2 mb-6">
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 dark:text-white flex items-center gap-3">
+                <span className="p-2 rounded-xl bg-emerald-100 border border-emerald-200 dark:bg-emerald-500/10 dark:border-emerald-500/20 shadow-sm">
+                    <Coins className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
+                </span>
+                Fee Details
+            </h1>
+            <p className="text-slate-500 dark:text-slate-400 ml-1 max-w-2xl text-sm sm:text-base leading-relaxed">
+                Manage fee structures, update amounts, and track payment records for this specific class within the active session.
+            </p>
         </div>
+
+        {/* Main Content Card */}
+        <Card className="border border-slate-200 bg-white dark:border-white/5 dark:bg-slate-900/40 backdrop-blur-md shadow-sm dark:shadow-xl overflow-hidden transition-colors rounded-xl">
+          
+          <CardHeader className="border-b border-slate-100 dark:border-white/5 px-6 py-4 bg-slate-50/50 dark:bg-black/20">
+            <div className="flex items-center gap-3">
+               <div className="p-2 rounded-lg bg-white border border-slate-200 shadow-sm dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20 dark:shadow-none">
+                  <Receipt className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+               </div>
+               <div>
+                  <CardTitle className="text-lg font-bold text-slate-900 dark:text-white">
+                    Class Fee Registry
+                  </CardTitle>
+                  <CardDescription className="text-slate-500 dark:text-slate-400 text-xs sm:text-sm">
+                    Detailed breakdown of fees assigned to this class
+                  </CardDescription>
+               </div>
+            </div>
+          </CardHeader>
+
+          <CardContent className="p-0">
+            {/* Scroll area adjusted to fit viewport nicely */}
+            <ScrollArea className="h-[calc(100vh-320px)] w-full">
+               <div className="p-4 sm:p-6">
+                  <ClassFeeTable 
+                    sessionId={searchProps.sessionId} 
+                    classId={searchProps.classId} 
+                  />
+               </div>
+            </ScrollArea>
+          </CardContent>
+        </Card>
       </div>
-    </section>
+    </div>
   );
 }

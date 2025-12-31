@@ -11,7 +11,6 @@ export default async function ClassDetailsPage({ searchParams }: PageProps) {
   const breadcrumbs = [
     { href: "/admin", label: "Dashboard" },
     { href: `/admin/sessions/${searchProps.sessionId}`, label: "Session Details" },
-    { href: "#", label: "Class Roster", current: true },
   ];
 
   return (

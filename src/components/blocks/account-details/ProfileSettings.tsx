@@ -1,4 +1,4 @@
-// File: ProfileSettings.tsx
+// File: src/components/blocks/account-details/ProfileSettings.tsx
 "use client"
 
 import { useState } from "react"
@@ -8,7 +8,8 @@ import { Switch } from "~/components/ui/switch"
 import { Label } from "~/components/ui/label"
 import { Input } from "~/components/ui/input"
 import { useToast } from "~/hooks/use-toast"
-import { Settings, Bell, Shield, Eye, Trash2 } from "lucide-react"
+import { Settings, Bell, Shield, Eye, Trash2, Palette } from "lucide-react"
+import { useTheme } from "next-themes"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -20,6 +21,13 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "~/components/ui/alert-dialog"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "~/components/ui/select"
 import { api } from "~/trpc/react"
 
 interface User {
@@ -50,6 +58,7 @@ export default function ProfileSettings({ user }: ProfileSettingsProps) {
   })
   const [deletePassword, setDeletePassword] = useState("")
   const { toast } = useToast()
+  const { theme, setTheme } = useTheme()
   const updateSettingsMutation = api.profile.updateSettings.useMutation()
   const deleteAccountMutation = api.profile.deleteAccount.useMutation()
 
@@ -104,6 +113,31 @@ export default function ProfileSettings({ user }: ProfileSettingsProps) {
       </CardHeader>
 
       <CardContent className="space-y-6">
+        {/* Appearance Settings */}
+        <div className="space-y-4">
+          <h3 className="text-lg font-medium flex items-center gap-2">
+            <Palette className="w-4 h-4" />
+            Appearance
+          </h3>
+
+          <div className="flex items-center justify-between">
+            <div className="space-y-0.5">
+              <Label>Theme</Label>
+              <p className="text-sm text-muted-foreground">Select your preferred interface theme</p>
+            </div>
+            <Select value={theme} onValueChange={setTheme}>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Select theme" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="light">Light</SelectItem>
+                <SelectItem value="dark">Dark</SelectItem>
+                <SelectItem value="system">System</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+
         {/* Notification Settings */}
         <div className="space-y-4">
           <h3 className="text-lg font-medium flex items-center gap-2">

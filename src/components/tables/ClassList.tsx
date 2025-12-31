@@ -1,3 +1,4 @@
+// File: src/components/tables/ClassList.tsx
 "use client";
 
 import { useMemo, useState } from "react";
@@ -39,20 +40,19 @@ interface ClassItem {
 
 const categoryOrder = ["Montessori", "Primary", "Middle", "SSC_I", "SSC_II"];
 
-// Optimized Colors for Dark Theme
+// Optimized Colors for Light & Dark Themes
 const categoryColors: Record<string, string> = {
-  Montessori: "data-[state=active]:bg-rose-500/10 data-[state=active]:text-rose-400 hover:text-rose-300",
-  Primary: "data-[state=active]:bg-indigo-500/10 data-[state=active]:text-indigo-400 hover:text-indigo-300",
-  Middle: "data-[state=active]:bg-emerald-500/10 data-[state=active]:text-emerald-400 hover:text-emerald-300",
-  SSC_I: "data-[state=active]:bg-amber-500/10 data-[state=active]:text-amber-400 hover:text-amber-300",
-  SSC_II: "data-[state=active]:bg-violet-500/10 data-[state=active]:text-violet-400 hover:text-violet-300",
+  Montessori: "data-[state=active]:bg-rose-100 data-[state=active]:text-rose-700 hover:text-rose-600 dark:data-[state=active]:bg-rose-500/10 dark:data-[state=active]:text-rose-400 dark:hover:text-rose-300",
+  Primary: "data-[state=active]:bg-indigo-100 data-[state=active]:text-indigo-700 hover:text-indigo-600 dark:data-[state=active]:bg-indigo-500/10 dark:data-[state=active]:text-indigo-400 dark:hover:text-indigo-300",
+  Middle: "data-[state=active]:bg-emerald-100 data-[state=active]:text-emerald-700 hover:text-emerald-600 dark:data-[state=active]:bg-emerald-500/10 dark:data-[state=active]:text-emerald-400 dark:hover:text-emerald-300",
+  SSC_I: "data-[state=active]:bg-amber-100 data-[state=active]:text-amber-700 hover:text-amber-600 dark:data-[state=active]:bg-amber-500/10 dark:data-[state=active]:text-amber-400 dark:hover:text-amber-300",
+  SSC_II: "data-[state=active]:bg-violet-100 data-[state=active]:text-violet-700 hover:text-violet-600 dark:data-[state=active]:bg-violet-500/10 dark:data-[state=active]:text-violet-400 dark:hover:text-violet-300",
 };
 
 const sectionColors: Record<string, string> = {
-  ROSE: "bg-rose-500/10 text-rose-400 border-rose-500/20",
-  TULIP: "bg-amber-500/10 text-amber-400 border-amber-500/20",
-  // Default fallback for others
-  DEFAULT: "bg-slate-500/10 text-slate-400 border-slate-500/20"
+  ROSE: "bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-500/10 dark:text-rose-400 dark:border-rose-500/20",
+  TULIP: "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-500/20",
+  DEFAULT: "bg-slate-100 text-slate-700 border-slate-200 dark:bg-slate-500/10 dark:text-slate-400 dark:border-slate-500/20"
 };
 
 export const ClassList = ({ sessionId }: { sessionId: string }) => {
@@ -101,14 +101,14 @@ export const ClassList = ({ sessionId }: { sessionId: string }) => {
   return (
     <div className="w-full space-y-6">
       {/* Header Section */}
-      <div className="flex flex-col gap-4 rounded-xl border border-white/5 bg-slate-900/40 p-4 shadow-sm backdrop-blur-md md:flex-row md:items-center md:justify-between">
+      <div className="flex flex-col gap-4 rounded-xl border border-slate-200 bg-white/50 p-4 shadow-sm backdrop-blur-md dark:border-white/5 dark:bg-slate-900/40 md:flex-row md:items-center md:justify-between transition-colors">
         <div className="relative w-full md:max-w-md group">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500 group-focus-within:text-emerald-400 transition-colors" />
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400 group-focus-within:text-emerald-500 transition-colors" />
           <Input
             placeholder="Search by grade or section..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-9 bg-slate-950/50 border-white/10 text-white placeholder:text-slate-500 focus:ring-emerald-500/50 focus:border-emerald-500/50 h-10 rounded-lg transition-all"
+            className="pl-9 bg-white border-slate-200 text-slate-900 placeholder:text-slate-400 focus:ring-emerald-500/50 focus:border-emerald-500/50 h-10 rounded-lg transition-all dark:bg-slate-950/50 dark:border-white/10 dark:text-white dark:placeholder:text-slate-500"
           />
         </div>
         
@@ -117,7 +117,7 @@ export const ClassList = ({ sessionId }: { sessionId: string }) => {
             variant="outline"
             size="sm"
             onClick={handleRefresh}
-            className="gap-2 border-white/10 bg-slate-900/50 text-slate-300 hover:text-emerald-400 hover:bg-emerald-500/10 transition-colors"
+            className="gap-2 border-slate-200 bg-white text-slate-600 hover:text-emerald-600 hover:bg-emerald-50 transition-colors dark:border-white/10 dark:bg-slate-900/50 dark:text-slate-300 dark:hover:text-emerald-400 dark:hover:bg-emerald-500/10"
             disabled={isLoading || isRefetching}
           >
             <RefreshCw className={cn("h-4 w-4", (isLoading || isRefetching) && "animate-spin")} />
@@ -131,15 +131,15 @@ export const ClassList = ({ sessionId }: { sessionId: string }) => {
 
       {/* Tabs Section */}
       <Tabs defaultValue={categoryOrder[0]} className="w-full">
-        <div className="sticky top-0 z-10 -mx-4 bg-slate-950/80 px-4 py-2 backdrop-blur-md md:static md:mx-0 md:p-0 md:bg-transparent">
-          <ScrollArea className="w-full whitespace-nowrap rounded-lg border border-white/5 bg-slate-900/40 p-1">
+        <div className="sticky top-0 z-10 -mx-4 bg-slate-50/80 px-4 py-2 backdrop-blur-md dark:bg-slate-950/80 md:static md:mx-0 md:p-0 md:bg-transparent">
+          <ScrollArea className="w-full whitespace-nowrap rounded-lg border border-slate-200 bg-white p-1 dark:border-white/5 dark:bg-slate-900/40">
             <TabsList className="bg-transparent p-0">
               {categoryOrder.map((category) => (
                 <TabsTrigger
                   key={category}
                   value={category}
                   className={cn(
-                    "rounded-md px-4 py-2 text-sm font-medium transition-all text-slate-400 hover:text-slate-200",
+                    "rounded-md px-4 py-2 text-sm font-medium transition-all text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200",
                     categoryColors[category]
                   )}
                 >
@@ -173,12 +173,12 @@ export const ClassList = ({ sessionId }: { sessionId: string }) => {
                      <motion.div 
                        initial={{ opacity: 0 }} 
                        animate={{ opacity: 1 }}
-                       className="col-span-full flex flex-col items-center justify-center py-16 text-center text-slate-500 border border-dashed border-white/10 rounded-xl bg-slate-900/20"
+                       className="col-span-full flex flex-col items-center justify-center py-16 text-center text-slate-500 border border-dashed border-slate-300 rounded-xl bg-slate-50/50 dark:text-slate-400 dark:border-white/10 dark:bg-slate-900/20"
                      >
-                       <div className="mb-4 rounded-full bg-slate-900 p-4 border border-white/5">
-                         <AlertCircle className="h-8 w-8 text-slate-600" />
+                       <div className="mb-4 rounded-full bg-white p-4 border border-slate-200 shadow-sm dark:bg-slate-900 dark:border-white/5">
+                         <AlertCircle className="h-8 w-8 text-slate-400 dark:text-slate-600" />
                        </div>
-                       <p className="text-lg font-medium text-slate-300">No classes found in {category}</p>
+                       <p className="text-lg font-medium text-slate-700 dark:text-slate-300">No classes found in {category}</p>
                        <p className="text-sm">Create a new class to get started.</p>
                      </motion.div>
                    )}
@@ -215,27 +215,30 @@ const ClassCard = ({
       transition={{ duration: 0.2, delay: index * 0.05 }}
       className={cn(
         "group relative flex flex-col justify-between overflow-hidden rounded-xl border transition-all duration-300",
-        "bg-slate-900/40 backdrop-blur-sm border-white/5",
-        "hover:border-emerald-500/30 hover:shadow-xl hover:shadow-emerald-900/10 hover:-translate-y-1",
-        isSelected && "ring-1 ring-emerald-500 bg-emerald-900/10 border-emerald-500/30"
+        // Light Mode
+        "bg-white border-slate-200 shadow-sm hover:shadow-lg hover:-translate-y-1 hover:border-emerald-300",
+        // Dark Mode
+        "dark:bg-slate-900/40 dark:backdrop-blur-sm dark:border-white/5 dark:hover:border-emerald-500/30 dark:hover:shadow-emerald-900/10",
+        // Selection State
+        isSelected && "ring-1 ring-emerald-500 bg-emerald-50 border-emerald-300 dark:bg-emerald-900/10 dark:border-emerald-500/30"
       )}
     >
       {/* Decorative Gradient */}
-      <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-emerald-600 to-teal-600 opacity-0 group-hover:opacity-100 transition-opacity" />
+      <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-emerald-500 to-teal-500 opacity-0 group-hover:opacity-100 transition-opacity" />
 
       {/* Selection Checkbox */}
       <div className="absolute right-4 top-4 z-10">
         <Checkbox
           checked={isSelected}
           onCheckedChange={onSelect}
-          className="border-white/20 data-[state=checked]:bg-emerald-600 data-[state=checked]:text-white h-5 w-5 rounded-md"
+          className="border-slate-300 data-[state=checked]:bg-emerald-600 data-[state=checked]:text-white h-5 w-5 rounded-md dark:border-white/20"
         />
       </div>
 
       <div className="p-5 space-y-4">
         {/* Header */}
         <div>
-          <h3 className="text-2xl font-bold tracking-tight text-white group-hover:text-emerald-300 transition-colors">
+          <h3 className="text-2xl font-bold tracking-tight text-slate-900 group-hover:text-emerald-700 transition-colors dark:text-white dark:group-hover:text-emerald-300">
             {item.grade}
           </h3>
           <Badge 
@@ -247,18 +250,18 @@ const ClassCard = ({
         </div>
 
         {/* Info Grid */}
-        <div className="grid grid-cols-2 gap-3 rounded-lg bg-black/20 border border-white/5 p-3">
+        <div className="grid grid-cols-2 gap-3 rounded-lg bg-slate-50 border border-slate-100 p-3 dark:bg-black/20 dark:border-white/5">
           <div className="space-y-1">
             <span className="text-[10px] uppercase text-slate-500 font-bold tracking-wider">Monthly Fee</span>
-            <div className="flex items-center gap-1.5 font-mono font-semibold text-emerald-400">
+            <div className="flex items-center gap-1.5 font-mono font-semibold text-emerald-600 dark:text-emerald-400">
               <Banknote className="h-3.5 w-3.5" />
               <span>{item.fee.toLocaleString()}</span>
             </div>
           </div>
           <div className="space-y-1">
             <span className="text-[10px] uppercase text-slate-500 font-bold tracking-wider">Students</span>
-            <div className="flex items-center gap-1.5 font-medium text-slate-300">
-              <Users className="h-3.5 w-3.5 text-slate-500" />
+            <div className="flex items-center gap-1.5 font-medium text-slate-700 dark:text-slate-300">
+              <Users className="h-3.5 w-3.5 text-slate-400 dark:text-slate-500" />
               <span>--</span>
             </div>
           </div>
@@ -267,19 +270,19 @@ const ClassCard = ({
 
       {/* Actions */}
       <div className="p-4 pt-0 grid grid-cols-2 gap-2 mt-auto">
-        <Button asChild size="sm" variant="outline" className="w-full text-xs border-white/10 bg-white/5 text-slate-300 hover:text-white hover:bg-white/10 h-8">
+        <Button asChild size="sm" variant="outline" className="w-full text-xs border-slate-200 bg-slate-50 text-slate-600 hover:text-slate-900 hover:bg-slate-100 h-8 dark:border-white/10 dark:bg-white/5 dark:text-slate-300 dark:hover:text-white dark:hover:bg-white/10">
           <Link href={`/admin/sessions/class/?classId=${item.classId}&sessionId=${sessionId}`}>
             <BookOpen className="mr-1.5 h-3.5 w-3.5" />
             View
           </Link>
         </Button>
-        <Button asChild size="sm" variant="outline" className="w-full text-xs border-white/10 bg-white/5 text-slate-300 hover:text-white hover:bg-white/10 h-8">
+        <Button asChild size="sm" variant="outline" className="w-full text-xs border-slate-200 bg-slate-50 text-slate-600 hover:text-slate-900 hover:bg-slate-100 h-8 dark:border-white/10 dark:bg-white/5 dark:text-slate-300 dark:hover:text-white dark:hover:bg-white/10">
           <Link href={`/admin/sessions/timetable/?classId=${item.classId}`}>
             <Calendar className="mr-1.5 h-3.5 w-3.5" />
             Time
           </Link>
         </Button>
-        <Button asChild size="sm" className="col-span-2 w-full text-xs bg-emerald-600 hover:bg-emerald-500 text-white border-0 h-8 shadow-md shadow-emerald-900/20">
+        <Button asChild size="sm" className="col-span-2 w-full text-xs bg-emerald-600 hover:bg-emerald-700 text-white border-0 h-8 shadow-md shadow-emerald-200 dark:shadow-emerald-900/20 transition-all">
           <Link href={`/admin/sessions/fee/?classId=${item.classId}&sessionId=${sessionId}`}>
             <Banknote className="mr-1.5 h-3.5 w-3.5" />
             Manage Fees
@@ -294,21 +297,21 @@ const ClassCard = ({
 const ClassListSkeleton = () => (
   <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
     {Array.from({ length: 8 }).map((_, i) => (
-      <div key={i} className="flex h-[280px] flex-col justify-between rounded-xl border border-white/5 bg-slate-900/40 p-5">
+      <div key={i} className="flex h-[280px] flex-col justify-between rounded-xl border border-slate-200 bg-white p-5 dark:border-white/5 dark:bg-slate-900/40">
         <div className="space-y-3">
           <div className="flex justify-between">
-            <Skeleton className="h-8 w-24 bg-white/10" />
-            <Skeleton className="h-5 w-5 rounded bg-white/10" />
+            <Skeleton className="h-8 w-24 bg-slate-100 dark:bg-white/10" />
+            <Skeleton className="h-5 w-5 rounded bg-slate-100 dark:bg-white/10" />
           </div>
-          <Skeleton className="h-6 w-16 rounded-full bg-white/10" />
-          <Skeleton className="h-16 w-full rounded-lg bg-white/5" />
+          <Skeleton className="h-6 w-16 rounded-full bg-slate-100 dark:bg-white/10" />
+          <Skeleton className="h-16 w-full rounded-lg bg-slate-50 dark:bg-white/5" />
         </div>
         <div className="grid gap-2">
           <div className="grid grid-cols-2 gap-2">
-            <Skeleton className="h-8 w-full bg-white/10" />
-            <Skeleton className="h-8 w-full bg-white/10" />
+            <Skeleton className="h-8 w-full bg-slate-100 dark:bg-white/10" />
+            <Skeleton className="h-8 w-full bg-slate-100 dark:bg-white/10" />
           </div>
-          <Skeleton className="h-8 w-full bg-white/10" />
+          <Skeleton className="h-8 w-full bg-slate-100 dark:bg-white/10" />
         </div>
       </div>
     ))}

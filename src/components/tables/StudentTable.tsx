@@ -1,3 +1,4 @@
+// File: src/components/tables/StudentTable.tsx
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
@@ -164,11 +165,11 @@ function AddToClassDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[425px] bg-slate-900 border-emerald-500/20 text-slate-200">
+      <DialogContent className="sm:max-w-[425px] bg-white border-slate-200 text-slate-900 dark:bg-slate-900 dark:border-emerald-500/20 dark:text-slate-200">
         <DialogHeader>
-          <DialogTitle className="text-emerald-400">Add to Class</DialogTitle>
-          <p className="text-sm text-slate-400">
-            Assign <span className="text-white font-medium">{student?.studentName}</span> to a class.
+          <DialogTitle className="text-emerald-600 dark:text-emerald-400">Add to Class</DialogTitle>
+          <p className="text-sm text-slate-500 dark:text-slate-400">
+            Assign <span className="text-slate-900 dark:text-white font-medium">{student?.studentName}</span> to a class.
           </p>
         </DialogHeader>
         <Form {...form}>
@@ -180,14 +181,14 @@ function AddToClassDialog({
               name="sessionId"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Session</FormLabel>
+                  <FormLabel className="dark:text-slate-200">Session</FormLabel>
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
-                      <SelectTrigger className="bg-slate-950 border-emerald-500/30 text-slate-200" disabled={sessionsLoading}>
+                      <SelectTrigger className="bg-white border-slate-200 text-slate-900 dark:bg-slate-950 dark:border-emerald-500/30 dark:text-slate-200" disabled={sessionsLoading}>
                         <SelectValue placeholder={sessionsLoading ? "Loading..." : "Select Session"} />
                       </SelectTrigger>
                     </FormControl>
-                    <SelectContent className="bg-slate-900 border-emerald-500/20 text-slate-200">
+                    <SelectContent className="bg-white border-slate-200 text-slate-900 dark:bg-slate-900 dark:border-emerald-500/20 dark:text-slate-200">
                       {sessions?.map((session) => (
                         <SelectItem key={session.sessionId} value={session.sessionId}>
                           {session.sessionName}
@@ -206,14 +207,14 @@ function AddToClassDialog({
               name="classId"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Class</FormLabel>
+                  <FormLabel className="dark:text-slate-200">Class</FormLabel>
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
-                      <SelectTrigger className="bg-slate-950 border-emerald-500/30 text-slate-200" disabled={classesLoading}>
+                      <SelectTrigger className="bg-white border-slate-200 text-slate-900 dark:bg-slate-950 dark:border-emerald-500/30 dark:text-slate-200" disabled={classesLoading}>
                         <SelectValue placeholder={classesLoading ? "Loading..." : "Select Class"} />
                       </SelectTrigger>
                     </FormControl>
-                    <SelectContent className="bg-slate-900 border-emerald-500/20 text-slate-200">
+                    <SelectContent className="bg-white border-slate-200 text-slate-900 dark:bg-slate-900 dark:border-emerald-500/20 dark:text-slate-200">
                       {classes?.map((cls) => (
                         <SelectItem key={cls.classId} value={cls.classId}>
                           Grade {cls.grade} {cls.section ? `(${cls.section})` : ""}
@@ -230,7 +231,7 @@ function AddToClassDialog({
               <Button 
                 type="submit" 
                 disabled={addToClass.isPending}
-                className="bg-emerald-600 hover:bg-emerald-500 text-white w-full sm:w-auto"
+                className="bg-emerald-600 hover:bg-emerald-700 text-white w-full sm:w-auto dark:hover:bg-emerald-500"
               >
                 {addToClass.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Add to Class
@@ -271,7 +272,7 @@ export const StudentTable = () => {
             }
             onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
             aria-label="Select all"
-            className="border-emerald-500/50 data-[state=checked]:bg-emerald-600 data-[state=checked]:text-white"
+            className="border-slate-300 data-[state=checked]:bg-emerald-600 data-[state=checked]:text-white dark:border-emerald-500/50"
           />
         ),
         cell: ({ row }) => (
@@ -279,7 +280,7 @@ export const StudentTable = () => {
             checked={row.getIsSelected()}
             onCheckedChange={(value) => row.toggleSelected(!!value)}
             aria-label="Select row"
-            className="border-emerald-500/50 data-[state=checked]:bg-emerald-600 data-[state=checked]:text-white"
+            className="border-slate-300 data-[state=checked]:bg-emerald-600 data-[state=checked]:text-white dark:border-emerald-500/50"
           />
         ),
         enableSorting: false,
@@ -292,14 +293,14 @@ export const StudentTable = () => {
             <Button
               variant="ghost"
               onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-              className="hover:bg-emerald-500/20 hover:text-white px-2 -ml-2 font-semibold text-emerald-100/80"
+              className="hover:bg-emerald-500/20 hover:text-emerald-700 px-2 -ml-2 font-semibold text-slate-600 dark:text-emerald-100/80 dark:hover:text-white"
             >
               Reg #
               <ArrowUpDown className="ml-2 h-3 w-3" />
             </Button>
           )
         },
-        cell: ({ row }) => <span className="font-mono text-emerald-200 text-xs sm:text-sm">{row.getValue("registrationNumber")}</span>,
+        cell: ({ row }) => <span className="font-mono text-emerald-700 dark:text-emerald-200 text-xs sm:text-sm">{row.getValue("registrationNumber")}</span>,
       },
       {
         accessorKey: "admissionNumber",
@@ -308,14 +309,14 @@ export const StudentTable = () => {
             <Button
               variant="ghost"
               onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-              className="hover:bg-emerald-500/20 hover:text-white px-2 -ml-2 font-semibold text-emerald-100/80"
+              className="hover:bg-emerald-500/20 hover:text-emerald-700 px-2 -ml-2 font-semibold text-slate-600 dark:text-emerald-100/80 dark:hover:text-white"
             >
               Adm #
               <ArrowUpDown className="ml-2 h-3 w-3" />
             </Button>
           )
         },
-        cell: ({ row }) => <span className="font-mono text-slate-300 text-xs sm:text-sm">{row.getValue("admissionNumber")}</span>,
+        cell: ({ row }) => <span className="font-mono text-slate-600 dark:text-slate-300 text-xs sm:text-sm">{row.getValue("admissionNumber")}</span>,
       },
       {
         accessorKey: "studentName",
@@ -324,7 +325,7 @@ export const StudentTable = () => {
             <Button
               variant="ghost"
               onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-              className="hover:bg-emerald-500/20 hover:text-white px-2 -ml-2 font-semibold text-emerald-100/80"
+              className="hover:bg-emerald-500/20 hover:text-emerald-700 px-2 -ml-2 font-semibold text-slate-600 dark:text-emerald-100/80 dark:hover:text-white"
             >
               Student Name
               <ArrowUpDown className="ml-2 h-3 w-3" />
@@ -333,7 +334,7 @@ export const StudentTable = () => {
         },
         cell: ({ row }) => (
             <div className="flex flex-col">
-                <span className="font-medium text-white">{row.getValue("studentName")}</span>
+                <span className="font-medium text-slate-900 dark:text-white">{row.getValue("studentName")}</span>
                 <span className="text-xs text-slate-500 md:hidden">{row.original.fatherName}</span>
             </div>
         ),
@@ -345,20 +346,20 @@ export const StudentTable = () => {
             <Button
               variant="ghost"
               onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-              className="hover:bg-emerald-500/20 hover:text-white px-2 -ml-2 font-semibold text-emerald-100/80"
+              className="hover:bg-emerald-500/20 hover:text-emerald-700 px-2 -ml-2 font-semibold text-slate-600 dark:text-emerald-100/80 dark:hover:text-white"
             >
               Father Name
               <ArrowUpDown className="ml-2 h-3 w-3" />
             </Button>
           )
         },
-        cell: ({ row }) => <span className="text-slate-300">{row.getValue("fatherName")}</span>,
+        cell: ({ row }) => <span className="text-slate-600 dark:text-slate-300">{row.getValue("fatherName")}</span>,
         meta: { className: "hidden md:table-cell" }, 
       },
       {
         accessorKey: "fatherMobile",
         header: "Father Mobile",
-        cell: ({ row }) => <span className="text-slate-400 font-mono text-xs whitespace-nowrap">{row.getValue("fatherMobile")}</span>,
+        cell: ({ row }) => <span className="text-slate-500 dark:text-slate-400 font-mono text-xs whitespace-nowrap">{row.getValue("fatherMobile")}</span>,
         meta: { className: "hidden lg:table-cell" },
       },
       {
@@ -366,9 +367,9 @@ export const StudentTable = () => {
         header: "DOB",
         cell: ({ row }) => {
           const dateValue = row.getValue("dateOfBirth");
-          if (!dateValue || dateValue === "none") return <span className="text-slate-500 italic text-xs">N/A</span>;
+          if (!dateValue || dateValue === "none") return <span className="text-slate-400 dark:text-slate-500 italic text-xs">N/A</span>;
           const date = new Date(dateValue as string);
-          return <span className="text-slate-300 text-xs whitespace-nowrap">{!isNaN(date.getTime()) ? date.toLocaleDateString() : dateValue as string}</span>;
+          return <span className="text-slate-600 dark:text-slate-300 text-xs whitespace-nowrap">{!isNaN(date.getTime()) ? date.toLocaleDateString() : dateValue as string}</span>;
         },
         meta: { className: "hidden xl:table-cell" },
       },
@@ -379,9 +380,9 @@ export const StudentTable = () => {
           const gender = row.original.gender;
           return (
             <span className={`capitalize text-[10px] sm:text-xs px-2 py-0.5 rounded-full border ${
-              gender === 'MALE' ? 'bg-blue-900/20 text-blue-300 border-blue-500/30' : 
-              gender === 'FEMALE' ? 'bg-pink-900/20 text-pink-300 border-pink-500/30' : 
-              'bg-purple-900/20 text-purple-300 border-purple-500/30'
+              gender === 'MALE' ? 'bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-900/20 dark:text-blue-300 dark:border-blue-500/30' : 
+              gender === 'FEMALE' ? 'bg-pink-100 text-pink-700 border-pink-200 dark:bg-pink-900/20 dark:text-pink-300 dark:border-pink-500/30' : 
+              'bg-purple-100 text-purple-700 border-purple-200 dark:bg-purple-900/20 dark:text-purple-300 dark:border-purple-500/30'
             }`}>
               {gender ? gender.toLowerCase() : "N/A"}
             </span>
@@ -396,18 +397,18 @@ export const StudentTable = () => {
         cell: ({ row }) => (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="h-8 w-8 p-0 text-slate-400 hover:text-white hover:bg-emerald-500/20 rounded-full">
+              <Button variant="ghost" className="h-8 w-8 p-0 text-slate-500 hover:text-slate-900 hover:bg-slate-100 rounded-full dark:text-slate-400 dark:hover:text-white dark:hover:bg-emerald-500/20">
                 <DotsHorizontalIcon className="h-4 w-4" />
                 <span className="sr-only">Open menu</span>
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="bg-slate-900 border-emerald-500/20 text-slate-200 w-56 shadow-xl">
+            <DropdownMenuContent align="end" className="bg-white border-slate-200 text-slate-700 w-56 shadow-xl dark:bg-slate-900 dark:border-emerald-500/20 dark:text-slate-200">
               <DropdownMenuLabel>Actions</DropdownMenuLabel>
-              <DropdownMenuSeparator className="bg-emerald-500/20" />
+              <DropdownMenuSeparator className="bg-slate-200 dark:bg-emerald-500/20" />
               
               <DropdownMenuItem 
                 onClick={() => setStudentToAssign(row.original)}
-                className="cursor-pointer hover:bg-emerald-500/20 focus:bg-emerald-500/20 text-emerald-400"
+                className="cursor-pointer hover:bg-emerald-50 focus:bg-emerald-50 text-emerald-600 dark:hover:bg-emerald-500/20 dark:focus:bg-emerald-500/20 dark:text-emerald-400"
               >
                 <UserPlus className="mr-2 h-3.5 w-3.5" />
                 Add to Class
@@ -415,7 +416,7 @@ export const StudentTable = () => {
               
               <DropdownMenuItem 
                 onClick={() => setEditingStudent(row.original)}
-                className="cursor-pointer hover:bg-emerald-500/20 focus:bg-emerald-500/20"
+                className="cursor-pointer hover:bg-slate-100 focus:bg-slate-100 dark:hover:bg-emerald-500/20 dark:focus:bg-emerald-500/20"
               >
                 <Pencil className="mr-2 h-3.5 w-3.5" />
                 Edit Student
@@ -425,7 +426,7 @@ export const StudentTable = () => {
                 onClick={() => {
                     void navigator.clipboard.writeText(row.original.admissionNumber || "");
                 }}
-                className="cursor-pointer hover:bg-emerald-500/20 focus:bg-emerald-500/20"
+                className="cursor-pointer hover:bg-slate-100 focus:bg-slate-100 dark:hover:bg-emerald-500/20 dark:focus:bg-emerald-500/20"
               >
                 <Copy className="mr-2 h-3.5 w-3.5 text-slate-400" />
                 Copy Adm #
@@ -461,31 +462,31 @@ export const StudentTable = () => {
   return (
     <div className="w-full space-y-4 animate-in fade-in duration-500">
       {/* --- Top Controls --- */}
-      <div className="rounded-xl bg-slate-900/80 p-4 shadow-lg border border-emerald-500/20 backdrop-blur-md sticky top-2 z-30">
+      <div className="rounded-xl bg-white/80 p-4 shadow-sm border border-slate-200 backdrop-blur-md sticky top-2 z-30 transition-colors dark:bg-slate-900/80 dark:border-emerald-500/20 dark:shadow-lg">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           
           {/* Search & Stats */}
           <div className="flex flex-col sm:flex-row gap-3 w-full lg:max-w-xl">
             <div className="relative w-full">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-emerald-500/50" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 dark:text-emerald-500/50" />
               <Input
                 placeholder="Search by name, reg, or father..."
                 value={globalFilter} 
                 onChange={(e) => setGlobalFilter(e.target.value)}
-                className="pl-9 bg-slate-950/50 border-emerald-500/30 text-white placeholder:text-slate-500 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all"
+                className="pl-9 bg-white border-slate-200 text-slate-900 placeholder:text-slate-400 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all dark:bg-slate-950/50 dark:border-emerald-500/30 dark:text-white dark:placeholder:text-slate-500"
               />
             </div>
              {/* Column Visibility Toggle */}
              <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" className="border-emerald-500/30 bg-slate-950/50 text-slate-300 hover:text-emerald-400">
+                <Button variant="outline" className="border-slate-200 bg-white text-slate-600 hover:text-emerald-600 dark:border-emerald-500/30 dark:bg-slate-950/50 dark:text-slate-300 dark:hover:text-emerald-400">
                   <Settings2 className="mr-2 h-4 w-4" />
                   View
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="bg-slate-900 border-emerald-500/20 text-slate-200">
+              <DropdownMenuContent align="end" className="bg-white border-slate-200 text-slate-700 dark:bg-slate-900 dark:border-emerald-500/20 dark:text-slate-200">
                 <DropdownMenuLabel>Toggle Columns</DropdownMenuLabel>
-                <DropdownMenuSeparator className="bg-emerald-500/20" />
+                <DropdownMenuSeparator className="bg-slate-200 dark:bg-emerald-500/20" />
                 {table
                   .getAllColumns()
                   .filter((column) => column.getCanHide())
@@ -493,7 +494,7 @@ export const StudentTable = () => {
                     return (
                       <DropdownMenuCheckboxItem
                         key={column.id}
-                        className="capitalize focus:bg-emerald-500/20"
+                        className="capitalize focus:bg-slate-100 dark:focus:bg-emerald-500/20"
                         checked={column.getIsVisible()}
                         onCheckedChange={(value) => column.toggleVisibility(!!value)}
                       >
@@ -512,7 +513,7 @@ export const StudentTable = () => {
                 size="sm" 
                 onClick={() => refetch()} 
                 disabled={isRefetching}
-                className="shrink-0 bg-slate-800 border-emerald-500/30 text-emerald-400 hover:bg-emerald-900/20 hover:text-emerald-300"
+                className="shrink-0 bg-white border-slate-200 text-emerald-600 hover:bg-emerald-50 hover:text-emerald-700 dark:bg-slate-800 dark:border-emerald-500/30 dark:text-emerald-400 dark:hover:bg-emerald-900/20 dark:hover:text-emerald-300"
             >
               <RefreshCw className={`h-3.5 w-3.5 mr-2 ${isRefetching ? 'animate-spin' : ''}`} />
               Refresh
@@ -531,14 +532,14 @@ export const StudentTable = () => {
             <DownloadPdfButton reportType="students" />
             
             {/* View Cards Button */}
-            <Button asChild size="sm" className="bg-slate-700 hover:bg-slate-600 text-slate-200 border border-emerald-500/30">
+            <Button asChild size="sm" className="bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 dark:bg-slate-700 dark:hover:bg-slate-600 dark:text-slate-200 dark:border-emerald-500/30">
               <Link href="/admin/users/student/edit" className="flex items-center gap-2">
                 <IdCard className="h-3.5 w-3.5" />
                 View Cards
               </Link>
             </Button>
 
-            <Button asChild size="sm" className="col-span-2 sm:col-span-1 bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg shadow-emerald-900/20">
+            <Button asChild size="sm" className="col-span-2 sm:col-span-1 bg-emerald-600 hover:bg-emerald-700 text-white shadow-md shadow-emerald-200 dark:shadow-emerald-900/20 dark:hover:bg-emerald-500">
               <Link href="/admin/users/student/create" className="flex items-center gap-2">
                 <PlusCircle className="h-3.5 w-3.5" />
                 New Student
@@ -549,18 +550,18 @@ export const StudentTable = () => {
       </div>
 
       {/* --- Main Table Container --- */}
-      <div className="rounded-xl border border-emerald-500/20 bg-slate-900/60 shadow-xl backdrop-blur-sm overflow-hidden flex flex-col">
+      <div className="rounded-xl border border-slate-200 bg-white/60 shadow-lg backdrop-blur-sm overflow-hidden flex flex-col transition-colors dark:border-emerald-500/20 dark:bg-slate-900/60 dark:shadow-xl">
         {/* Horizontal Scroll Wrapper for Mobile */}
         <div className="overflow-x-auto">
             <Table>
-            <TableHeader className="bg-emerald-950/40 sticky top-0 z-20">
+            <TableHeader className="bg-slate-50 dark:bg-emerald-950/40 sticky top-0 z-20">
                 {table.getHeaderGroups().map((headerGroup) => (
-                <TableRow key={headerGroup.id} className="border-emerald-500/20 hover:bg-transparent">
+                <TableRow key={headerGroup.id} className="border-slate-200 dark:border-emerald-500/20 hover:bg-transparent">
                     {headerGroup.headers.map((header) => {
                         const metaClass = header.column.columnDef.meta?.className ?? "";
                         
                         return (
-                            <TableHead key={header.id} className={`font-semibold text-emerald-100/80 h-11 whitespace-nowrap ${metaClass}`}>
+                            <TableHead key={header.id} className={`font-semibold text-slate-600 dark:text-emerald-100/80 h-11 whitespace-nowrap ${metaClass}`}>
                                 {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
                             </TableHead>
                         )
@@ -571,14 +572,14 @@ export const StudentTable = () => {
             <TableBody>
                 {isLoading ? (
                 Array(10).fill(0).map((_, i) => (
-                    <TableRow key={i} className="border-emerald-500/10">
+                    <TableRow key={i} className="border-slate-100 dark:border-emerald-500/10">
                     {columns.map((col, j) => {
-                         const metaClass = col.meta?.className ?? "";
-                         return (
+                          const metaClass = col.meta?.className ?? "";
+                          return (
                             <TableCell key={j} className={metaClass}> 
-                              <Skeleton className="h-5 w-full bg-slate-800/50 rounded" />
+                              <Skeleton className="h-5 w-full bg-slate-100 dark:bg-slate-800/50 rounded" />
                             </TableCell>
-                         )
+                          )
                     })}
                     </TableRow>
                 ))
@@ -586,11 +587,11 @@ export const StudentTable = () => {
                 table.getRowModel().rows.map((row) => (
                     <TableRow
                     key={row.id}
-                    className="hover:bg-emerald-900/10 transition-colors border-emerald-500/10 data-[state=selected]:bg-emerald-900/20 group"
+                    className="hover:bg-slate-50 transition-colors border-slate-100 data-[state=selected]:bg-emerald-50 group dark:hover:bg-emerald-900/10 dark:border-emerald-500/10 dark:data-[state=selected]:bg-emerald-900/20"
                     data-state={row.getIsSelected() ? "selected" : ""}
                     >
                     {row.getVisibleCells().map((cell) => {
-                         const metaClass = cell.column.columnDef.meta?.className ?? "";
+                          const metaClass = cell.column.columnDef.meta?.className ?? "";
                         return (
                             <TableCell key={cell.id} className={`py-3 ${metaClass}`}>
                                 {flexRender(cell.column.columnDef.cell, cell.getContext())}
@@ -602,11 +603,11 @@ export const StudentTable = () => {
                 ) : (
                 <TableRow>
                     <TableCell colSpan={columns.length} className="h-64 text-center">
-                    <div className="flex flex-col items-center justify-center gap-3 text-slate-500">
-                        <div className="h-16 w-16 rounded-full bg-slate-800/50 flex items-center justify-center">
+                    <div className="flex flex-col items-center justify-center gap-3 text-slate-500 dark:text-slate-500">
+                        <div className="h-16 w-16 rounded-full bg-slate-100 flex items-center justify-center dark:bg-slate-800/50">
                             <Search className="h-8 w-8 opacity-40" />
                         </div>
-                        <p className="text-lg font-medium text-slate-400">No students found</p>
+                        <p className="text-lg font-medium text-slate-600 dark:text-slate-400">No students found</p>
                         <p className="text-sm">Try adjusting your search or filters</p>
                     </div>
                     </TableCell>
@@ -617,24 +618,24 @@ export const StudentTable = () => {
         </div>
 
         {/* --- Pagination Footer --- */}
-        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between px-4 py-4 border-t border-emerald-500/20 bg-emerald-950/20">
-          <div className="flex flex-col sm:flex-row items-center gap-4 text-sm text-slate-400">
+        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between px-4 py-4 border-t border-slate-200 bg-slate-50/50 dark:border-emerald-500/20 dark:bg-emerald-950/20">
+          <div className="flex flex-col sm:flex-row items-center gap-4 text-sm text-slate-500 dark:text-slate-400">
             <span className="text-center sm:text-left">
               Showing {table.getFilteredRowModel().rows.length} results
             </span>
             
             <div className="flex items-center gap-2">
-              <span className="text-xs text-slate-500 whitespace-nowrap">Rows per page</span>
+              <span className="text-xs text-slate-500 dark:text-slate-500 whitespace-nowrap">Rows per page</span>
               <Select
                 value={`${table.getState().pagination.pageSize}`}
                 onValueChange={(value) => {
                   table.setPageSize(Number(value));
                 }}
               >
-                <SelectTrigger className="h-8 w-[70px] bg-slate-900 border-emerald-500/20 text-slate-200 text-xs">
+                <SelectTrigger className="h-8 w-[70px] bg-white border-slate-300 text-slate-700 text-xs dark:bg-slate-900 dark:border-emerald-500/20 dark:text-slate-200">
                   <SelectValue placeholder={table.getState().pagination.pageSize} />
                 </SelectTrigger>
-                <SelectContent side="top" className="bg-slate-900 border-emerald-500/20 text-slate-200">
+                <SelectContent side="top" className="bg-white border-slate-200 text-slate-700 dark:bg-slate-900 dark:border-emerald-500/20 dark:text-slate-200">
                   {[10, 20, 50, 100].map((pageSize) => (
                     <SelectItem key={pageSize} value={`${pageSize}`}>
                       {pageSize}
@@ -651,7 +652,7 @@ export const StudentTable = () => {
               size="sm"
               onClick={() => table.previousPage()}
               disabled={!table.getCanPreviousPage()}
-              className="border-emerald-500/30 bg-slate-800 text-slate-300 hover:bg-emerald-900/20 hover:text-white w-24"
+              className="border-slate-300 bg-white text-slate-600 hover:bg-slate-100 w-24 dark:border-emerald-500/30 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-emerald-900/20 dark:hover:text-white"
             >
               Previous
             </Button>
@@ -660,7 +661,7 @@ export const StudentTable = () => {
               size="sm"
               onClick={() => table.nextPage()}
               disabled={!table.getCanNextPage()}
-              className="border-emerald-500/30 bg-slate-800 text-slate-300 hover:bg-emerald-900/20 hover:text-white w-24"
+              className="border-slate-300 bg-white text-slate-600 hover:bg-slate-100 w-24 dark:border-emerald-500/30 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-emerald-900/20 dark:hover:text-white"
             >
               Next
             </Button>

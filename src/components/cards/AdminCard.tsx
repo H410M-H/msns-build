@@ -1,3 +1,4 @@
+// File: src/components/cards/AdminCard.tsx
 "use client"
 
 import { ArrowRight, CalendarIcon as CalendarCog, type LucideIcon, NotebookPenIcon, Wallet } from 'lucide-react'
@@ -11,10 +12,11 @@ interface Services {
   description: string
   icon: IconType
   href: string
-  iconColor: string
-  bgColor: string
-  borderColor: string
-  hoverShadow: string
+  // Color configuration
+  baseColor: string // Base color for borders/text (e.g., "emerald")
+  lightBg: string // Background for light mode
+  darkBg: string // Background for dark mode
+  iconColor: string // Icon text color
 }
 
 const services: Services[] = [
@@ -23,30 +25,30 @@ const services: Services[] = [
     description: "Manage academic sessions, terms, and schedules",
     icon: CalendarCog,
     href: "/admin/sessions",
-    iconColor: "text-emerald-400",
-    bgColor: "bg-emerald-500/5",
-    borderColor: "border-emerald-500/20",
-    hoverShadow: "hover:shadow-emerald-500/10",
+    baseColor: "emerald",
+    lightBg: "hover:bg-emerald-50/60",
+    darkBg: "hover:bg-emerald-950/30",
+    iconColor: "text-emerald-600 dark:text-emerald-400",
   },
   {
     title: "User Management",
     description: "Manage students, teachers, and staff accounts",
     icon: NotebookPenIcon,
     href: "/admin/users",
-    iconColor: "text-cyan-400",
-    bgColor: "bg-cyan-500/5",
-    borderColor: "border-cyan-500/20",
-    hoverShadow: "hover:shadow-cyan-500/10",
+    baseColor: "cyan",
+    lightBg: "hover:bg-cyan-50/60",
+    darkBg: "hover:bg-cyan-950/30",
+    iconColor: "text-cyan-600 dark:text-cyan-400",
   },
   {
     title: "Revenue Management",
     description: "Track and manage student fees and payments",
     icon: Wallet,
     href: "/admin/revenue",
-    iconColor: "text-amber-400",
-    bgColor: "bg-amber-500/5",
-    borderColor: "border-amber-500/20",
-    hoverShadow: "hover:shadow-amber-500/10",
+    baseColor: "amber",
+    lightBg: "hover:bg-amber-50/60",
+    darkBg: "hover:bg-amber-950/30",
+    iconColor: "text-amber-600 dark:text-amber-400",
   },
 ]
 
@@ -55,33 +57,49 @@ export default function AdminCards() {
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
       {services.map((service) => {
         const Icon = service.icon
+        
+        // Dynamic class generation based on the base color
+        const borderColor = {
+          emerald: "border-emerald-200 dark:border-emerald-500/20 group-hover:border-emerald-300 dark:group-hover:border-emerald-500/50",
+          cyan: "border-cyan-200 dark:border-cyan-500/20 group-hover:border-cyan-300 dark:group-hover:border-cyan-500/50",
+          amber: "border-amber-200 dark:border-amber-500/20 group-hover:border-amber-300 dark:group-hover:border-amber-500/50",
+        }[service.baseColor]
+
+        const iconBoxStyles = {
+          emerald: "bg-emerald-100 dark:bg-emerald-500/10 border-emerald-200 dark:border-emerald-500/20",
+          cyan: "bg-cyan-100 dark:bg-cyan-500/10 border-cyan-200 dark:border-cyan-500/20",
+          amber: "bg-amber-100 dark:bg-amber-500/10 border-amber-200 dark:border-amber-500/20",
+        }[service.baseColor]
+
         return (
-          <Link href={service.href} key={service.title} className="group block">
-            <Card className={`relative overflow-hidden transition-all duration-300 ${service.bgColor} border ${service.borderColor} hover:border-opacity-50 hover:-translate-y-1 hover:shadow-lg ${service.hoverShadow} backdrop-blur-md`}>
+          <Link href={service.href} key={service.title} className="group block h-full">
+            <Card className={`relative h-full overflow-hidden border bg-white dark:bg-slate-900/40 backdrop-blur-sm transition-all duration-300 ${borderColor} ${service.lightBg} ${service.darkBg} hover:-translate-y-1 hover:shadow-lg dark:hover:shadow-none`}>
               
-              {/* Gradient overlay on hover */}
-              <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
+              {/* Subtle Gradient Overlay */}
+              <div className="absolute inset-0 bg-gradient-to-br from-white/50 via-transparent to-transparent dark:from-white/5 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
               
-              <CardHeader className="relative z-10 p-5 pb-2">
-                <div className="flex items-center justify-between gap-3">
-                  <div className="space-y-1">
-                    <CardTitle className="text-base font-bold text-white tracking-tight group-hover:text-white/90 transition-colors">
+              <CardHeader className="relative z-10 p-5 pb-3">
+                <div className="flex items-start justify-between gap-4">
+                  <div className="space-y-1.5">
+                    <CardTitle className="text-base font-bold text-slate-900 dark:text-white leading-tight tracking-tight">
                         {service.title}
                     </CardTitle>
-                    <CardDescription className="text-emerald-100/50 text-xs font-medium line-clamp-1">
+                    <CardDescription className="text-slate-500 dark:text-slate-400 text-xs font-medium leading-relaxed line-clamp-2">
                         {service.description}
                     </CardDescription>
                   </div>
-                  <div className={`p-2 rounded-xl bg-black/20 border border-white/5 group-hover:scale-105 transition-transform duration-500 shrink-0`}>
-                    <Icon className={`h-5 w-5 ${service.iconColor} drop-shadow-sm`} />
+                  
+                  {/* Icon Box */}
+                  <div className={`shrink-0 p-2.5 rounded-xl border ${iconBoxStyles} transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3`}>
+                    <Icon className={`h-5 w-5 ${service.iconColor}`} />
                   </div>
                 </div>
               </CardHeader>
               
-              <CardContent className="relative z-10 p-5 pt-2">
-                <div className={`flex items-center text-xs font-semibold ${service.iconColor} opacity-70 group-hover:opacity-100 transition-all`}>
+              <CardContent className="relative z-10 p-5 pt-0 mt-auto">
+                <div className={`flex items-center text-xs font-bold ${service.iconColor} opacity-80 group-hover:opacity-100 transition-all`}>
                   Access Panel
-                  <ArrowRight className="h-3 w-3 ml-1.5 transition-transform duration-300 group-hover:translate-x-1" />
+                  <ArrowRight className="h-3.5 w-3.5 ml-1.5 transition-transform duration-300 group-hover:translate-x-1" />
                 </div>
               </CardContent>
             </Card>
