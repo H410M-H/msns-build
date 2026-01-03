@@ -17,11 +17,11 @@ export default function StudentRegistration() {
   ];
 
   return (
-    <div className="min-h-screen overflow-hidden bg-gradient-to-br from-[#344a3f] via-[#12251b] to-[#02131b]">
+    <div className="min-h-screen overflow-hidden bg-linear-to-br from-[#344a3f] via-[#12251b] to-[#02131b]">
       {/* 🎯 OPTIMIZED GRID BACKGROUND */}
       <div className="absolute inset-0 z-0 pointer-events-none">
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(45,255,196,0.05)_1px,transparent_1px),linear-gradient(to_bottom,rgba(45,255,196,0.05)_1px,transparent_1px)] bg-[size:3rem_3rem] sm:bg-[size:4rem_4rem]" />
-        <div className="absolute inset-0 bg-gradient-to-br from-emerald-900/40 via-emerald-300/200 to-black/60 rounded-lg" />
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(45,255,196,0.05)_1px,transparent_1px),linear-gradient(to_bottom,rgba(45,255,196,0.05)_1px,transparent_1px)] bg-size-[3rem_3rem] sm:bg-size-[4rem_4rem]" />
+        <div className="absolute inset-0 bg-linear-to-br from-emerald-900/40 via-emerald-300/200 to-black/60 rounded-lg" />
       </div>
 
       <ScrollArea className="h-screen">

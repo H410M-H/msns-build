@@ -27,9 +27,6 @@ import AllotmentDialog from "../forms/class/StudentAlotment";
 
 // --- Icons ---
 import { 
-  ReloadIcon, 
-} from "@radix-ui/react-icons";
-import { 
   Search, 
   Users, 
   BookOpen, 
@@ -37,6 +34,7 @@ import {
   UserPlus, 
   GraduationCap,
   Banknote,
+  Loader,
 } from "lucide-react";
 
 // --- Types ---
@@ -214,7 +212,7 @@ export const ClassAllotmentTable = ({ classId, sessionId }: ClassAllotmentTableP
               variant="outline" 
               className="bg-slate-900/50 border-white/10 text-slate-300 hover:bg-white/5 hover:text-white"
             >
-              <ReloadIcon className={`mr-2 h-4 w-4 ${isRefetching || studentsLoading ? "animate-spin" : ""}`} />
+              <Loader className={`mr-2 h-4 w-4 ${isRefetching || studentsLoading ? "animate-spin" : ""}`} />
               Refresh
             </Button>
           </div>
@@ -222,7 +220,7 @@ export const ClassAllotmentTable = ({ classId, sessionId }: ClassAllotmentTableP
       </div>
 
       {/* --- Subjects Section --- */}
-      <section className="rounded-xl border border-white/5 bg-slate-900/40 p-4 sm:p-6 shadow-sm backdrop-blur-sm">
+      <section className="rounded-xl border border-white/5 bg-slate-900/40 p-4 sm:p-6 shadow-xs backdrop-blur-xs">
         <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-white/5 pb-4">
           <div className="flex items-center gap-3">
              <div className="p-2 bg-blue-500/10 rounded-lg text-blue-400 border border-blue-500/20">
@@ -267,7 +265,7 @@ export const ClassAllotmentTable = ({ classId, sessionId }: ClassAllotmentTableP
                         />
                     </div>
                     <h3 className="text-lg font-bold text-white mb-1 group-hover:text-blue-300 transition-colors">{subject.Subject?.subjectName}</h3>
-                    <p className="text-sm text-slate-400 line-clamp-2 min-h-[2.5rem]">{subject.Subject?.description ?? "No description provided."}</p>
+                    <p className="text-sm text-slate-400 line-clamp-2 min-h-10">{subject.Subject?.description ?? "No description provided."}</p>
                 </div>
                 
                 {subject.Employees && (
@@ -295,7 +293,7 @@ export const ClassAllotmentTable = ({ classId, sessionId }: ClassAllotmentTableP
       </section>
 
       {/* --- Students Section --- */}
-      <section className="rounded-xl border border-white/5 bg-slate-900/40 p-4 sm:p-6 shadow-sm backdrop-blur-sm">
+      <section className="rounded-xl border border-white/5 bg-slate-900/40 p-4 sm:p-6 shadow-xs backdrop-blur-xs">
         <div className="mb-6 space-y-4">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-white/5 pb-4">
                 <div className="flex items-center gap-3">
@@ -319,7 +317,7 @@ export const ClassAllotmentTable = ({ classId, sessionId }: ClassAllotmentTableP
                         }}
                         className="animate-in fade-in zoom-in bg-red-900/50 hover:bg-red-900 border border-red-500/20 text-red-200"
                     >
-                        {deleteStudents.isPending ? <ReloadIcon className="mr-2 h-4 w-4 animate-spin" /> : <Trash2 className="mr-2 h-4 w-4" />}
+                        {deleteStudents.isPending ? <Loader className="mr-2 h-4 w-4 animate-spin" /> : <Trash2 className="mr-2 h-4 w-4" />}
                         Remove ({selectedCount})
                     </Button>
                 )}

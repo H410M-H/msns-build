@@ -87,7 +87,7 @@ export default function DashboardPage() {
           transition={{ delay: 0.1 }}
           className="lg:col-span-4 flex flex-col gap-4"
         >
-          <Card className="flex-1 relative overflow-hidden border-slate-200 dark:border-emerald-500/20 bg-white dark:bg-gradient-to-br dark:from-emerald-900/40 dark:to-slate-900/40 shadow-lg dark:shadow-xl dark:backdrop-blur-md transition-all">
+          <Card className="flex-1 relative overflow-hidden border-slate-200 dark:border-emerald-500/20 bg-white dark:bg-linear-to-br dark:from-emerald-900/40 dark:to-slate-900/40 shadow-lg dark:shadow-xl dark:backdrop-blur-md transition-all">
             <div className="absolute top-0 right-0 p-4 opacity-10 dark:opacity-20 pointer-events-none">
               <Sparkles className="h-12 w-12 text-emerald-600 dark:text-emerald-400" />
             </div>
@@ -129,7 +129,7 @@ export default function DashboardPage() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.3 }}
-        className="rounded-[2rem] border border-slate-200 dark:border-white/5 bg-white/50 dark:bg-slate-900/40 backdrop-blur-xl shadow-sm dark:shadow-2xl overflow-hidden"
+        className="rounded-4xl border border-slate-200 dark:border-white/5 bg-white/50 dark:bg-slate-900/40 backdrop-blur-xl shadow-xs dark:shadow-2xl overflow-hidden"
       >
         <Tabs defaultValue="management" className="w-full">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4 border-b border-slate-200 dark:border-white/5 px-6 py-4 bg-slate-50/50 dark:bg-black/20">
@@ -139,19 +139,19 @@ export default function DashboardPage() {
             <TabsList className="bg-slate-200/50 dark:bg-slate-950/50 border border-slate-200/50 dark:border-white/5 p-1">
               <TabsTrigger
                 value="management"
-                className="gap-2 data-[state=active]:bg-white dark:data-[state=active]:bg-emerald-600 data-[state=active]:text-emerald-700 dark:data-[state=active]:text-white data-[state=active]:shadow-sm transition-all"
+                className="gap-2 data-[state=active]:bg-white dark:data-[state=active]:bg-emerald-600 data-[state=active]:text-emerald-700 dark:data-[state=active]:text-white data-[state=active]:shadow-xs transition-all"
               >
                 <Settings className="h-4 w-4" /> <span className="hidden sm:inline">Management</span>
               </TabsTrigger>
               <TabsTrigger
                 value="events"
-                className="gap-2 data-[state=active]:bg-white dark:data-[state=active]:bg-emerald-600 data-[state=active]:text-emerald-700 dark:data-[state=active]:text-white data-[state=active]:shadow-sm transition-all"
+                className="gap-2 data-[state=active]:bg-white dark:data-[state=active]:bg-emerald-600 data-[state=active]:text-emerald-700 dark:data-[state=active]:text-white data-[state=active]:shadow-xs transition-all"
               >
                 <Calendar className="h-4 w-4" /> <span className="hidden sm:inline">Events</span>
               </TabsTrigger>
               <TabsTrigger
                 value="analytics"
-                className="gap-2 data-[state=active]:bg-white dark:data-[state=active]:bg-emerald-600 data-[state=active]:text-emerald-700 dark:data-[state=active]:text-white data-[state=active]:shadow-sm transition-all"
+                className="gap-2 data-[state=active]:bg-white dark:data-[state=active]:bg-emerald-600 data-[state=active]:text-emerald-700 dark:data-[state=active]:text-white data-[state=active]:shadow-xs transition-all"
               >
                 <BarChart3 className="h-4 w-4" /> <span className="hidden sm:inline">Analytics</span>
               </TabsTrigger>
@@ -159,11 +159,11 @@ export default function DashboardPage() {
           </div>
 
           <div className="p-4 sm:p-6">
-            <TabsContent value="management" className="mt-0 focus-visible:outline-none">
+            <TabsContent value="management" className="mt-0 focus-visible:outline-hidden">
               <AdminSection />
             </TabsContent>
 
-            <TabsContent value="events" className="mt-0 focus-visible:outline-none">
+            <TabsContent value="events" className="mt-0 focus-visible:outline-hidden">
               <Card className="border-0 bg-transparent shadow-none">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
                   <div>
@@ -183,14 +183,14 @@ export default function DashboardPage() {
                     <Skeleton className="h-[300px] w-full rounded-xl bg-slate-200 dark:bg-slate-800/50" />
                   }
                 >
-                  <div className="rounded-xl border border-slate-200 dark:border-white/5 bg-white dark:bg-black/20 overflow-hidden shadow-sm">
+                  <div className="rounded-xl border border-slate-200 dark:border-white/5 bg-white dark:bg-black/20 overflow-hidden shadow-xs">
                     <EventsTable />
                   </div>
                 </Suspense>
               </Card>
             </TabsContent>
 
-            <TabsContent value="analytics" className="mt-0 focus-visible:outline-none">
+            <TabsContent value="analytics" className="mt-0 focus-visible:outline-hidden">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {ANALYTICS_CARDS.map((card, idx) => {
                   const Icon = card.icon

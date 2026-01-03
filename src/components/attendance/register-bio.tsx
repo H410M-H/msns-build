@@ -222,7 +222,7 @@ export const RegisterEmployeeBioMetric = ({
   return (
     <div className="mx-auto w-full max-w-4xl space-y-6">
       {/* Header Section */}
-      <Card className="border-0 bg-gradient-to-r from-blue-50 to-indigo-50">
+      <Card className="border-0 bg-linear-to-r from-blue-50 to-indigo-50">
         <CardHeader className="pb-4 text-center">
           <div className="mb-2 flex items-center justify-center gap-3">
             <Shield className="h-8 w-8 text-blue-600" />

@@ -70,7 +70,7 @@ export const SessionList = () => {
     <div className="w-full space-y-6">
       
       {/* === Header & Controls === */}
-      <div className="flex flex-col gap-4 rounded-xl border border-slate-200 bg-white/50 p-4 shadow-sm backdrop-blur-md dark:border-white/5 dark:bg-slate-900/40 md:flex-row md:items-center md:justify-between transition-colors">
+      <div className="flex flex-col gap-4 rounded-xl border border-slate-200 bg-white/50 p-4 shadow-xs backdrop-blur-md dark:border-white/5 dark:bg-slate-900/40 md:flex-row md:items-center md:justify-between transition-colors">
         <div className="relative w-full md:max-w-md group">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400 group-focus-within:text-emerald-500 transition-colors" />
           <Input
@@ -109,7 +109,7 @@ export const SessionList = () => {
 
       {/* === Selection Bar (Conditional) === */}
       {filteredSessions.length > 0 && selectedSessions.size > 0 && (
-        <div className="flex items-center justify-between rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-2 backdrop-blur-sm animate-in fade-in slide-in-from-top-1 dark:border-emerald-500/20 dark:bg-emerald-500/5">
+        <div className="flex items-center justify-between rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-2 backdrop-blur-xs animate-in fade-in slide-in-from-top-1 dark:border-emerald-500/20 dark:bg-emerald-500/5">
           <div className="flex items-center gap-3">
             <Checkbox
               id="select-all"
@@ -141,18 +141,18 @@ export const SessionList = () => {
               className={cn(
                 "group relative flex flex-col overflow-hidden transition-all duration-300 rounded-xl",
                 // Light Mode
-                "bg-white border-slate-200 shadow-sm hover:shadow-lg hover:-translate-y-1 hover:border-emerald-300",
+                "bg-white border-slate-200 shadow-xs hover:shadow-lg hover:-translate-y-1 hover:border-emerald-300",
                 // Dark Mode
-                "dark:bg-slate-900/40 dark:backdrop-blur-sm dark:border-white/5 dark:hover:border-emerald-500/30 dark:hover:shadow-emerald-900/10",
+                "dark:bg-slate-900/40 dark:backdrop-blur-xs dark:border-white/5 dark:hover:border-emerald-500/30 dark:hover:shadow-emerald-900/10",
                 // Selected State
                 isSelected && "ring-1 ring-emerald-500 bg-emerald-50 border-emerald-200 dark:bg-emerald-900/10 dark:border-emerald-500/30"
               )}
             >
               {/* Active Selection Indicator */}
-              {isSelected && <div className="absolute top-0 right-0 w-0 h-0 border-t-[40px] border-t-emerald-600 border-l-[40px] border-l-transparent z-20 pointer-events-none" />}
+              {isSelected && <div className="absolute top-0 right-0 w-0 h-0 border-t-40 border-t-emerald-600 border-l-40 border-l-transparent z-20 pointer-events-none" />}
 
               {/* Decorative Top Gradient */}
-              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-emerald-500 to-teal-500 opacity-0 group-hover:opacity-100 transition-opacity" />
+              <div className="absolute top-0 left-0 w-full h-1 bg-linear-to-r from-emerald-500 to-teal-500 opacity-0 group-hover:opacity-100 transition-opacity" />
 
               <CardHeader className="pb-3 pt-5 relative">
                 <div className="absolute right-4 top-4 z-10">
@@ -232,7 +232,7 @@ export const SessionList = () => {
       {/* === Empty State === */}
       {filteredSessions.length === 0 && (
         <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-slate-300 bg-slate-50 py-16 text-center animate-in fade-in-50 dark:border-white/10 dark:bg-slate-900/20">
-          <div className="mb-4 rounded-full bg-white p-4 border border-slate-200 shadow-sm dark:bg-slate-800/50 dark:border-white/5">
+          <div className="mb-4 rounded-full bg-white p-4 border border-slate-200 shadow-xs dark:bg-slate-800/50 dark:border-white/5">
             {searchTerm ? <FilterX className="h-8 w-8 text-slate-400" /> : <GraduationCap className="h-8 w-8 text-emerald-500/50" />}
           </div>
           <h3 className="text-xl font-bold text-slate-900 mb-1 dark:text-white">

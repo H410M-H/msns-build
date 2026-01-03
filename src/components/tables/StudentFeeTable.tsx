@@ -77,7 +77,7 @@ export function FeeAssignmentTable() {
   }, [classFeesData]);
 
   return (
-    <Card className="shadow-sm">
+    <Card className="shadow-xs">
       <CardHeader className="border-b">
         <CardTitle className="text-lg font-semibold">Fee Assignments</CardTitle>
       </CardHeader>

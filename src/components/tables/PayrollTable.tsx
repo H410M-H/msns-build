@@ -376,7 +376,7 @@ export function PayrollTable({ month, year }: PayrollTableProps) {
   return (
     <div className="space-y-4">
       {/* Top Actions Bar */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:justify-between sm:items-center bg-white dark:bg-slate-900/40 p-4 rounded-xl border border-slate-200 dark:border-emerald-500/10 backdrop-blur-sm transition-colors">
+      <div className="flex flex-col gap-4 sm:flex-row sm:justify-between sm:items-center bg-white dark:bg-slate-900/40 p-4 rounded-xl border border-slate-200 dark:border-emerald-500/10 backdrop-blur-xs transition-colors">
         {selectedIds.length > 0 ? (
           <div className="bg-red-50 p-2 rounded-lg flex items-center gap-4 px-4 border border-red-200 w-full sm:w-auto transition-all animate-in fade-in zoom-in-95 dark:bg-red-500/10 dark:border-red-500/20">
             <span className="text-sm font-medium text-red-600 dark:text-red-400">
@@ -417,7 +417,7 @@ export function PayrollTable({ month, year }: PayrollTableProps) {
         )}
       </div>
 
-      <div className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden backdrop-blur-sm dark:border-emerald-500/20 dark:bg-slate-900/60 dark:shadow-xl transition-colors">
+      <div className="rounded-xl border border-slate-200 bg-white shadow-xs overflow-hidden backdrop-blur-xs dark:border-emerald-500/20 dark:bg-slate-900/60 dark:shadow-xl transition-colors">
         <Table>
           <TableHeader className="bg-slate-50 border-b border-slate-200 dark:bg-emerald-950/40 dark:border-emerald-500/20">
             <TableRow className="hover:bg-transparent">

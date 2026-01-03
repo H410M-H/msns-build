@@ -1,6 +1,5 @@
 "use client";
 
-import { ReloadIcon } from "@radix-ui/react-icons";
 import { useForm } from "react-hook-form";
 import { Button } from "~/components/ui/button";
 import { api } from "~/trpc/react";
@@ -23,16 +22,16 @@ import {
   DialogTrigger,
 } from "~/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
-import { PlusCircle } from "lucide-react";
+import { Loader, PlusCircle } from "lucide-react";
 import { useState } from "react";
 
 const formSchema = z.object({
-  grade: z.string({ required_error: "Field is required" }),
+  grade: z.string({ error: "Field is required" }),
   section: z.enum(["ROSE", "TULIP"], {
-    required_error: "Section is required",
+    error: "Section is required",
   }),
   category: z.enum(["Montessori", "Primary", "Middle", "SSC_I", "SSC_II"], {
-    required_error: "Category is required",
+    error: "Category is required",
   }),
   fee: z.number().min(0, "Fee must be a positive number"),
 });
@@ -62,7 +61,7 @@ export const ClassCreationDialog = () => {
       <DialogTrigger asChild>
         <Button 
           size="sm" 
-          className="h-11 px-4 rounded-xl gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:shadow-md"
+          className="h-11 px-4 rounded-xl gap-2 bg-linear-to-r from-blue-600 to-indigo-600 text-white hover:shadow-md"
         >
           <PlusCircle className="w-4 h-4" />
           Create Class
@@ -165,7 +164,7 @@ export const ClassCreationDialog = () => {
             >
               {createClass.isPending ? (
                 <>
-                  <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />
+                  <Loader className="mr-2 h-4 w-4 animate-spin" />
                   Please wait
                 </>
               ) : (

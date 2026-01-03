@@ -30,7 +30,7 @@ export default async function FeeDetailsPage({ searchParams }: PageProps) {
         {/* Header Section */}
         <div className="flex flex-col gap-2 mb-6">
             <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 dark:text-white flex items-center gap-3">
-                <span className="p-2 rounded-xl bg-emerald-100 border border-emerald-200 dark:bg-emerald-500/10 dark:border-emerald-500/20 shadow-sm">
+                <span className="p-2 rounded-xl bg-emerald-100 border border-emerald-200 dark:bg-emerald-500/10 dark:border-emerald-500/20 shadow-xs">
                     <Coins className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
                 </span>
                 Fee Details
@@ -41,11 +41,11 @@ export default async function FeeDetailsPage({ searchParams }: PageProps) {
         </div>
 
         {/* Main Content Card */}
-        <Card className="border border-slate-200 bg-white dark:border-white/5 dark:bg-slate-900/40 backdrop-blur-md shadow-sm dark:shadow-xl overflow-hidden transition-colors rounded-xl">
+        <Card className="border border-slate-200 bg-white dark:border-white/5 dark:bg-slate-900/40 backdrop-blur-md shadow-xs dark:shadow-xl overflow-hidden transition-colors rounded-xl">
           
           <CardHeader className="border-b border-slate-100 dark:border-white/5 px-6 py-4 bg-slate-50/50 dark:bg-black/20">
             <div className="flex items-center gap-3">
-               <div className="p-2 rounded-lg bg-white border border-slate-200 shadow-sm dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20 dark:shadow-none">
+               <div className="p-2 rounded-lg bg-white border border-slate-200 shadow-xs dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20 dark:shadow-none">
                   <Receipt className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
                </div>
                <div>

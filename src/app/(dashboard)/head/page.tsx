@@ -116,7 +116,7 @@ export default function HeadDashboard() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.3 }}
-        className="rounded-[2rem] border border-white/5 bg-slate-900/40 backdrop-blur-xl shadow-2xl overflow-hidden"
+        className="rounded-4xl border border-white/5 bg-slate-900/40 backdrop-blur-xl shadow-2xl overflow-hidden"
       >
          <Tabs defaultValue="management" className="w-full">
             <div className="flex flex-col sm:flex-row items-center justify-between gap-4 border-b border-white/5 px-6 py-4 bg-black/20">
@@ -137,12 +137,12 @@ export default function HeadDashboard() {
             <div className="p-4 sm:p-6">
               
               {/* Tab 1: Clerk/Management */}
-              <TabsContent value="management" className="mt-0 focus-visible:outline-none">
+              <TabsContent value="management" className="mt-0 focus-visible:outline-hidden">
                 <ClerkSection />
               </TabsContent>
 
               {/* Tab 2: Events */}
-              <TabsContent value="events" className="mt-0 focus-visible:outline-none">
+              <TabsContent value="events" className="mt-0 focus-visible:outline-hidden">
                 <Card className="border-0 bg-transparent shadow-none">
                   <div className="flex items-center justify-between mb-6">
                     <div>
@@ -162,12 +162,12 @@ export default function HeadDashboard() {
               </TabsContent>
 
               {/* Tab 3: Analytics */}
-              <TabsContent value="analytics" className="mt-0 focus-visible:outline-none">
+              <TabsContent value="analytics" className="mt-0 focus-visible:outline-hidden">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   {HEAD_ANALYTICS_CARDS.map((card, idx) => {
                     const Icon = card.icon;
                     return (
-                      <Card key={idx} className={`group bg-gradient-to-br ${card.gradient} ${card.border} border bg-opacity-50 hover:bg-opacity-100 transition-all duration-300 hover:-translate-y-1`}>
+                      <Card key={idx} className={`group bg-linear-to-br ${card.gradient} ${card.border} border bg-opacity-50 hover:bg-opacity-100 transition-all duration-300 hover:-translate-y-1`}>
                         <CardHeader className="pb-2">
                           <CardTitle className={`flex items-center gap-2 text-base font-medium ${card.text}`}>
                             <Icon className="h-5 w-5" />

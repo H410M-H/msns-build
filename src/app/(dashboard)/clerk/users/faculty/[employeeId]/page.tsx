@@ -70,8 +70,8 @@ export default function EmployeeAttendanceDetails() {
       
       {/* === BACKGROUND === */}
       <div className="fixed inset-0 z-0 pointer-events-none">
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(45,255,196,0.05)_1px,transparent_1px),linear-gradient(to_bottom,rgba(45,255,196,0.05)_1px,transparent_1px)] bg-[size:3rem_3rem]" />
-        <div className="absolute inset-0 bg-gradient-to-br from-emerald-900/20 via-slate-950/80 to-slate-950" />
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(45,255,196,0.05)_1px,transparent_1px),linear-gradient(to_bottom,rgba(45,255,196,0.05)_1px,transparent_1px)] bg-size-[3rem_3rem]" />
+        <div className="absolute inset-0 bg-linear-to-br from-emerald-900/20 via-slate-950/80 to-slate-950" />
       </div>
 
       <div className="relative z-10 flex flex-col min-h-screen">
@@ -84,7 +84,7 @@ export default function EmployeeAttendanceDetails() {
             {/* === LEFT COLUMN: PROFILE CARD === */}
             <div className="lg:col-span-1 space-y-6">
               <Card className="bg-slate-900/60 backdrop-blur-xl border border-emerald-500/20 shadow-xl overflow-hidden sticky top-24">
-                <div className="h-24 bg-gradient-to-br from-emerald-600/20 to-teal-900/20" />
+                <div className="h-24 bg-linear-to-br from-emerald-600/20 to-teal-900/20" />
                 <CardContent className="relative px-6 pb-6">
                   <div className="absolute -top-12 left-6 h-24 w-24 rounded-2xl border-4 border-slate-900 bg-slate-800 overflow-hidden shadow-2xl">
                     {/* Placeholder for Profile Pic */}
@@ -125,7 +125,7 @@ export default function EmployeeAttendanceDetails() {
             <div className="lg:col-span-3 space-y-6">
               
               {/* Controls & Title */}
-              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-slate-900/40 p-4 rounded-xl border border-emerald-500/10 backdrop-blur-sm">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-slate-900/40 p-4 rounded-xl border border-emerald-500/10 backdrop-blur-xs">
                 <div>
                     <h1 className="text-2xl font-bold text-white font-serif">Attendance History</h1>
                     <p className="text-slate-400 text-sm">Overview of monthly performance</p>
@@ -155,7 +155,7 @@ export default function EmployeeAttendanceDetails() {
                     { label: "Late Arrival", value: "04", icon: Clock, color: "text-yellow-400", bg: "bg-yellow-500/10" },
                     { label: "Leaves", value: "01", icon: Coffee, color: "text-blue-400", bg: "bg-blue-500/10" },
                 ].map((stat, i) => (
-                    <Card key={i} className="bg-slate-900/60 border-emerald-500/10 backdrop-blur-sm shadow-lg">
+                    <Card key={i} className="bg-slate-900/60 border-emerald-500/10 backdrop-blur-xs shadow-lg">
                         <CardContent className="p-4 flex items-center justify-between">
                             <div>
                                 <p className="text-slate-400 text-xs uppercase font-medium">{stat.label}</p>

@@ -78,13 +78,13 @@ export const ClassesCard = () => {
           className={cn(
             "group relative flex flex-col justify-between overflow-hidden transition-all duration-300 rounded-xl",
             // Light Mode
-            "bg-white border-slate-200 shadow-sm hover:shadow-lg hover:-translate-y-1 hover:border-emerald-300",
+            "bg-white border-slate-200 shadow-xs hover:shadow-lg hover:-translate-y-1 hover:border-emerald-300",
             // Dark Mode
-            "dark:bg-slate-900/40 dark:backdrop-blur-sm dark:border-white/5 dark:hover:border-emerald-500/30 dark:hover:shadow-emerald-900/10"
+            "dark:bg-slate-900/40 dark:backdrop-blur-xs dark:border-white/5 dark:hover:border-emerald-500/30 dark:hover:shadow-emerald-900/10"
           )}
         >
           {/* Decorative Gradient Line */}
-          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-emerald-500 to-teal-500 opacity-0 group-hover:opacity-100 transition-opacity" />
+          <div className="absolute top-0 left-0 w-full h-1 bg-linear-to-r from-emerald-500 to-teal-500 opacity-0 group-hover:opacity-100 transition-opacity" />
           
           <CardHeader className="pb-2 pt-5 px-5">
             <div className="flex items-start justify-between">

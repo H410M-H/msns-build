@@ -21,7 +21,6 @@ const nextConfig = {
     ],
     minimumCacheTTL: 86400,
   },
-  output: "standalone",
 };
 
 export const cloudinaryConfig = {

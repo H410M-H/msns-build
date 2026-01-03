@@ -41,7 +41,7 @@ export default function Loading() {
   return (
     <div 
       ref={containerRef}
-      className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center overflow-hidden relative"
+      className="min-h-screen bg-linear-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center overflow-hidden relative"
       style={{
         background: `
           radial-gradient(circle at 20% 80%, #120a8f 0%, transparent 50%),
@@ -79,16 +79,16 @@ export default function Loading() {
           {/* 3D Logo Base */}
           <div className="relative w-48 h-48 md:w-64 md:h-64">
             {/* Background glow */}
-            <div className="absolute inset-0 bg-gradient-to-r from-cyan-500 via-purple-500 to-pink-500 rounded-full blur-xl opacity-30 animate-pulse scale-150"></div>
+            <div className="absolute inset-0 bg-linear-to-r from-cyan-500 via-purple-500 to-pink-500 rounded-full blur-xl opacity-30 animate-pulse scale-150"></div>
             
             {/* Main logo container with 3D effect */}
             <div className="relative w-full h-full transform-gpu preserve-3d">
               {/* Front face */}
               <div 
-                className="absolute inset-0 rounded-full bg-gradient-to-br from-cyan-400 via-purple-500 to-pink-500 p-1 shadow-2xl"
+                className="absolute inset-0 rounded-full bg-linear-to-br from-cyan-400 via-purple-500 to-pink-500 p-1 shadow-2xl"
                 style={{ transform: 'translateZ(20px)' }}
               >
-                <div className="w-full h-full rounded-full bg-slate-800/90 backdrop-blur-sm flex items-center justify-center relative overflow-hidden">
+                <div className="w-full h-full rounded-full bg-slate-800/90 backdrop-blur-xs flex items-center justify-center relative overflow-hidden">
                   {/* Your original logo */}
                   <Image
                     src="https://res.cloudinary.com/dvvbxrs55/image/upload/v1729267533/Official_LOGO_grn_ic9ldd.png"
@@ -99,9 +99,9 @@ export default function Loading() {
                   />
                   
                   {/* Animated overlay effects */}
-                  <div className="absolute inset-0 bg-gradient-to-tr from-cyan-500/20 via-transparent to-purple-500/20 animate-pulse"></div>
+                  <div className="absolute inset-0 bg-linear-to-tr from-cyan-500/20 via-transparent to-purple-500/20 animate-pulse"></div>
                   <div 
-                    className="absolute inset-0 bg-gradient-to-br from-transparent via-white/10 to-transparent"
+                    className="absolute inset-0 bg-linear-to-br from-transparent via-white/10 to-transparent"
                     style={{
                       background: `conic-gradient(from ${Date.now() / 10 % 360}deg, transparent, rgba(255,255,255,0.1), transparent)`
                     }}
@@ -113,7 +113,7 @@ export default function Loading() {
               {Array.from({ length: 8 }).map((_, i) => (
                 <div
                   key={i}
-                  className="absolute inset-0 rounded-full bg-gradient-to-br from-purple-600 to-cyan-600 opacity-20"
+                  className="absolute inset-0 rounded-full bg-linear-to-br from-purple-600 to-cyan-600 opacity-20"
                   style={{
                     transform: `translateZ(${-i * 3}px) scale(${1 - i * 0.02})`,
                   }}
@@ -125,7 +125,7 @@ export default function Loading() {
             {Array.from({ length: 6 }, (_, i) => (
               <div
                 key={i}
-                className="absolute w-3 h-3 bg-gradient-to-r from-cyan-400 to-purple-400 rounded-full animate-orbit"
+                className="absolute w-3 h-3 bg-linear-to-r from-cyan-400 to-purple-400 rounded-full animate-orbit"
                 style={{
                   transformOrigin: 'var(--orbit-radius)',
                   animation: `orbit var(--orbit-duration) linear infinite`,
@@ -141,7 +141,7 @@ export default function Loading() {
           {/* Loading Text with 3D effect */}
           <div className="relative">
             <h2 
-              className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-cyan-400 via-purple-400 to-green-800 bg-clip-text text-transparent animate-pulse"
+              className="text-4xl md:text-5xl font-bold bg-linear-to-r from-cyan-400 via-purple-400 to-green-800 bg-clip-text text-transparent animate-pulse"
               style={{
                 textShadow: '0 0 30px rgba(139, 92, 246, 0.5)',
                 transform: `perspective(500px) rotateX(${mousePos.y * 2}deg)`
@@ -149,16 +149,16 @@ export default function Loading() {
             >
               Loading
             </h2>
-            <div className="absolute inset-0 text-4xl md:text-5xl font-bold text-white/10 blur-sm">
+            <div className="absolute inset-0 text-4xl md:text-5xl font-bold text-white/10 blur-xs">
               Loading
             </div>
           </div>
           
           {/* Progress Bar */}
           <div className="relative w-full max-w-xs mx-auto">
-            <div className="h-2 bg-slate-700/50 rounded-full overflow-hidden backdrop-blur-sm">
+            <div className="h-2 bg-slate-700/50 rounded-full overflow-hidden backdrop-blur-xs">
               <div 
-                className="h-full bg-gradient-to-r from-cyan-400 via-purple-500 to-pink-500 transition-all duration-300 ease-out relative"
+                className="h-full bg-linear-to-r from-cyan-400 via-purple-500 to-pink-500 transition-all duration-300 ease-out relative"
                 style={{ width: `${progress}%` }}
               >
                 <div className="absolute inset-0 bg-white/30 animate-shimmer"></div>
@@ -177,11 +177,11 @@ export default function Loading() {
                 className="relative"
               >
                 <div 
-                  className="w-3 h-3 rounded-full bg-gradient-to-r from-cyan-400 to-purple-500 animate-bounce shadow-lg"
+                  className="w-3 h-3 rounded-full bg-linear-to-r from-cyan-400 to-purple-500 animate-bounce shadow-lg"
                   style={{ animationDelay: `${i * 0.15}s` }}
                 />
                 <div 
-                  className="absolute inset-0 w-3 h-3 rounded-full bg-gradient-to-r from-cyan-400 to-purple-500 blur-sm animate-bounce opacity-50"
+                  className="absolute inset-0 w-3 h-3 rounded-full bg-linear-to-r from-cyan-400 to-purple-500 blur-xs animate-bounce opacity-50"
                   style={{ animationDelay: `${i * 0.15}s` }}
                 />
               </div>

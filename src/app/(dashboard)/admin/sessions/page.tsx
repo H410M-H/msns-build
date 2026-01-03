@@ -112,13 +112,13 @@ const StatCard = React.memo(({ stat, index, isLoading }: { stat: StatConfig; ind
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.1, type: "spring", stiffness: 120 }}
       className={cn(
-        "group relative overflow-hidden rounded-xl border p-4 backdrop-blur-md transition-all shadow-sm hover:shadow-md",
+        "group relative overflow-hidden rounded-xl border p-4 backdrop-blur-md transition-all shadow-xs hover:shadow-md",
         styles.border,
         styles.bg
       )}
     >
       {/* Background Gradient Blob */}
-      <div className={`absolute -right-10 -top-10 h-32 w-32 rounded-full bg-gradient-to-br ${styles.gradient} opacity-5 dark:opacity-10 blur-3xl transition-opacity group-hover:opacity-10 dark:group-hover:opacity-20`} />
+      <div className={`absolute -right-10 -top-10 h-32 w-32 rounded-full bg-linear-to-br ${styles.gradient} opacity-5 dark:opacity-10 blur-3xl transition-opacity group-hover:opacity-10 dark:group-hover:opacity-20`} />
       
       <div className="relative z-10 flex items-start justify-between">
         <div>
@@ -127,7 +127,7 @@ const StatCard = React.memo(({ stat, index, isLoading }: { stat: StatConfig; ind
             {isLoading ? <Skeleton className="h-8 w-24 bg-slate-200 dark:bg-white/10" /> : <AnimatedCounter value={stat.value} prefix={stat.prefix} suffix={stat.suffix} />}
           </div>
         </div>
-        <div className={cn("rounded-lg p-2 shadow-sm ring-1", styles.iconBox)}>
+        <div className={cn("rounded-lg p-2 shadow-xs ring-1", styles.iconBox)}>
           <Icon className={cn("h-4 w-4", styles.iconColor)} />
         </div>
       </div>
@@ -210,7 +210,7 @@ export default function SessionFeePage() {
         </div>
         
         {sessionData && (
-          <div className="flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 dark:border-emerald-500/20 dark:bg-emerald-500/5 backdrop-blur-sm">
+          <div className="flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 dark:border-emerald-500/20 dark:bg-emerald-500/5 backdrop-blur-xs">
             <span className="relative flex h-2 w-2">
               <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75"></span>
               <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500"></span>
@@ -228,7 +228,7 @@ export default function SessionFeePage() {
       </div>
 
       {/* --- 2. Session Registry Table --- */}
-      <Card className="overflow-hidden border border-slate-200 dark:border-emerald-500/10 bg-white dark:bg-slate-900/40 backdrop-blur-xl shadow-sm dark:shadow-2xl">
+      <Card className="overflow-hidden border border-slate-200 dark:border-emerald-500/10 bg-white dark:bg-slate-900/40 backdrop-blur-xl shadow-xs dark:shadow-2xl">
         <CardHeader className="border-b border-slate-100 dark:border-white/5 bg-slate-50/50 dark:bg-white/5 px-4 py-3">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div className="flex items-center gap-2">

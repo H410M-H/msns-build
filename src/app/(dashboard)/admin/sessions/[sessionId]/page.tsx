@@ -65,7 +65,7 @@ export default function SessionDetailPage() {
         </div>
 
         {/* Main Content Card */}
-        <Card className="border border-slate-200 bg-white/50 dark:border-white/5 dark:bg-slate-900/40 backdrop-blur-md shadow-sm dark:shadow-xl overflow-hidden transition-all">
+        <Card className="border border-slate-200 bg-white/50 dark:border-white/5 dark:bg-slate-900/40 backdrop-blur-md shadow-xs dark:shadow-xl overflow-hidden transition-all">
           <CardHeader className="border-b border-slate-100 dark:border-white/5 px-6 py-4 bg-slate-50/50 dark:bg-black/20">
             <div className="flex items-center gap-2">
                <Layers className="h-5 w-5 text-emerald-600 dark:text-emerald-500" />

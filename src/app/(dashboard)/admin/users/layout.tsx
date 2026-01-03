@@ -21,10 +21,10 @@ export default function UsersLayout({
       <div className="fixed inset-0 z-0 pointer-events-none">
         
         {/* Cyber Grid Pattern */}
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(16,185,129,0.05)_1px,transparent_1px),linear-gradient(to_bottom,rgba(16,185,129,0.05)_1px,transparent_1px)] bg-[size:3rem_3rem] sm:bg-[size:4rem_4rem]" />
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(16,185,129,0.05)_1px,transparent_1px),linear-gradient(to_bottom,rgba(16,185,129,0.05)_1px,transparent_1px)] bg-size-[3rem_3rem] sm:bg-size-[4rem_4rem]" />
         
         {/* Deep Dark Overlay */}
-        <div className="absolute inset-0 bg-gradient-to-br from-emerald-950/30 via-slate-950/90 to-slate-950" />
+        <div className="absolute inset-0 bg-linear-to-br from-emerald-950/30 via-slate-950/90 to-slate-950" />
         
         {/* Animated Ambient Glows */}
         <div className="absolute -top-20 left-1/4 w-[500px] h-[500px] bg-emerald-500/10 rounded-full blur-[120px] opacity-50 animate-pulse" />

@@ -56,9 +56,9 @@ export default function AlumniCard() {
         return (
           <Link href={service.href} key={index} className="group h-full">
             <Card className={cn(
-              "relative h-full overflow-hidden border-white/5 bg-slate-900/60 backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:border-white/10 hover:shadow-xl"
+              "relative h-full overflow-hidden border-white/5 bg-slate-900/60 backdrop-blur-xs transition-all duration-300 hover:-translate-y-1 hover:border-white/10 hover:shadow-xl"
             )}>
-              <div className={`absolute inset-0 bg-gradient-to-br ${service.gradient} opacity-0 transition-opacity duration-500 group-hover:opacity-100`} />
+              <div className={`absolute inset-0 bg-linear-to-br ${service.gradient} opacity-0 transition-opacity duration-500 group-hover:opacity-100`} />
               
               <CardHeader className="relative z-10 space-y-2 pb-2 p-4">
                 <div className="flex items-start justify-between">

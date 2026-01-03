@@ -101,7 +101,7 @@ export const ClassList = ({ sessionId }: { sessionId: string }) => {
   return (
     <div className="w-full space-y-6">
       {/* Header Section */}
-      <div className="flex flex-col gap-4 rounded-xl border border-slate-200 bg-white/50 p-4 shadow-sm backdrop-blur-md dark:border-white/5 dark:bg-slate-900/40 md:flex-row md:items-center md:justify-between transition-colors">
+      <div className="flex flex-col gap-4 rounded-xl border border-slate-200 bg-white/50 p-4 shadow-xs backdrop-blur-md dark:border-white/5 dark:bg-slate-900/40 md:flex-row md:items-center md:justify-between transition-colors">
         <div className="relative w-full md:max-w-md group">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400 group-focus-within:text-emerald-500 transition-colors" />
           <Input
@@ -152,7 +152,7 @@ export const ClassList = ({ sessionId }: { sessionId: string }) => {
         </div>
 
         {categoryOrder.map((category) => (
-          <TabsContent key={category} value={category} className="mt-6 min-h-[300px] outline-none">
+          <TabsContent key={category} value={category} className="mt-6 min-h-[300px] outline-hidden">
              {isLoading ? (
                <ClassListSkeleton />
              ) : (
@@ -175,7 +175,7 @@ export const ClassList = ({ sessionId }: { sessionId: string }) => {
                        animate={{ opacity: 1 }}
                        className="col-span-full flex flex-col items-center justify-center py-16 text-center text-slate-500 border border-dashed border-slate-300 rounded-xl bg-slate-50/50 dark:text-slate-400 dark:border-white/10 dark:bg-slate-900/20"
                      >
-                       <div className="mb-4 rounded-full bg-white p-4 border border-slate-200 shadow-sm dark:bg-slate-900 dark:border-white/5">
+                       <div className="mb-4 rounded-full bg-white p-4 border border-slate-200 shadow-xs dark:bg-slate-900 dark:border-white/5">
                          <AlertCircle className="h-8 w-8 text-slate-400 dark:text-slate-600" />
                        </div>
                        <p className="text-lg font-medium text-slate-700 dark:text-slate-300">No classes found in {category}</p>
@@ -216,15 +216,15 @@ const ClassCard = ({
       className={cn(
         "group relative flex flex-col justify-between overflow-hidden rounded-xl border transition-all duration-300",
         // Light Mode
-        "bg-white border-slate-200 shadow-sm hover:shadow-lg hover:-translate-y-1 hover:border-emerald-300",
+        "bg-white border-slate-200 shadow-xs hover:shadow-lg hover:-translate-y-1 hover:border-emerald-300",
         // Dark Mode
-        "dark:bg-slate-900/40 dark:backdrop-blur-sm dark:border-white/5 dark:hover:border-emerald-500/30 dark:hover:shadow-emerald-900/10",
+        "dark:bg-slate-900/40 dark:backdrop-blur-xs dark:border-white/5 dark:hover:border-emerald-500/30 dark:hover:shadow-emerald-900/10",
         // Selection State
         isSelected && "ring-1 ring-emerald-500 bg-emerald-50 border-emerald-300 dark:bg-emerald-900/10 dark:border-emerald-500/30"
       )}
     >
       {/* Decorative Gradient */}
-      <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-emerald-500 to-teal-500 opacity-0 group-hover:opacity-100 transition-opacity" />
+      <div className="absolute top-0 left-0 w-full h-1 bg-linear-to-r from-emerald-500 to-teal-500 opacity-0 group-hover:opacity-100 transition-opacity" />
 
       {/* Selection Checkbox */}
       <div className="absolute right-4 top-4 z-10">

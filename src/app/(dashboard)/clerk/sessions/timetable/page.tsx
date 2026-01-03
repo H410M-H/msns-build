@@ -45,7 +45,7 @@ function TimetableContent() {
 
   if (teachersLoading || classesLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-indigo-100 via-purple-100 to-pink-100 p-4 flex items-center justify-center">
+      <div className="min-h-screen bg-linear-to-br from-indigo-100 via-purple-100 to-pink-100 p-4 flex items-center justify-center">
         <div className="text-center space-y-2">
           <Clock className="h-8 w-8 mx-auto text-indigo-500 animate-spin" />
           <p className="text-lg font-semibold text-indigo-700 animate-pulse">Loading timetable data...</p>
@@ -68,11 +68,11 @@ function TimetableContent() {
   }))
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 p-4 sm:p-6 md:p-8">
-      <div className="w-screen max-w-[105rem] mx-auto space-y-6 sm:space-y-8">
+    <div className="min-h-screen bg-linear-to-br from-indigo-50 via-purple-50 to-pink-50 p-4 sm:p-6 md:p-8">
+      <div className="w-screen max-w-420 mx-auto space-y-6 sm:space-y-8">
         {/* Header */}
         <div className="text-center space-y-2 sm:space-y-4">
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-transparent bg-clip-text bg-linear-to-r from-indigo-600 via-purple-600 to-pink-600">
             Timetable Management
           </h1>
           <p className="text-sm sm:text-base md:text-lg text-muted-foreground max-w-2xl mx-auto">
@@ -82,7 +82,7 @@ function TimetableContent() {
 
         {/* View Mode Tabs */}
         <Card className="backdrop-blur-xl bg-white/40 border border-white/50 shadow-2xl rounded-3xl overflow-hidden transition-all duration-300 hover:shadow-indigo-500/20">
-          <CardHeader className="bg-gradient-to-r from-indigo-500/10 to-purple-500/10 border-b border-white/20 p-4 sm:p-6">
+          <CardHeader className="bg-linear-to-r from-indigo-500/10 to-purple-500/10 border-b border-white/20 p-4 sm:p-6">
             <CardTitle className="text-base sm:text-lg md:text-xl font-semibold text-indigo-800 flex items-center gap-2">
               <GridIcon className="h-4 w-4 sm:h-5 sm:w-5" />
               Choose Your View
@@ -130,7 +130,7 @@ function TimetableContent() {
 
         {/* Features Card */}
         <Card className="backdrop-blur-xl bg-white/40 border border-white/50 shadow-2xl rounded-3xl overflow-hidden transition-all duration-300 hover:shadow-purple-500/20">
-          <CardHeader className="bg-gradient-to-r from-purple-500/10 to-pink-500/10 border-b border-white/20 p-4 sm:p-6">
+          <CardHeader className="bg-linear-to-r from-purple-500/10 to-pink-500/10 border-b border-white/20 p-4 sm:p-6">
             <CardTitle className="text-base sm:text-lg md:text-xl font-semibold text-purple-800 flex items-center gap-2">
               <AlertCircle className="h-4 w-4 sm:h-5 sm:w-5" />
               Key Features
@@ -139,19 +139,19 @@ function TimetableContent() {
           <CardContent className="p-4 sm:p-6 text-xs sm:text-sm md:text-base text-muted-foreground space-y-3 sm:space-y-4">
             <ul className="space-y-2 sm:space-y-3 list-inside">
               <li className="flex items-start gap-1 sm:gap-2">
-                <Clock className="h-4 w-4 sm:h-5 sm:w-5 text-indigo-500 flex-shrink-0 mt-0.5" />
+                <Clock className="h-4 w-4 sm:h-5 sm:w-5 text-indigo-500 shrink-0 mt-0.5" />
                 <span><strong>Classwise View:</strong> Drag and drop teachers to time slots with instant validation.</span>
               </li>
               <li className="flex items-start gap-1 sm:gap-2">
-                <Users className="h-4 w-4 sm:h-5 sm:w-5 text-purple-500 flex-shrink-0 mt-0.5" />
+                <Users className="h-4 w-4 sm:h-5 sm:w-5 text-purple-500 shrink-0 mt-0.5" />
                 <span><strong>Teacherwise View:</strong> Comprehensive weekly overview with class details and timings.</span>
               </li>
               <li className="flex items-start gap-1 sm:gap-2">
-                <AlertCircle className="h-4 w-4 sm:h-5 sm:w-5 text-pink-500 flex-shrink-0 mt-0.5" />
+                <AlertCircle className="h-4 w-4 sm:h-5 sm:w-5 text-pink-500 shrink-0 mt-0.5" />
                 <span><strong>Smart Sync:</strong> Real-time database updates with conflict prevention.</span>
               </li>
               <li className="flex items-start gap-1 sm:gap-2">
-                <GridIcon className="h-4 w-4 sm:h-5 sm:w-5 text-indigo-500 flex-shrink-0 mt-0.5" />
+                <GridIcon className="h-4 w-4 sm:h-5 sm:w-5 text-indigo-500 shrink-0 mt-0.5" />
                 <span><strong>Responsive Design:</strong> Optimized for mobile, tablet, and desktop viewing.</span>
               </li>
             </ul>
@@ -166,7 +166,7 @@ export default function TimetablePage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen bg-gradient-to-br from-indigo-100 via-purple-100 to-pink-100 p-4 flex items-center justify-center">
+        <div className="min-h-screen bg-linear-to-br from-indigo-100 via-purple-100 to-pink-100 p-4 flex items-center justify-center">
           <div className="text-center space-y-2">
             <Clock className="h-8 w-8 mx-auto text-indigo-500 animate-spin" />
             <p className="text-lg font-semibold text-indigo-700 animate-pulse">Preparing your timetable...</p>

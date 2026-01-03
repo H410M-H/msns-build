@@ -83,7 +83,7 @@ export function SalaryAnalytics({ year }: { year: number }) {
       
       {/* Summary Cards */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <Card className="border-emerald-500/20 bg-slate-900/40 backdrop-blur-sm shadow-lg">
+        <Card className="border-emerald-500/20 bg-slate-900/40 backdrop-blur-xs shadow-lg">
           <CardContent className="p-4 flex items-center gap-4">
             <div className="p-2.5 bg-emerald-500/10 rounded-xl border border-emerald-500/20">
               <DollarSign className="w-5 h-5 text-emerald-400" />
@@ -99,7 +99,7 @@ export function SalaryAnalytics({ year }: { year: number }) {
           </CardContent>
         </Card>
 
-        <Card className="border-emerald-500/20 bg-slate-900/40 backdrop-blur-sm shadow-lg">
+        <Card className="border-emerald-500/20 bg-slate-900/40 backdrop-blur-xs shadow-lg">
           <CardContent className="p-4 flex items-center gap-4">
             <div className="p-2.5 bg-blue-500/10 rounded-xl border border-blue-500/20">
               <TrendingUp className="w-5 h-5 text-blue-400" />
@@ -115,7 +115,7 @@ export function SalaryAnalytics({ year }: { year: number }) {
           </CardContent>
         </Card>
 
-        <Card className="border-emerald-500/20 bg-slate-900/40 backdrop-blur-sm shadow-lg">
+        <Card className="border-emerald-500/20 bg-slate-900/40 backdrop-blur-xs shadow-lg">
           <CardContent className="p-4 flex items-center gap-4">
             <div className="p-2.5 bg-purple-500/10 rounded-xl border border-purple-500/20">
               <Activity className="w-5 h-5 text-purple-400" />

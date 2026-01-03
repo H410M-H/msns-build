@@ -341,7 +341,7 @@ export function ClassFeeTable({
         ];
 
         return (
-          <div className="flex flex-wrap gap-1.5 max-w-[250px]">
+          <div className="flex flex-wrap gap-1.5 max-w-62.5">
             {items.map((item) => (
               <Badge
                 key={item.label}
@@ -574,7 +574,7 @@ export function ClassFeeTable({
   return (
     <div className="space-y-4">
       {/* Filters & Actions */}
-      <div className="flex flex-col gap-4 rounded-xl border border-slate-200 bg-white p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between dark:bg-slate-900/40 dark:border-white/5 dark:backdrop-blur-md transition-colors">
+      <div className="flex flex-col gap-4 rounded-xl border border-slate-200 bg-white p-4 shadow-xs sm:flex-row sm:items-center sm:justify-between dark:bg-slate-900/40 dark:border-white/5 dark:backdrop-blur-md transition-colors">
         <div className="flex flex-wrap items-center gap-3">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 dark:text-slate-500" />
@@ -582,11 +582,11 @@ export function ClassFeeTable({
               placeholder="Search students..."
               value={globalFilter}
               onChange={(e) => setGlobalFilter(e.target.value)}
-              className="w-[200px] bg-slate-50 border-slate-200 pl-9 dark:bg-slate-950/50 dark:border-white/10 dark:text-white"
+              className="w-50 bg-slate-50 border-slate-200 pl-9 dark:bg-slate-950/50 dark:border-white/10 dark:text-white"
             />
           </div>
           <Select value={String(selectedMonth)} onValueChange={(v) => setSelectedMonth(Number(v))}>
-            <SelectTrigger className="w-[140px] bg-slate-50 border-slate-200 dark:bg-slate-950/50 dark:border-white/10 dark:text-white">
+            <SelectTrigger className="w-35 bg-slate-50 border-slate-200 dark:bg-slate-950/50 dark:border-white/10 dark:text-white">
               <SelectValue />
             </SelectTrigger>
             <SelectContent className="dark:bg-slate-900 dark:border-white/10">
@@ -596,7 +596,7 @@ export function ClassFeeTable({
             </SelectContent>
           </Select>
           <Select value={String(selectedYear)} onValueChange={(v) => setSelectedYear(Number(v))}>
-            <SelectTrigger className="w-[100px] bg-slate-50 border-slate-200 dark:bg-slate-950/50 dark:border-white/10 dark:text-white">
+            <SelectTrigger className="w-25 bg-slate-50 border-slate-200 dark:bg-slate-950/50 dark:border-white/10 dark:text-white">
               <SelectValue />
             </SelectTrigger>
             <SelectContent className="dark:bg-slate-900 dark:border-white/10">
@@ -650,7 +650,7 @@ export function ClassFeeTable({
       </div>
 
       {/* Table */}
-      <div className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden dark:border-white/5 dark:bg-slate-900/40 dark:backdrop-blur-sm dark:shadow-xl transition-colors">
+      <div className="rounded-xl border border-slate-200 bg-white shadow-xs overflow-hidden dark:border-white/5 dark:bg-slate-900/40 dark:backdrop-blur-xs dark:shadow-xl transition-colors">
         <Table>
           <TableHeader className="bg-slate-50 border-b border-slate-200 dark:bg-emerald-950/40 dark:border-white/5">
             {table.getHeaderGroups().map((headerGroup) => (
@@ -689,7 +689,7 @@ export function ClassFeeTable({
       </div>
 
       {/* Footer / Summary */}
-      <div className="flex flex-col items-center justify-between gap-4 rounded-xl border border-slate-200 bg-white p-4 shadow-sm sm:flex-row dark:bg-slate-900/40 dark:border-white/5 dark:backdrop-blur-md">
+      <div className="flex flex-col items-center justify-between gap-4 rounded-xl border border-slate-200 bg-white p-4 shadow-xs sm:flex-row dark:bg-slate-900/40 dark:border-white/5 dark:backdrop-blur-md">
         <div className="flex gap-8 text-sm">
           <div>
             <p className="text-slate-500 dark:text-slate-400 text-xs uppercase tracking-wider font-semibold">Expected</p>

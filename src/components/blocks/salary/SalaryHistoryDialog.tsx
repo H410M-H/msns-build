@@ -97,11 +97,11 @@ export function SalaryHistoryDialog({
   // States for Slip Preview/Download
   const [previewRecord, setPreviewRecord] = useState<SalaryRecord | null>(null)
   const [isDownloading, setIsDownloading] = useState(false)
-  const slipRef = useRef<HTMLDivElement>(null)
+  const slipRef = useRef<HTMLDivElement | null>(null)
 
   // State for Annual Slip Preview
   const [showAnnualPreview, setShowAnnualPreview] = useState(false)
-  const annualRef = useRef<HTMLDivElement>(null)
+  const annualRef = useRef<HTMLDivElement | null>(null)
 
   const utils = api.useUtils()
   
@@ -160,7 +160,7 @@ export function SalaryHistoryDialog({
   }
 
   // --- HTML to PDF Generation Logic ---
-  const handlePrint = (ref: React.RefObject<HTMLDivElement>) => {
+  const handlePrint = (ref: React.RefObject<HTMLDivElement | null>) => {
     const content = ref.current
     if (!content) return
 
@@ -193,7 +193,7 @@ export function SalaryHistoryDialog({
     printWindow.document.close()
   }
 
-  const handleDownloadPdf = async (ref: React.RefObject<HTMLDivElement>, filename: string) => {
+  const handleDownloadPdf = async (ref: React.RefObject<HTMLDivElement | null>, filename: string) => {
     if (!ref.current) return
 
     try {
@@ -247,13 +247,13 @@ export function SalaryHistoryDialog({
             <div className="flex items-center gap-2">
               <span className="text-sm font-medium">Select Period:</span>
               <Select value={selectedMonth} onValueChange={setSelectedMonth}>
-                <SelectTrigger className="w-[110px] bg-white"><SelectValue /></SelectTrigger>
+                <SelectTrigger className="w-27.5 bg-white"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   {MONTHS.map(m => <SelectItem key={m.value} value={String(m.value)}>{m.label}</SelectItem>)}
                 </SelectContent>
               </Select>
               <Select value={selectedYear} onValueChange={setSelectedYear}>
-                <SelectTrigger className="w-[90px] bg-white"><SelectValue /></SelectTrigger>
+                <SelectTrigger className="w-22.5 bg-white"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   {[2023, 2024, 2025, 2026].map(y => <SelectItem key={y} value={String(y)}>{y}</SelectItem>)}
                 </SelectContent>
@@ -422,7 +422,7 @@ export function SalaryHistoryDialog({
                       <img 
                         src="https://res.cloudinary.com/dvvbxrs55/image/upload/v1729267533/Official_LOGO_grn_ic9ldd.png" 
                         alt="School Logo" 
-                        className="w-20 h-20 object-contain drop-shadow-sm"
+                        className="w-20 h-20 object-contain drop-shadow-xs"
                       />
                       <div>
                         <h1 className="text-2xl font-bold text-emerald-900 tracking-tight">M. S. NAZ HIGH SCHOOL®</h1>

@@ -1,4 +1,3 @@
-// File: src/components/tables/StudentTable.tsx
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
@@ -6,7 +5,7 @@ import { Button } from "~/components/ui/button";
 import { Checkbox } from "~/components/ui/checkbox";
 import { api } from "~/trpc/react";
 import Link from "next/link";
-import { DotsHorizontalIcon } from "@radix-ui/react-icons";
+
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -77,7 +76,8 @@ import {
   IdCard, 
   UserPlus, 
   Loader2, 
-  ArrowUpDown 
+  ArrowUpDown, 
+  Ellipsis
 } from "lucide-react";
 import { Skeleton } from "~/components/ui/skeleton";
 import { DownloadPdfButton } from "../ui/DownloadPdfButton";
@@ -85,7 +85,6 @@ import type { Students } from "@prisma/client";
 
 // --- Types ---
 declare module "@tanstack/react-table" {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   interface ColumnMeta<TData extends RowData, TValue> {
     className?: string;
   }
@@ -165,7 +164,7 @@ function AddToClassDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[425px] bg-white border-slate-200 text-slate-900 dark:bg-slate-900 dark:border-emerald-500/20 dark:text-slate-200">
+      <DialogContent className="sm:max-w-106.25 bg-white border-slate-200 text-slate-900 dark:bg-slate-900 dark:border-emerald-500/20 dark:text-slate-200">
         <DialogHeader>
           <DialogTitle className="text-emerald-600 dark:text-emerald-400">Add to Class</DialogTitle>
           <p className="text-sm text-slate-500 dark:text-slate-400">
@@ -398,7 +397,7 @@ export const StudentTable = () => {
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="h-8 w-8 p-0 text-slate-500 hover:text-slate-900 hover:bg-slate-100 rounded-full dark:text-slate-400 dark:hover:text-white dark:hover:bg-emerald-500/20">
-                <DotsHorizontalIcon className="h-4 w-4" />
+                <Ellipsis className="h-4 w-4" />
                 <span className="sr-only">Open menu</span>
               </Button>
             </DropdownMenuTrigger>
@@ -462,7 +461,7 @@ export const StudentTable = () => {
   return (
     <div className="w-full space-y-4 animate-in fade-in duration-500">
       {/* --- Top Controls --- */}
-      <div className="rounded-xl bg-white/80 p-4 shadow-sm border border-slate-200 backdrop-blur-md sticky top-2 z-30 transition-colors dark:bg-slate-900/80 dark:border-emerald-500/20 dark:shadow-lg">
+      <div className="rounded-xl bg-white/80 p-4 shadow-xs border border-slate-200 backdrop-blur-md sticky top-2 z-30 transition-colors dark:bg-slate-900/80 dark:border-emerald-500/20 dark:shadow-lg">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           
           {/* Search & Stats */}
@@ -550,7 +549,7 @@ export const StudentTable = () => {
       </div>
 
       {/* --- Main Table Container --- */}
-      <div className="rounded-xl border border-slate-200 bg-white/60 shadow-lg backdrop-blur-sm overflow-hidden flex flex-col transition-colors dark:border-emerald-500/20 dark:bg-slate-900/60 dark:shadow-xl">
+      <div className="rounded-xl border border-slate-200 bg-white/60 shadow-lg backdrop-blur-xs overflow-hidden flex flex-col transition-colors dark:border-emerald-500/20 dark:bg-slate-900/60 dark:shadow-xl">
         {/* Horizontal Scroll Wrapper for Mobile */}
         <div className="overflow-x-auto">
             <Table>
@@ -632,7 +631,7 @@ export const StudentTable = () => {
                   table.setPageSize(Number(value));
                 }}
               >
-                <SelectTrigger className="h-8 w-[70px] bg-white border-slate-300 text-slate-700 text-xs dark:bg-slate-900 dark:border-emerald-500/20 dark:text-slate-200">
+                <SelectTrigger className="h-8 w-17.5 bg-white border-slate-300 text-slate-700 text-xs dark:bg-slate-900 dark:border-emerald-500/20 dark:text-slate-200">
                   <SelectValue placeholder={table.getState().pagination.pageSize} />
                 </SelectTrigger>
                 <SelectContent side="top" className="bg-white border-slate-200 text-slate-700 dark:bg-slate-900 dark:border-emerald-500/20 dark:text-slate-200">

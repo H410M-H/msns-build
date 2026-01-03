@@ -210,7 +210,7 @@ export function FeeTable() {
       {/* Summary Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
         {Object.entries(totalFeesByClass).map(([level, fee]) => (
-          <div key={level} className="bg-white p-4 rounded-lg border shadow-sm">
+          <div key={level} className="bg-white p-4 rounded-lg border shadow-xs">
             <div className="flex items-center justify-between mb-2">
               <Badge variant="outline" className="text-xs">
                 {level}

@@ -12,8 +12,8 @@ export default function StudentCred() {
     <section className="relative min-h-screen w-full bg-slate-950 overflow-x-hidden selection:bg-emerald-500/30">
       {/* BACKGROUND START - Consistent with Creation/Edit pages */}
       <div className="w-screen inset-0 z-0 pointer-events-none fixed">
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(45,255,196,0.05)_1px,transparent_1px),linear-gradient(to_bottom,rgba(45,255,196,0.05)_1px,transparent_1px)] bg-[size:3rem_3rem] sm:bg-[size:4rem_4rem]" />
-        <div className="absolute inset-0 bg-gradient-to-br from-emerald-900/40 via-black/20 to-black/60" />
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(45,255,196,0.05)_1px,transparent_1px),linear-gradient(to_bottom,rgba(45,255,196,0.05)_1px,transparent_1px)] bg-size-[3rem_3rem] sm:bg-size-[4rem_4rem]" />
+        <div className="absolute inset-0 bg-linear-to-br from-emerald-900/40 via-black/20 to-black/60" />
       </div>
       {/* BACKGROUND END */}
 
@@ -26,7 +26,7 @@ export default function StudentCred() {
             
             {/* Header Section */}
             <div className="text-center space-y-4 animate-in fade-in slide-in-from-top-4 duration-500">
-              <h1 className="text-4xl sm:text-5xl font-bold font-serif text-transparent bg-clip-text bg-gradient-to-r from-emerald-200 to-teal-400 drop-shadow-sm">
+              <h1 className="text-4xl sm:text-5xl font-bold font-serif text-transparent bg-clip-text bg-linear-to-r from-emerald-200 to-teal-400 drop-shadow-xs">
                 Student Management
               </h1>
               <p className="text-slate-100 text-lg max-w-2xl mx-auto">

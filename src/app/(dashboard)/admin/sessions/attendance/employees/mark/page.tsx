@@ -147,10 +147,10 @@ export default function MarkEmployeeAttendancePage() {
   ]
 
   return (
-    <div className="container mx-auto p-6 space-y-6 bg-gradient-to-br from-slate-50 to-purple-50 min-h-screen">
+    <div className="container mx-auto p-6 space-y-6 bg-linear-to-br from-slate-50 to-purple-50 min-h-screen">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+          <h1 className="text-3xl font-bold tracking-tight bg-linear-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
             Mark Employee Attendance
           </h1>
           <p className="text-slate-600 mt-2">Record daily attendance for staff members by designation</p>
@@ -214,7 +214,7 @@ export default function MarkEmployeeAttendancePage() {
               <Button
                 onClick={handleSubmit}
                 disabled={markAttendanceMutation.isPending}
-                className="bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800"
+                className="bg-linear-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800"
               >
                 <Save className="mr-2 h-4 w-4" />
                 {markAttendanceMutation.isPending ? "Saving..." : "Save Attendance"}
@@ -230,10 +230,10 @@ export default function MarkEmployeeAttendancePage() {
                 const checkOutTime = attendanceData[employee.employeeId]?.checkOutTime ?? ""
 
                 return (
-                  <div key={employee.employeeId} className="p-4 border rounded-lg bg-white shadow-sm">
+                  <div key={employee.employeeId} className="p-4 border rounded-lg bg-white shadow-xs">
                     <div className="flex items-center justify-between mb-3">
                       <div className="flex items-center space-x-3">
-                        <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-blue-600 rounded-full flex items-center justify-center text-white font-semibold">
+                        <div className="w-10 h-10 bg-linear-to-br from-purple-500 to-blue-600 rounded-full flex items-center justify-center text-white font-semibold">
                           {employee.employeeName.charAt(0)}
                         </div>
                         <div>

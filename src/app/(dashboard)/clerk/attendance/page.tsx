@@ -12,8 +12,8 @@ export default function AttendancePage() {
       
       {/* === GLOBAL GRID BACKGROUND === */}
       <div className="fixed inset-0 z-0 pointer-events-none">
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(45,255,196,0.05)_1px,transparent_1px),linear-gradient(to_bottom,rgba(45,255,196,0.05)_1px,transparent_1px)] bg-[size:3rem_3rem] sm:bg-[size:4rem_4rem]" />
-        <div className="absolute inset-0 bg-gradient-to-br from-emerald-900/20 via-slate-950/80 to-slate-950" />
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(45,255,196,0.05)_1px,transparent_1px),linear-gradient(to_bottom,rgba(45,255,196,0.05)_1px,transparent_1px)] bg-size-[3rem_3rem] sm:bg-size-[4rem_4rem]" />
+        <div className="absolute inset-0 bg-linear-to-br from-emerald-900/20 via-slate-950/80 to-slate-950" />
       </div>
 
       <div className="relative z-10 flex flex-col min-h-screen">
@@ -24,7 +24,7 @@ export default function AttendancePage() {
             
             {/* Title Section */}
             <div className="flex items-center gap-4">
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-500/20 to-teal-500/20 border border-emerald-500/30 shadow-lg shadow-emerald-900/20">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-linear-to-br from-emerald-500/20 to-teal-500/20 border border-emerald-500/30 shadow-lg shadow-emerald-900/20">
                 <CalendarIcon className="h-6 w-6 text-emerald-400" />
               </div>
               <div>
@@ -39,7 +39,7 @@ export default function AttendancePage() {
 
             {/* Date Badge */}
             <div className="flex items-center gap-4 self-start sm:self-auto">
-              <Badge variant="outline" className="h-9 px-4 text-sm bg-slate-800/50 border-emerald-500/30 text-emerald-100 backdrop-blur-md shadow-sm">
+              <Badge variant="outline" className="h-9 px-4 text-sm bg-slate-800/50 border-emerald-500/30 text-emerald-100 backdrop-blur-md shadow-xs">
                 {dayjs().format("dddd, MMMM D, YYYY")}
               </Badge>
             </div>
@@ -58,7 +58,7 @@ export default function AttendancePage() {
               }
             >
               {/* Content Wrapper for consistency */}
-              <div className="rounded-2xl border border-emerald-500/10 bg-slate-900/40 backdrop-blur-sm p-1 shadow-2xl">
+              <div className="rounded-2xl border border-emerald-500/10 bg-slate-900/40 backdrop-blur-xs p-1 shadow-2xl">
                  <CalendarGrid />
               </div>
             </Suspense>

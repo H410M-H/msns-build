@@ -74,7 +74,7 @@ export default function RegistrationCards() {
               <Card className={`relative h-full overflow-hidden transition-all duration-500 bg-white/5 border ${service.borderColor} hover:border-opacity-50 hover:shadow-2xl ${service.hoverShadow} backdrop-blur-md`}>
                 
                 {/* Gradient overlay on hover */}
-                <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
+                <div className="absolute inset-0 bg-linear-to-br from-white/5 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
                 
                 <CardHeader className="relative z-10 pb-2">
                   <div className="flex items-start justify-between mb-4">

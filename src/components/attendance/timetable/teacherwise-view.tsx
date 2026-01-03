@@ -84,7 +84,7 @@ export function TeacherwiseView({ teachers, classes: _classes, defaultTimeSlots:
                   key={teacher.employeeId}
                   variant={selectedTeacher?.employeeId === teacher.employeeId ? "default" : "outline"}
                   onClick={() => setSelectedTeacher(teacher)}
-                  className="flex-shrink-0"
+                  className="shrink-0"
                 >
                   {teacher.employeeName}
                 </Button>
@@ -115,7 +115,7 @@ export function TeacherwiseView({ teachers, classes: _classes, defaultTimeSlots:
                     <TooltipTrigger asChild>
                       <div
                         className={cn(
-                          "p-4 border rounded-lg shadow-sm transition-all duration-200",
+                          "p-4 border rounded-lg shadow-xs transition-all duration-200",
                           DAY_COLORS[index % DAY_COLORS.length],
                           slots.length > 0 ? "hover:shadow-md" : "opacity-75"
                         )}
@@ -152,7 +152,7 @@ export function TeacherwiseView({ teachers, classes: _classes, defaultTimeSlots:
               })}
             </div>
 
-            <Card className="mt-6 bg-muted/50 border-muted shadow-sm">
+            <Card className="mt-6 bg-muted/50 border-muted shadow-xs">
               <CardContent className="p-4">
                 <h4 className="font-semibold mb-3 text-sm md:text-base">Classes Summary</h4>
                 <div className="grid grid-cols-3 sm:grid-cols-6 gap-2 md:gap-3">

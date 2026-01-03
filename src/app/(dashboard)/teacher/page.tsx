@@ -96,7 +96,7 @@ export default function TeacherDashboard() {
         {TEACHER_ANALYTICS.map((stat, idx) => {
           const Icon = stat.icon;
           return (
-            <Card key={idx} className={`border ${stat.border} bg-slate-900/40 backdrop-blur-sm`}>
+            <Card key={idx} className={`border ${stat.border} bg-slate-900/40 backdrop-blur-xs`}>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium text-slate-200">
                   {stat.title}
@@ -119,7 +119,7 @@ export default function TeacherDashboard() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.3 }}
-        className="w-full rounded-[2rem] border border-white/5 bg-slate-900/40 backdrop-blur-xl shadow-2xl overflow-hidden"
+        className="w-full rounded-4xl border border-white/5 bg-slate-900/40 backdrop-blur-xl shadow-2xl overflow-hidden"
       >
          <Tabs defaultValue="classes" className="w-full">
             <div className="flex flex-col sm:flex-row items-center justify-between gap-4 border-b border-white/5 px-6 py-4 bg-black/20">
@@ -135,11 +135,11 @@ export default function TeacherDashboard() {
             </div>
 
             <div className="p-4 sm:p-6 w-full">
-              <TabsContent value="classes" className="mt-0 focus-visible:outline-none w-full">
+              <TabsContent value="classes" className="mt-0 focus-visible:outline-hidden w-full">
                 <TeacherSection />
               </TabsContent>
 
-              <TabsContent value="events" className="mt-0 focus-visible:outline-none w-full">
+              <TabsContent value="events" className="mt-0 focus-visible:outline-hidden w-full">
                 <Card className="border-0 bg-transparent shadow-none w-full">
                   <div className="flex items-center justify-between mb-6">
                     <div>

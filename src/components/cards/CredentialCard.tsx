@@ -75,8 +75,8 @@ export default function EmployeeCredDetails() {
     return (
       <div className="relative min-h-[50vh] flex flex-col items-center justify-center gap-3">
         <div className="absolute inset-0 z-0 pointer-events-none">
-            <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(45,255,196,0.05)_1px,transparent_1px),linear-gradient(to_bottom,rgba(45,255,196,0.05)_1px,transparent_1px)] bg-[size:3rem_3rem]" />
-            <div className="absolute inset-0 bg-gradient-to-br from-emerald-900/20 via-slate-950/80 to-slate-950" />
+            <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(45,255,196,0.05)_1px,transparent_1px),linear-gradient(to_bottom,rgba(45,255,196,0.05)_1px,transparent_1px)] bg-size-[3rem_3rem]" />
+            <div className="absolute inset-0 bg-linear-to-br from-emerald-900/20 via-slate-950/80 to-slate-950" />
         </div>
         <Loader2 className="w-10 h-10 animate-spin text-emerald-500 relative z-10" />
         <p className="text-sm text-emerald-500/80 animate-pulse relative z-10">Loading faculty directory...</p>
@@ -86,7 +86,7 @@ export default function EmployeeCredDetails() {
 
   if (isError) {
     return (
-      <div className="flex items-center justify-center h-64 border border-red-500/20 bg-red-900/10 rounded-xl m-4 backdrop-blur-sm">
+      <div className="flex items-center justify-center h-64 border border-red-500/20 bg-red-900/10 rounded-xl m-4 backdrop-blur-xs">
         <p className="text-red-400 font-medium">Failed to load employee data. Please try refreshing.</p>
       </div>
     );
@@ -97,8 +97,8 @@ export default function EmployeeCredDetails() {
       
       {/* === GLOBAL GRID BACKGROUND === */}
       <div className="inset-0 z-0 pointer-events-none fixed h-full w-full">
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(45,255,196,0.05)_1px,transparent_1px),linear-gradient(to_bottom,rgba(45,255,196,0.05)_1px,transparent_1px)] bg-[size:3rem_3rem] sm:bg-[size:4rem_4rem]" />
-        <div className="absolute inset-0 bg-gradient-to-br from-emerald-900/20 via-slate-950/80 to-slate-950" />
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(45,255,196,0.05)_1px,transparent_1px),linear-gradient(to_bottom,rgba(45,255,196,0.05)_1px,transparent_1px)] bg-size-[3rem_3rem] sm:bg-size-[4rem_4rem]" />
+        <div className="absolute inset-0 bg-linear-to-br from-emerald-900/20 via-slate-950/80 to-slate-950" />
       </div>
 
       {/* === CONTENT === */}
@@ -134,7 +134,7 @@ export default function EmployeeCredDetails() {
                <CSVUploadDialog />
             </div>
             
-            <Button asChild size="sm" className="h-11 px-6 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white shadow-lg shadow-emerald-900/20 border-0 rounded-xl transition-all">
+            <Button asChild size="sm" className="h-11 px-6 bg-linear-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white shadow-lg shadow-emerald-900/20 border-0 rounded-xl transition-all">
               <Link href="/admin/users/faculty/create">
                 <span className="font-semibold tracking-wide whitespace-nowrap">Create New</span>
               </Link>
@@ -186,7 +186,7 @@ export default function EmployeeCredDetails() {
                     <Card className="h-full bg-slate-900/60 backdrop-blur-md border border-emerald-500/10 rounded-2xl shadow-xl hover:shadow-2xl hover:shadow-emerald-900/20 hover:border-emerald-500/30 transition-all duration-300 group overflow-hidden relative">
                     
                     {/* Decorative Elements */}
-                    <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-emerald-500/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                    <div className="absolute top-0 left-0 w-full h-1 bg-linear-to-r from-transparent via-emerald-500/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                     
                     <CardContent className="p-5 flex flex-col h-full relative z-10">
                         
@@ -211,7 +211,7 @@ export default function EmployeeCredDetails() {
                                     </div>
                                 )}
                                 {/* Active Indicator (assuming all shown are active for now) */}
-                                <div className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-slate-900 bg-emerald-500 shadow-sm shadow-emerald-500/50" />
+                                <div className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-slate-900 bg-emerald-500 shadow-xs shadow-emerald-500/50" />
                             </div>
 
                             {/* Name & Designation */}

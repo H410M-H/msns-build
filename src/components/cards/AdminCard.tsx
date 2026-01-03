@@ -73,10 +73,10 @@ export default function AdminCards() {
 
         return (
           <Link href={service.href} key={service.title} className="group block h-full">
-            <Card className={`relative h-full overflow-hidden border bg-white dark:bg-slate-900/40 backdrop-blur-sm transition-all duration-300 ${borderColor} ${service.lightBg} ${service.darkBg} hover:-translate-y-1 hover:shadow-lg dark:hover:shadow-none`}>
+            <Card className={`relative h-full overflow-hidden border bg-white dark:bg-slate-900/40 backdrop-blur-xs transition-all duration-300 ${borderColor} ${service.lightBg} ${service.darkBg} hover:-translate-y-1 hover:shadow-lg dark:hover:shadow-none`}>
               
               {/* Subtle Gradient Overlay */}
-              <div className="absolute inset-0 bg-gradient-to-br from-white/50 via-transparent to-transparent dark:from-white/5 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+              <div className="absolute inset-0 bg-linear-to-br from-white/50 via-transparent to-transparent dark:from-white/5 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
               
               <CardHeader className="relative z-10 p-5 pb-3">
                 <div className="flex items-start justify-between gap-4">

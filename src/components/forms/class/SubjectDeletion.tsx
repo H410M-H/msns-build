@@ -2,7 +2,6 @@
 
 import { Button } from "~/components/ui/button"
 import { api } from "~/trpc/react"
-import { ReloadIcon } from "@radix-ui/react-icons"
 import { toast } from "~/hooks/use-toast"
 import {
   AlertDialog,
@@ -15,6 +14,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "~/components/ui/alert-dialog"
+import { Loader } from "lucide-react"
 
 type SubjectDeletionDialogProps = {
   csId: string
@@ -70,7 +70,7 @@ export function SubjectDeletionDialog({ csId, classId, subjectName }: SubjectDel
             <Button variant="destructive" onClick={handleRemove} disabled={removeSubject.isPending}>
               {removeSubject.isPending ? (
                 <>
-                  <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />
+                  <Loader className="mr-2 h-4 w-4 animate-spin" />
                   Removing...
                 </>
               ) : (
