@@ -56,10 +56,10 @@ export default function RevenuePage() {
       
       {/* === GLOBAL GRID BACKGROUND === */}
       <div className="fixed inset-0 z-0 pointer-events-none">
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(45,255,196,0.05)_1px,transparent_1px),linear-gradient(to_bottom,rgba(45,255,196,0.05)_1px,transparent_1px)] bg-[size:3rem_3rem] sm:bg-[size:4rem_4rem]" />
-        <div className="absolute inset-0 bg-gradient-to-br from-emerald-900/20 via-slate-950/80 to-slate-950" />
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(45,255,196,0.05)_1px,transparent_1px),linear-gradient(to_bottom,rgba(45,255,196,0.05)_1px,transparent_1px)] bg-size-[3rem_3rem] sm:bg-size-[4rem_4rem]" />
+        <div className="absolute inset-0 bg-linear-to-br from-emerald-900/20 via-slate-950/80 to-slate-950" />
         {/* Ambient Glow */}
-        <div className="absolute top-20 right-0 w-[500px] h-[500px] bg-emerald-500/10 rounded-full blur-[120px] opacity-40" />
+        <div className="absolute top-20 right-0 w-125 h-125 bg-emerald-500/10 rounded-full blur-[120px] opacity-40" />
       </div>
       
       <div className="relative z-10 flex flex-col min-h-screen">
@@ -77,7 +77,7 @@ export default function RevenuePage() {
             className="flex flex-col lg:flex-row lg:items-end justify-between gap-6"
           >
             <div className="space-y-2">
-              <h1 className="text-3xl sm:text-4xl font-bold tracking-tight font-serif text-transparent bg-clip-text bg-gradient-to-r from-white via-emerald-200 to-emerald-400">
+              <h1 className="text-3xl sm:text-4xl font-bold tracking-tight font-serif text-transparent bg-clip-text bg-linear-to-r from-white via-emerald-200 to-emerald-400">
                 Financial Overview
               </h1>
               <p className="text-slate-400 text-sm sm:text-base max-w-xl">
@@ -88,7 +88,7 @@ export default function RevenuePage() {
             {/* Controls Toolbar */}
             <div className="flex flex-wrap items-center gap-3 p-1.5 rounded-xl bg-slate-900/60 border border-emerald-500/20 backdrop-blur-md shadow-lg">
               <Select defaultValue="this_year">
-                <SelectTrigger className="w-[160px] h-10 bg-slate-800/50 border-emerald-500/20 text-white focus:ring-emerald-500/50">
+                <SelectTrigger className="w-40 h-10 bg-slate-800/50 border-emerald-500/20 text-white focus:ring-emerald-500/50">
                   <Calendar className="w-4 h-4 mr-2 text-emerald-400" />
                   <SelectValue placeholder="Period" />
                 </SelectTrigger>
@@ -124,7 +124,7 @@ export default function RevenuePage() {
               <CardHeader className="border-b border-emerald-500/10 bg-slate-900/50 p-6">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                   <div className="flex items-start gap-4">
-                    <div className="p-3 rounded-xl bg-gradient-to-br from-emerald-500/20 to-teal-500/20 border border-emerald-500/30 shadow-inner">
+                    <div className="p-3 rounded-xl bg-linear-to-br from-emerald-500/20 to-teal-500/20 border border-emerald-500/30 shadow-inner">
                       <Wallet className="w-6 h-6 text-emerald-400" />
                     </div>
                     <div className="space-y-1">

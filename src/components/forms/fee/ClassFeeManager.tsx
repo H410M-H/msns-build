@@ -38,7 +38,7 @@ export function ClassFeeManager({ data }: { data: ClassData }) {
     <div className="p-4 space-y-4">
       
       {/* Controls */}
-      <div className="flex items-center justify-between bg-white p-4 rounded-lg shadow-sm border">
+      <div className="flex items-center justify-between bg-white p-4 rounded-lg shadow-xs border">
         <div>
            <h2 className="font-bold text-lg">Generate Class Vouchers</h2>
            <p className="text-slate-500 text-sm">

@@ -24,18 +24,18 @@ export default function RegistrationPage() {
   }, []);
 
   return (
-    <div className="relative min-h-screen w-full overflow-x-hidden bg-gradient-to-br from-[#344a3f] via-[#12251b] to-[#02131b]">
+    <div className="relative min-h-screen w-full overflow-x-hidden bg-linear-to-br from-[#344a3f] via-[#12251b] to-[#02131b]">
       {/* 🎯 OPTIMIZED GRID BACKGROUND (Dark Theme) */}
       <div className="absolute inset-0 z-0 pointer-events-none">
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(45,255,196,0.05)_1px,transparent_1px),linear-gradient(to_bottom,rgba(45,255,196,0.05)_1px,transparent_1px)] bg-[size:3rem_3rem] sm:bg-[size:4rem_4rem]" />
-        <div className="absolute inset-0 bg-gradient-to-br from-emerald-900/40 via-black/20 to-black/60" />
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(45,255,196,0.05)_1px,transparent_1px),linear-gradient(to_bottom,rgba(45,255,196,0.05)_1px,transparent_1px)] bg-size-[3rem_3rem] sm:bg-size-[4rem_4rem]" />
+        <div className="absolute inset-0 bg-linear-to-br from-emerald-900/40 via-black/20 to-black/60" />
       </div>
 
       {/* 🎯 AMBIENT GLOW EFFECTS */}
       {!prefersReducedMotion && !isMobile && (
         <>
           <motion.div
-            className="absolute left-[20%] top-[20%] h-[25rem] w-[25rem] rounded-full bg-emerald-500/10 blur-[100px]"
+            className="absolute left-[20%] top-[20%] h-100 w-100 rounded-full bg-emerald-500/10 blur-[100px]"
             animate={{
               scale: [1, 1.2, 1],
               opacity: [0.2, 0.3, 0.2],
@@ -43,7 +43,7 @@ export default function RegistrationPage() {
             transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
           />
           <motion.div
-            className="absolute bottom-[10%] right-[10%] h-[20rem] w-[20rem] rounded-full bg-cyan-500/10 blur-[100px]"
+            className="absolute bottom-[10%] right-[10%] h-80 w-[20rem] rounded-full bg-cyan-500/10 blur-[100px]"
             animate={{
               scale: [1, 1.1, 1],
               opacity: [0.2, 0.3, 0.2],
@@ -74,7 +74,7 @@ export default function RegistrationPage() {
                 transition={{ delay: 0.2 }}
                 className="text-4xl sm:text-5xl md:text-6xl font-black tracking-tight text-white"
               >
-                Online <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-cyan-400">Registration</span> Portal
+                Online <span className="text-transparent bg-clip-text bg-linear-to-r from-emerald-400 to-cyan-400">Registration</span> Portal
               </motion.h1>
 
               <motion.div

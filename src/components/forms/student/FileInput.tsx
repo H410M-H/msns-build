@@ -32,11 +32,10 @@ import { Input } from "~/components/ui/input";
 import { Progress } from "~/components/ui/progress";
 
 const formSchema = z.object({
-  csvFile: (typeof window === 'undefined' 
-    ? z.any() 
-    : z.instanceof(File, { message: "A CSV file is required" })) as z.ZodType<File>
+  csvFile: z.custom<File>((val) => {
+    return typeof window !== 'undefined' && val instanceof File;
+  }, "A CSV file is required"),
 });
-
 type FormValues = z.infer<typeof formSchema>;
 
 interface CSVUploadDialogProps {
@@ -221,7 +220,7 @@ export const CSVUploadDialog: React.FC<CSVUploadDialogProps> = ({ onSuccess }) =
           Bulk Upload
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px] bg-slate-900 border-emerald-500/20 text-slate-200">
+      <DialogContent className="sm:max-w-106.25 bg-slate-900 border-emerald-500/20 text-slate-200">
         <DialogHeader>
           <DialogTitle className="text-emerald-400">Upload Student CSV</DialogTitle>
           <DialogDescription className="text-slate-400">

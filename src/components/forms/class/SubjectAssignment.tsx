@@ -22,8 +22,7 @@ import { Label } from "~/components/ui/label";
 import { api } from "~/trpc/react";
 import { toast } from "~/hooks/use-toast";
 import { Skeleton } from "~/components/ui/skeleton";
-import { ReloadIcon } from "@radix-ui/react-icons";
-import { BookOpen, Users } from "lucide-react";
+import { BookOpen, Loader, Users } from "lucide-react";
 import type { DayOfWeek } from "@prisma/client";
 
 // Removed local Weekday type to use DayOfWeek from Prisma source of truth
@@ -276,7 +275,7 @@ export function SubjectAssignmentDialog({
           >
             {assignToSlot.isPending ? (
               <span className="flex items-center justify-center">
-                <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />
+                <Loader className="mr-2 h-4 w-4 animate-spin" />
                 Assigning…
               </span>
             ) : (

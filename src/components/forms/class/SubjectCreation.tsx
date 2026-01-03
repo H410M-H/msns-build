@@ -152,7 +152,7 @@ function SubjectEditDialog({
       toast({
         title: "✅ Subject Updated!",
         description: `${form.getValues("subjectName")} has been updated successfully.`,
-        className: "bg-gradient-to-r from-green-500 to-emerald-500 text-white border-none"
+        className: "bg-linear-to-r from-green-500 to-emerald-500 text-white border-none"
       })
       void utils.subject.getAllSubjects.invalidate()
       onSubjectUpdated()
@@ -162,7 +162,7 @@ function SubjectEditDialog({
       toast({
         title: "Error",
         description: error.message,
-        className: "bg-gradient-to-r from-red-500 to-orange-500 text-white border-none"
+        className: "bg-linear-to-r from-red-500 to-orange-500 text-white border-none"
       })
     }
   }) || { 
@@ -171,7 +171,7 @@ function SubjectEditDialog({
       toast({
         title: "Feature Not Available",
         description: "Subject update is currently unavailable. Please try again later.",
-        className: "bg-gradient-to-r from-yellow-500 to-orange-500 text-white border-none"
+        className: "bg-linear-to-r from-yellow-500 to-orange-500 text-white border-none"
       })
     }, 
     isPending: false 
@@ -310,7 +310,7 @@ function SubjectDeleteDialog({
       toast({
         title: "🗑️ Subject Deleted!",
         description: `${subject.subjectName} has been permanently removed.`,
-        className: "bg-gradient-to-r from-red-500 to-orange-500 text-white border-none"
+        className: "bg-linear-to-r from-red-500 to-orange-500 text-white border-none"
       })
       void utils.subject.getAllSubjects.invalidate()
       onSubjectDeleted()
@@ -320,7 +320,7 @@ function SubjectDeleteDialog({
       toast({
         title: "Error",
         description: error.message,
-        className: "bg-gradient-to-r from-red-500 to-orange-500 text-white border-none"
+        className: "bg-linear-to-r from-red-500 to-orange-500 text-white border-none"
       })
     }
   }) || { 
@@ -329,7 +329,7 @@ function SubjectDeleteDialog({
       toast({
         title: "Feature Not Available",
         description: "Subject deletion is currently unavailable. Please try again later.",
-        className: "bg-gradient-to-r from-yellow-500 to-orange-500 text-white border-none"
+        className: "bg-linear-to-r from-yellow-500 to-orange-500 text-white border-none"
       })
     }, 
     isPending: false 
@@ -431,7 +431,7 @@ export function SubjectCreationDialog({ open, onOpenChange }: { open: boolean, o
       toast({ 
         title: "✅ Subject Created!", 
         description: `${values.subjectName} has been successfully added to the database.`,
-        className: "bg-gradient-to-r from-green-500 to-emerald-500 text-white border-none"
+        className: "bg-linear-to-r from-green-500 to-emerald-500 text-white border-none"
       })
       
       await utils.subject.getAllSubjects.invalidate()
@@ -440,7 +440,7 @@ export function SubjectCreationDialog({ open, onOpenChange }: { open: boolean, o
       toast({ 
         title: "Error", 
         description: (error as Error).message,
-        className: "bg-gradient-to-r from-red-500 to-orange-500 text-white border-none"
+        className: "bg-linear-to-r from-red-500 to-orange-500 text-white border-none"
       })
     }
   }
@@ -466,7 +466,7 @@ export function SubjectCreationDialog({ open, onOpenChange }: { open: boolean, o
         <Button 
           variant="outline" 
           size="sm"
-          className="bg-white hover:bg-slate-50 border-slate-200 text-slate-700 shadow-sm hover:shadow-md transition-all duration-300 font-semibold"
+          className="bg-white hover:bg-slate-50 border-slate-200 text-slate-700 shadow-xs hover:shadow-md transition-all duration-300 font-semibold"
         >
           <BookPlus className="w-4 h-4 mr-2 text-blue-500" />
           Manage Subjects
@@ -483,10 +483,10 @@ export function SubjectCreationDialog({ open, onOpenChange }: { open: boolean, o
           
           {/* Header */}
           <div className="mb-6 text-center">
-            <div className="bg-gradient-to-r from-blue-500 to-purple-600 w-12 h-12 rounded-2xl flex items-center justify-center mx-auto mb-3 shadow-lg">
+            <div className="bg-linear-to-r from-blue-500 to-purple-600 w-12 h-12 rounded-2xl flex items-center justify-center mx-auto mb-3 shadow-lg">
               <BookPlus className="w-6 h-6 text-white" />
             </div>
-            <h2 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-slate-700 to-slate-900">
+            <h2 className="text-xl font-bold bg-clip-text text-transparent bg-linear-to-r from-slate-700 to-slate-900">
               Manage Subjects
             </h2>
             <p className="text-sm text-slate-500 mt-1">
@@ -499,7 +499,7 @@ export function SubjectCreationDialog({ open, onOpenChange }: { open: boolean, o
             <motion.div
               initial={{ opacity: 0, x: -10 }}
               animate={{ opacity: 1, x: 0 }}
-              className="bg-white rounded-3xl p-6 shadow-sm border border-slate-100"
+              className="bg-white rounded-3xl p-6 shadow-xs border border-slate-100"
             >
               <h3 className="text-lg font-semibold text-slate-800 mb-4 flex items-center">
                 <BookPlus className="w-5 h-5 mr-2 text-blue-500" />
@@ -594,7 +594,7 @@ export function SubjectCreationDialog({ open, onOpenChange }: { open: boolean, o
                     type="submit" 
                     className={cn(
                       "w-full h-12 rounded-xl text-lg font-bold shadow-lg transition-all hover:-translate-y-0.5 active:translate-y-0",
-                      "bg-gradient-to-r from-blue-500 to-purple-600 shadow-blue-200 hover:shadow-blue-300",
+                      "bg-linear-to-r from-blue-500 to-purple-600 shadow-blue-200 hover:shadow-blue-300",
                       "disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
                     )}
                     disabled={isPending}
@@ -617,7 +617,7 @@ export function SubjectCreationDialog({ open, onOpenChange }: { open: boolean, o
               initial={{ opacity: 0, x: 10 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.1 }}
-              className="bg-white rounded-3xl p-6 shadow-sm border border-slate-100"
+              className="bg-white rounded-3xl p-6 shadow-xs border border-slate-100"
             >
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-semibold text-slate-800 flex items-center">

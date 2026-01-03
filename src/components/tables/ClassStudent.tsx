@@ -199,7 +199,7 @@ export function ClassStudentTable({ classId, sessionId }: ClassStudentTableProps
       header: "Address",
       cell: ({ row }) => (
         <div className="flex items-center gap-1.5 max-w-[200px] truncate" title={row.original.ClassStudent.student.address}>
-           <MapPin className="h-3 w-3 text-slate-400 dark:text-slate-500 flex-shrink-0" />
+           <MapPin className="h-3 w-3 text-slate-400 dark:text-slate-500 shrink-0" />
            <span className="text-sm text-slate-500 dark:text-slate-400 truncate">{row.original.ClassStudent.student.address}</span>
         </div>
       ),
@@ -241,7 +241,7 @@ export function ClassStudentTable({ classId, sessionId }: ClassStudentTableProps
   return (
     <div className="space-y-4">
       {/* --- Controls --- */}
-      <div className="flex items-center justify-between gap-4 rounded-xl border border-slate-200 bg-white p-3 shadow-sm dark:border-white/5 dark:bg-slate-900/40 dark:backdrop-blur-md transition-colors">
+      <div className="flex items-center justify-between gap-4 rounded-xl border border-slate-200 bg-white p-3 shadow-xs dark:border-white/5 dark:bg-slate-900/40 dark:backdrop-blur-md transition-colors">
         <div className="relative w-full max-w-sm group">
            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400 group-focus-within:text-emerald-600 dark:text-slate-500 dark:group-focus-within:text-emerald-400 transition-colors" />
            <Input
@@ -263,7 +263,7 @@ export function ClassStudentTable({ classId, sessionId }: ClassStudentTableProps
       </div>
 
       {/* --- Table --- */}
-      <div className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden dark:border-white/5 dark:bg-slate-900/40 dark:backdrop-blur-sm dark:shadow-xl transition-colors">
+      <div className="rounded-xl border border-slate-200 bg-white shadow-xs overflow-hidden dark:border-white/5 dark:bg-slate-900/40 dark:backdrop-blur-xs dark:shadow-xl transition-colors">
         <Table>
           <TableHeader className="bg-slate-50 dark:bg-white/5">
             {table.getHeaderGroups().map((headerGroup) => (

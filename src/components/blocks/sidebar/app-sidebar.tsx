@@ -173,7 +173,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     >
       {/* Background Texture for Sidebar */}
       <div className="absolute inset-0 z-0 pointer-events-none opacity-50">
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(45,255,196,0.02)_1px,transparent_1px),linear-gradient(to_bottom,rgba(45,255,196,0.02)_1px,transparent_1px)] bg-[size:2rem_2rem]" />
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(45,255,196,0.02)_1px,transparent_1px),linear-gradient(to_bottom,rgba(45,255,196,0.02)_1px,transparent_1px)] bg-size-[2rem_2rem]" />
       </div>
 
       {/* Sidebar Header */}

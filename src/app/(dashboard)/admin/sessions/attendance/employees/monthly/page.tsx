@@ -169,7 +169,7 @@ export default function EmployeeMonthlyAttendancePage() {
               <Button variant="outline" size="sm" onClick={() => navigateMonth("prev")}>
                 <ChevronLeft className="h-4 w-4" />
               </Button>
-              <span className="text-sm font-medium min-w-[120px] text-center">
+              <span className="text-sm font-medium min-w-30 text-center">
                 {monthName} {currentYear}
               </span>
               <Button variant="outline" size="sm" onClick={() => navigateMonth("next")}>
@@ -181,7 +181,7 @@ export default function EmployeeMonthlyAttendancePage() {
         <CardContent className="space-y-4">
           <div className="flex items-center space-x-4">
             <Select value={selectedDesignation} onValueChange={(value) => setSelectedDesignation(value as Designation)}>
-              <SelectTrigger className="w-[200px]">
+              <SelectTrigger className="w-50">
                 <SelectValue placeholder="Select designation" />
               </SelectTrigger>
               <SelectContent>
@@ -219,15 +219,15 @@ export default function EmployeeMonthlyAttendancePage() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="w-[200px]">Employee</TableHead>
-                    <TableHead className="w-[120px]">ID</TableHead>
-                    <TableHead className="w-[100px]">Designation</TableHead>
+                    <TableHead className="w-50">Employee</TableHead>
+                    <TableHead className="w-30">ID</TableHead>
+                    <TableHead className="w-25">Designation</TableHead>
                     {days.map((day) => (
                       <TableHead key={day} className="w-8 text-center">
                         {day}
                       </TableHead>
                     ))}
-                    <TableHead className="w-[80px] text-center">%</TableHead>
+                    <TableHead className="w-20 text-center">%</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>

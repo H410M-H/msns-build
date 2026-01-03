@@ -21,12 +21,12 @@ export const CalendarDialog = () => {
         </DialogTrigger>
         
         {/* Optimized Content Layout: Mobile Full Width, Desktop Centered */}
-        <DialogContent className="flex flex-col h-[85vh] sm:h-[90vh] w-[95vw] max-w-[95vw] sm:max-w-6xl overflow-hidden rounded-xl sm:rounded-3xl border-0 bg-white/95 shadow-2xl backdrop-blur-sm p-0 gap-0">
+        <DialogContent className="flex flex-col h-[85vh] sm:h-[90vh] w-[95vw] max-w-[95vw] sm:max-w-6xl overflow-hidden rounded-xl sm:rounded-3xl border-0 bg-white/95 shadow-2xl backdrop-blur-xs p-0 gap-0">
           
           {/* Header Section */}
-          <DialogHeader className="shrink-0 border-b bg-gradient-to-r from-blue-50 to-indigo-50 p-4 sm:p-6 lg:p-8">
+          <DialogHeader className="shrink-0 border-b bg-linear-to-r from-blue-50 to-indigo-50 p-4 sm:p-6 lg:p-8">
             <DialogTitle className="flex items-center gap-2 sm:gap-3 text-lg sm:text-2xl lg:text-3xl font-bold text-gray-800">
-              <div className="rounded-lg bg-blue-500 p-1.5 sm:p-2 shadow-sm">
+              <div className="rounded-lg bg-blue-500 p-1.5 sm:p-2 shadow-xs">
                 <Calendar className="h-5 w-5 sm:h-6 sm:w-6 lg:h-7 lg:w-7 text-white" />
               </div>
               <span className="truncate">Academic Calendar</span>

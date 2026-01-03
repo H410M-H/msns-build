@@ -55,7 +55,7 @@ export default function ProfileCard() {
     <Card className="w-full bg-transparent border-none shadow-none">
       <CardHeader className="text-center pt-0">
         <div className="flex justify-center mb-4">
-          <div className="p-1 rounded-full bg-gradient-to-br from-emerald-400 to-cyan-400 shadow-lg shadow-emerald-500/20">
+          <div className="p-1 rounded-full bg-linear-to-br from-emerald-400 to-cyan-400 shadow-lg shadow-emerald-500/20">
             <Avatar className="w-28 h-28 border-4 border-white dark:border-black/50">
               <AvatarImage
                 src={`/placeholder-422db.png?height=112&width=112&query=profile picture for ${user.username}`}

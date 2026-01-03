@@ -53,22 +53,22 @@ const TiltCard = ({
 export default function Home() {
   return (
     // 🌗 Container with Light/Dark Theme Support
-    <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-emerald-50 via-white to-cyan-50 dark:from-[#344a3f] dark:via-[#12251b] dark:to-[#02131b] text-slate-900 dark:text-white transition-colors duration-500">
+    <div className="relative min-h-screen overflow-hidden bg-linear-to-br from-emerald-50 via-white to-cyan-50 dark:from-[#344a3f] dark:via-[#12251b] dark:to-[#02131b] text-slate-900 dark:text-white transition-colors duration-500">
       
       {/* 🌐 Animated Grid Background */}
       <div className="absolute inset-0 z-0 pointer-events-none">
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(16,185,129,0.05)_1px,transparent_1px),linear-gradient(to_bottom,rgba(16,185,129,0.05)_1px,transparent_1px)] dark:bg-[linear-gradient(to_right,rgba(45,255,196,0.08)_1px,transparent_1px),linear-gradient(to_bottom,rgba(45,255,196,0.08)_1px,transparent_1px)] bg-[size:3rem_3rem] sm:bg-[size:4rem_4rem]" />
-        <div className="absolute inset-0 bg-gradient-to-br from-white/60 via-transparent to-transparent dark:from-emerald-900/30 dark:via-cyan-900/10 dark:to-transparent" />
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(16,185,129,0.05)_1px,transparent_1px),linear-gradient(to_bottom,rgba(16,185,129,0.05)_1px,transparent_1px)] dark:bg-[linear-gradient(to_right,rgba(45,255,196,0.08)_1px,transparent_1px),linear-gradient(to_bottom,rgba(45,255,196,0.08)_1px,transparent_1px)] bg-size-[3rem_3rem] sm:bg-size-[4rem_4rem]" />
+        <div className="absolute inset-0 bg-linear-to-br from-white/60 via-transparent to-transparent dark:from-emerald-900/30 dark:via-cyan-900/10 dark:to-transparent" />
       </div>
 
       {/* 💫 Floating Orbs (Adjusted for both themes) */}
       <motion.div
-        className="absolute left-1/4 h-[35rem] w-[35rem] rounded-full bg-emerald-400/20 dark:bg-emerald-500/20 blur-[90px] sm:h-[25rem] sm:w-[25rem] sm:blur-[120px]"
+        className="absolute left-1/4 h-140 w-140 rounded-full bg-emerald-400/20 dark:bg-emerald-500/20 blur-[90px] sm:h-100 sm:w-100 sm:blur-[120px]"
         animate={{ y: [0, 40, 0], opacity: [0.3, 0.6, 0.3] }}
         transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
       />
       <motion.div
-        className="absolute bottom-0 right-1/4 h-[15rem] w-[15rem] rounded-full bg-cyan-400/20 dark:bg-cyan-500/20 blur-[90px] sm:h-[25rem] sm:w-[25rem] sm:blur-[120px]"
+        className="absolute bottom-0 right-1/4 h-60 w-60 rounded-full bg-cyan-400/20 dark:bg-cyan-500/20 blur-[90px] sm:h-100 sm:w-100 sm:blur-[120px]"
         animate={{ y: [0, -40, 0], opacity: [0.3, 0.6, 0.3] }}
         transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
       />
@@ -125,7 +125,7 @@ export default function Home() {
           className="space-y-6 max-w-4xl mx-auto"
         >
           <h1 className="text-4xl sm:text-6xl md:text-7xl font-black tracking-tight">
-            <span className="bg-gradient-to-r from-emerald-600 via-cyan-600 to-emerald-600 dark:from-emerald-300 dark:via-cyan-300 dark:to-emerald-300 bg-clip-text text-transparent drop-shadow-sm dark:drop-shadow-[0_0_20px_rgba(45,255,196,0.4)]">
+            <span className="bg-linear-to-r from-emerald-600 via-cyan-600 to-emerald-600 dark:from-emerald-300 dark:via-cyan-300 dark:to-emerald-300 bg-clip-text text-transparent drop-shadow-xs dark:drop-shadow-[0_0_20px_rgba(45,255,196,0.4)]">
               M.S. NAZ HIGH SCHOOL
             </span>
           </h1>
@@ -150,7 +150,7 @@ export default function Home() {
         >
           <Link
             href="/sign-in"
-            className="group relative flex items-center justify-center gap-2 overflow-hidden rounded-full bg-gradient-to-r from-emerald-600 to-cyan-600 dark:from-emerald-500 dark:to-cyan-500 px-8 py-4 text-lg font-bold text-white shadow-lg shadow-emerald-500/30 dark:shadow-[0_0_20px_#10b98180] transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-emerald-500/40"
+            className="group relative flex items-center justify-center gap-2 overflow-hidden rounded-full bg-linear-to-r from-emerald-600 to-cyan-600 dark:from-emerald-500 dark:to-cyan-500 px-8 py-4 text-lg font-bold text-white shadow-lg shadow-emerald-500/30 dark:shadow-[0_0_20px_#10b98180] transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-emerald-500/40"
           >
             <span className="relative z-10 flex items-center gap-2">
               <Zap className="h-5 w-5 fill-current" />
@@ -161,7 +161,7 @@ export default function Home() {
           
           <Link
              href="https://msns.edu.pk/about"
-             className="group flex items-center gap-2 rounded-full border border-slate-200 dark:border-white/10 bg-white/50 dark:bg-white/5 px-8 py-4 text-lg font-semibold text-slate-700 dark:text-gray-200 backdrop-blur-sm transition-all hover:bg-white/80 dark:hover:bg-white/10 hover:scale-105"
+             className="group flex items-center gap-2 rounded-full border border-slate-200 dark:border-white/10 bg-white/50 dark:bg-white/5 px-8 py-4 text-lg font-semibold text-slate-700 dark:text-gray-200 backdrop-blur-xs transition-all hover:bg-white/80 dark:hover:bg-white/10 hover:scale-105"
           >
             <Shield className="h-5 w-5" />
             About School

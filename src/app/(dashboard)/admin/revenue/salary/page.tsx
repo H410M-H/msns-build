@@ -134,7 +134,7 @@ export default function SalaryPage() {
     <div className="w-full space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
         
         {/* === Header & Controls === */}
-        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-6 bg-white dark:bg-slate-900/40 p-6 rounded-2xl border border-slate-200 dark:border-emerald-500/10 backdrop-blur-sm shadow-sm dark:shadow-xl transition-colors">
+        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-6 bg-white dark:bg-slate-900/40 p-6 rounded-2xl border border-slate-200 dark:border-emerald-500/10 backdrop-blur-xs shadow-xs dark:shadow-xl transition-colors">
           <div className="space-y-2">
             <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
               Compensation Management
@@ -146,7 +146,7 @@ export default function SalaryPage() {
 
           <div className="flex flex-wrap items-center gap-3 bg-slate-50 dark:bg-slate-950/50 p-1.5 rounded-xl border border-slate-200 dark:border-emerald-500/20 shadow-inner">
             <Select value={selectedMonth} onValueChange={setSelectedMonth}>
-              <SelectTrigger className="w-[140px] bg-white border-slate-200 text-slate-700 dark:bg-slate-900 dark:border-emerald-500/20 dark:text-white">
+              <SelectTrigger className="w-35 bg-white border-slate-200 text-slate-700 dark:bg-slate-900 dark:border-emerald-500/20 dark:text-white">
                 <Calendar className="w-4 h-4 mr-2 text-emerald-600 dark:text-emerald-400" />
                 <SelectValue placeholder="Month" />
               </SelectTrigger>
@@ -160,7 +160,7 @@ export default function SalaryPage() {
             </Select>
 
             <Select value={selectedYear} onValueChange={setSelectedYear}>
-              <SelectTrigger className="w-[100px] bg-white border-slate-200 text-slate-700 dark:bg-slate-900 dark:border-emerald-500/20 dark:text-white">
+              <SelectTrigger className="w-25 bg-white border-slate-200 text-slate-700 dark:bg-slate-900 dark:border-emerald-500/20 dark:text-white">
                 <SelectValue placeholder="Year" />
               </SelectTrigger>
               <SelectContent className="bg-white border-slate-200 text-slate-700 dark:bg-slate-900 dark:border-emerald-500/20 dark:text-white">
@@ -192,7 +192,7 @@ export default function SalaryPage() {
           {stats.map((stat, i) => (
             <Card
               key={i}
-              className={`backdrop-blur-md shadow-sm dark:shadow-lg transition-all border ${stat.bg}`}
+              className={`backdrop-blur-md shadow-xs dark:shadow-lg transition-all border ${stat.bg}`}
             >
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium text-slate-600 dark:text-slate-300">
@@ -217,27 +217,27 @@ export default function SalaryPage() {
           <TabsList className="bg-slate-100 p-1 border border-slate-200 rounded-xl w-full sm:w-auto grid grid-cols-3 sm:inline-flex gap-2 dark:bg-slate-900/60 dark:border-emerald-500/20">
             <TabsTrigger
               value="payroll"
-              className="gap-2 data-[state=active]:bg-white data-[state=active]:text-emerald-700 data-[state=active]:shadow-sm text-slate-500 dark:data-[state=active]:bg-emerald-600 dark:data-[state=active]:text-white dark:text-slate-400 transition-all"
+              className="gap-2 data-[state=active]:bg-white data-[state=active]:text-emerald-700 data-[state=active]:shadow-xs text-slate-500 dark:data-[state=active]:bg-emerald-600 dark:data-[state=active]:text-white dark:text-slate-400 transition-all"
             >
               <Wallet className="h-4 w-4" /> Payroll
             </TabsTrigger>
             <TabsTrigger
               value="structures"
-              className="gap-2 data-[state=active]:bg-white data-[state=active]:text-emerald-700 data-[state=active]:shadow-sm text-slate-500 dark:data-[state=active]:bg-emerald-600 dark:data-[state=active]:text-white dark:text-slate-400 transition-all"
+              className="gap-2 data-[state=active]:bg-white data-[state=active]:text-emerald-700 data-[state=active]:shadow-xs text-slate-500 dark:data-[state=active]:bg-emerald-600 dark:data-[state=active]:text-white dark:text-slate-400 transition-all"
             >
               <Users className="h-4 w-4" /> Salary Structures
             </TabsTrigger>
             <TabsTrigger
               value="analytics"
-              className="gap-2 data-[state=active]:bg-white data-[state=active]:text-emerald-700 data-[state=active]:shadow-sm text-slate-500 dark:data-[state=active]:bg-emerald-600 dark:data-[state=active]:text-white dark:text-slate-400 transition-all"
+              className="gap-2 data-[state=active]:bg-white data-[state=active]:text-emerald-700 data-[state=active]:shadow-xs text-slate-500 dark:data-[state=active]:bg-emerald-600 dark:data-[state=active]:text-white dark:text-slate-400 transition-all"
             >
               <BarChart3 className="h-4 w-4" /> Analytics
             </TabsTrigger>
           </TabsList>
 
           {/* Tab 1: Monthly Payroll Processing */}
-          <TabsContent value="payroll" className="focus-visible:outline-none focus-visible:ring-0">
-            <Card className="border border-slate-200 bg-white dark:border-emerald-500/20 dark:bg-slate-900/60 backdrop-blur-xl shadow-sm dark:shadow-2xl overflow-hidden rounded-2xl transition-colors">
+          <TabsContent value="payroll" className="focus-visible:outline-hidden focus-visible:ring-0">
+            <Card className="border border-slate-200 bg-white dark:border-emerald-500/20 dark:bg-slate-900/60 backdrop-blur-xl shadow-xs dark:shadow-2xl overflow-hidden rounded-2xl transition-colors">
               <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-slate-100 dark:border-emerald-500/10 bg-slate-50/50 dark:bg-slate-900/50 p-6">
                 <div>
                   <CardTitle className="text-xl text-slate-900 dark:text-white">
@@ -258,8 +258,8 @@ export default function SalaryPage() {
           </TabsContent>
 
           {/* Tab 2: Salary Structures */}
-          <TabsContent value="structures" className="focus-visible:outline-none focus-visible:ring-0">
-            <Card className="border border-slate-200 bg-white dark:border-emerald-500/20 dark:bg-slate-900/60 backdrop-blur-xl shadow-sm dark:shadow-2xl overflow-hidden rounded-2xl transition-colors">
+          <TabsContent value="structures" className="focus-visible:outline-hidden focus-visible:ring-0">
+            <Card className="border border-slate-200 bg-white dark:border-emerald-500/20 dark:bg-slate-900/60 backdrop-blur-xl shadow-xs dark:shadow-2xl overflow-hidden rounded-2xl transition-colors">
               <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-slate-100 dark:border-emerald-500/10 bg-slate-50/50 dark:bg-slate-900/50 p-6">
                 <div>
                   <CardTitle className="text-xl text-slate-900 dark:text-white">
@@ -287,8 +287,8 @@ export default function SalaryPage() {
           </TabsContent>
 
           {/* Tab 3: Analytics */}
-          <TabsContent value="analytics" className="focus-visible:outline-none focus-visible:ring-0">
-            <Card className="border border-slate-200 bg-white dark:border-emerald-500/20 dark:bg-slate-900/60 backdrop-blur-xl shadow-sm dark:shadow-2xl overflow-hidden rounded-2xl transition-colors">
+          <TabsContent value="analytics" className="focus-visible:outline-hidden focus-visible:ring-0">
+            <Card className="border border-slate-200 bg-white dark:border-emerald-500/20 dark:bg-slate-900/60 backdrop-blur-xl shadow-xs dark:shadow-2xl overflow-hidden rounded-2xl transition-colors">
               <CardHeader className="border-b border-slate-100 dark:border-emerald-500/10 bg-slate-50/50 dark:bg-slate-900/50 p-6">
                 <CardTitle className="text-xl text-slate-900 dark:text-white">
                   Financial Analytics

@@ -32,17 +32,27 @@ type StudentEditFormProps = {
     onClose: () => void;
 };
 
+// Helper to safely format dates for input type="date" (YYYY-MM-DD)
+const formatDateForInput = (date: string | Date | null | undefined): string => {
+    if (!date || date === "none") return "";
+    if (date instanceof Date) return date.toISOString().split("T")[0] ?? "";
+    return typeof date === "string" ? date.split("T")[0] ?? "" : "";
+};
+
 export function StudentEditDialog({ student, onClose }: StudentEditFormProps) {
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [isUploading, setIsUploading] = useState(false);
 
-    const form = useForm<z.infer<typeof studentSchema>>({
-        resolver: zodResolver(studentSchema as z.ZodType<z.infer<typeof studentSchema>>),
+    // FIX: Remove the explicit generic <FormValues> here.
+    // Let useForm infer the Input/Output types from the resolver automatically.
+    const form = useForm({
+        resolver: zodResolver(studentSchema),
         defaultValues: {
             studentName: student.studentName ?? "",
             fatherName: student.fatherName ?? "",
-            gender: student.gender ?? "MALE",
-            dateOfBirth: student.dateOfBirth ?? "",
+            // Safely cast enum or fallback
+            gender: (student.gender as "MALE" | "FEMALE" | "CUSTOM") ?? "MALE",
+            dateOfBirth: formatDateForInput(student.dateOfBirth),
             studentCNIC: student.studentCNIC ?? "",
             fatherCNIC: student.fatherCNIC ?? "",
             studentMobile: student.studentMobile ?? "",
@@ -52,8 +62,15 @@ export function StudentEditDialog({ student, onClose }: StudentEditFormProps) {
             permanentAddress: student.permanentAddress ?? "",
             medicalProblem: student.medicalProblem ?? "",
             profilePic: student.profilePic ?? "",
+            // Include optional fields to satisfy schema if needed, defaulting to empty strings
+            fatherProfession: student.fatherProfession ?? "",
+            bloodGroup: student.bloodGroup ?? "",
+            guardianName: student.guardianName ?? "",
+            isAssign: student.isAssign ?? false,
         },
     });
+
+    const utils = api.useUtils();
 
     const updateStudent = api.student.updateStudent.useMutation({
         onSuccess: () => {
@@ -61,6 +78,8 @@ export function StudentEditDialog({ student, onClose }: StudentEditFormProps) {
                 title: "Success",
                 description: "Student updated successfully",
             });
+            void utils.student.getStudents.invalidate(); 
+            void utils.student.getStudentById.invalidate({ studentId: student.studentId });
             onClose();
         },
         onError: (error) => {
@@ -90,13 +109,12 @@ export function StudentEditDialog({ student, onClose }: StudentEditFormProps) {
 
             const reader = new FileReader();
             reader.onloadend = () => {
-                form.setValue("profilePic", reader.result as string); 
+                form.setValue("profilePic", reader.result as string, { shouldDirty: true }); 
             };
             reader.readAsDataURL(file);
         }
     };
 
-    // --- FIX: Strictly typed upload function ---
     const uploadFile = async (file: File): Promise<string> => {
         const formData = new FormData();
         formData.append("file", file);
@@ -108,11 +126,11 @@ export function StudentEditDialog({ student, onClose }: StudentEditFormProps) {
 
         if (!response.ok) throw new Error("File upload failed");
         
-        // Cast the unknown json to our defined interface
         const data = (await response.json()) as UploadResponse;
         return data.url; 
     };
 
+    // Explicitly type values using z.infer so strict typing is maintained in the handler
     const onSubmit = async (values: z.infer<typeof studentSchema>) => {
         try {
             let finalProfilePic = values.profilePic;
@@ -120,7 +138,6 @@ export function StudentEditDialog({ student, onClose }: StudentEditFormProps) {
             if (selectedFile) {
                 setIsUploading(true);
                 try {
-                    // This is now type-safe
                     finalProfilePic = await uploadFile(selectedFile);
                 } catch (error) {
                     console.error(error);
@@ -132,20 +149,13 @@ export function StudentEditDialog({ student, onClose }: StudentEditFormProps) {
             }
 
             updateStudent.mutate({
-                studentId: student.studentId, 
-                studentName: values.studentName,
-                fatherName: values.fatherName,
-                gender: values.gender,
-                dateOfBirth: values.dateOfBirth,
+                ...values,
+                studentId: student.studentId, // Override to ensure ID is present
+                profilePic: finalProfilePic ?? "",
+                // Ensure optional fields are handled (transforms in schema usually handle this, but explicit is safe)
+                medicalProblem: values.medicalProblem ?? "",
                 studentCNIC: values.studentCNIC ?? "",
                 fatherCNIC: values.fatherCNIC ?? "",
-                studentMobile: values.studentMobile,
-                fatherMobile: values.fatherMobile,
-                caste: values.caste,
-                currentAddress: values.currentAddress,
-                permanentAddress: values.permanentAddress,
-                medicalProblem: values.medicalProblem ?? "",
-                profilePic: finalProfilePic ?? ""
             });
 
         } catch (error) {
@@ -200,7 +210,6 @@ export function StudentEditDialog({ student, onClose }: StudentEditFormProps) {
                                         Change Photo
                                     </Button>
                                     
-                                    {/* --- FIX: Added aria-label for accessibility --- */}
                                     <input 
                                         id="profile-upload"
                                         type="file" 
@@ -217,7 +226,7 @@ export function StudentEditDialog({ student, onClose }: StudentEditFormProps) {
                                             size="sm"
                                             className="text-red-400 hover:text-red-300 hover:bg-red-500/10"
                                             onClick={() => {
-                                                form.setValue("profilePic", "");
+                                                form.setValue("profilePic", "", { shouldDirty: true });
                                                 setSelectedFile(null);
                                             }}
                                          >
@@ -259,7 +268,7 @@ export function StudentEditDialog({ student, onClose }: StudentEditFormProps) {
                                     render={({ field }) => (
                                         <FormItem>
                                             <FormLabel className={labelClasses}>Gender</FormLabel>
-                                            <Select onValueChange={field.onChange} value={field.value as string}>
+                                            <Select onValueChange={field.onChange} value={field.value}>
                                                 <FormControl>
                                                     <SelectTrigger className={inputClasses}>
                                                         <SelectValue placeholder="Select gender" />
@@ -282,7 +291,14 @@ export function StudentEditDialog({ student, onClose }: StudentEditFormProps) {
                                     render={({ field }) => (
                                         <FormItem>
                                             <FormLabel className={labelClasses}>Date of Birth</FormLabel>
-                                            <FormControl><Input type="date" {...field} className={inputClasses} /></FormControl>
+                                            <FormControl>
+                                                <Input 
+                                                    type="date" 
+                                                    {...field} 
+                                                    value={field.value ?? ""} 
+                                                    className={inputClasses} 
+                                                />
+                                            </FormControl>
                                             <FormMessage />
                                         </FormItem>
                                     )}

@@ -44,7 +44,7 @@ const CalendarDateCell: React.FC<CalendarDateCellProps> = ({
             "flex h-7 w-7 items-center justify-center rounded-full text-sm font-medium transition-colors",
             isToday
               ? "bg-blue-600 text-white shadow-md"
-              : "text-gray-700 group-hover:bg-white group-hover:shadow-sm",
+              : "text-gray-700 group-hover:bg-white group-hover:shadow-xs",
              isSelected && !isToday && "bg-blue-100 text-blue-700"
           )}
         >

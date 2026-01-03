@@ -267,7 +267,7 @@ export function SalaryTable({
       </div>
 
       {/* Table */}
-      <div className="rounded-xl border border-slate-200 bg-white/60 shadow-sm overflow-hidden backdrop-blur-sm dark:border-emerald-500/20 dark:bg-slate-900/60 dark:shadow-xl transition-colors">
+      <div className="rounded-xl border border-slate-200 bg-white/60 shadow-xs overflow-hidden backdrop-blur-xs dark:border-emerald-500/20 dark:bg-slate-900/60 dark:shadow-xl transition-colors">
         <Table>
           <TableHeader className="bg-slate-50 border-b border-slate-200 dark:bg-emerald-950/40 dark:border-emerald-500/20">
             {table.getHeaderGroups().map((headerGroup) => (
@@ -332,7 +332,7 @@ export function SalaryTable({
             <ChevronLeft className="h-4 w-4" />
           </Button>
           
-          <div className="text-xs font-medium text-emerald-700 bg-emerald-50 px-3 py-1.5 rounded border border-emerald-200 min-w-[3rem] text-center dark:text-emerald-400 dark:bg-emerald-500/10 dark:border-emerald-500/20">
+          <div className="text-xs font-medium text-emerald-700 bg-emerald-50 px-3 py-1.5 rounded border border-emerald-200 min-w-12 text-center dark:text-emerald-400 dark:bg-emerald-500/10 dark:border-emerald-500/20">
             {page} / {totalPages || 1}
           </div>
           

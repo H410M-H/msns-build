@@ -5,7 +5,7 @@ export const TeacherSection=()=> {
     <section className="mb-12">
       <div className="mb-8 flex items-center gap-4">
         <div className="relative">
-          <div className="-rotate-1 transform rounded-2xl bg-gradient-to-br from-blue-500 to-cyan-600 p-3 shadow-xl transition-transform duration-300 hover:rotate-0">
+          <div className="-rotate-1 transform rounded-2xl bg-linear-to-br from-blue-500 to-cyan-600 p-3 shadow-xl transition-transform duration-300 hover:rotate-0">
             <GraduationCap className="h-6 w-6 text-white" />
           </div>
         </div>
@@ -16,7 +16,7 @@ export const TeacherSection=()=> {
         </div>
       </div>
 
-      <div className="rounded-3xl border border-white/40 bg-white/70 p-8 shadow-2xl backdrop-blur-sm">
+      <div className="rounded-3xl border border-white/40 bg-white/70 p-8 shadow-2xl backdrop-blur-xs">
         <div className="py-12 text-center">
           <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-blue-100">
             <GraduationCap className="h-8 w-8 text-blue-600" />

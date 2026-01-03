@@ -112,7 +112,7 @@ export function FeeAssignmentDialog() {
       <DialogTrigger asChild>
         <Button
           size="sm"
-          className="h-11 px-4 rounded-xl gap-2 bg-gradient-to-r from-emerald-600 to-teal-600 text-white hover:shadow-md"
+          className="h-11 px-4 rounded-xl gap-2 bg-linear-to-r from-emerald-600 to-teal-600 text-white hover:shadow-md"
         >
           <WalletCards className="w-4 h-4" />
           Assign Fee

@@ -26,7 +26,7 @@ export function PageHeader({ breadcrumbs }: PageHeaderProps) {
 
   return (
     <div className="sticky top-0 z-30 flex flex-col items-center w-full mb-6">
-      <header className="flex h-16 w-full items-center justify-between gap-4 rounded-xl border border-slate-200 bg-white/80 px-4 shadow-sm backdrop-blur-xl transition-all dark:border-white/10 dark:bg-slate-900/80 dark:shadow-none md:px-6">
+      <header className="flex h-16 w-full items-center justify-between gap-4 rounded-xl border border-slate-200 bg-white/80 px-4 shadow-xs backdrop-blur-xl transition-all dark:border-white/10 dark:bg-slate-900/80 dark:shadow-none md:px-6">
         <div className="flex items-center gap-4">
           <SidebarTrigger className="text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-white/10" />
           

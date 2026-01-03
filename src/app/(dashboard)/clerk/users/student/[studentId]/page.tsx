@@ -46,7 +46,7 @@ export default function StudentProfilePage() {
     <div className="min-h-screen w-full space-y-6 p-4 sm:p-6 lg:p-8 animate-in fade-in duration-500 bg-slate-50/50 dark:bg-slate-950">
       
       {/* Header / Banner */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-slate-900 via-slate-800 to-emerald-950 p-6 sm:p-8 md:p-10 shadow-2xl border border-emerald-500/20">
+      <div className="relative overflow-hidden rounded-3xl bg-linear-to-br from-slate-900 via-slate-800 to-emerald-950 p-6 sm:p-8 md:p-10 shadow-2xl border border-emerald-500/20">
         <div className="relative z-10 flex flex-col md:flex-row gap-6 items-center md:items-start">
           
           {/* Profile Image */}
@@ -68,8 +68,8 @@ export default function StudentProfilePage() {
           {/* Main Info */}
           <div className="flex-1 text-center md:text-left space-y-3 md:pt-2">
             <div className="flex flex-col md:flex-row items-center gap-3">
-              <h1 className="text-3xl sm:text-4xl font-bold text-white tracking-tight drop-shadow-sm">{student.studentName}</h1>
-              <Badge variant={student.isAssign ? "default" : "destructive"} className="uppercase tracking-wider text-[10px] px-2 py-0.5 shadow-sm">
+              <h1 className="text-3xl sm:text-4xl font-bold text-white tracking-tight drop-shadow-xs">{student.studentName}</h1>
+              <Badge variant={student.isAssign ? "default" : "destructive"} className="uppercase tracking-wider text-[10px] px-2 py-0.5 shadow-xs">
                 {student.isAssign ? "Enrolled" : "Unassigned"}
               </Badge>
             </div>
@@ -80,11 +80,11 @@ export default function StudentProfilePage() {
             </p>
 
             <div className="flex flex-wrap justify-center md:justify-start gap-3 pt-2">
-              <Badge variant="outline" className="bg-slate-900/40 text-emerald-300 border-emerald-500/30 px-3 py-1 text-xs sm:text-sm font-mono backdrop-blur-sm">
+              <Badge variant="outline" className="bg-slate-900/40 text-emerald-300 border-emerald-500/30 px-3 py-1 text-xs sm:text-sm font-mono backdrop-blur-xs">
                 <Hash className="mr-2 h-3.5 w-3.5 opacity-70" />
                 Reg: {student.registrationNumber}
               </Badge>
-              <Badge variant="outline" className="bg-slate-900/40 text-blue-300 border-blue-500/30 px-3 py-1 text-xs sm:text-sm font-mono backdrop-blur-sm">
+              <Badge variant="outline" className="bg-slate-900/40 text-blue-300 border-blue-500/30 px-3 py-1 text-xs sm:text-sm font-mono backdrop-blur-xs">
                 <Hash className="mr-2 h-3.5 w-3.5 opacity-70" />
                 Adm: {student.admissionNumber}
               </Badge>
@@ -116,7 +116,7 @@ export default function StudentProfilePage() {
         <div className="lg:col-span-2 space-y-6">
           
           {/* Academic Info Card */}
-          <Card className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-md transition-shadow">
+          <Card className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 shadow-xs hover:shadow-md transition-shadow">
             <CardHeader className="pb-3 border-b border-slate-100 dark:border-slate-800/50">
               <CardTitle className="text-xl font-bold text-slate-800 dark:text-slate-100 flex items-center gap-3">
                 <div className="p-2 bg-emerald-100 dark:bg-emerald-900/30 rounded-lg">
@@ -134,7 +134,7 @@ export default function StudentProfilePage() {
           </Card>
 
           {/* Personal Info Card */}
-          <Card className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-md transition-shadow">
+          <Card className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 shadow-xs hover:shadow-md transition-shadow">
             <CardHeader className="pb-3 border-b border-slate-100 dark:border-slate-800/50">
               <CardTitle className="text-xl font-bold text-slate-800 dark:text-slate-100 flex items-center gap-3">
                 <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
@@ -155,7 +155,7 @@ export default function StudentProfilePage() {
 
         {/* Right Column: Contact & Family */}
         <div className="space-y-6">
-          <Card className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-md transition-shadow h-full">
+          <Card className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 shadow-xs hover:shadow-md transition-shadow h-full">
             <CardHeader className="pb-3 border-b border-slate-100 dark:border-slate-800/50">
               <CardTitle className="text-xl font-bold text-slate-800 dark:text-slate-100 flex items-center gap-3">
                 <div className="p-2 bg-purple-100 dark:bg-purple-900/30 rounded-lg">
@@ -226,7 +226,7 @@ function InfoItem({
       <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 flex items-center gap-1.5 uppercase tracking-wide">
         {icon && <span className="opacity-70">{icon}</span>} {label}
       </p>
-      <p className="text-base sm:text-lg font-medium text-slate-900 dark:text-slate-200 break-words leading-snug">
+      <p className="text-base sm:text-lg font-medium text-slate-900 dark:text-slate-200 wrap-break-word leading-snug">
         {value && value !== "none" ? value : <span className="text-slate-400 dark:text-slate-600 italic text-sm">Not Provided</span>}
       </p>
     </div>

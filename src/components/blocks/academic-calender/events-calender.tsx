@@ -222,7 +222,7 @@ export default function EventsCalendar() {
               variant="ghost"
               size="icon"
               onClick={() => navigateMonth("prev")}
-              className="h-8 w-8 hover:bg-white hover:shadow-sm"
+              className="h-8 w-8 hover:bg-white hover:shadow-xs"
             >
               <ChevronLeft className="h-4 w-4" />
             </Button>
@@ -233,7 +233,7 @@ export default function EventsCalendar() {
               variant="ghost"
               size="icon"
               onClick={() => navigateMonth("next")}
-              className="h-8 w-8 hover:bg-white hover:shadow-sm"
+              className="h-8 w-8 hover:bg-white hover:shadow-xs"
             >
               <ChevronRight className="h-4 w-4" />
             </Button>
@@ -319,7 +319,7 @@ export default function EventsCalendar() {
       </div>
 
       {/* 3. Calendar Grid */}
-      <div className="flex-1 border border-gray-200 rounded-xl overflow-hidden shadow-sm bg-white">
+      <div className="flex-1 border border-gray-200 rounded-xl overflow-hidden shadow-xs bg-white">
         {/* Days Header */}
         <div className="grid grid-cols-7 border-b border-gray-200 bg-gray-50/50">
           {DAYS.map((day) => (

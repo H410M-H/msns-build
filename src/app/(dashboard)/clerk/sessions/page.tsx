@@ -68,7 +68,7 @@ const StatCard = React.memo(({ stat, index, isLoading }: { stat: StatConfig; ind
       // ⚡️ COMPACT: Reduced padding from p-6 to p-4
       className="group relative overflow-hidden rounded-xl border border-emerald-500/10 bg-white/5 p-4 backdrop-blur-md transition-all hover:border-emerald-500/30 hover:bg-white/10 shadow-lg hover:shadow-emerald-900/20"
     >
-      <div className={`absolute -right-10 -top-10 h-32 w-32 rounded-full bg-gradient-to-br ${stat.gradient} opacity-10 blur-3xl transition-opacity group-hover:opacity-20`} />
+      <div className={`absolute -right-10 -top-10 h-32 w-32 rounded-full bg-linear-to-br ${stat.gradient} opacity-10 blur-3xl transition-opacity group-hover:opacity-20`} />
       <div className="relative z-10 flex items-start justify-between">
         <div>
           <p className="text-xs font-medium uppercase tracking-wider text-emerald-100/60">{stat.title}</p>
@@ -76,7 +76,7 @@ const StatCard = React.memo(({ stat, index, isLoading }: { stat: StatConfig; ind
             {isLoading ? <Skeleton className="h-8 w-24 bg-white/10" /> : <AnimatedCounter value={stat.value} prefix={stat.prefix} suffix={stat.suffix} />}
           </div>
         </div>
-        <div className={`rounded-lg bg-gradient-to-br ${stat.gradient} p-2 shadow-inner ring-1 ring-white/10`}>
+        <div className={`rounded-lg bg-linear-to-br ${stat.gradient} p-2 shadow-inner ring-1 ring-white/10`}>
           <Icon className="h-4 w-4 text-white" />
         </div>
       </div>
@@ -160,7 +160,7 @@ export default function SessionFeePage() {
         </div>
         
         {sessionData && (
-          <div className="flex items-center gap-2 rounded-full border border-emerald-500/20 bg-emerald-500/5 px-3 py-1 backdrop-blur-sm">
+          <div className="flex items-center gap-2 rounded-full border border-emerald-500/20 bg-emerald-500/5 px-3 py-1 backdrop-blur-xs">
             <span className="relative flex h-2 w-2">
               <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75"></span>
               <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500"></span>

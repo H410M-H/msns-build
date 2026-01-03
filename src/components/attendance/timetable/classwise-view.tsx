@@ -231,7 +231,7 @@ export function ClasswiseView({
                       setSelectedSubject(null)
                       setAssignedSubjects([])
                     }}
-                    className="flex-shrink-0 text-xs sm:text-sm py-1 sm:py-2 px-2 sm:px-4"
+                    className="shrink-0 text-xs sm:text-sm py-1 sm:py-2 px-2 sm:px-4"
                   >
                     {cls.grade} - {cls.section}
                   </Button>
@@ -255,7 +255,7 @@ export function ClasswiseView({
                         key={subject.subjectId}
                         variant={selectedSubject?.subjectId === subject.subjectId ? "default" : "outline"}
                         onClick={() => setSelectedSubject(subject)}
-                        className="flex-shrink-0 text-xs sm:text-sm py-1 sm:py-2 px-2 sm:px-4"
+                        className="shrink-0 text-xs sm:text-sm py-1 sm:py-2 px-2 sm:px-4"
                       >
                         {subject.subjectName}
                       </Button>
@@ -270,7 +270,7 @@ export function ClasswiseView({
                           subjectId: subject.subjectId,
                           subjectName: subject.subjectName
                         })}
-                        className="flex-shrink-0 text-xs sm:text-sm py-1 sm:py-2 px-2 sm:px-4"
+                        className="shrink-0 text-xs sm:text-sm py-1 sm:py-2 px-2 sm:px-4"
                       >
                         {subject.subjectName}
                       </Button>
@@ -311,11 +311,11 @@ export function ClasswiseView({
                         onDragStart={(e) => handleTeacherDragStart(teacher, e)}
                         className={cn(
                           "p-1 sm:p-2 border rounded-lg cursor-grab hover:bg-accent/50 transition-all duration-200 active:cursor-grabbing",
-                          "flex flex-col items-center justify-center gap-0.5 sm:gap-1 shadow-sm min-w-[80px] sm:min-w-[100px]",
+                          "flex flex-col items-center justify-center gap-0.5 sm:gap-1 shadow-xs min-w-[80px] sm:min-w-[100px]",
                           draggedTeacher?.employeeId === teacher.employeeId && "bg-primary/10 border-primary scale-105"
                         )}
                       >
-                        <GripVertical className="h-3 w-3 flex-shrink-0 text-muted-foreground" />
+                        <GripVertical className="h-3 w-3 shrink-0 text-muted-foreground" />
                         <div className="text-center">
                           <p className="text-[10px] sm:text-xs font-medium truncate">{teacher.employeeName}</p>
                           <Badge variant="secondary" className="text-[9px] sm:text-[10px] mt-0.5">
@@ -344,12 +344,12 @@ export function ClasswiseView({
             </CardHeader>
             <CardContent className="overflow-x-auto p-3 sm:p-4 md:p-6">
               <div className="min-w-[600px] sm:min-w-[900px] grid grid-cols-7 gap-1 sm:gap-2 md:gap-3">
-                <div className="font-semibold text-center p-2 sm:p-3 bg-primary text-primary-foreground rounded-lg shadow text-xs sm:text-sm">Time</div>
+                <div className="font-semibold text-center p-2 sm:p-3 bg-primary text-primary-foreground rounded-lg shadow-sm text-xs sm:text-sm">Time</div>
                 {DAYS_OF_WEEK.map((day, index) => (
                   <div
                     key={day}
                     className={cn(
-                      "font-semibold text-center p-2 sm:p-3 rounded-lg shadow text-foreground text-xs sm:text-sm",
+                      "font-semibold text-center p-2 sm:p-3 rounded-lg shadow-sm text-foreground text-xs sm:text-sm",
                       DAY_COLORS[index % DAY_COLORS.length]
                     )}
                   >
@@ -359,7 +359,7 @@ export function ClasswiseView({
 
                 {LECTURE_NUMBERS.map((lecture) => (
                   <React.Fragment key={lecture}>
-                    <div className="p-2 sm:p-3 bg-muted/50 text-center rounded-lg shadow text-xs sm:text-sm">
+                    <div className="p-2 sm:p-3 bg-muted/50 text-center rounded-lg shadow-sm text-xs sm:text-sm">
                       <div className="font-medium">L{lecture}</div>
                       {getTimeSlot(lecture) && (
                         <div className="text-[10px] sm:text-xs text-muted-foreground">
@@ -377,7 +377,7 @@ export function ClasswiseView({
                               onDragOver={handleSlotDragOver}
                               onDrop={(e) => handleSlotDrop(day, lecture, e)}
                               className={cn(
-                                "p-2 sm:p-3 border rounded-lg min-h-[60px] sm:min-h-[80px] md:min-h-[100px] transition-all duration-200 shadow text-xs sm:text-sm relative",
+                                "p-2 sm:p-3 border rounded-lg min-h-[60px] sm:min-h-[80px] md:min-h-[100px] transition-all duration-200 shadow-sm text-xs sm:text-sm relative",
                                 !slot 
                                   ? "border-dashed bg-background hover:bg-muted/30" 
                                   : cn(

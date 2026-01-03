@@ -198,7 +198,7 @@ export default function BulkPrintPage() {
             <Button 
               onClick={() => handlePrint()} 
               disabled={isLoading || voucherList.length === 0}
-              className="bg-slate-900 text-white min-w-[150px]"
+              className="bg-slate-900 text-white min-w-37.s5"
             >
               {isPrinting ? (
                 <Loader2 className="h-4 w-4 animate-spin mr-2" /> 

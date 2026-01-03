@@ -11,7 +11,7 @@ export const AdminSection = () => {
       <div className="mb-6 flex flex-col sm:flex-row sm:items-center gap-4">
         <div className="flex items-center gap-4">
           <div className="relative">
-            <div className="rotate-1 transform rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 p-3 shadow-lg shadow-emerald-500/20 dark:shadow-emerald-900/20 transition-transform duration-300 hover:rotate-0">
+            <div className="rotate-1 transform rounded-2xl bg-linear-to-br from-emerald-500 to-teal-600 p-3 shadow-lg shadow-emerald-500/20 dark:shadow-emerald-900/20 transition-transform duration-300 hover:rotate-0">
               <Shield className="h-5 w-5 text-white" />
             </div>
             {/* Decorative dot */}
@@ -29,7 +29,7 @@ export const AdminSection = () => {
         </div>
 
         {/* Admin Access Badge */}
-        <div className="ml-auto hidden items-center gap-2 lg:flex bg-white border border-slate-200 px-3 py-1.5 rounded-full dark:bg-white/5 dark:border-white/10 shadow-sm dark:shadow-none">
+        <div className="ml-auto hidden items-center gap-2 lg:flex bg-white border border-slate-200 px-3 py-1.5 rounded-full dark:bg-white/5 dark:border-white/10 shadow-xs dark:shadow-none">
           <Trophy className="h-4 w-4 text-yellow-500 dark:text-yellow-400" />
           <span className="text-xs font-bold text-slate-700 dark:text-emerald-100/80 uppercase tracking-wider">
             Admin Access
@@ -40,9 +40,9 @@ export const AdminSection = () => {
       {/* Card Container with Themed Backdrop */}
       <div className="group relative">
         {/* Ambient Glow: Pastel in Light, Neon in Dark */}
-        <div className="absolute inset-0 scale-[0.99] transform rounded-3xl bg-gradient-to-r from-emerald-100/50 to-teal-100/50 dark:from-emerald-500/5 dark:to-teal-500/5 blur-2xl transition-all duration-500"></div>
+        <div className="absolute inset-0 scale-[0.99] transform rounded-3xl bg-linear-to-r from-emerald-100/50 to-teal-100/50 dark:from-emerald-500/5 dark:to-teal-500/5 blur-2xl transition-all duration-500"></div>
         
-        <div className="relative rounded-3xl border border-slate-200 bg-white/50 p-6 shadow-sm backdrop-blur-xl dark:border-white/10 dark:bg-slate-900/40 dark:shadow-2xl">
+        <div className="relative rounded-3xl border border-slate-200 bg-white/50 p-6 shadow-xs backdrop-blur-xl dark:border-white/10 dark:bg-slate-900/40 dark:shadow-2xl">
           <AdminCards />
         </div>
       </div>

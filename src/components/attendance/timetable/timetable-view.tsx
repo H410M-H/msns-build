@@ -107,11 +107,11 @@ export function TimetableView({
                           <TooltipTrigger asChild>
                             <div
                               className={cn(
-                                "p-3 border rounded-lg shadow-sm transition-all duration-200",
+                                "p-3 border rounded-lg shadow-xs transition-all duration-200",
                                 "hover:bg-accent/50 flex items-start gap-2"
                               )}
                             >
-                              <User className="h-4 w-4 mt-1 text-muted-foreground flex-shrink-0" />
+                              <User className="h-4 w-4 mt-1 text-muted-foreground shrink-0" />
                               <div className="min-w-0">
                                 <p className="text-sm font-medium truncate">{teacher.employeeName}</p>
                                 <Badge variant="secondary" className="text-xs mt-1">
@@ -138,12 +138,12 @@ export function TimetableView({
 
             <div className="lg:col-span-10">
               <div className="grid grid-cols-7 gap-2 md:gap-3">
-                <div className="font-semibold text-center p-3 bg-primary text-primary-foreground rounded-lg shadow">Time / Day</div>
+                <div className="font-semibold text-center p-3 bg-primary text-primary-foreground rounded-lg shadow-sm">Time / Day</div>
                 {DAYS_OF_WEEK.map((day, index) => (
                   <div
                     key={day}
                     className={cn(
-                      "font-semibold text-center p-3 rounded-lg shadow text-foreground",
+                      "font-semibold text-center p-3 rounded-lg shadow-sm text-foreground",
                       DAY_COLORS[index % DAY_COLORS.length]
                     )}
                   >
@@ -156,7 +156,7 @@ export function TimetableView({
 
                   return (
                     <React.Fragment key={lectureNumber}>
-                      <div className="p-3 bg-muted/50 rounded-lg text-center shadow">
+                      <div className="p-3 bg-muted/50 rounded-lg text-center shadow-sm">
                         <div className="font-medium text-sm md:text-base">Lecture {lectureNumber}</div>
                         {timeSlot && (
                           <div className="text-xs md:text-sm text-muted-foreground">
@@ -178,7 +178,7 @@ export function TimetableView({
                             <TooltipTrigger asChild>
                               <div
                                 className={cn(
-                                  "p-3 border rounded-lg min-h-[80px] md:min-h-[100px] relative group cursor-pointer transition-all duration-200 shadow",
+                                  "p-3 border rounded-lg min-h-[80px] md:min-h-[100px] relative group cursor-pointer transition-all duration-200 shadow-sm",
                                   entry 
                                     ? cn(DAY_COLORS[dayIndex % DAY_COLORS.length], "hover:shadow-md") 
                                     : "bg-background border-dashed hover:bg-muted/30",
@@ -256,7 +256,7 @@ export function TimetableView({
                 })}
               </div>
 
-              <Card className="mt-4 bg-yellow-50 border-yellow-200 shadow-sm">
+              <Card className="mt-4 bg-yellow-50 border-yellow-200 shadow-xs">
                 <CardContent className="p-3">
                   <div className="flex items-center gap-2 text-yellow-800 text-sm">
                     <Clock className="h-4 w-4" />

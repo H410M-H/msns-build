@@ -96,7 +96,7 @@ export default function DashboardPage() {
           transition={{ delay: 0.1 }}
           className="lg:col-span-4 flex flex-col h-full"
         >
-          <Card className="flex-1 bg-gradient-to-br from-emerald-900/40 to-slate-900/40 border-emerald-500/20 backdrop-blur-md relative overflow-hidden shadow-xl min-h-[200px] flex flex-col justify-center">
+          <Card className="flex-1 bg-linear-to-br from-emerald-900/40 to-slate-900/40 border-emerald-500/20 backdrop-blur-md relative overflow-hidden shadow-xl min-h-[200px] flex flex-col justify-center">
             <div className="absolute top-0 right-0 p-4 opacity-20 pointer-events-none">
               <Sparkles className="h-12 w-12 text-emerald-400" />
             </div>
@@ -131,7 +131,7 @@ export default function DashboardPage() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.3 }}
-        className="w-full rounded-[2rem] border border-white/5 bg-slate-900/40 backdrop-blur-xl shadow-2xl overflow-hidden"
+        className="w-full rounded-4xl border border-white/5 bg-slate-900/40 backdrop-blur-xl shadow-2xl overflow-hidden"
       >
          <Tabs defaultValue="management" className="w-full">
             <div className="flex flex-col sm:flex-row items-center justify-between gap-4 border-b border-white/5 px-6 py-4 bg-black/20">
@@ -150,11 +150,11 @@ export default function DashboardPage() {
             </div>
 
             <div className="p-4 sm:p-6 w-full">
-              <TabsContent value="management" className="mt-0 focus-visible:outline-none w-full">
+              <TabsContent value="management" className="mt-0 focus-visible:outline-hidden w-full">
                 <ClerkSection />
               </TabsContent>
 
-              <TabsContent value="events" className="mt-0 focus-visible:outline-none w-full">
+              <TabsContent value="events" className="mt-0 focus-visible:outline-hidden w-full">
                 <Card className="border-0 bg-transparent shadow-none w-full">
                   <div className="flex items-center justify-between mb-6">
                     <div>
@@ -173,12 +173,12 @@ export default function DashboardPage() {
                 </Card>
               </TabsContent>
 
-              <TabsContent value="analytics" className="mt-0 focus-visible:outline-none w-full">
+              <TabsContent value="analytics" className="mt-0 focus-visible:outline-hidden w-full">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full">
                   {ANALYTICS_CARDS.map((card, idx) => {
                     const Icon = card.icon;
                     return (
-                      <Card key={idx} className={`group bg-gradient-to-br ${card.gradient} ${card.border} border bg-opacity-50 hover:bg-opacity-100 transition-all duration-300 hover:-translate-y-1`}>
+                      <Card key={idx} className={`group bg-linear-to-br ${card.gradient} ${card.border} border bg-opacity-50 hover:bg-opacity-100 transition-all duration-300 hover:-translate-y-1`}>
                         <CardHeader className="pb-2">
                           <CardTitle className={`flex items-center gap-2 text-base font-medium ${card.text}`}>
                             <Icon className="h-5 w-5" />

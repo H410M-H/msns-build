@@ -113,6 +113,7 @@ export default function StudentCreationDialog() {
         studentCNIC: data.studentCNIC ?? "",
         fatherCNIC: data.fatherCNIC ?? "",
         profilePic: uploadedImageUrl,
+        isAssign: false
       });
     } catch (error) {
       console.error("Error submitting form:", error);
@@ -166,8 +167,8 @@ export default function StudentCreationDialog() {
   return (
     <div className="relative min-h-screen w-full bg-slate-950 overflow-x-hidden selection:bg-emerald-500/30">
       <div className="inset-0 z-0 pointer-events-none fixed">
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(45,255,196,0.05)_1px,transparent_1px),linear-gradient(to_bottom,rgba(45,255,196,0.05)_1px,transparent_1px)] bg-[size:3rem_3rem] sm:bg-[size:4rem_4rem]" />
-        <div className="absolute inset-0 bg-gradient-to-br from-emerald-900/40 via-black/20 to-black/60" />
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(45,255,196,0.05)_1px,transparent_1px),linear-gradient(to_bottom,rgba(45,255,196,0.05)_1px,transparent_1px)] bg-size-[3rem_3rem] sm:bg-size-[4rem_4rem]" />
+        <div className="absolute inset-0 bg-linear-to-br from-emerald-900/40 via-black/20 to-black/60" />
       </div>
 
       <div className="relative z-10 p-4 sm:p-6 lg:p-8">
@@ -186,9 +187,9 @@ export default function StudentCreationDialog() {
                   fill
                   className="object-cover opacity-40 mix-blend-overlay"
                 />
-                 <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/40 to-transparent" />
+                 <div className="absolute inset-0 bg-linear-to-t from-slate-900 via-slate-900/40 to-transparent" />
               </div>
-              <h2 className="relative z-10 text-3xl sm:text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-emerald-200 to-teal-400 drop-shadow-sm text-center px-4">
+              <h2 className="relative z-10 text-3xl sm:text-4xl font-bold text-transparent bg-clip-text bg-linear-to-r from-emerald-200 to-teal-400 drop-shadow-xs text-center px-4">
                 Student Registration
               </h2>
             </CardHeader>
@@ -302,7 +303,7 @@ export default function StudentCreationDialog() {
                     <Button
                       type="submit"
                       disabled={createStudent.isPending}
-                      className="w-full sm:w-auto bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white shadow-lg shadow-emerald-900/50"
+                      className="w-full sm:w-auto bg-linear-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white shadow-lg shadow-emerald-900/50"
                     >
                       {createStudent.isPending ? (
                         <>

@@ -114,7 +114,7 @@ export function SalarySlip({ salary }: SalarySlipProps) {
         
         <div className="flex flex-col items-center space-y-4">
           {/* Slip Design */}
-          <div ref={slipRef} className="bg-white p-10 w-full max-w-[210mm] border border-gray-200 shadow-sm">
+          <div ref={slipRef} className="bg-white p-10 w-full max-w-[210mm] border border-gray-200 shadow-xs">
             {/* Header */}
             <div className="text-center mb-8">
               <h1 className="text-2xl font-bold uppercase tracking-wider text-gray-900">Academic Institute</h1>

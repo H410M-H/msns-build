@@ -11,7 +11,7 @@ export const EventsSection = ({ isStudent, isTeacher }: EventsSectionProps) =>{
     <section className="mb-12">
       <div className="mb-8 flex items-center gap-4">
         <div className="relative">
-          <div className="-rotate-2 transform rounded-2xl bg-gradient-to-br from-cyan-500 to-blue-600 p-3 shadow-xl transition-transform duration-300 hover:rotate-0">
+          <div className="-rotate-2 transform rounded-2xl bg-linear-to-br from-cyan-500 to-blue-600 p-3 shadow-xl transition-transform duration-300 hover:rotate-0">
             <Clock className="h-6 w-6 text-white" />
           </div>
           <div className="absolute right-0 top-0 h-3 w-3 animate-pulse rounded-full bg-red-500"></div>
@@ -31,9 +31,9 @@ export const EventsSection = ({ isStudent, isTeacher }: EventsSectionProps) =>{
       </div>
 
       <div className="group relative">
-        <div className="absolute inset-0 scale-95 transform rounded-3xl bg-gradient-to-r from-cyan-200/25 to-blue-200/25 blur-xl transition-all duration-500 group-hover:scale-100"></div>
-        <div className="relative overflow-hidden rounded-3xl border border-white/50 bg-white/80 shadow-2xl backdrop-blur-sm">
-          <div className="border-b border-slate-200/50 bg-gradient-to-r from-slate-50 to-blue-50 px-8 py-4">
+        <div className="absolute inset-0 scale-95 transform rounded-3xl bg-linear-to-r from-cyan-200/25 to-blue-200/25 blur-xl transition-all duration-500 group-hover:scale-100"></div>
+        <div className="relative overflow-hidden rounded-3xl border border-white/50 bg-white/80 shadow-2xl backdrop-blur-xs">
+          <div className="border-b border-slate-200/50 bg-linear-to-r from-slate-50 to-blue-50 px-8 py-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="h-3 w-3 animate-pulse rounded-full bg-green-500"></div>

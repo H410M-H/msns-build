@@ -98,7 +98,8 @@ export function ExpenseForm({
       return true;
     } catch (error) {
       if (error instanceof z.ZodError) {
-        const fieldErrors = error.errors.reduce(
+        
+        const fieldErrors = error.issues.reduce(
           (acc, curr) => ({
             ...acc,
             [String(curr.path[0])]: curr.message,

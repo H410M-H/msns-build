@@ -20,8 +20,8 @@ export default function EmployeesDashboard() {
       
       {/* === GLOBAL GRID BACKGROUND === */}
       <div className="fixed inset-0 z-0 pointer-events-none">
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(45,255,196,0.05)_1px,transparent_1px),linear-gradient(to_bottom,rgba(45,255,196,0.05)_1px,transparent_1px)] bg-[size:3rem_3rem] sm:bg-[size:4rem_4rem]" />
-        <div className="absolute inset-0 bg-gradient-to-br from-emerald-900/20 via-slate-950/80 to-slate-950" />
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(45,255,196,0.05)_1px,transparent_1px),linear-gradient(to_bottom,rgba(45,255,196,0.05)_1px,transparent_1px)] bg-size-[3rem_3rem] sm:bg-size-[4rem_4rem]" />
+        <div className="absolute inset-0 bg-linear-to-br from-emerald-900/20 via-slate-950/80 to-slate-950" />
         {/* Ambient Glows */}
         <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-emerald-500/10 rounded-full blur-[100px] opacity-30" />
         <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-teal-500/10 rounded-full blur-[100px] opacity-30" />
@@ -34,10 +34,10 @@ export default function EmployeesDashboard() {
           
           {/* Header Section */}
           <div className="mb-10 text-center space-y-4 relative">
-             <div className="inline-flex items-center justify-center p-3 rounded-2xl bg-slate-900/50 border border-emerald-500/20 backdrop-blur-sm mb-2 shadow-lg">
+             <div className="inline-flex items-center justify-center p-3 rounded-2xl bg-slate-900/50 border border-emerald-500/20 backdrop-blur-xs mb-2 shadow-lg">
                 <Users className="w-8 h-8 text-emerald-400" />
              </div>
-             <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold font-serif tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-white via-emerald-200 to-emerald-400 drop-shadow-sm">
+             <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold font-serif tracking-tight text-transparent bg-clip-text bg-linear-to-r from-white via-emerald-200 to-emerald-400 drop-shadow-xs">
                 Employee Management
              </h1>
              <p className="text-slate-400 text-sm sm:text-base max-w-2xl mx-auto leading-relaxed">
@@ -77,18 +77,18 @@ export default function EmployeesDashboard() {
 
             {/* Content Areas */}
             <div className="relative min-h-[500px]">
-                <TabsContent value="credentials" className="mt-0 focus-visible:outline-none animate-in fade-in slide-in-from-bottom-4 duration-500">
+                <TabsContent value="credentials" className="mt-0 focus-visible:outline-hidden animate-in fade-in slide-in-from-bottom-4 duration-500">
                     <EmployeeTable />
                 </TabsContent>
 
-                <TabsContent value="salaries" className="mt-0 focus-visible:outline-none animate-in fade-in slide-in-from-bottom-4 duration-500">
+                <TabsContent value="salaries" className="mt-0 focus-visible:outline-hidden animate-in fade-in slide-in-from-bottom-4 duration-500">
                     {/* Wrap external page content in glass container for consistency if needed */}
                     <div className="rounded-xl border border-emerald-500/20 bg-slate-900/40 backdrop-blur-md p-4 sm:p-6 shadow-xl">
                         <SalaryPage />
                     </div>
                 </TabsContent>
 
-                <TabsContent value="attendance" className="mt-0 focus-visible:outline-none animate-in fade-in slide-in-from-bottom-4 duration-500">
+                <TabsContent value="attendance" className="mt-0 focus-visible:outline-hidden animate-in fade-in slide-in-from-bottom-4 duration-500">
                     <div className="rounded-xl border border-emerald-500/20 bg-slate-900/40 backdrop-blur-md p-4 sm:p-6 shadow-xl">
                         <AttendancePage />
                     </div>

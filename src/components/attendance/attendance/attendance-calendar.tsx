@@ -126,10 +126,10 @@ export const CalendarGrid = () => {
       </div>
 
       {/* --- Calendar Grid --- */}
-      <Card className="relative flex-1 overflow-hidden border-border/50 shadow-sm">
+      <Card className="relative flex-1 overflow-hidden border-border/50 shadow-xs">
         <div className="h-full w-full overflow-auto">
           {/* We use min-w-max to allow horizontal scroll without shrinking columns */}
-          <div className="grid min-w-max grid-cols-[220px_repeat(31,_minmax(48px,_1fr))] divide-x divide-border/40 text-sm">
+          <div className="grid min-w-max grid-cols-[220px_repeat(31,minmax(48px,1fr))] divide-x divide-border/40 text-sm">
             
             {/* 1. Header Row: Days */}
             {/* Sticky Corner (Top-Left) */}

@@ -15,8 +15,8 @@ export default function EmployeeCardsPage() {
       
       {/* === GLOBAL GRID BACKGROUND === */}
       <div className="fixed inset-0 z-0 pointer-events-none">
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(45,255,196,0.05)_1px,transparent_1px),linear-gradient(to_bottom,rgba(45,255,196,0.05)_1px,transparent_1px)] bg-[size:3rem_3rem] sm:bg-[size:4rem_4rem]" />
-        <div className="absolute inset-0 bg-gradient-to-br from-emerald-900/20 via-slate-950/80 to-slate-950" />
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(45,255,196,0.05)_1px,transparent_1px),linear-gradient(to_bottom,rgba(45,255,196,0.05)_1px,transparent_1px)] bg-size-[3rem_3rem] sm:bg-size-[4rem_4rem]" />
+        <div className="absolute inset-0 bg-linear-to-br from-emerald-900/20 via-slate-950/80 to-slate-950" />
       </div>
 
       {/* === CONTENT === */}
@@ -28,7 +28,7 @@ export default function EmployeeCardsPage() {
             
             {/* Header Section */}
             <div className="space-y-2 text-center sm:text-left">
-              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight font-serif text-transparent bg-clip-text bg-gradient-to-r from-white via-emerald-200 to-emerald-400 drop-shadow-sm">
+              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight font-serif text-transparent bg-clip-text bg-linear-to-r from-white via-emerald-200 to-emerald-400 drop-shadow-xs">
                 Employee Credentials
               </h1>
               <p className="text-slate-400 text-sm sm:text-base max-w-3xl leading-relaxed">
@@ -39,7 +39,7 @@ export default function EmployeeCardsPage() {
             <Separator className="bg-emerald-500/20" />
 
             {/* Cards Container */}
-            <div className="backdrop-blur-sm min-h-[500px]">
+            <div className="backdrop-blur-xs min-h-[500px]">
                 <EmployeeCredDetails />
             </div>
             

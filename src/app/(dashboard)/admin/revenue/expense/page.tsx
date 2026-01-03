@@ -31,7 +31,7 @@ export default function ExpensePage() {
   ];
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-green-50/50 to-teal-50/50 sm:px-6 sm:py-0">
+    <main className="min-h-screen bg-linear-to-br from-green-50/50 to-teal-50/50 sm:px-6 sm:py-0">
               <PageHeader breadcrumbs={breadcrumbs} />
         
       {/* Animated background elements */}
@@ -47,7 +47,7 @@ export default function ExpensePage() {
       />
       
       
-      <div className="container mx-auto pt-[5rem]">
+      <div className="container mx-auto pt-20">
         <div className="w-full mx-auto space-y-6">
           {/* Header Section */}
           <motion.div 
@@ -56,7 +56,7 @@ export default function ExpensePage() {
             transition={{ duration: 0.5 }}
             className="text-center space-y-4"
           >
-            <h1 className="text-4xl md:text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-green-800 to-teal-600 tracking-tight drop-shadow-sm">
+            <h1 className="text-4xl md:text-5xl font-bold bg-clip-text text-transparent bg-linear-to-r from-green-800 to-teal-600 tracking-tight drop-shadow-xs">
               Expenses & Financial Management
             </h1>
             <p className="text-md text-green-700/90 font-medium max-w-2xl mx-auto">
@@ -64,13 +64,13 @@ export default function ExpensePage() {
             </p>
           </motion.div>
 
-          <Separator className="bg-gradient-to-r from-green-200/80 to-teal-200/80 h-[2px] shadow-sm" />
+          <Separator className="bg-linear-to-r from-green-200/80 to-teal-200/80 h-[2px] shadow-xs" />
 
           {/* Main Content Card */}
           <motion.div 
             initial={{ opacity: 0, scale: 0.98 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border border-green-50/20 p-6 space-y-6"
+            className="bg-white/90 backdrop-blur-xs rounded-xl shadow-lg border border-green-50/20 p-6 space-y-6"
           >
             {/* Controls Section */}
             <div className="flex flex-col sm:flex-row justify-between gap-4">
@@ -126,7 +126,7 @@ export default function ExpensePage() {
               ].map((badge, index) => (
                 <motion.span
                   key={index}
-                  className="bg-green-100/50 px-3 py-1.5 rounded-full backdrop-blur-sm border border-green-200/30 hover:bg-green-100/70 transition-colors cursor-default"
+                  className="bg-green-100/50 px-3 py-1.5 rounded-full backdrop-blur-xs border border-green-200/30 hover:bg-green-100/70 transition-colors cursor-default"
                   whileHover={{ scale: 1.05 }}
                 >
                   {badge.icon} {badge.text}

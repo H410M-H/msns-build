@@ -37,7 +37,7 @@ export const Footer = ({ className, ...props }: FooterProps) => {
 
   return (
     <footer className={cn(
-      "w-full bg-gradient-to-r from-yellow-50 via-pink-50 to-purple-50 border-t border-green-50",
+      "w-full bg-linear-to-r from-yellow-50 via-pink-50 to-purple-50 border-t border-green-50",
       "relative mt-2",
       className
     )} {...props}>
@@ -82,7 +82,7 @@ export const Footer = ({ className, ...props }: FooterProps) => {
                     href={href}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="p-2 rounded-full bg-white shadow-sm hover:bg-pink-100 transition-colors duration-200"
+                    className="p-2 rounded-full bg-white shadow-xs hover:bg-pink-100 transition-colors duration-200"
                     aria-label={label}
                   >
                     <Icon className="h-5 w-5 text-green-600 hover:text-pink-600 transition-colors" />

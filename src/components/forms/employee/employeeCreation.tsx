@@ -188,9 +188,9 @@ export default function EmployeeCreationDialog() {
   );
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-500 via-yellow-600 to-emerald-700 p-4 sm:p-6 lg:p-8 rounded-lg shadow-lg">
+    <div className="min-h-screen bg-linear-to-br from-green-500 via-yellow-600 to-emerald-700 p-4 sm:p-6 lg:p-8 rounded-lg shadow-lg">
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className="max-w-8xl mx-auto">
-        <Card className="backdrop-blur-sm bg-gray-400/70 shadow-xl rounded-2xl overflow-hidden border-0">
+        <Card className="backdrop-blur-xs bg-gray-400/70 shadow-xl rounded-2xl overflow-hidden border-0">
           <CardHeader className="relative min-h-[100px] items-center">
             <Image
               src="https://res.cloudinary.com/dvvbxrs55/image/upload/v1737374740/hex-one_cihfwh.jpg"
@@ -422,7 +422,7 @@ export default function EmployeeCreationDialog() {
                   <Button
                     type="submit"
                     disabled={createEmployee.isPending || isPicUploading || isCvUploading}
-                    className="rounded-lg bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700 transition-all duration-300 shadow-lg px-8"
+                    className="rounded-lg bg-linear-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700 transition-all duration-300 shadow-lg px-8"
                   >
                     {createEmployee.isPending ? (
                       <div className="flex items-center gap-2">

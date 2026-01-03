@@ -75,7 +75,7 @@ export default function SessionCards() {
               href={service.href} 
               key={service.title} 
               className={cn(
-                "group block h-full outline-none rounded-xl transition-transform active:scale-[0.98]",
+                "group block h-full outline-hidden rounded-xl transition-transform active:scale-[0.98]",
                 "focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-slate-950", 
                 styles.ring
               )}
@@ -85,14 +85,14 @@ export default function SessionCards() {
                 // Light Mode: White bg, Slate border
                 "bg-white border-slate-200 hover:shadow-lg hover:-translate-y-1",
                 // Dark Mode: Glass bg, White/5 border
-                "dark:bg-slate-900/40 dark:border-white/5 dark:backdrop-blur-sm dark:hover:bg-slate-900/60 dark:hover:shadow-none",
+                "dark:bg-slate-900/40 dark:border-white/5 dark:backdrop-blur-xs dark:hover:bg-slate-900/60 dark:hover:shadow-none",
                 styles.borderHover
               )}>
                 
                 {/* Background Gradient Effect */}
                 <div 
                   className={cn(
-                    "absolute inset-0 bg-gradient-to-br opacity-0 transition-opacity duration-500 group-hover:opacity-100",
+                    "absolute inset-0 bg-linear-to-br opacity-0 transition-opacity duration-500 group-hover:opacity-100",
                     styles.gradient
                   )} 
                 />
@@ -101,7 +101,7 @@ export default function SessionCards() {
                   <div className="mb-3 flex items-start justify-between">
                     {/* Icon Container */}
                     <div className={cn(
-                      "flex h-10 w-10 items-center justify-center rounded-lg border transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3 shadow-sm dark:shadow-inner",
+                      "flex h-10 w-10 items-center justify-center rounded-lg border transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3 shadow-xs dark:shadow-inner",
                       styles.iconBg
                     )}>
                       <Icon className={cn("h-5 w-5", styles.icon)} />

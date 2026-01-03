@@ -34,7 +34,7 @@ export const studentSchema = z.object({
   permanentAddress: z.string().min(5, "Address too short").max(500),
   medicalProblem: z.string().max(500).nullish().transform(v => v ?? ""),
   
-  isAssign: z.boolean().default(false),
+  isAssign: z.boolean(),
   createdAt: z.date().optional(),
   updatedAt: z.date().optional(),
   registrationNumber: z.string().optional(),

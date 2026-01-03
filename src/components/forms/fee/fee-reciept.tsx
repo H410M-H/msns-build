@@ -133,7 +133,7 @@ export function FeeReceipt({
       {/* Receipt Container */}
       <div
         ref={receiptRef}
-        className="mx-auto max-w-[210mm] rounded-lg border bg-white p-8 shadow-sm"
+        className="mx-auto max-w-[210mm] rounded-lg border bg-white p-8 shadow-xs"
       >
         {/* Header */}
         <div className="mb-6 text-center">

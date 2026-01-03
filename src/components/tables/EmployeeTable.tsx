@@ -164,7 +164,7 @@ export function EmployeeTable() {
   return (
     <div className="w-full space-y-4">
       {/* Table Controls */}
-      <div className="flex flex-col xl:flex-row items-center justify-between gap-4 rounded-xl border border-slate-200 bg-white p-4 shadow-sm backdrop-blur-md dark:border-emerald-500/20 dark:bg-slate-900/60 dark:shadow-lg transition-colors">
+      <div className="flex flex-col xl:flex-row items-center justify-between gap-4 rounded-xl border border-slate-200 bg-white p-4 shadow-xs backdrop-blur-md dark:border-emerald-500/20 dark:bg-slate-900/60 dark:shadow-lg transition-colors">
         <div className="flex w-full items-center gap-2 xl:max-w-md">
           <Input
             placeholder="Filter by name..."
@@ -207,7 +207,7 @@ export function EmployeeTable() {
       </div>
 
       {/* Table */}
-      <div className="rounded-xl border border-slate-200 bg-white/60 shadow-lg backdrop-blur-sm overflow-hidden dark:border-emerald-500/20 dark:bg-slate-900/60 dark:shadow-xl transition-colors">
+      <div className="rounded-xl border border-slate-200 bg-white/60 shadow-lg backdrop-blur-xs overflow-hidden dark:border-emerald-500/20 dark:bg-slate-900/60 dark:shadow-xl transition-colors">
         <Table>
           <TableHeader className="bg-slate-50 border-b border-slate-200 dark:bg-emerald-950/40 dark:border-emerald-500/20">
             {table.getHeaderGroups().map((headerGroup) => (

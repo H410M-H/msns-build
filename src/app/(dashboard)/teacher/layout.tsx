@@ -18,8 +18,8 @@ export default function TeacherDashboardLayout({
              
              {/* Background Effects (Consistent with other dashboards) */}
              <div className="absolute inset-0 z-0 pointer-events-none">
-                <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(59,130,246,0.03)_1px,transparent_1px),linear-gradient(to_bottom,rgba(59,130,246,0.03)_1px,transparent_1px)] bg-[size:3rem_3rem]" />
-                <div className="absolute inset-0 bg-gradient-to-br from-slate-950 via-slate-950/90 to-blue-950/10" />
+                <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(59,130,246,0.03)_1px,transparent_1px),linear-gradient(to_bottom,rgba(59,130,246,0.03)_1px,transparent_1px)] bg-size-[3rem_3rem]" />
+                <div className="absolute inset-0 bg-linear-to-br from-slate-950 via-slate-950/90 to-blue-950/10" />
              </div>
              
              {/* Scrollable Content Area */}
