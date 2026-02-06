@@ -1,41 +1,40 @@
-// File: src/app/page.tsx
-"use client"
+"use client";
 
-import { motion, useMotionValue, useTransform } from "framer-motion"
-import { useRef } from "react"
-import Link from "next/link"
-import Image from "next/image"
-import { Zap, ArrowRight, Shield, GraduationCap, LogIn } from "lucide-react"
+import { motion, useMotionValue, useTransform } from "framer-motion";
+import { useRef } from "react";
+import Link from "next/link";
+import Image from "next/image";
+import { Zap, ArrowRight, Shield, GraduationCap, LogIn } from "lucide-react";
 
 // 🌀 Tilt 3D Card Component
 const TiltCard = ({
   children,
   className = "",
 }: {
-  children: React.ReactNode
-  className?: string
+  children: React.ReactNode;
+  className?: string;
 }) => {
-  const cardRef = useRef<HTMLDivElement>(null)
-  const x = useMotionValue(0)
-  const y = useMotionValue(0)
-  const rotateX = useTransform(y, [-0.5, 0.5], [10, -10])
-  const rotateY = useTransform(x, [-0.5, 0.5], [-10, 10])
+  const cardRef = useRef<HTMLDivElement>(null);
+  const x = useMotionValue(0);
+  const y = useMotionValue(0);
+  const rotateX = useTransform(y, [-0.5, 0.5], [10, -10]);
+  const rotateY = useTransform(x, [-0.5, 0.5], [-10, 10]);
 
   const handleMouseMove = (e: React.MouseEvent) => {
-    if (!cardRef.current) return
-    const rect = cardRef.current.getBoundingClientRect()
-    const mouseX = e.clientX - rect.left
-    const mouseY = e.clientY - rect.top
-    const xPct = mouseX / rect.width - 0.5
-    const yPct = mouseY / rect.height - 0.5
-    x.set(xPct)
-    y.set(yPct)
-  }
+    if (!cardRef.current) return;
+    const rect = cardRef.current.getBoundingClientRect();
+    const mouseX = e.clientX - rect.left;
+    const mouseY = e.clientY - rect.top;
+    const xPct = mouseX / rect.width - 0.5;
+    const yPct = mouseY / rect.height - 0.5;
+    x.set(xPct);
+    y.set(yPct);
+  };
 
   const handleLeave = () => {
-    x.set(0)
-    y.set(0)
-  }
+    x.set(0);
+    y.set(0);
+  };
 
   return (
     <motion.div
@@ -43,46 +42,55 @@ const TiltCard = ({
       onMouseMove={handleMouseMove}
       onMouseLeave={handleLeave}
       style={{ rotateX, rotateY, transformStyle: "preserve-3d" }}
-      className={`transition-transform duration-500 ${className}`}
+      className={`transition-transform duration-500 ease-out ${className}`}
     >
       {children}
     </motion.div>
-  )
-}
+  );
+};
 
 export default function Home() {
   return (
-    // 🌗 Container with Light/Dark Theme Support
-    <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-emerald-50 via-white to-cyan-50 dark:from-[#344a3f] dark:via-[#12251b] dark:to-[#02131b] text-slate-900 dark:text-white transition-colors duration-500">
+    // 🌗 Container with h-dvh for full screen feel without scroll on load
+    <div className="relative min-h-dvh w-full overflow-hidden bg-white text-slate-900 dark:bg-[#02131b] dark:text-white transition-colors duration-500">
       
-      {/* 🌐 Animated Grid Background */}
+      {/* 🌐 Background System */}
       <div className="absolute inset-0 z-0 pointer-events-none">
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(16,185,129,0.05)_1px,transparent_1px),linear-gradient(to_bottom,rgba(16,185,129,0.05)_1px,transparent_1px)] dark:bg-[linear-gradient(to_right,rgba(45,255,196,0.08)_1px,transparent_1px),linear-gradient(to_bottom,rgba(45,255,196,0.08)_1px,transparent_1px)] bg-[size:3rem_3rem] sm:bg-[size:4rem_4rem]" />
-        <div className="absolute inset-0 bg-gradient-to-br from-white/60 via-transparent to-transparent dark:from-emerald-900/30 dark:via-cyan-900/10 dark:to-transparent" />
+         {/* Base Gradient */}
+        <div className="absolute inset-0 bg-gradient-to-br from-emerald-50/50 via-white to-cyan-50/50 dark:from-emerald-950/20 dark:via-[#02131b] dark:to-cyan-950/20" />
+        
+        {/* Grid Pattern */}
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(16,185,129,0.05)_1px,transparent_1px),linear-gradient(to_bottom,rgba(16,185,129,0.05)_1px,transparent_1px)] dark:bg-[linear-gradient(to_right,rgba(45,255,196,0.04)_1px,transparent_1px),linear-gradient(to_bottom,rgba(45,255,196,0.04)_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)]" />
       </div>
 
-      {/* 💫 Floating Orbs (Adjusted for both themes) */}
-      <motion.div
-        className="absolute left-1/4 h-[35rem] w-[35rem] rounded-full bg-emerald-400/20 dark:bg-emerald-500/20 blur-[90px] sm:h-[25rem] sm:w-[25rem] sm:blur-[120px]"
-        animate={{ y: [0, 40, 0], opacity: [0.3, 0.6, 0.3] }}
-        transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-      />
-      <motion.div
-        className="absolute bottom-0 right-1/4 h-[15rem] w-[15rem] rounded-full bg-cyan-400/20 dark:bg-cyan-500/20 blur-[90px] sm:h-[25rem] sm:w-[25rem] sm:blur-[120px]"
-        animate={{ y: [0, -40, 0], opacity: [0.3, 0.6, 0.3] }}
-        transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
-      />
+      {/* 💫 Animated Orbs */}
+      <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
+        <motion.div
+          className="absolute -top-[10%] left-[10%] h-[30rem] w-[30rem] rounded-full bg-emerald-400/20 dark:bg-emerald-500/10 blur-[100px]"
+          animate={{ y: [0, 50, 0], scale: [1, 1.1, 1] }}
+          transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
+        />
+        <motion.div
+          className="absolute top-[20%] right-[10%] h-[25rem] w-[25rem] rounded-full bg-cyan-400/20 dark:bg-cyan-500/10 blur-[100px]"
+          animate={{ y: [0, -50, 0], scale: [1, 1.2, 1] }}
+          transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
+        />
+      </div>
 
       {/* 🧭 Top Navigation */}
-      <nav className="relative z-20 flex items-center justify-between px-6 py-6 md:px-10">
-        <div className="flex items-center gap-2 font-bold text-lg md:text-xl tracking-tight text-emerald-950 dark:text-emerald-100">
-          <GraduationCap className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
-          <span>MSNS-LMS</span>
+      <nav className="relative z-50 flex w-full items-center justify-between px-6 py-6 md:px-10">
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-700 shadow-lg shadow-emerald-500/20 text-white">
+             <GraduationCap className="h-6 w-6" />
+          </div>
+          <span className="font-bold text-xl tracking-tight text-emerald-950 dark:text-emerald-50 hidden sm:block">
+            MSNS-LMS
+          </span>
         </div>
-        
+
         <Link
           href="/sign-in"
-          className="group flex items-center gap-2 rounded-full bg-white/50 dark:bg-white/10 px-5 py-2 text-sm font-semibold text-emerald-700 dark:text-emerald-300 backdrop-blur-md border border-emerald-200/50 dark:border-white/10 hover:bg-emerald-100/50 dark:hover:bg-white/20 transition-all hover:scale-105"
+          className="group flex items-center gap-2 rounded-full border border-emerald-100 bg-white/60 px-5 py-2.5 text-sm font-bold text-emerald-700 backdrop-blur-md transition-all hover:bg-white hover:shadow-lg hover:scale-105 dark:border-white/10 dark:bg-white/5 dark:text-emerald-300 dark:hover:bg-white/10"
         >
           <LogIn className="h-4 w-4" />
           <span>Portal Login</span>
@@ -90,112 +98,101 @@ export default function Home() {
       </nav>
 
       {/* 🏫 Hero Section */}
-      <section className="relative z-10 flex flex-col items-center justify-center px-4 pt-4 pb-20 text-center sm:px-6 lg:pt-14">
+      <main className="relative z-10 flex flex-col items-center justify-center px-4 pt-10 pb-20 text-center sm:px-6 lg:pt-20">
         
-        {/* 🔰 Animated Tilted School Logo */}
-        <TiltCard className="mb-10 sm:mb-16 cursor-pointer">
+        {/* 🔰 Logo Card */}
+        <TiltCard className="mb-10 sm:mb-12 cursor-pointer relative z-20">
           <motion.div
             initial={{ scale: 0.8, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
-            transition={{ duration: 1, ease: "easeOut" }}
-            className="relative mx-auto h-48 w-48 sm:h-64 sm:w-64 md:h-80 md:w-80"
+            transition={{ duration: 0.8 }}
+            className="relative mx-auto h-40 w-40 sm:h-56 sm:w-56"
           >
-            <motion.div
-              className="absolute inset-0 rounded-full bg-emerald-400/30 dark:bg-emerald-400/30 blur-3xl"
-              animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.6, 0.3] }}
-              transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+            {/* Glow behind logo */}
+            <div className="absolute inset-0 rounded-full bg-emerald-400/30 blur-3xl animate-pulse" />
+            <Image
+              src="https://res.cloudinary.com/dvvbxrs55/image/upload/v1729267508/logo-w_wt5wq6.png"
+              alt="M.S. Naz High School Logo"
+              fill
+              className="object-contain drop-shadow-2xl"
+              priority
             />
-            <div className="relative h-full w-full drop-shadow-2xl">
-              <Image
-                src="https://res.cloudinary.com/dvvbxrs55/image/upload/v1729267508/logo-w_wt5wq6.png"
-                alt="M.S. Naz High School Logo"
-                fill
-                className="object-contain"
-                priority
-              />
-            </div>
           </motion.div>
         </TiltCard>
 
-        {/* 📝 Title & Description */}
-        <motion.div
-          initial={{ opacity: 0, y: 40 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, ease: "easeOut" }}
-          className="space-y-6 max-w-4xl mx-auto"
-        >
-          <h1 className="text-4xl sm:text-6xl md:text-7xl font-black tracking-tight">
-            <span className="bg-gradient-to-r from-emerald-600 via-cyan-600 to-emerald-600 dark:from-emerald-300 dark:via-cyan-300 dark:to-emerald-300 bg-clip-text text-transparent drop-shadow-sm dark:drop-shadow-[0_0_20px_rgba(45,255,196,0.4)]">
-              M.S. NAZ HIGH SCHOOL
+        {/* 📝 Typography */}
+        <div className="max-w-4xl mx-auto space-y-6">
+          <motion.h1 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-4xl sm:text-6xl md:text-7xl font-black tracking-tighter"
+          >
+            <span className="block text-slate-900 dark:text-white">Pursuit of</span>
+            <span className="bg-gradient-to-r from-emerald-600 via-teal-500 to-emerald-600 dark:from-emerald-400 dark:via-cyan-400 dark:to-emerald-400 bg-clip-text text-transparent pb-2">
+              Excellence
             </span>
-          </h1>
+          </motion.h1>
 
-          <p className="mx-auto max-w-2xl px-4 text-base sm:text-lg md:text-xl text-slate-600 dark:text-gray-300 leading-relaxed">
-            Experience the{" "}
-            <span className="font-bold text-emerald-600 dark:text-emerald-400">Next-Gen LMS</span>
-            — modern, smart, and immersive learning for{" "}
-            <span className="font-semibold text-cyan-600 dark:text-cyan-300">
-              M.S. Naz High School®
-            </span>{" "}
-            students and educators.
-          </p>
-        </motion.div>
+          <motion.p 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="mx-auto max-w-2xl text-lg sm:text-xl text-slate-600 dark:text-slate-300 leading-relaxed font-medium"
+          >
+            Welcome to the <span className="text-emerald-600 dark:text-emerald-400 font-bold">Next-Gen LMS</span> for M.S. Naz High School. 
+            Empowering students and educators with seamless digital learning.
+          </motion.p>
+        </div>
 
         {/* ⚡ CTA Buttons */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3, ease: "easeOut" }}
-          className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row sm:gap-6"
+          transition={{ delay: 0.2 }}
+          className="mt-10 flex flex-col w-full sm:w-auto sm:flex-row items-center justify-center gap-4"
         >
           <Link
             href="/sign-in"
-            className="group relative flex items-center justify-center gap-2 overflow-hidden rounded-full bg-gradient-to-r from-emerald-600 to-cyan-600 dark:from-emerald-500 dark:to-cyan-500 px-8 py-4 text-lg font-bold text-white shadow-lg shadow-emerald-500/30 dark:shadow-[0_0_20px_#10b98180] transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-emerald-500/40"
+            className="w-full sm:w-auto relative group flex items-center justify-center gap-3 overflow-hidden rounded-2xl bg-emerald-600 px-8 py-4 text-lg font-bold text-white shadow-xl shadow-emerald-500/30 transition-all hover:bg-emerald-500 hover:scale-[1.02] hover:shadow-2xl hover:shadow-emerald-500/40"
           >
-            <span className="relative z-10 flex items-center gap-2">
-              <Zap className="h-5 w-5 fill-current" />
-              Get Started
-              <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
-            </span>
+            <Zap className="h-5 w-5 fill-white/20" />
+            <span>Get Started</span>
+            <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
           </Link>
           
           <Link
-             href="https://msns.edu.pk/about"
-             className="group flex items-center gap-2 rounded-full border border-slate-200 dark:border-white/10 bg-white/50 dark:bg-white/5 px-8 py-4 text-lg font-semibold text-slate-700 dark:text-gray-200 backdrop-blur-sm transition-all hover:bg-white/80 dark:hover:bg-white/10 hover:scale-105"
+            href="https://msns.edu.pk/about"
+            className="w-full sm:w-auto flex items-center justify-center gap-3 rounded-2xl border border-slate-200 bg-white px-8 py-4 text-lg font-semibold text-slate-700 shadow-sm transition-all hover:bg-slate-50 hover:border-slate-300 hover:scale-[1.02] dark:border-white/10 dark:bg-white/5 dark:text-white dark:hover:bg-white/10"
           >
             <Shield className="h-5 w-5" />
-            About School
+            <span>School Info</span>
           </Link>
         </motion.div>
-      </section>
+      </main>
 
-      {/* 🛡️ Footer CTA (Floating Glass Card) */}
-      <div className="absolute bottom-6 left-0 right-0 z-10 px-4">
-        <motion.div
-          initial={{ opacity: 0, y: 40 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, ease: "easeOut" }}
-          viewport={{ once: true }}
-          className="mx-auto flex max-w-3xl flex-col items-center justify-between gap-4 rounded-3xl border border-white/40 dark:border-emerald-400/20 bg-white/60 dark:bg-white/5 p-6 shadow-xl ring-1 ring-black/5 dark:shadow-[0_0_40px_rgba(45,255,196,0.15)] backdrop-blur-xl sm:flex-row sm:px-8 sm:py-6"
-        >
-          <div className="text-center sm:text-left">
-            <h2 className="text-lg font-bold text-slate-800 dark:text-emerald-100">
-              Ready to transform your learning?
-            </h2>
-            <p className="text-sm text-slate-600 dark:text-emerald-200/70">
-              Join thousands of students exploring the new era.
-            </p>
-          </div>
-
-          <Link
-            href="https://msns.edu.pk"
-            target="_blank"
-            className="shrink-0 rounded-xl bg-emerald-100 dark:bg-emerald-900/30 px-5 py-2.5 text-sm font-semibold text-emerald-700 dark:text-emerald-300 transition-colors hover:bg-emerald-200 dark:hover:bg-emerald-800/50"
-          >
-            Visit Official Website
-          </Link>
-        </motion.div>
-      </div>
+      {/* 🛡️ Footer CTA */}
+      <motion.footer 
+        initial={{ opacity: 0, y: 50 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.5, duration: 0.8 }}
+        className="fixed bottom-6 left-4 right-4 z-40 mx-auto max-w-5xl hidden md:block"
+      >
+        <div className="flex items-center justify-between rounded-2xl border border-white/40 bg-white/70 p-4 shadow-lg backdrop-blur-xl dark:border-white/10 dark:bg-black/40">
+           <div className="flex items-center gap-3 px-2">
+              <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+              <p className="text-sm font-medium text-slate-600 dark:text-slate-300">
+                Admissions open for {new Date().getFullYear()} session
+              </p>
+           </div>
+           <Link 
+             href="https://msns.edu.pk" 
+             target="_blank"
+             className="text-xs font-bold uppercase tracking-wider text-emerald-600 hover:underline dark:text-emerald-400"
+           >
+             Visit Website →
+           </Link>
+        </div>
+      </motion.footer>
     </div>
-  )
+  );
 }

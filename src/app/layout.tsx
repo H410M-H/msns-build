@@ -7,7 +7,6 @@ import { Toaster } from "~/components/ui/sonner";
 import { Analytics } from "@vercel/analytics/next";
 import { ThemeProvider } from "next-themes";
 
-// Configure Google Fonts
 const inter = Inter({
   subsets: ["latin"],
   variable: "--font-inter",
@@ -21,10 +20,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "MSNS-LMS | M.S. Naz High School Learning Management System",
-  description: "Access the M.S. Naz High School (MSNS) Learning Management System. Login to view academic records, assignments, and student resources. Excellence in education in Ghakhar, Pakistan.",
-  keywords: ["MSNS", "M.S. Naz High School", "LMS", "Learning Management System", "Ghakhar", "Student Portal", "Education", "Pakistan Schools"],
-  authors: [{ name: "M.S. Naz High School IT Team" }],
+  title: "MSNS-LMS | Portal Login",
+  description: "M.S. Naz High School Learning Management System.",
   icons: [{ rel: "icon", url: "/favicon.ico" }],
 };
 
@@ -34,9 +31,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body className={`${inter.variable} ${geistMono.variable} font-sans antialiased`}>
-        <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
+    <html lang="en" suppressHydrationWarning className="h-full">
+      {/* Added h-full to body to ensure full screen rendering */}
+      <body className={`${inter.variable} ${geistMono.variable} font-sans antialiased h-full`}>
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <Provider>
             {children}
             <Toaster />
