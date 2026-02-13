@@ -7,7 +7,7 @@ import { LoginForm } from "~/components/forms/auth/LoginForm";
 
 export default function SignInPage() {
   return (
-    // h-dvh ensures it fits mobile screens perfectly without address bar conflict
+    // h-dvh ensures full screen on mobile (ignoring address bar resizing)
     <main className="relative flex h-dvh w-full items-center justify-center overflow-hidden bg-slate-950">
       
       {/* --- LAYER 1: Background Image --- */}
@@ -20,12 +20,12 @@ export default function SignInPage() {
           className="object-cover opacity-90"
           quality={90}
         />
-        {/* Gradient Overlay for Readability */}
+        {/* Gradient Overlay */}
         <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-900/60 to-emerald-950/40 mix-blend-multiply" />
         <div className="absolute inset-0 backdrop-blur-[2px]" />
       </div>
 
-      {/* --- LAYER 2: Animated Shapes (Optional decoration) --- */}
+      {/* --- LAYER 2: Animated Ambient Glow --- */}
       <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
         <motion.div 
             animate={{ rotate: 360 }}
@@ -49,19 +49,32 @@ export default function SignInPage() {
         >
           {/* Header */}
           <div className="mb-8 flex flex-col items-center text-center">
+            
+            {/* ⚡️ LOGO ANIMATION RESTORED HERE ⚡️ */}
             <motion.div
-              initial={{ y: -20 }}
-              animate={{ y: 0 }}
-              transition={{ delay: 0.2, type: "spring" }}
+              initial={{ scale: 0, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ duration: 0.5, ease: "backOut" }}
               className="relative mb-4 h-28 w-28 sm:h-32 sm:w-32"
             >
-              <Image
-                src="https://res.cloudinary.com/dvvbxrs55/image/upload/v1729267533/Official_LOGO_grn_ic9ldd.png"
-                alt="Logo"
-                fill
-                className="object-contain drop-shadow-2xl"
-                priority
-              />
+               {/* Inner wrapper handles the infinite jump loop */}
+               <motion.div
+                  animate={{ y: [0, -15, 0] }}
+                  transition={{ 
+                    duration: 2, 
+                    repeat: Infinity, 
+                    ease: "easeInOut" 
+                  }}
+                  className="relative h-full w-full"
+               >
+                  <Image
+                    src="https://res.cloudinary.com/dvvbxrs55/image/upload/v1729267533/Official_LOGO_grn_ic9ldd.png"
+                    alt="Logo"
+                    fill
+                    className="object-contain drop-shadow-2xl"
+                    priority
+                  />
+               </motion.div>
             </motion.div>
             
             <h1 className="font-serif text-3xl font-bold tracking-tight text-white sm:text-4xl drop-shadow-md">

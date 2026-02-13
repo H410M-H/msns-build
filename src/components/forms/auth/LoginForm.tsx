@@ -58,7 +58,7 @@ export const LoginForm = () => {
 
   return (
     <div className="relative mx-auto w-full max-w-md sm:max-w-lg lg:max-w-xl">
-    <div className="overflow-hidden rounded-2xl bg-white/90 shadow-xl backdrop-blur-md transition-all duration-300 hover:shadow-blue-100/50 dark:bg-slate-900/90 dark:hover:shadow-blue-900/20">
+    <div className="overflow-hidden rounded-2xl bg-green-700/20 shadow-xl backdrop-blur-md transition-all duration-300 hover:shadow-blue-100/50 dark:bg-slate-900/90 dark:hover:shadow-blue-900/20">
       <div className="relative px-6 pb-8 pt-10 sm:px-10">
         <div className="absolute left-0 top-0 h-2 w-full bg-primary" />
 
@@ -159,7 +159,7 @@ export const LoginForm = () => {
         </Form>
 
         <div className="mt-8">
-          <p className="text-center text-xs text-gray-500 dark:text-gray-400">
+          <p className="text-center text-xs text-white dark:text-gray-400">
             By logging in, you agree to MSNS-DEV&apos;s
             <a
                 href="https://msns.edu.pk/terms-of-service"
@@ -185,7 +185,7 @@ export const LoginForm = () => {
         >
           <path
             d="M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V0H0V27.35A600.21,600.21,0,0,0,321.39,56.44Z"
-            className="fill-white/90 dark:fill-slate-900/90"
+            className="fill-yellow-600/90 dark:fill-slate-900/90"
           ></path>
         </svg>
       </div>
