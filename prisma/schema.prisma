@@ -58,6 +58,7 @@ model ClassSubject {
     Employees  Employees @relation(fields: [employeeId], references: [employeeId])
     Sessions   Sessions  @relation(fields: [sessionId], references: [sessionId])
     Subject    Subject   @relation(fields: [subjectId], references: [subjectId])
+    Marks      Marks[]
 }
 
 model Employees {
@@ -86,6 +87,8 @@ model Employees {
     SalaryAssignment   SalaryAssignment[]
     SalaryIncrement    SalaryIncrement[]
     EmployeeAttendance EmployeeAttendance[]
+    Marks              Marks[]
+    PromotionHistory   PromotionHistory[]
 }
 
 model BioMetric {
@@ -174,6 +177,10 @@ model Grades {
     ClassSubject ClassSubject[]
     StudentClass StudentClass[]
     Timetable    Timetable[]
+    Exam         Exam[]
+    ReportCard   ReportCard[]
+    PromotionFrom PromotionHistory[] @relation("PromotionFrom")
+    PromotionTo   PromotionHistory[] @relation("PromotionTo")
 }
 
 model Salary {
@@ -228,6 +235,10 @@ model Sessions {
     Salary           Salary[]
     SalaryAssignment SalaryAssignment[]
     StudentClass     StudentClass[]
+    Exam             Exam[]
+    ReportCard       ReportCard[]
+    PromotionFromSession PromotionHistory[] @relation("PromotionFromSession")
+    PromotionToSession   PromotionHistory[] @relation("PromotionToSession")
 }
 
 model Event {
@@ -324,6 +335,9 @@ model Students {
     isAssign           Boolean        @default(false)
     profilePic         String?        @default("/user.jpg")
     StudentClass       StudentClass[]
+    Marks              Marks[]
+    ReportCard         ReportCard[]
+    PromotionHistory   PromotionHistory[]
 }
 
 model Subject {
@@ -335,7 +349,129 @@ model Subject {
     updatedAt    DateTime       @updatedAt
     ClassSubject ClassSubject[]
     Timetable    Timetable[]
+    Marks        Marks[]
+    ReportCardDetail ReportCardDetail[]
 }
+
+// ============ EXAM MANAGEMENT SYSTEM ============
+
+
+model ExamType {
+    examTypeId  String         @id @default(cuid())
+    name        String         @db.VarChar(100)
+    description String?
+    category    ExamCategory
+    createdAt   DateTime       @default(now())
+    updatedAt   DateTime       @updatedAt
+    Exam        Exam[]
+}
+
+model Exam {
+    examId          String         @id @default(cuid())
+    examTypeId      String
+    sessionId       String
+    classId         String
+    examTypeEnum    ExamTypeEnum
+    startDate       DateTime
+    endDate         DateTime
+    totalMarks      Float          @default(100)
+    passingMarks    Float          @default(40)
+    status          ExamStatus     @default(SCHEDULED)
+    createdAt       DateTime       @default(now())
+    updatedAt       DateTime       @updatedAt
+
+    // Relations
+    ExamType      ExamType        @relation(fields: [examTypeId], references: [examTypeId])
+    Sessions      Sessions        @relation(fields: [sessionId], references: [sessionId])
+    Grades        Grades          @relation(fields: [classId], references: [classId])
+    Marks         Marks[]
+    ReportCard    ReportCard[]
+}
+
+model Marks {
+    marksId        String    @id @default(cuid())
+    examId         String
+    studentId      String
+    subjectId      String
+    classSubjectId String
+    obtainedMarks  Float
+    totalMarks     Float
+    uploadedBy     String
+    uploadedAt     DateTime  @default(now())
+    createdAt      DateTime  @default(now())
+    updatedAt      DateTime  @updatedAt
+
+    // Relations
+    Exam         Exam        @relation(fields: [examId], references: [examId])
+    Students     Students    @relation(fields: [studentId], references: [studentId])
+    Subject      Subject     @relation(fields: [subjectId], references: [subjectId])
+    ClassSubject ClassSubject @relation(fields: [classSubjectId], references: [csId])
+    Employees    Employees   @relation(fields: [uploadedBy], references: [employeeId])
+
+    // Unique constraint
+    @@unique([examId, studentId, subjectId])
+}
+
+model ReportCard {
+    reportCardId       String           @id @default(cuid())
+    studentId          String
+    examId             String
+    sessionId          String
+    classId            String
+    totalObtainedMarks Float
+    totalMaxMarks      Float
+    percentage         Float
+    status             ReportCardStatus
+    generatedAt        DateTime         @default(now())
+    createdAt          DateTime         @default(now())
+    updatedAt          DateTime         @updatedAt
+
+    // Relations
+    Students          Students           @relation(fields: [studentId], references: [studentId])
+    Exam              Exam               @relation(fields: [examId], references: [examId])
+    Sessions          Sessions           @relation(fields: [sessionId], references: [sessionId])
+    Grades            Grades             @relation(fields: [classId], references: [classId])
+    ReportCardDetail  ReportCardDetail[]
+}
+
+model ReportCardDetail {
+    reportCardDetailId String    @id @default(cuid())
+    reportCardId       String
+    subjectId          String
+    totalMarks         Float
+    obtainedMarks      Float
+    percentage         Float
+    remarks            String?
+    createdAt          DateTime  @default(now())
+
+    // Relations
+    ReportCard ReportCard @relation(fields: [reportCardId], references: [reportCardId])
+    Subject    Subject    @relation(fields: [subjectId], references: [subjectId])
+}
+
+model PromotionHistory {
+    promotionHistoryId String          @id @default(cuid())
+    studentId          String
+    fromClassId        String
+    toClassId          String
+    fromSessionId      String
+    toSessionId        String
+    promotionReason    PromotionReason
+    remarks            String?
+    promotedBy         String
+    promotedAt         DateTime        @default(now())
+    createdAt          DateTime        @default(now())
+
+    // Relations
+    Students      Students @relation(fields: [studentId], references: [studentId])
+    FromGrades    Grades   @relation("PromotionFrom", fields: [fromClassId], references: [classId])
+    ToGrades      Grades   @relation("PromotionTo", fields: [toClassId], references: [classId])
+    FromSessions  Sessions @relation("PromotionFromSession", fields: [fromSessionId], references: [sessionId])
+    ToSessions    Sessions @relation("PromotionToSession", fields: [toSessionId], references: [sessionId])
+    Employees     Employees @relation(fields: [promotedBy], references: [employeeId])
+}
+
+
 
 // Enums
 enum ClassCategory {
@@ -463,3 +599,37 @@ enum DayOfWeek {
     Saturday
     Sunday
 }
+
+enum ExamCategory {
+    STANDARD
+    PHASE_TEST
+}
+
+enum ExamTypeEnum {
+    MIDTERM
+    FINAL
+    PHASE_1
+    PHASE_2
+    PHASE_3
+    PHASE_4
+    PHASE_5
+    PHASE_6
+}
+
+enum ExamStatus {
+    SCHEDULED
+    ONGOING
+    COMPLETED
+}
+
+enum ReportCardStatus {
+    PASSED
+    FAILED
+    PENDING
+}
+
+enum PromotionReason {
+    PASSED
+    SPECIAL_CASE
+}
+

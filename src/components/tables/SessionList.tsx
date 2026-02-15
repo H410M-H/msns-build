@@ -25,6 +25,7 @@ import {
   Search,
   BookOpen,
   CalendarClock,
+  ClipboardList,
   FilterX
 } from "lucide-react";
 
@@ -201,7 +202,7 @@ export const SessionList = () => {
 
               <Separator className="bg-slate-100 dark:bg-white/5" />
 
-              <CardFooter className="grid grid-cols-2 gap-2 bg-slate-50/50 p-3 dark:bg-slate-950/20">
+              <CardFooter className="grid grid-cols-3 gap-2 bg-slate-50/50 p-3 dark:bg-slate-950/20">
                 <Button 
                   variant="ghost" 
                   size="sm" 
@@ -211,6 +212,17 @@ export const SessionList = () => {
                   <Link href={`/admin/sessions/timetable?sessionId=${session.sessionId}`}>
                     <CalendarDays className="mr-2 h-3.5 w-3.5" />
                     TimeTable
+                  </Link>
+                </Button>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="w-full text-slate-600 hover:text-slate-900 hover:bg-slate-100 h-8 text-xs dark:text-slate-200 dark:hover:text-white dark:hover:bg-white/5" 
+                  asChild
+                >
+                  <Link href="/admin/exams">
+                    <ClipboardList className="mr-2 h-3.5 w-3.5" />
+                    Exams
                   </Link>
                 </Button>
                 <Button 

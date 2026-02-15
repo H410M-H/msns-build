@@ -60,6 +60,7 @@ const data: NavigationConfig = {
   ADMIN: [
     { title: "Dashboard", url: "/admin", icon: Icons.Dashboard },
     { title: "Session", url: "/admin/sessions", icon: Package },
+    { title: "Exams", url: "/admin/exams", icon: Package },
     { title: "Revenue", url: "/admin/revenue", icon: Icons.Revenue },
     {
       title: "Registration",

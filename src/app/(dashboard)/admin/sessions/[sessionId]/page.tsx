@@ -2,8 +2,9 @@
 "use client";
 
 import { useParams } from "next/navigation";
+import Link from "next/link";
 import { motion } from "framer-motion";
-import { CalendarRange, Layers, Info } from "lucide-react";
+import { CalendarRange, Layers, Info, ClipboardList } from "lucide-react";
 import { Suspense } from "react";
 
 import { PageHeader } from "~/components/blocks/nav/PageHeader";
@@ -15,6 +16,7 @@ import {
   CardTitle,
   CardDescription,
 } from "~/components/ui/card";
+import { Button } from "~/components/ui/button";
 import { Skeleton } from "~/components/ui/skeleton";
 import { Badge } from "~/components/ui/badge";
 
@@ -61,6 +63,17 @@ export default function SessionDetailPage() {
              <Badge variant="outline" className="border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-500/20 dark:bg-emerald-500/5 dark:text-emerald-300 px-3 py-1">
                <Info className="mr-1 h-3 w-3" /> Active Session
              </Badge>
+             <Button
+               size="sm"
+               variant="outline"
+               className="border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 hover:text-emerald-800 dark:border-emerald-500/20 dark:bg-emerald-500/5 dark:text-emerald-300 dark:hover:bg-emerald-500/10"
+               asChild
+             >
+               <Link href="/admin/exams">
+                 <ClipboardList className="mr-2 h-3.5 w-3.5" />
+                 Exams
+               </Link>
+             </Button>
           </div>
         </div>
 
