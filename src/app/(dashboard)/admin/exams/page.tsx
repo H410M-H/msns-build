@@ -50,6 +50,33 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 
+// --- Interfaces ---
+interface Session {
+  sessionId: string;
+  sessionName: string;
+}
+
+interface Class {
+  classId: string;
+  grade: string;
+  section: string;
+}
+
+interface Exam {
+  examId: string;
+  examTypeEnum: string;
+  startDate: string | Date;
+  endDate: string | Date;
+  totalMarks: number;
+  passingMarks: number;
+  status: string;
+  classId: string;
+  Grades: {
+    grade: string;
+    section: string;
+  };
+}
+
 export default function ExamManagementPage() {
   const [selectedSession, setSelectedSession] = useState<string>("");
   const [selectedClass, setSelectedClass] = useState<string>("");
@@ -57,7 +84,7 @@ export default function ExamManagementPage() {
 
   // Form states for new exam
   const [newExamData, setNewExamData] = useState({
-    examType: "MIDTERM" as const,
+    examType: "MIDTERM",
     totalMarks: 100,
     passingMarks: 40,
     startDate: "",
@@ -89,7 +116,7 @@ export default function ExamManagementPage() {
       await createExamMutation.mutateAsync({
         sessionId: selectedSession,
         classId: selectedClass,
-        examTypeEnum: newExamData.examType,
+        examTypeEnum: newExamData.examType as "MIDTERM" | "FINAL" | "PHASE_1" | "PHASE_2" | "PHASE_3" | "PHASE_4" | "PHASE_5" | "PHASE_6",
         startDate: new Date(newExamData.startDate),
         endDate: new Date(newExamData.endDate),
         totalMarks: newExamData.totalMarks,
@@ -117,6 +144,8 @@ export default function ExamManagementPage() {
         await deleteExamMutation.mutateAsync({ examId });
         await refetchExams();
       } catch (error) {
+        // Suppress generic error alert if not critical
+        console.error(error);
         alert("Failed to delete exam");
       }
     }
@@ -134,6 +163,7 @@ export default function ExamManagementPage() {
         `Total: ${result.totalStudents}, Passed: ${result.passedStudents}, Failed: ${result.failedStudents}`
       );
     } catch (error) {
+      console.error(error);
       alert("Failed to check promotion status");
     }
   };
@@ -217,7 +247,7 @@ export default function ExamManagementPage() {
                   <SelectValue placeholder="Select session" />
                 </SelectTrigger>
                 <SelectContent>
-                  {sessions?.map((session: any) => (
+                  {sessions?.map((session: Session) => (
                     <SelectItem key={session.sessionId} value={session.sessionId}>
                       {session.sessionName}
                     </SelectItem>
@@ -235,7 +265,7 @@ export default function ExamManagementPage() {
                   <SelectValue placeholder="Select class" />
                 </SelectTrigger>
                 <SelectContent>
-                  {classes?.map((cls: any) => (
+                  {classes?.map((cls: Class) => (
                     <SelectItem key={cls.classId} value={cls.classId}>
                       {cls.grade} {cls.section}
                     </SelectItem>
@@ -267,7 +297,7 @@ export default function ExamManagementPage() {
                       </Label>
                       <Select
                         value={newExamData.examType}
-                        onValueChange={(value: any) =>
+                        onValueChange={(value: string) =>
                           setNewExamData({ ...newExamData, examType: value })
                         }
                       >
@@ -429,7 +459,7 @@ export default function ExamManagementPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {examsForSession.map((exam: any) => (
+                  {examsForSession.map((exam: Exam) => (
                     <TableRow
                       key={exam.examId}
                       className="border-b border-slate-100 transition-colors hover:bg-slate-50/50 dark:border-white/5 dark:hover:bg-white/5"

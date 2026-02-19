@@ -46,6 +46,47 @@ import {
   XCircle,
 } from "lucide-react";
 
+// --- Interfaces ---
+interface Session {
+  sessionId: string;
+  sessionName: string;
+}
+
+interface Class {
+  classId: string;
+  grade: string;
+  section: string;
+}
+
+interface Exam {
+  examId: string;
+  examTypeEnum: string;
+}
+
+interface PromotionResult {
+  promotedCount: number;
+  failedCount: number;
+}
+
+interface PromotionHistoryItem {
+  promotionHistoryId: string;
+  promotedAt: string | Date;
+  Students: {
+    studentName: string;
+  };
+  FromGrades: {
+    grade: string;
+    section: string;
+  };
+  ToGrades: {
+    grade: string;
+    section: string;
+  };
+  Employees: {
+    employeeName: string;
+  };
+}
+
 export default function PromotionManagementPage() {
   const [selectedFromSession, setSelectedFromSession] = useState<string>("");
   const [selectedToSession, setSelectedToSession] = useState<string>("");
@@ -53,7 +94,7 @@ export default function PromotionManagementPage() {
   const [selectedToClass, setSelectedToClass] = useState<string>("");
   const [selectedExam, setSelectedExam] = useState<string>("");
   const [showPromotionDialog, setShowPromotionDialog] = useState(false);
-  const [promotionResult, setPromotionResult] = useState<any>(null);
+  const [promotionResult, setPromotionResult] = useState<PromotionResult | null>(null);
 
   // API queries
   const { data: sessions } = api.session.getSessions.useQuery();
@@ -208,7 +249,7 @@ export default function PromotionManagementPage() {
                     <SelectValue placeholder="Select session" />
                   </SelectTrigger>
                   <SelectContent>
-                    {sessions?.map((session: any) => (
+                    {sessions?.map((session: Session) => (
                       <SelectItem
                         key={session.sessionId}
                         value={session.sessionId}
@@ -232,7 +273,7 @@ export default function PromotionManagementPage() {
                     <SelectValue placeholder="Select class" />
                   </SelectTrigger>
                   <SelectContent>
-                    {classes?.map((cls: any) => (
+                    {classes?.map((cls: Class) => (
                       <SelectItem key={cls.classId} value={cls.classId}>
                         {cls.grade} {cls.section}
                       </SelectItem>
@@ -250,7 +291,7 @@ export default function PromotionManagementPage() {
                     <SelectValue placeholder="Select exam" />
                   </SelectTrigger>
                   <SelectContent>
-                    {examsForSession?.map((exam: any) => (
+                    {examsForSession?.map((exam: Exam) => (
                       <SelectItem key={exam.examId} value={exam.examId}>
                         {exam.examTypeEnum}
                       </SelectItem>
@@ -298,7 +339,7 @@ export default function PromotionManagementPage() {
                     <SelectValue placeholder="Select new session" />
                   </SelectTrigger>
                   <SelectContent>
-                    {sessions?.map((session: any) => (
+                    {sessions?.map((session: Session) => (
                       <SelectItem
                         key={session.sessionId}
                         value={session.sessionId}
@@ -322,7 +363,7 @@ export default function PromotionManagementPage() {
                     <SelectValue placeholder="Select new class" />
                   </SelectTrigger>
                   <SelectContent>
-                    {classes?.map((cls: any) => (
+                    {classes?.map((cls: Class) => (
                       <SelectItem key={cls.classId} value={cls.classId}>
                         {cls.grade} {cls.section}
                       </SelectItem>
@@ -414,7 +455,7 @@ export default function PromotionManagementPage() {
                   <strong className="text-slate-700 dark:text-slate-200">
                     {
                       classes?.find(
-                        (c: any) => c.classId === selectedFromClass
+                        (c: Class) => c.classId === selectedFromClass
                       )?.grade
                     }
                   </strong>{" "}
@@ -422,7 +463,7 @@ export default function PromotionManagementPage() {
                   <strong className="text-slate-700 dark:text-slate-200">
                     {
                       classes?.find(
-                        (c: any) => c.classId === selectedToClass
+                        (c: Class) => c.classId === selectedToClass
                       )?.grade
                     }
                   </strong>
@@ -509,7 +550,7 @@ export default function PromotionManagementPage() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {promotionHistoryQuery.data.map((promo: any) => (
+                    {promotionHistoryQuery.data.map((promo: PromotionHistoryItem) => (
                       <TableRow
                         key={promo.promotionHistoryId}
                         className="border-b border-slate-100 transition-colors hover:bg-slate-50/50 dark:border-white/5 dark:hover:bg-white/5"
