@@ -26,12 +26,29 @@ import {
   TableHeader,
   TableRow,
 } from "~/components/ui/table";
-import { Alert, AlertDescription } from "~/components/ui/alert";
 import { Badge } from "~/components/ui/badge";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "~/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "~/components/ui/dialog";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
-import { AlertCircle, CheckCircle2, Loader2, Plus, Trash2, Calendar } from "lucide-react";
+import {
+  AlertCircle,
+  CheckCircle2,
+  ClipboardList,
+  Filter,
+  Loader2,
+  Plus,
+  Trash2,
+  ArrowUpRight,
+  TableIcon,
+} from "lucide-react";
+import Link from "next/link";
 
 export default function ExamManagementPage() {
   const [selectedSession, setSelectedSession] = useState<string>("");
@@ -112,7 +129,7 @@ export default function ExamManagementPage() {
         fromSessionId: selectedSession,
         examIdForCheck: examId,
       });
-      
+
       alert(
         `Total: ${result.totalStudents}, Passed: ${result.passedStudents}, Failed: ${result.failedStudents}`
       );
@@ -121,21 +138,21 @@ export default function ExamManagementPage() {
     }
   };
 
-  const getStatusColor = (status: string) => {
+  const getStatusBadge = (status: string) => {
     switch (status) {
       case "SCHEDULED":
-        return "bg-blue-100 text-blue-800";
+        return "border-blue-200 bg-blue-50 text-blue-700 dark:border-blue-500/20 dark:bg-blue-500/10 dark:text-blue-400";
       case "ONGOING":
-        return "bg-amber-100 text-amber-800";
+        return "border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-500/20 dark:bg-amber-500/10 dark:text-amber-400";
       case "COMPLETED":
-        return "bg-green-100 text-green-800";
+        return "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-500/20 dark:bg-emerald-500/10 dark:text-emerald-400";
       default:
-        return "bg-gray-100 text-gray-800";
+        return "border-slate-200 bg-slate-50 text-slate-700 dark:border-slate-500/20 dark:bg-slate-500/10 dark:text-slate-400";
     }
   };
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="w-full space-y-6">
       <PageHeader
         breadcrumbs={[
           { href: "/admin", label: "Admin" },
@@ -143,17 +160,60 @@ export default function ExamManagementPage() {
         ]}
       />
 
-      {/* Filter Section */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Filter Exams</CardTitle>
+      {/* --- Header Section --- */}
+      <div className="flex flex-col justify-between gap-4 md:flex-row md:items-end">
+        <div>
+          <div className="mb-2 flex items-center gap-3">
+            <div className="rounded-lg border border-emerald-200 bg-emerald-100 p-2 text-emerald-600 dark:border-emerald-500/20 dark:bg-emerald-500/10 dark:text-emerald-400">
+              <ClipboardList className="h-6 w-6" />
+            </div>
+            <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
+              Exam <span className="text-emerald-600 dark:text-emerald-500">Management</span>
+            </h1>
+          </div>
+          <p className="max-w-xl pl-1 text-sm text-slate-500 dark:text-slate-400">
+            Create, manage and monitor all exams across sessions and classes.
+          </p>
+        </div>
+
+        <Button
+          size="sm"
+          variant="outline"
+          className="border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 hover:text-emerald-800 dark:border-emerald-500/20 dark:bg-emerald-500/5 dark:text-emerald-300 dark:hover:bg-emerald-500/10"
+          asChild
+        >
+          <Link href="/admin/exams/promotion">
+            <ArrowUpRight className="mr-2 h-3.5 w-3.5" />
+            Student Promotion
+          </Link>
+        </Button>
+      </div>
+
+      {/* --- Filter Section --- */}
+      <Card className="overflow-hidden border border-slate-200 bg-white/50 shadow-sm backdrop-blur-md transition-all dark:border-white/5 dark:bg-slate-900/40 dark:shadow-xl">
+        <CardHeader className="border-b border-slate-100 bg-slate-50/50 px-6 py-4 dark:border-white/5 dark:bg-black/20">
+          <div className="flex items-center gap-2">
+            <div className="rounded-lg border border-emerald-200 bg-emerald-100 p-1.5 dark:border-emerald-500/20 dark:bg-emerald-500/10">
+              <Filter className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+            </div>
+            <div>
+              <CardTitle className="text-base font-bold text-slate-900 dark:text-white">
+                Filter Exams
+              </CardTitle>
+              <CardDescription className="text-xs text-slate-500 dark:text-slate-400">
+                Select session and class to view or create exams
+              </CardDescription>
+            </div>
+          </div>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="p-6">
           <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
             <div className="space-y-2">
-              <Label>Session</Label>
+              <Label className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                Session
+              </Label>
               <Select value={selectedSession} onValueChange={setSelectedSession}>
-                <SelectTrigger>
+                <SelectTrigger className="border-slate-200 bg-white transition-all focus:border-emerald-500/50 focus:ring-emerald-500/50 dark:border-white/10 dark:bg-slate-950/50 dark:text-white">
                   <SelectValue placeholder="Select session" />
                 </SelectTrigger>
                 <SelectContent>
@@ -167,9 +227,11 @@ export default function ExamManagementPage() {
             </div>
 
             <div className="space-y-2">
-              <Label>Class</Label>
+              <Label className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                Class
+              </Label>
               <Select value={selectedClass} onValueChange={setSelectedClass}>
-                <SelectTrigger>
+                <SelectTrigger className="border-slate-200 bg-white transition-all focus:border-emerald-500/50 focus:ring-emerald-500/50 dark:border-white/10 dark:bg-slate-950/50 dark:text-white">
                   <SelectValue placeholder="Select class" />
                 </SelectTrigger>
                 <SelectContent>
@@ -185,29 +247,31 @@ export default function ExamManagementPage() {
             <div className="flex items-end">
               <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
                 <DialogTrigger asChild>
-                  <Button className="w-full">
+                  <Button className="w-full bg-emerald-600 text-white shadow-md shadow-emerald-200 hover:bg-emerald-700 dark:shadow-emerald-900/20">
                     <Plus className="mr-2 h-4 w-4" />
                     Create Exam
                   </Button>
                 </DialogTrigger>
-                <DialogContent>
+                <DialogContent className="border-slate-200 bg-white dark:border-white/10 dark:bg-slate-900">
                   <DialogHeader>
-                    <DialogTitle>Create New Exam</DialogTitle>
-                    <DialogDescription>
+                    <DialogTitle className="text-slate-900 dark:text-white">Create New Exam</DialogTitle>
+                    <DialogDescription className="text-slate-500 dark:text-slate-400">
                       Add a new exam for the selected class and session
                     </DialogDescription>
                   </DialogHeader>
 
                   <div className="space-y-4">
                     <div className="space-y-2">
-                      <Label>Exam Type</Label>
+                      <Label className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                        Exam Type
+                      </Label>
                       <Select
                         value={newExamData.examType}
                         onValueChange={(value: any) =>
                           setNewExamData({ ...newExamData, examType: value })
                         }
                       >
-                        <SelectTrigger>
+                        <SelectTrigger className="border-slate-200 bg-white dark:border-white/10 dark:bg-slate-950/50 dark:text-white">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
@@ -225,7 +289,9 @@ export default function ExamManagementPage() {
 
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <Label>Total Marks</Label>
+                        <Label className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                          Total Marks
+                        </Label>
                         <Input
                           type="number"
                           value={newExamData.totalMarks}
@@ -235,10 +301,13 @@ export default function ExamManagementPage() {
                               totalMarks: parseInt(e.target.value),
                             })
                           }
+                          className="border-slate-200 bg-white dark:border-white/10 dark:bg-slate-950/50 dark:text-white"
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label>Passing Marks</Label>
+                        <Label className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                          Passing Marks
+                        </Label>
                         <Input
                           type="number"
                           value={newExamData.passingMarks}
@@ -248,13 +317,16 @@ export default function ExamManagementPage() {
                               passingMarks: parseInt(e.target.value),
                             })
                           }
+                          className="border-slate-200 bg-white dark:border-white/10 dark:bg-slate-950/50 dark:text-white"
                         />
                       </div>
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <Label>Start Date</Label>
+                        <Label className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                          Start Date
+                        </Label>
                         <Input
                           type="date"
                           value={newExamData.startDate}
@@ -264,10 +336,13 @@ export default function ExamManagementPage() {
                               startDate: e.target.value,
                             })
                           }
+                          className="border-slate-200 bg-white dark:border-white/10 dark:bg-slate-950/50 dark:text-white"
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label>End Date</Label>
+                        <Label className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                          End Date
+                        </Label>
                         <Input
                           type="date"
                           value={newExamData.endDate}
@@ -277,6 +352,7 @@ export default function ExamManagementPage() {
                               endDate: e.target.value,
                             })
                           }
+                          className="border-slate-200 bg-white dark:border-white/10 dark:bg-slate-950/50 dark:text-white"
                         />
                       </div>
                     </div>
@@ -284,7 +360,7 @@ export default function ExamManagementPage() {
                     <Button
                       onClick={handleCreateExam}
                       disabled={createExamMutation.isPending}
-                      className="w-full"
+                      className="w-full bg-emerald-600 text-white shadow-md shadow-emerald-200 hover:bg-emerald-700 dark:shadow-emerald-900/20"
                     >
                       {createExamMutation.isPending ? (
                         <>
@@ -292,7 +368,10 @@ export default function ExamManagementPage() {
                           Creating...
                         </>
                       ) : (
-                        "Create Exam"
+                        <>
+                          <Plus className="mr-2 h-4 w-4" />
+                          Create Exam
+                        </>
                       )}
                     </Button>
                   </div>
@@ -303,69 +382,107 @@ export default function ExamManagementPage() {
         </CardContent>
       </Card>
 
-      {/* Exams Table */}
+      {/* --- Exams Table --- */}
       {examsForSession && examsForSession.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Exams</CardTitle>
-            <CardDescription>
-              All exams for {selectedSession ? "selected session" : "all sessions"}
-            </CardDescription>
+        <Card className="overflow-hidden border border-slate-200 bg-white/50 shadow-sm backdrop-blur-md transition-all dark:border-white/5 dark:bg-slate-900/40 dark:shadow-xl">
+          <CardHeader className="border-b border-slate-100 bg-slate-50/50 px-6 py-4 dark:border-white/5 dark:bg-black/20">
+            <div className="flex items-center gap-2">
+              <div className="rounded-lg border border-emerald-200 bg-emerald-100 p-1.5 dark:border-emerald-500/20 dark:bg-emerald-500/10">
+                <TableIcon className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+              </div>
+              <div>
+                <CardTitle className="text-base font-bold text-slate-900 dark:text-white">
+                  Exam Registry
+                </CardTitle>
+                <CardDescription className="text-xs text-slate-500 dark:text-slate-400">
+                  All exams for the selected session
+                </CardDescription>
+              </div>
+            </div>
           </CardHeader>
-          <CardContent>
-            <div className="rounded-lg border">
+          <CardContent className="p-0">
+            <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
-                  <TableRow className="bg-muted">
-                    <TableHead>Exam Type</TableHead>
-                    <TableHead>Class</TableHead>
-                    <TableHead>Start Date</TableHead>
-                    <TableHead>End Date</TableHead>
-                    <TableHead>Marks</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
+                  <TableRow className="border-b border-slate-100 bg-slate-50/80 dark:border-white/5 dark:bg-black/10">
+                    <TableHead className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                      Exam Type
+                    </TableHead>
+                    <TableHead className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                      Class
+                    </TableHead>
+                    <TableHead className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                      Start Date
+                    </TableHead>
+                    <TableHead className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                      End Date
+                    </TableHead>
+                    <TableHead className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                      Marks
+                    </TableHead>
+                    <TableHead className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                      Status
+                    </TableHead>
+                    <TableHead className="text-right text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                      Actions
+                    </TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {examsForSession.map((exam: any) => (
-                    <TableRow key={exam.examId}>
-                      <TableCell className="font-medium">
+                    <TableRow
+                      key={exam.examId}
+                      className="border-b border-slate-100 transition-colors hover:bg-slate-50/50 dark:border-white/5 dark:hover:bg-white/5"
+                    >
+                      <TableCell className="font-semibold text-slate-900 dark:text-white">
                         {exam.examTypeEnum}
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="text-slate-600 dark:text-slate-300">
                         {exam.Grades.grade} {exam.Grades.section}
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="font-mono text-sm text-slate-600 dark:text-slate-300">
                         {new Date(exam.startDate).toLocaleDateString()}
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="font-mono text-sm text-slate-600 dark:text-slate-300">
                         {new Date(exam.endDate).toLocaleDateString()}
                       </TableCell>
                       <TableCell>
-                        {exam.passingMarks}/{exam.totalMarks}
+                        <span className="font-mono text-sm text-slate-700 dark:text-slate-200">
+                          {exam.passingMarks}
+                          <span className="text-slate-400 dark:text-slate-500">/</span>
+                          {exam.totalMarks ?? 100}
+                        </span>
                       </TableCell>
                       <TableCell>
-                        <Badge className={getStatusColor(exam.status)}>
+                        <Badge
+                          variant="outline"
+                          className={`border font-semibold ${getStatusBadge(exam.status)}`}
+                        >
                           {exam.status}
                         </Badge>
                       </TableCell>
-                      <TableCell className="text-right space-x-2">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() =>
-                            handlePromotionCheck(exam.classId, exam.examId)
-                          }
-                        >
-                          Check Promotion
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="destructive"
-                          onClick={() => handleDeleteExam(exam.examId)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
+                      <TableCell className="text-right">
+                        <div className="flex items-center justify-end gap-2">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() =>
+                              handlePromotionCheck(exam.classId, exam.examId)
+                            }
+                            className="h-8 border-slate-200 bg-white text-xs text-slate-600 hover:bg-emerald-50 hover:text-emerald-700 dark:border-white/10 dark:bg-white/5 dark:text-slate-300 dark:hover:bg-emerald-500/10 dark:hover:text-emerald-300"
+                          >
+                            <CheckCircle2 className="mr-1.5 h-3.5 w-3.5" />
+                            Check
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleDeleteExam(exam.examId)}
+                            className="h-8 border-red-200 bg-white text-xs text-red-600 hover:bg-red-50 hover:text-red-700 dark:border-red-500/20 dark:bg-white/5 dark:text-red-400 dark:hover:bg-red-500/10 dark:hover:text-red-300"
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </Button>
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))}
@@ -376,14 +493,19 @@ export default function ExamManagementPage() {
         </Card>
       )}
 
-      {/* No Data State */}
+      {/* --- Empty State --- */}
       {selectedSession && examsForSession?.length === 0 && (
-        <Alert>
-          <AlertCircle className="h-4 w-4" />
-          <AlertDescription>
+        <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-slate-300 bg-slate-50 py-16 text-center animate-in fade-in-50 dark:border-white/10 dark:bg-slate-900/20">
+          <div className="mb-4 rounded-full border border-slate-200 bg-white p-4 shadow-sm dark:border-white/5 dark:bg-slate-800/50">
+            <AlertCircle className="h-8 w-8 text-slate-400 dark:text-slate-600" />
+          </div>
+          <h3 className="mb-1 text-xl font-bold text-slate-900 dark:text-white">
+            No exams found
+          </h3>
+          <p className="mb-6 max-w-xs text-sm text-slate-500 dark:text-slate-400">
             No exams found for the selected session. Create one to get started.
-          </AlertDescription>
-        </Alert>
+          </p>
+        </div>
       )}
     </div>
   );

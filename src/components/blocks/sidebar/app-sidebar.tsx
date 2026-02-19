@@ -13,7 +13,8 @@ import {
   User,
   Users,
   ShieldCheck,
-  GraduationCap
+  GraduationCap,
+  FileText
 } from "lucide-react";
 import {
   Sidebar,
@@ -118,43 +119,34 @@ const data: NavigationConfig = {
         { title: "Create Employee", url: "/admin/users/faculty/create" },
       ],
     },
-    { title: "Profile", url: "/admin/users/account/profile", icon: Icons.Profile },
+    { title: "Profile", url: "/admin/users/profile", icon: Icons.Profile },
   ],
-    CLERK: [
+  CLERK: [
     { title: "Dashboard", url: "/clerk", icon: Icons.Dashboard },
-    { title: "Session", url: "/clerk/sessions", icon: Calendar },
-    {
-      title: "Students",
-      url: "/clerk/users/student/view",
-      icon: Icons.Student,
-      items: [
-        { title: "All Students", url: "/clerk/users/student/view" },
-        { title: "Create Student", url: "/clerk/users/student/create" },
-      ],
-    },
-    {
-      title: "Faculty",
-      url: "/clerk/users/faculty/view",
-      icon: Icons.Faculty,
-      items: [
-        { title: "All Employees", url: "/admin/users/faculty/view" },
-        { title: "Attendance", url: "/admin/attendance" },
-        { title: "Create Employee", url: "/admin/users/faculty/create" },
-      ],
-    },
-    { title: "Profile", url: "/admin/users/account/profile", icon: Icons.Profile },
+    { title: "Fee Collection", url: "/clerk/fees", icon: Icons.Revenue },
+    { title: "Students", url: "/clerk/users/student/view", icon: Icons.Student },
+    { title: "Transactions", url: "/clerk/transactions", icon: ListOrdered },
+    { title: "Expenses", url: "/clerk/expenses", icon: DollarSignIcon },
+    { title: "Profile", url: "/clerk/users/profile", icon: Icons.Profile },
   ],
   TEACHER: [
     { title: "Dashboard", url: "/teacher", icon: Icons.Dashboard },
-    { title: "Attendance", url: "/clerk/attendance", icon: Calendar },
-    { title: "Students", url: "/clerk/users/student/view", icon: Icons.Student },
-    { title: "Profile", url: "/clerk/users/profile", icon: Icons.Profile },
+    { title: "My Timetable", url: "/teacher/timetable", icon: Calendar },
+    { title: "Exams & Marks", url: "/teacher/exams", icon: Package },
+    { title: "Leave Request", url: "/teacher/leaves", icon: FileText },
+    { title: "Profile", url: "/teacher/profile", icon: Icons.Profile },
+  ],
+  STUDENT: [
+    { title: "Dashboard", url: "/student", icon: Icons.Dashboard },
+    { title: "My Results", url: "/student/results", icon: GraduationCap },
+    { title: "Fee History", url: "/student/fees", icon: Icons.Revenue },
+    { title: "Timetable", url: "/student/timetable", icon: List },
+    { title: "Profile", url: "/student/profile", icon: Icons.Profile },
   ],
 
   NONE: [],
   ALL: [],
   WORKER: [],
-  STUDENT: [],
 };
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {

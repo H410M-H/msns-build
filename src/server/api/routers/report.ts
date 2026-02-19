@@ -125,7 +125,7 @@ function formatPdfValue(value: unknown): string {
   if (typeof value === "number") return value.toString();
   if (typeof value === "boolean") return value ? "Yes" : "No";
   if (value instanceof Date) return value.toLocaleDateString();
-  
+
   if (typeof value === "object") {
     try {
       return JSON.stringify(value);
@@ -133,12 +133,56 @@ function formatPdfValue(value: unknown): string {
       return "[Complex Object]";
     }
   }
-  
+
   // Safely handle symbols or bigints if they slip through, explicitly avoiding object types
-  return String(value as string | number | boolean | symbol | bigint); 
+  return String(value as string | number | boolean | symbol | bigint);
 }
 
 export const reportRouter = createTRPCRouter({
+  getPrincipalStats: protectedProcedure.query(async ({ ctx }) => {
+    try {
+      // 1. Total Revenue (Fees Collected)
+      // Note: This is a simplified calculation. Adjust based on exact fee logic.
+      const fees = await ctx.db.feeStudentClass.findMany({
+        where: { tuitionPaid: true }, // Simplified
+        include: { fees: true }
+      });
+      const totalRevenue = fees.reduce((acc, curr) => acc + curr.fees.tuitionFee, 0);
+
+      // 2. Total Expenses
+      const expenses = await ctx.db.expenses.aggregate({
+        _sum: { amount: true }
+      });
+      const totalExpenses = expenses._sum.amount ?? 0;
+
+      // 3. Staff Attendance (Today)
+      const today = new Date().toISOString().split('T')[0];
+      const attendance = await ctx.db.employeeAttendance.groupBy({
+        by: ['morning'],
+        where: { date: today },
+        _count: { morning: true }
+      });
+
+      const presentCount = attendance.find(a => a.morning === 'P')?._count.morning ?? 0;
+      const absentCount = attendance.find(a => a.morning === 'A')?._count.morning ?? 0;
+
+      return {
+        revenue: totalRevenue,
+        expenses: totalExpenses,
+        attendance: {
+          present: presentCount,
+          absent: absentCount,
+          total: presentCount + absentCount
+        }
+      };
+    } catch (error) {
+      console.error("Error fetching principal stats:", error);
+      throw new TRPCError({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "Failed to fetch dashboard stats",
+      });
+    }
+  }),
   generateReport: protectedProcedure
     .input(z.object({ reportType: reportTypeSchema }))
     .mutation(async ({ ctx, input }) => {
@@ -148,16 +192,16 @@ export const reportRouter = createTRPCRouter({
 
         const queryFn = reportQueries[reportType];
         if (!queryFn) {
-             throw new TRPCError({ code: "BAD_REQUEST", message: "Invalid report type" });
+          throw new TRPCError({ code: "BAD_REQUEST", message: "Invalid report type" });
         }
 
         const rawData = await queryFn(ctx.db);
         const headers = reportHeaders[reportType];
 
         if (!rawData || rawData.length === 0) {
-             if (rawData.length === 0) {
-                 throw new TRPCError({ code: "NOT_FOUND", message: "No data found for report" });
-             }
+          if (rawData.length === 0) {
+            throw new TRPCError({ code: "NOT_FOUND", message: "No data found for report" });
+          }
         }
 
         const transformedData = rawData.map(row => {
@@ -169,10 +213,10 @@ export const reportRouter = createTRPCRouter({
         });
 
         const pdfBuffer = await generatePdf(transformedData, headers, title);
-        
-        return { 
-            pdf: Buffer.from(pdfBuffer).toString("base64"),
-            filename: `${reportType}-report-${Date.now()}.pdf`
+
+        return {
+          pdf: Buffer.from(pdfBuffer).toString("base64"),
+          filename: `${reportType}-report-${Date.now()}.pdf`
         };
       } catch (error) {
         console.error("Report generation failed:", error);

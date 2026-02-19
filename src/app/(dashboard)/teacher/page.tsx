@@ -7,7 +7,9 @@ import {
   Users,
   Clock,
   CheckCircle2,
-  GraduationCap
+  GraduationCap,
+  Sparkles,
+  BookOpen
 } from "lucide-react";
 
 import { PageHeader } from "~/components/blocks/nav/PageHeader";
@@ -15,13 +17,16 @@ import { WelcomeSection } from "~/components/blocks/dashboard/welcome";
 import { ProfileSection } from "~/components/blocks/dashboard/profile";
 import { TeacherSection } from "~/components/blocks/dashboard/teacher";
 import { Skeleton } from "~/components/ui/skeleton";
+import Link from "next/link";
 
 import {
   Card,
   CardHeader,
   CardTitle,
-  CardContent} from "~/components/ui/card";
+  CardContent,
+} from "~/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
+import { Button } from "~/components/ui/button";
 
 const EventsTable = lazy(() => import("~/components/tables/EventsTable"));
 
@@ -60,8 +65,7 @@ export default function TeacherDashboard() {
   const breadcrumbs = [{ href: "/teacher", label: "Dashboard", current: true }];
 
   return (
-    // Ensure w-full is present to fill the layout
-    <div className="w-full space-y-8">
+    <div className="w-full space-y-8 p-6">
       <PageHeader breadcrumbs={breadcrumbs} />
       
       {/* Top Section */}
@@ -123,19 +127,32 @@ export default function TeacherDashboard() {
       >
          <Tabs defaultValue="classes" className="w-full">
             <div className="flex flex-col sm:flex-row items-center justify-between gap-4 border-b border-white/5 px-6 py-4 bg-black/20">
-              <h2 className="text-xl font-semibold text-white tracking-tight">Academic Overview</h2>
+              <div className="flex items-center gap-2">
+                <div className="p-2 rounded-lg bg-emerald-500/10">
+                   <BookOpen className="h-5 w-5 text-emerald-400" />
+                </div>
+                <h2 className="text-xl font-semibold text-white tracking-tight">Academic Overview</h2>
+              </div>
               <TabsList className="bg-slate-950/50 border border-white/5 p-1">
-                <TabsTrigger value="classes" className="gap-2 data-[state=active]:bg-blue-600 data-[state=active]:text-white transition-all">
+                <TabsTrigger value="classes" className="gap-2 data-[state=active]:bg-emerald-600 data-[state=active]:text-white transition-all">
                     <GraduationCap className="h-4 w-4" /> <span className="hidden sm:inline">My Classes</span>
                 </TabsTrigger>
-                <TabsTrigger value="events" className="gap-2 data-[state=active]:bg-blue-600 data-[state=active]:text-white transition-all">
+                <TabsTrigger value="events" className="gap-2 data-[state=active]:bg-emerald-600 data-[state=active]:text-white transition-all">
                     <Calendar className="h-4 w-4" /> <span className="hidden sm:inline">Schedule</span>
                 </TabsTrigger>
               </TabsList>
             </div>
 
             <div className="p-4 sm:p-6 w-full">
-              <TabsContent value="classes" className="mt-0 focus-visible:outline-none w-full">
+              <TabsContent value="classes" className="mt-0 focus-visible:outline-none w-full space-y-6">
+                <div className="flex justify-end">
+                    <Link href="/teacher/exams/marks">
+                        <Button className="bg-emerald-600 hover:bg-emerald-700 text-white gap-2">
+                            <Sparkles className="h-4 w-4" />
+                            Enter Exam Marks
+                        </Button>
+                    </Link>
+                </div>
                 <TeacherSection />
               </TabsContent>
 

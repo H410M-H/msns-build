@@ -1,5 +1,5 @@
 import { TRPCError } from "@trpc/server";
-import { createTRPCRouter, publicProcedure } from "../trpc";
+import { createTRPCRouter, publicProcedure, protectedProcedure } from "../trpc";
 import { z } from "zod";
 import { generatePdf } from "~/lib/pdf-reports";
 import { type Prisma } from "@prisma/client";
@@ -52,7 +52,7 @@ export const StudentRouter = createTRPCRouter({
           profilePic: true,
         },
       });
-  
+
       return students;
     } catch (error) {
       console.error("Error fetching students:", error);
@@ -77,10 +77,10 @@ export const StudentRouter = createTRPCRouter({
           isAssign: false,
           OR: input.searchTerm
             ? [
-                { studentName: { contains: input.searchTerm, mode: "insensitive" } },
-                { fatherName: { contains: input.searchTerm, mode: "insensitive" } },
-                { admissionNumber: { contains: input.searchTerm, mode: "insensitive" } },
-              ]
+              { studentName: { contains: input.searchTerm, mode: "insensitive" } },
+              { fatherName: { contains: input.searchTerm, mode: "insensitive" } },
+              { admissionNumber: { contains: input.searchTerm, mode: "insensitive" } },
+            ]
             : undefined,
         };
 
@@ -120,13 +120,71 @@ export const StudentRouter = createTRPCRouter({
       }
     }),
 
+
+  // Get student profile by User ID (via accountId matching registrationNumber)
+  getProfileByUserId: protectedProcedure.query(async ({ ctx }) => {
+    try {
+      const user = ctx.session.user;
+      if (!user.accountId) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "User account ID not found",
+        });
+      }
+
+      const student = await ctx.db.students.findUnique({
+        where: { registrationNumber: user.accountId },
+        include: {
+          StudentClass: {
+            include: {
+              Grades: true,
+              Sessions: true,
+              FeeStudentClass: {
+                include: {
+                  fees: true,
+                },
+                orderBy: { month: 'desc' },
+                take: 1
+              },
+            },
+            orderBy: {
+              Sessions: { sessionName: 'desc' }
+            },
+            take: 1
+          },
+          ReportCard: {
+            where: { status: 'PASSED' },
+            orderBy: { generatedAt: 'desc' },
+            take: 5
+          }
+        },
+      });
+
+      if (!student) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Student profile not found",
+        });
+      }
+
+      return student;
+    } catch (error) {
+      console.error(error);
+      if (error instanceof TRPCError) throw error;
+      throw new TRPCError({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "Failed to fetch student profile",
+      });
+    }
+  }),
+
   createStudent: publicProcedure
     .input(studentSchema)
     .mutation(async ({ ctx, input }) => {
       try {
         const usersCount = await ctx.db.user.count({ where: { accountType: "STUDENT" } });
         const userInfo = userReg(usersCount, "STUDENT");
-        
+
         const newStudent = await ctx.db.students.create({
           data: {
             ...input,
@@ -187,7 +245,7 @@ export const StudentRouter = createTRPCRouter({
             fatherProfession: true,
             bloodGroup: true,
             guardianName: true,
-            
+
             // Include Class Details
             StudentClass: {
               include: {
@@ -196,10 +254,10 @@ export const StudentRouter = createTRPCRouter({
               },
               orderBy: {
                 Sessions: {
-                  sessionName: 'desc' 
+                  sessionName: 'desc'
                 }
               },
-              take: 1 
+              take: 1
             }
           },
         });
@@ -246,7 +304,7 @@ export const StudentRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       try {
         let usersCount = await ctx.db.user.count({ where: { accountType: "STUDENT" } });
-        
+
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const studentsData: any[] = [];
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -256,60 +314,60 @@ export const StudentRouter = createTRPCRouter({
           if (!dateStr) return null;
           const d = new Date(dateStr);
           if (!isNaN(d.getTime())) return d;
-          
+
           const parts = dateStr.split('/');
           if (parts.length === 3) {
-             const [day, month, year] = parts;
-             const d2 = new Date(`${year}-${month}-${day}`);
-             if (!isNaN(d2.getTime())) return d2;
+            const [day, month, year] = parts;
+            const d2 = new Date(`${year}-${month}-${day}`);
+            if (!isNaN(d2.getTime())) return d2;
           }
           return null;
         };
 
         for (const student of input) {
-           const userInfo = userReg(usersCount, "STUDENT");
-           const password = await hash(userInfo.admissionNumber, 10);
-           const dob = parseDate(student.dateOfBirth);
-           const admissionDate = parseDate(student.dateOfAdmission) ?? new Date();
-           studentsData.push({
-             studentName: student.studentName,
-             fatherName: student.fatherName ?? "",
-             dateOfBirth: dob ? dob.toLocaleDateString() : (student.dateOfBirth ?? ""), 
-             currentAddress: student.address ?? "", 
-             studentMobile: student.contactNumber ?? "", 
-             fatherProfession: student.fatherOccupation ?? "", 
-             caste: student.caste ?? "none",
-             registrationNumber: userInfo.accountId,
-             admissionNumber: userInfo.admissionNumber,
-             gender: "MALE",
-             profilePic: "",
-             studentCNIC: "0000-0000000-0",
-             fatherCNIC: "0000-0000000-0",
-             fatherMobile: "none",
-             permanentAddress: "none",
-             createdAt: admissionDate, 
-             updatedAt: new Date(),
-           });
+          const userInfo = userReg(usersCount, "STUDENT");
+          const password = await hash(userInfo.admissionNumber, 10);
+          const dob = parseDate(student.dateOfBirth);
+          const admissionDate = parseDate(student.dateOfAdmission) ?? new Date();
+          studentsData.push({
+            studentName: student.studentName,
+            fatherName: student.fatherName ?? "",
+            dateOfBirth: dob ? dob.toLocaleDateString() : (student.dateOfBirth ?? ""),
+            currentAddress: student.address ?? "",
+            studentMobile: student.contactNumber ?? "",
+            fatherProfession: student.fatherOccupation ?? "",
+            caste: student.caste ?? "none",
+            registrationNumber: userInfo.accountId,
+            admissionNumber: userInfo.admissionNumber,
+            gender: "MALE",
+            profilePic: "",
+            studentCNIC: "0000-0000000-0",
+            fatherCNIC: "0000-0000000-0",
+            fatherMobile: "none",
+            permanentAddress: "none",
+            createdAt: admissionDate,
+            updatedAt: new Date(),
+          });
 
-           usersData.push({
-             accountId: userInfo.accountId,
-             username: userInfo.username,
-             email: userInfo.email.toLowerCase(),
-             password: password,
-             accountType: "STUDENT",
-           });
+          usersData.push({
+            accountId: userInfo.accountId,
+            username: userInfo.username,
+            email: userInfo.email.toLowerCase(),
+            password: password,
+            accountType: "STUDENT",
+          });
 
-           usersCount++;
+          usersCount++;
         }
 
         const result = await ctx.db.$transaction([
-          ctx.db.students.createMany({ 
-            data: studentsData, 
-            skipDuplicates: true 
+          ctx.db.students.createMany({
+            data: studentsData,
+            skipDuplicates: true
           }),
-          ctx.db.user.createMany({ 
-            data: usersData, 
-            skipDuplicates: true 
+          ctx.db.user.createMany({
+            data: usersData,
+            skipDuplicates: true
           })
         ]);
 

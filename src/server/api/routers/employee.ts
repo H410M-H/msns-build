@@ -1,5 +1,5 @@
 import { TRPCError } from "@trpc/server";
-import { createTRPCRouter, publicProcedure } from "../trpc";
+import { createTRPCRouter, publicProcedure, protectedProcedure } from "../trpc";
 import { z } from "zod";
 import { generatePdf } from "~/lib/pdf-reports";
 import { userReg } from "~/lib/utils";
@@ -11,7 +11,7 @@ const employeeSchema = z.object({
   fatherName: z.string().min(2).max(100),
   gender: z.enum(["MALE", "FEMALE", "CUSTOM"]),
   dob: z.string(),
-  cnic: z.string().min(13).max(15), 
+  cnic: z.string().min(13).max(15),
   maritalStatus: z.enum(["Married", "Unmarried", "Widow", "Divorced"]),
   doj: z.string(),
   designation: z.enum([
@@ -33,11 +33,52 @@ const employeeSchema = z.object({
 type AccountTypeEnum = "ADMIN" | "PRINCIPAL" | "HEAD" | "CLERK" | "TEACHER" | "WORKER";
 
 export const EmployeeRouter = createTRPCRouter({
+  // Get employee profile by User ID (via accountId matching registrationNumber)
+  getProfileByUserId: protectedProcedure.query(async ({ ctx }) => {
+    try {
+      const user = ctx.session.user;
+      if (!user.accountId) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "User account ID not found",
+        });
+      }
+
+      const employee = await ctx.db.employees.findUnique({
+        where: { registrationNumber: user.accountId },
+        include: {
+          BioMetric: true,
+          ClassSubject: {
+            include: {
+              Subject: true,
+              Grades: true,
+            },
+          },
+        },
+      });
+
+      if (!employee) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Employee profile not found",
+        });
+      }
+
+      return employee;
+    } catch (error) {
+      console.error(error);
+      if (error instanceof TRPCError) throw error;
+      throw new TRPCError({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "Failed to fetch employee profile",
+      });
+    }
+  }),
   getEmployees: publicProcedure.query(async ({ ctx }) => {
     try {
       return await ctx.db.employees.findMany({
         // FIX: Changed from 'createdAt' (which doesn't exist) to 'employeeName'
-        orderBy: { employeeName: "asc" }, 
+        orderBy: { employeeName: "asc" },
         include: {
           BioMetric: {
             select: {
@@ -238,11 +279,11 @@ export const EmployeeRouter = createTRPCRouter({
         pdf: Buffer.from(pdfBuffer).toString("base64"),
       };
     } catch (error) {
-        console.error(error);
-        throw new TRPCError({
-          code: "INTERNAL_SERVER_ERROR",
-          message: "Failed to generate report",
-        });
+      console.error(error);
+      throw new TRPCError({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "Failed to generate report",
+      });
     }
   }),
 });
