@@ -11,7 +11,7 @@ interface EventColorLegendProps {
 }
 
 export default function EventColorLegend({ showTitle = true, compact = false }: EventColorLegendProps) {
-  const renderedItems = useMemo((): JSX.Element[] => {
+  const renderedItems = useMemo(() => {
     return EVENT_TYPES.map((eventType: EventType) => (
       <div
         key={eventType.id}
@@ -26,7 +26,7 @@ export default function EventColorLegend({ showTitle = true, compact = false }: 
     ))
   }, [])
 
-  const compactItems = useMemo((): JSX.Element[] => {
+  const compactItems = useMemo(() => {
     return EVENT_TYPES.map((eventType: EventType) => (
       <div
         key={eventType.id}
