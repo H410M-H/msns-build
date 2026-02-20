@@ -2,8 +2,15 @@ import { PageHeader } from "~/components/blocks/nav/PageHeader";
 import { RegisterEmployeeBioMetric } from "~/components/attendance/register-bio";
 import { ScrollArea } from "~/components/ui/scroll-area";
 
+type PageProps = {
+  searchParams: Promise<{
+    employeeId: string;
+    employeeName: string;
+  }>;
+};
+
 export default async function EmployeeRegistration(
-  props: PageProps<"/admin/users/faculty/bio-metric">,
+  props: PageProps,
 ) {
   const { employeeId, employeeName } = (await props.searchParams) as {
     employeeId: string;
