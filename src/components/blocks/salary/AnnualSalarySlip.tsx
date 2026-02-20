@@ -28,7 +28,7 @@ const MONTHS = [
   "July", "August", "September", "October", "November", "December"
 ]
 
-export const AnnualSalarySlip = React.forwardRef<HTMLDivElement, AnnualSalarySlipProps>(
+export const AnnualSalarySlip = React.forwardRef<HTMLDivElement | null, AnnualSalarySlipProps>(
   ({ year, employee, records }, ref) => {
     
     // Sort records by month
