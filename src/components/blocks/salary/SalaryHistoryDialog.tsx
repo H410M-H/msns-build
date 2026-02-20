@@ -160,7 +160,8 @@ export function SalaryHistoryDialog({
   }
 
   // --- HTML to PDF Generation Logic ---
-  const handlePrint = (ref: React.RefObject<HTMLDivElement>) => {
+  // FIXED: Updated parameter type to accept RefObject<HTMLDivElement | null>
+  const handlePrint = (ref: React.RefObject<HTMLDivElement | null>) => {
     const content = ref.current
     if (!content) return
 
@@ -193,7 +194,8 @@ export function SalaryHistoryDialog({
     printWindow.document.close()
   }
 
-  const handleDownloadPdf = async (ref: React.RefObject<HTMLDivElement>, filename: string) => {
+  // FIXED: Updated parameter type to accept RefObject<HTMLDivElement | null>
+  const handleDownloadPdf = async (ref: React.RefObject<HTMLDivElement | null>, filename: string) => {
     if (!ref.current) return
 
     try {
@@ -486,83 +488,30 @@ export function SalaryHistoryDialog({
                           <td className="py-3 px-4 text-right text-gray-400 text-xs">Earning</td>
                           <td className="py-3 px-4 text-right font-medium">{previewRecord.amount.toLocaleString()}</td>
                         </tr>
-                        
-                        {(previewRecord.allowances ?? 0) > 0 && (
-                          <tr className="bg-emerald-50/30">
-                            <td className="py-3 px-4 text-emerald-700">Allowances</td>
-                            <td className="py-3 px-4 text-right text-emerald-600 text-xs">Addition</td>
-                            <td className="py-3 px-4 text-right font-medium text-emerald-700">+{ (previewRecord.allowances ?? 0).toLocaleString()}</td>
-                          </tr>
-                        )}
-
-                        {(previewRecord.bonus ?? 0) > 0 && (
-                          <tr className="bg-emerald-50/30">
-                            <td className="py-3 px-4 text-emerald-700">Performance Bonus</td>
-                            <td className="py-3 px-4 text-right text-emerald-600 text-xs">Addition</td>
-                            <td className="py-3 px-4 text-right font-medium text-emerald-700">+{ (previewRecord.bonus ?? 0).toLocaleString()}</td>
-                          </tr>
-                        )}
-
-                        {(previewRecord.deductions ?? 0) > 0 && (
-                          <tr className="bg-red-50/30">
-                            <td className="py-3 px-4 text-red-700">Deductions / Tax</td>
-                            <td className="py-3 px-4 text-right text-red-600 text-xs">Deduction</td>
-                            <td className="py-3 px-4 text-right font-medium text-red-700">-{ (previewRecord.deductions ?? 0).toLocaleString()}</td>
-                          </tr>
-                        )}
+                        {/* You can add more rows for Allowances, Deductions, etc. here later */}
                       </tbody>
-                      <tfoot>
-                        <tr className="bg-gray-800 text-white">
-                          <td className="py-4 px-6 font-bold text-lg rounded-bl-md">NET PAYABLE</td>
-                          <td colSpan={2} className="py-4 px-6 text-right font-bold text-xl rounded-br-md">
-                            <span className="text-emerald-400 mr-1">PKR</span> 
-                            {(
-                              previewRecord.amount + 
-                              (previewRecord.allowances ?? 0) + 
-                              (previewRecord.bonus ?? 0) - 
-                              (previewRecord.deductions ?? 0)
-                            ).toLocaleString()}
-                          </td>
-                        </tr>
-                      </tfoot>
                     </table>
                   </div>
-
-                  {/* Signatures */}
-                  <div className="flex justify-between mt-16 pt-8 px-4">
-                    <div className="text-center">
-                      <div className="w-40 border-b border-gray-300 mb-2"></div>
-                      <p className="text-xs text-gray-500 font-medium uppercase">Employee Signature</p>
-                    </div>
-                    <div className="text-center">
-                      <div className="w-40 border-b border-gray-300 mb-2"></div>
-                      <p className="text-xs text-gray-500 font-medium uppercase">Authority Signature</p>
-                    </div>
-                  </div>
-
-                  {/* Footer */}
-                  <div className="mt-12 pt-6 border-t border-gray-100 flex justify-between items-end text-[10px] text-gray-400">
-                    <div>
-                      <p>This document is system generated and does not require a physical stamp.</p>
-                      <p className="mt-0.5">Generated on: {new Date().toLocaleString()}</p>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <Globe className="w-3 h-3" /> www.msns.edu.pk
-                    </div>
-                  </div>
                 </div>
-             )}
+              )}
           </div>
-
-          <DialogFooter>
-            <Button variant="outline" onClick={() => handlePrint(slipRef)} className="gap-2 border-emerald-200 text-emerald-700 hover:bg-emerald-50">
-              <Printer className="w-4 h-4" /> Print Slip
-            </Button>
-            <Button onClick={() => handleDownloadPdf(slipRef, `Payslip-${employeeName}-${previewRecord?.month}-${previewRecord?.year}.pdf`)} disabled={isDownloading} className="gap-2 bg-emerald-600 hover:bg-emerald-700 text-white">
-              {isDownloading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
-              Download PDF
-            </Button>
-          </DialogFooter>
+          
+          {/* Monthly Slip Preview Footer */}
+          {previewRecord && (
+            <DialogFooter>
+              <Button variant="outline" onClick={() => handlePrint(slipRef)} className="gap-2">
+                <Printer className="w-4 h-4" /> Print
+              </Button>
+              <Button 
+                onClick={() => handleDownloadPdf(slipRef, `Payslip-${employeeName.replace(/\s+/g, '-')}-${MONTHS[previewRecord.month - 1]?.label}-${previewRecord.year}.pdf`)} 
+                disabled={isDownloading} 
+                className="gap-2 bg-emerald-600 hover:bg-emerald-700 text-white"
+              >
+                {isDownloading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
+                Download PDF
+              </Button>
+            </DialogFooter>
+          )}
         </DialogContent>
       </Dialog>
     </>
