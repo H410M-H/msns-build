@@ -164,6 +164,87 @@ export const reportCardRouter = createTRPCRouter({
       }
     }),
 
+  updateReportCard: publicProcedure
+    .input(
+      z.object({
+        reportCardId: z.string().cuid(),
+        details: z.array(
+          z.object({
+            subjectId: z.string().cuid(),
+            obtainedMarks: z.number().min(0),
+            totalMarks: z.number().min(1),
+          })
+        ),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      try {
+        const report = await ctx.db.reportCard.findUnique({
+          where: { reportCardId: input.reportCardId },
+          include: { Exam: true },
+        });
+
+        if (!report) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Report card not found",
+          });
+        }
+
+        let totalObtained = 0;
+        let totalMax = 0;
+
+        const updatedDetailsChunks = input.details.map((detail) => {
+          totalObtained += detail.obtainedMarks;
+          totalMax += detail.totalMarks;
+          const percentage = (detail.obtainedMarks / detail.totalMarks) * 100;
+          return {
+            reportCardId: input.reportCardId,
+            subjectId: detail.subjectId,
+            obtainedMarks: detail.obtainedMarks,
+            totalMarks: detail.totalMarks,
+            percentage,
+            remarks: percentage >= report.Exam.passingMarks ? "Passed" : "Failed",
+          };
+        });
+
+        const overallPercentage = (totalObtained / totalMax) * 100;
+        const status =
+          overallPercentage >= report.Exam.passingMarks ? "PASSED" : "FAILED";
+
+        const updatedReportCard = await ctx.db.$transaction([
+          ctx.db.reportCardDetail.deleteMany({
+            where: { reportCardId: input.reportCardId },
+          }),
+          ctx.db.reportCardDetail.createMany({
+            data: updatedDetailsChunks,
+          }),
+          ctx.db.reportCard.update({
+            where: { reportCardId: input.reportCardId },
+            data: {
+              totalObtainedMarks: totalObtained,
+              totalMaxMarks: totalMax,
+              percentage: overallPercentage,
+              status: status,
+            },
+            include: { ReportCardDetail: true },
+          }),
+        ]);
+
+        return {
+          success: true,
+          message: "Report card updated successfully",
+          reportCard: updatedReportCard[2],
+        };
+      } catch (error) {
+        console.error("Error updating report card:", error);
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to update report card",
+        });
+      }
+    }),
+
   getStudentReportCard: publicProcedure
     .input(
       z.object({

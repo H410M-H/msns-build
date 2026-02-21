@@ -351,6 +351,7 @@ model Subject {
     Timetable    Timetable[]
     Marks        Marks[]
     ReportCardDetail ReportCardDetail[]
+    ExamDatesheet ExamDatesheet[]
 }
 
 // ============ EXAM MANAGEMENT SYSTEM ============
@@ -386,6 +387,23 @@ model Exam {
     Grades        Grades          @relation(fields: [classId], references: [classId])
     Marks         Marks[]
     ReportCard    ReportCard[]
+    ExamDatesheet ExamDatesheet[]
+}
+
+model ExamDatesheet {
+    id        String   @id @default(cuid())
+    examId    String
+    subjectId String
+    date      DateTime
+    startTime String?
+    endTime   String?
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    Exam    Exam    @relation(fields: [examId], references: [examId], onDelete: Cascade)
+    Subject Subject @relation(fields: [subjectId], references: [subjectId], onDelete: Cascade)
+
+    @@unique([examId, subjectId])
 }
 
 model Marks {

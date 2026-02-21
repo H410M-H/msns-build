@@ -24,6 +24,7 @@ import { SubjectCreationDialog } from "../forms/class/SubjectCreation";
 import { SubjectAssignmentDialog } from "../forms/class/SubjectAssignment";
 import { SubjectDeletionDialog } from "../forms/class/SubjectDeletion";
 import AllotmentDialog from "../forms/class/StudentAlotment";
+import { StudentReportCardsDialog } from "../forms/class/StudentReportCardsDialog";
 
 // --- Icons ---
 import { 
@@ -418,6 +419,13 @@ export const ClassAllotmentTable = ({ classId, sessionId }: ClassAllotmentTableP
                     >
                         <Link href={`/admin/users/student/${row.original.Students.studentId}`}>View Profile</Link>
                     </Button>
+                    <div onClick={(e) => e.stopPropagation()}>
+                        <StudentReportCardsDialog
+                            studentId={row.original.Students.studentId}
+                            studentName={row.original.Students.studentName}
+                            sessionId={sessionId}
+                        />
+                    </div>
                 </div>
               </div>
             ))

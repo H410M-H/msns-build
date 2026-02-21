@@ -20,6 +20,12 @@ const createExamSchema = z.object({
   endDate: z.date(),
   totalMarks: z.number().min(1),
   passingMarks: z.number().min(1),
+  datesheet: z.array(z.object({
+    subjectId: z.string().cuid(),
+    date: z.date(),
+    startTime: z.string().optional(),
+    endTime: z.string().optional(),
+  })).optional(),
 });
 
 const updateExamSchema = z.object({
@@ -91,6 +97,19 @@ export const examRouter = createTRPCRouter({
             totalMarks: input.totalMarks,
             passingMarks: input.passingMarks,
             status: "SCHEDULED",
+            ...(input.datesheet && input.datesheet.length > 0 && {
+              ExamDatesheet: {
+                create: input.datesheet.map((ds) => ({
+                  subjectId: ds.subjectId,
+                  date: ds.date,
+                  startTime: ds.startTime,
+                  endTime: ds.endTime,
+                })),
+              },
+            }),
+          },
+          include: {
+            ExamDatesheet: true,
           },
         });
 
@@ -238,6 +257,11 @@ export const examRouter = createTRPCRouter({
                 reportCardId: true,
                 studentId: true,
                 status: true,
+              },
+            },
+            ExamDatesheet: {
+              include: {
+                Subject: { select: { subjectName: true } },
               },
             },
           },

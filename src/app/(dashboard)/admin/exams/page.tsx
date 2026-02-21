@@ -91,6 +91,14 @@ export default function ExamManagementPage() {
     endDate: "",
   });
 
+  const [datesheet, setDatesheet] = useState<Array<{
+    subjectId: string;
+    subjectName: string;
+    date: string;
+    startTime: string;
+    endTime: string;
+  }>>([]);
+
   // API queries
   const { data: sessions } = api.session.getSessions.useQuery();
   const { data: examsForSession, refetch: refetchExams } =
@@ -100,6 +108,25 @@ export default function ExamManagementPage() {
     );
 
   const { data: classes } = api.class.getClasses.useQuery();
+
+  const { data: classSubjects } = api.subject.getSubjectsByClass.useQuery(
+    { classId: selectedClass, sessionId: selectedSession },
+    { enabled: !!selectedClass && !!selectedSession }
+  );
+
+  React.useEffect(() => {
+    if (classSubjects && showCreateDialog) {
+      setDatesheet(
+        classSubjects.map((cs) => ({
+          subjectId: cs.Subject.subjectId,
+          subjectName: cs.Subject.subjectName,
+          date: "",
+          startTime: "09:00",
+          endTime: "12:00",
+        }))
+      );
+    }
+  }, [classSubjects, showCreateDialog]);
 
   // API mutations
   const createExamMutation = api.exam.createExam.useMutation();
@@ -121,6 +148,14 @@ export default function ExamManagementPage() {
         endDate: new Date(newExamData.endDate),
         totalMarks: newExamData.totalMarks,
         passingMarks: newExamData.passingMarks,
+        datesheet: datesheet
+          .filter(ds => ds.date !== "")
+          .map(ds => ({
+            subjectId: ds.subjectId,
+            date: new Date(ds.date),
+            startTime: ds.startTime,
+            endTime: ds.endTime,
+        })),
       });
 
       await refetchExams();
@@ -386,6 +421,64 @@ export default function ExamManagementPage() {
                         />
                       </div>
                     </div>
+
+                    {datesheet.length > 0 && (
+                      <div className="space-y-4 pt-4 border-t border-slate-100 dark:border-white/5">
+                        <Label className="text-sm font-bold uppercase tracking-wider text-slate-900 dark:text-white">
+                          Datesheet Configuration
+                        </Label>
+                        <div className="max-h-64 overflow-y-auto space-y-4 pr-2">
+                          {datesheet.map((ds, index) => (
+                            <div key={ds.subjectId} className="flex flex-col gap-2 p-3 rounded-lg border border-slate-100 bg-slate-50 dark:border-white/5 dark:bg-white/5">
+                              <p className="text-sm font-semibold text-slate-800 dark:text-slate-200">
+                                {ds.subjectName}
+                              </p>
+                              <div className="grid grid-cols-3 gap-2">
+                                <div className="space-y-1">
+                                  <Label className="text-[10px] text-slate-500">Date</Label>
+                                  <Input
+                                    type="date"
+                                    value={ds.date}
+                                    onChange={(e) => {
+                                      const newDs = [...datesheet];
+                                      newDs[index]!.date = e.target.value;
+                                      setDatesheet(newDs);
+                                    }}
+                                    className="h-8 text-xs border-slate-200 bg-white dark:border-white/10 dark:bg-slate-950/50 dark:text-white"
+                                  />
+                                </div>
+                                <div className="space-y-1">
+                                  <Label className="text-[10px] text-slate-500">Start Time</Label>
+                                  <Input
+                                    type="time"
+                                    value={ds.startTime}
+                                    onChange={(e) => {
+                                      const newDs = [...datesheet];
+                                      newDs[index]!.startTime = e.target.value;
+                                      setDatesheet(newDs);
+                                    }}
+                                    className="h-8 text-xs border-slate-200 bg-white dark:border-white/10 dark:bg-slate-950/50 dark:text-white"
+                                  />
+                                </div>
+                                <div className="space-y-1">
+                                  <Label className="text-[10px] text-slate-500">End Time</Label>
+                                  <Input
+                                    type="time"
+                                    value={ds.endTime}
+                                    onChange={(e) => {
+                                      const newDs = [...datesheet];
+                                      newDs[index]!.endTime = e.target.value;
+                                      setDatesheet(newDs);
+                                    }}
+                                    className="h-8 text-xs border-slate-200 bg-white dark:border-white/10 dark:bg-slate-950/50 dark:text-white"
+                                  />
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
 
                     <Button
                       onClick={handleCreateExam}
