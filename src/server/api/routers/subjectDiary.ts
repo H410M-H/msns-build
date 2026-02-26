@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
-import { Prisma } from "@prisma/client";
+import type { Prisma } from "@prisma/client";
 
 export const subjectDiaryRouter = createTRPCRouter({
   createDiary: protectedProcedure
