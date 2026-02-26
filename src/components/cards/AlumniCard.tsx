@@ -1,13 +1,19 @@
 "use client";
 
-import { 
-  CalendarCog, 
-  NotebookPen, 
-  Wallet, 
+import {
+  CalendarCog,
+  NotebookPen,
+  Wallet,
   ChevronRight,
-  type LucideIcon 
-} from 'lucide-react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
+  type LucideIcon,
+} from "lucide-react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "~/components/ui/card";
 import Link from "next/link";
 import { cn } from "~/lib/utils";
 
@@ -50,33 +56,39 @@ const services: Services[] = [
 export default function AlumniCard() {
   return (
     // COMPACT GRID: gap-3
-    <div className="grid gap-3 sm:gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3 h-full">
+    <div className="grid h-full grid-cols-1 gap-3 sm:gap-4 md:grid-cols-2 lg:grid-cols-3">
       {services.map((service, index) => {
         const Icon = service.icon;
         return (
           <Link href={service.href} key={index} className="group h-full">
-            <Card className={cn(
-              "relative h-full overflow-hidden border-white/5 bg-slate-900/60 backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:border-white/10 hover:shadow-xl"
-            )}>
-              <div className={`absolute inset-0 bg-gradient-to-br ${service.gradient} opacity-0 transition-opacity duration-500 group-hover:opacity-100`} />
-              
-              <CardHeader className="relative z-10 space-y-2 pb-2 p-4">
+            <Card
+              className={cn(
+                "relative h-full overflow-hidden border-border bg-card backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:border-border hover:shadow-xl",
+              )}
+            >
+              <div
+                className={`absolute inset-0 bg-gradient-to-br ${service.gradient} opacity-0 transition-opacity duration-500 group-hover:opacity-100`}
+              />
+
+              <CardHeader className="relative z-10 space-y-2 p-4 pb-2">
                 <div className="flex items-start justify-between">
-                  <div className={`rounded-lg bg-white/5 p-2 ring-1 ring-white/10 transition-colors group-hover:bg-white/10 ${service.iconColor}`}>
+                  <div
+                    className={`rounded-lg bg-white/5 p-2 ring-1 ring-white/10 transition-colors group-hover:bg-white/10 ${service.iconColor}`}
+                  >
                     <Icon className="h-5 w-5" />
                   </div>
-                  <div className="rounded-full border border-white/5 bg-white/5 p-1 text-slate-400 transition-colors group-hover:text-white">
+                  <div className="rounded-full border border-border bg-white/5 p-1 text-muted-foreground transition-colors group-hover:text-foreground">
                     <ChevronRight className="h-3 w-3" />
                   </div>
                 </div>
-                
-                <CardTitle className="text-base font-semibold text-white group-hover:text-emerald-100 transition-colors">
+
+                <CardTitle className="text-base font-semibold text-foreground transition-colors group-hover:text-emerald-100">
                   {service.title}
                 </CardTitle>
               </CardHeader>
-              
+
               <CardContent className="relative z-10 p-4 pt-0">
-                <CardDescription className="text-slate-400 text-xs line-clamp-2">
+                <CardDescription className="line-clamp-2 text-xs text-muted-foreground">
                   {service.description}
                 </CardDescription>
               </CardContent>

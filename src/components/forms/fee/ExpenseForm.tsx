@@ -17,8 +17,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { useToast } from "~/hooks/use-toast";
 import { z } from "zod";
 
-
-
 interface ExpenseFormProps {
   onSubmit: (data: ExpenseFormData) => void;
   initialData?: ExpenseFormData;
@@ -68,8 +66,14 @@ const expenseSchema = z.object({
   description: z.string().optional(),
   amount: z.number().min(0.01, "Amount must be greater than 0"),
   category: z.string().min(1, "Category is required"),
-  month: z.number().min(1, "Month is required").max(12, "Month must be between 1 and 12"),
-  year: z.number().min(2020, "Year must be at least 2020").max(2030, "Year must be at most 2030"),
+  month: z
+    .number()
+    .min(1, "Month is required")
+    .max(12, "Month must be between 1 and 12"),
+  year: z
+    .number()
+    .min(2020, "Year must be at least 2020")
+    .max(2030, "Year must be at most 2030"),
 });
 
 export function ExpenseForm({
@@ -89,7 +93,9 @@ export function ExpenseForm({
       year: new Date().getFullYear(),
     },
   );
-  const [errors, setErrors] = useState<Partial<Record<keyof ExpenseFormData, string>>>({});
+  const [errors, setErrors] = useState<
+    Partial<Record<keyof ExpenseFormData, string>>
+  >({});
 
   const validateForm = (data: ExpenseFormData) => {
     try {
@@ -137,11 +143,13 @@ export function ExpenseForm({
   return (
     <Card className="border-none shadow-none">
       <CardHeader>
-        <CardTitle>{initialData ? "Edit Expense" : "Add New Expense"}</CardTitle>
+        <CardTitle>
+          {initialData ? "Edit Expense" : "Add New Expense"}
+        </CardTitle>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div className="space-y-2">
               <Label htmlFor="title">Title *</Label>
               <Input
@@ -165,7 +173,10 @@ export function ExpenseForm({
                 min="0"
                 value={formData.amount || ""}
                 onChange={(e) =>
-                  handleInputChange("amount", Number.parseFloat(e.target.value) || 0)
+                  handleInputChange(
+                    "amount",
+                    Number.parseFloat(e.target.value) || 0,
+                  )
                 }
                 placeholder="0.00"
                 className={errors.amount ? "border-red-500" : ""}
@@ -181,7 +192,9 @@ export function ExpenseForm({
                 value={formData.category}
                 onValueChange={(value) => handleInputChange("category", value)}
               >
-                <SelectTrigger className={errors.category ? "border-red-500" : ""}>
+                <SelectTrigger
+                  className={errors.category ? "border-red-500" : ""}
+                >
                   <SelectValue placeholder="Select category" />
                 </SelectTrigger>
                 <SelectContent>
@@ -210,15 +223,18 @@ export function ExpenseForm({
                 </SelectTrigger>
                 <SelectContent>
                   {months.map((month) => (
-                    <SelectItem key={month.value} value={month.value.toString()}>
+                    <SelectItem
+                      key={month.value}
+                      value={month.value.toString()}
+                    >
                       {month.label}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
-{errors.month && (
-  <p className="text-sm text-red-500">{errors.month}</p>
-)}
+              {errors.month && (
+                <p className="text-sm text-red-500">{errors.month}</p>
+              )}
             </div>
 
             <div className="space-y-2">
@@ -230,7 +246,10 @@ export function ExpenseForm({
                 max="2030"
                 value={formData.year}
                 onChange={(e) =>
-                  handleInputChange("year", Number.parseInt(e.target.value) || new Date().getFullYear())
+                  handleInputChange(
+                    "year",
+                    Number.parseInt(e.target.value) || new Date().getFullYear(),
+                  )
                 }
                 className={errors.year ? "border-red-500" : ""}
               />
@@ -255,12 +274,12 @@ export function ExpenseForm({
           </div>
 
           <div className="flex gap-2">
-            <Button
-              type="submit"
-              disabled={isLoading}
-              className="flex-1"
-            >
-              {isLoading ? "Saving..." : initialData ? "Update Expense" : "Add Expense"}
+            <Button type="submit" disabled={isLoading} className="flex-1">
+              {isLoading
+                ? "Saving..."
+                : initialData
+                  ? "Update Expense"
+                  : "Add Expense"}
             </Button>
             {onCancel && (
               <Button

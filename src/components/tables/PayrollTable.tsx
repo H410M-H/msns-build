@@ -27,7 +27,7 @@ import {
   Trash2,
   Banknote,
   AlertCircle,
-  PlusCircle
+  PlusCircle,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -129,7 +129,7 @@ export function PayrollTable({ month, year }: PayrollTableProps) {
         sessionId: currentSessionId,
         limit: 100,
       },
-      { enabled: !!currentSessionId }
+      { enabled: !!currentSessionId },
     );
 
   // 3. Fetch Employees WITHOUT Salary Records
@@ -140,7 +140,7 @@ export function PayrollTable({ month, year }: PayrollTableProps) {
         year,
         sessionId: currentSessionId ?? "",
       },
-      { enabled: !!currentSessionId }
+      { enabled: !!currentSessionId },
     );
 
   // --- Mutations ---
@@ -196,8 +196,7 @@ export function PayrollTable({ month, year }: PayrollTableProps) {
     onSuccess: () => {
       toast({
         title: "Deleted",
-        description:
-          "Salary record deleted. Employee moved to Unpaid list.",
+        description: "Salary record deleted. Employee moved to Unpaid list.",
       });
       void utils.salary.getAll.invalidate();
       void utils.salary.getUnpaidEmployees.invalidate();
@@ -242,7 +241,7 @@ export function PayrollTable({ month, year }: PayrollTableProps) {
       return toast({ title: "Error", description: "No active session found" });
     if (
       confirm(
-        "This will generate PENDING payroll records for all employees who don't have one yet. Continue?"
+        "This will generate PENDING payroll records for all employees who don't have one yet. Continue?",
       )
     ) {
       setIsBulkGenerating(true);
@@ -261,7 +260,7 @@ export function PayrollTable({ month, year }: PayrollTableProps) {
   const handleDelete = (id: string) => {
     if (
       confirm(
-        "Are you sure? This will remove the payroll record and move the employee back to the 'Not Generated' list."
+        "Are you sure? This will remove the payroll record and move the employee back to the 'Not Generated' list.",
       )
     ) {
       deleteSalaryMutation.mutate({ id });
@@ -271,7 +270,7 @@ export function PayrollTable({ month, year }: PayrollTableProps) {
   const handleBulkDelete = () => {
     if (
       confirm(
-        `Delete ${selectedIds.length} records? They will be moved back to 'Not Generated'.`
+        `Delete ${selectedIds.length} records? They will be moved back to 'Not Generated'.`,
       )
     ) {
       bulkDeleteMutation.mutate({ ids: selectedIds });
@@ -331,7 +330,7 @@ export function PayrollTable({ month, year }: PayrollTableProps) {
     const printWindow = window.open("", "_blank");
     if (!printWindow) return;
     printWindow.document.write(
-      `<html><head><title>Payslip</title><script>window.onload=()=>{window.print();window.close();}</script><script src="https://cdn.tailwindcss.com"></script></head><body>${content.outerHTML}</body></html>`
+      `<html><head><title>Payslip</title><script>window.onload=()=>{window.print();window.close();}</script><script src="https://cdn.tailwindcss.com"></script></head><body>${content.outerHTML}</body></html>`,
     );
     printWindow.document.close();
   };
@@ -355,7 +354,7 @@ export function PayrollTable({ month, year }: PayrollTableProps) {
         0,
         10,
         pdf.internal.pageSize.getWidth(),
-        (canvas.height * pdf.internal.pageSize.getWidth()) / canvas.width
+        (canvas.height * pdf.internal.pageSize.getWidth()) / canvas.width,
       );
       pdf.save(`Payslip-${previewRecord.Employees.employeeName}.pdf`);
     } catch (e) {
@@ -367,8 +366,8 @@ export function PayrollTable({ month, year }: PayrollTableProps) {
 
   if (isLoadingSalaries || isLoadingMissing)
     return (
-      <div className="p-12 flex flex-col items-center justify-center text-emerald-600 animate-pulse dark:text-emerald-500">
-        <Loader2 className="w-10 h-10 animate-spin mb-4" />
+      <div className="flex animate-pulse flex-col items-center justify-center p-12 text-emerald-600 dark:text-emerald-500">
+        <Loader2 className="mb-4 h-10 w-10 animate-spin" />
         <p>Loading payroll data...</p>
       </div>
     );
@@ -376,9 +375,9 @@ export function PayrollTable({ month, year }: PayrollTableProps) {
   return (
     <div className="space-y-4">
       {/* Top Actions Bar */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:justify-between sm:items-center bg-white dark:bg-slate-900/40 p-4 rounded-xl border border-slate-200 dark:border-emerald-500/10 backdrop-blur-sm transition-colors">
+      <div className="flex flex-col gap-4 rounded-xl border border-slate-200 bg-white p-4 backdrop-blur-sm transition-colors dark:border-emerald-500/10 dark:bg-card sm:flex-row sm:items-center sm:justify-between">
         {selectedIds.length > 0 ? (
-          <div className="bg-red-50 p-2 rounded-lg flex items-center gap-4 px-4 border border-red-200 w-full sm:w-auto transition-all animate-in fade-in zoom-in-95 dark:bg-red-500/10 dark:border-red-500/20">
+          <div className="flex w-full items-center gap-4 rounded-lg border border-red-200 bg-red-50 p-2 px-4 transition-all animate-in fade-in zoom-in-95 dark:border-red-500/20 dark:bg-red-500/10 sm:w-auto">
             <span className="text-sm font-medium text-red-600 dark:text-red-400">
               {selectedIds.length} records selected
             </span>
@@ -386,16 +385,16 @@ export function PayrollTable({ month, year }: PayrollTableProps) {
               variant="destructive"
               size="sm"
               onClick={handleBulkDelete}
-              className="gap-2 bg-red-600 hover:bg-red-700 text-white border-none shadow-md"
+              className="gap-2 border-none bg-red-600 text-foreground shadow-md hover:bg-red-700"
             >
-              <Trash2 className="w-4 h-4" />
+              <Trash2 className="h-4 w-4" />
               Delete Selected
             </Button>
           </div>
         ) : (
-          <div className="text-sm text-slate-500 dark:text-slate-400 hidden sm:block">
+          <div className="hidden text-sm text-muted-foreground dark:text-muted-foreground sm:block">
             Showing all payroll records for{" "}
-            <span className="text-emerald-600 dark:text-emerald-400 font-semibold">
+            <span className="font-semibold text-emerald-600 dark:text-emerald-400">
               {MONTHS[month - 1]} {year}
             </span>
           </div>
@@ -405,21 +404,22 @@ export function PayrollTable({ month, year }: PayrollTableProps) {
           <Button
             onClick={handleBulkGenerate}
             disabled={isBulkGenerating}
-            className="w-full sm:w-auto gap-2 bg-emerald-600 hover:bg-emerald-700 text-white shadow-md dark:shadow-emerald-900/20 transition-all dark:hover:bg-emerald-500"
+            className="w-full gap-2 bg-emerald-600 text-foreground shadow-md transition-all hover:bg-emerald-700 dark:shadow-emerald-900/20 dark:hover:bg-emerald-500 sm:w-auto"
           >
             {isBulkGenerating ? (
-              <Loader2 className="w-4 h-4 animate-spin" />
+              <Loader2 className="h-4 w-4 animate-spin" />
             ) : (
-              <Zap className="w-4 h-4" />
+              <Zap className="h-4 w-4" />
             )}
             Generate All Pending ({missingEmployees.length})
           </Button>
         )}
       </div>
 
-      <div className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden backdrop-blur-sm dark:border-emerald-500/20 dark:bg-slate-900/60 dark:shadow-xl transition-colors">
+      <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm backdrop-blur-sm transition-colors dark:border-emerald-500/20 dark:bg-card dark:shadow-xl">
+        <div className="overflow-x-auto">
         <Table>
-          <TableHeader className="bg-slate-50 border-b border-slate-200 dark:bg-emerald-950/40 dark:border-emerald-500/20">
+          <TableHeader className="border-b border-slate-200 bg-slate-50 dark:border-emerald-500/20 dark:bg-emerald-950/40">
             <TableRow className="hover:bg-transparent">
               <TableHead className="w-[50px] text-slate-600 dark:text-emerald-100/80">
                 <Checkbox
@@ -428,22 +428,38 @@ export function PayrollTable({ month, year }: PayrollTableProps) {
                     selectedIds.length === salaryData?.salaries.length
                       ? true
                       : selectedIds.length > 0
-                      ? "indeterminate"
-                      : false
+                        ? "indeterminate"
+                        : false
                   }
                   onCheckedChange={handleSelectAll}
                   aria-label="Select all"
-                  className="border-slate-300 data-[state=checked]:bg-emerald-600 data-[state=checked]:text-white dark:border-emerald-500/50"
+                  className="border-slate-300 data-[state=checked]:bg-emerald-600 data-[state=checked]:text-foreground dark:border-emerald-500/50"
                 />
               </TableHead>
-              <TableHead className="text-slate-600 font-semibold dark:text-emerald-100/80">Employee</TableHead>
-              <TableHead className="text-slate-600 font-semibold dark:text-emerald-100/80">Designation</TableHead>
-              <TableHead className="text-slate-600 font-semibold dark:text-emerald-100/80">Base Salary</TableHead>
-              <TableHead className="text-slate-600 font-semibold dark:text-emerald-100/80">Allowances</TableHead>
-              <TableHead className="text-slate-600 font-semibold dark:text-emerald-100/80">Deductions</TableHead>
-              <TableHead className="text-right text-slate-600 font-semibold dark:text-emerald-100/80">Net Payable</TableHead>
-              <TableHead className="text-slate-600 font-semibold dark:text-emerald-100/80">Status</TableHead>
-              <TableHead className="text-right text-slate-600 font-semibold dark:text-emerald-100/80">Actions</TableHead>
+              <TableHead className="font-semibold text-slate-600 dark:text-emerald-100/80">
+                Employee
+              </TableHead>
+              <TableHead className="font-semibold text-slate-600 dark:text-emerald-100/80">
+                Designation
+              </TableHead>
+              <TableHead className="font-semibold text-slate-600 dark:text-emerald-100/80">
+                Base Salary
+              </TableHead>
+              <TableHead className="font-semibold text-slate-600 dark:text-emerald-100/80">
+                Allowances
+              </TableHead>
+              <TableHead className="font-semibold text-slate-600 dark:text-emerald-100/80">
+                Deductions
+              </TableHead>
+              <TableHead className="text-right font-semibold text-slate-600 dark:text-emerald-100/80">
+                Net Payable
+              </TableHead>
+              <TableHead className="font-semibold text-slate-600 dark:text-emerald-100/80">
+                Status
+              </TableHead>
+              <TableHead className="text-right font-semibold text-slate-600 dark:text-emerald-100/80">
+                Actions
+              </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -451,7 +467,7 @@ export function PayrollTable({ month, year }: PayrollTableProps) {
               <TableRow>
                 <TableCell
                   colSpan={9}
-                  className="text-center h-32 text-slate-500"
+                  className="h-32 text-center text-muted-foreground"
                 >
                   No employees found for this period.
                 </TableCell>
@@ -463,29 +479,33 @@ export function PayrollTable({ month, year }: PayrollTableProps) {
                   return (
                     <TableRow
                       key={`missing-${emp.employeeId}`}
-                      className="bg-slate-50 border-slate-200 hover:bg-slate-100 transition-colors dark:bg-slate-900/30 dark:border-emerald-500/10 dark:hover:bg-emerald-900/10"
+                      className="border-slate-200 bg-slate-50 transition-colors hover:bg-slate-100 dark:border-emerald-500/10 dark:bg-card dark:hover:bg-emerald-900/10"
                     >
                       <TableCell>
-                        <Checkbox disabled aria-label="Cannot select missing record" className="opacity-50" />
+                        <Checkbox
+                          disabled
+                          aria-label="Cannot select missing record"
+                          className="opacity-50"
+                        />
                       </TableCell>
-                      <TableCell className="font-medium text-slate-700 dark:text-slate-300">
+                      <TableCell className="font-medium text-slate-700 dark:text-foreground">
                         {emp.employeeName}
                       </TableCell>
-                      <TableCell className="text-slate-500 text-xs uppercase tracking-wider font-semibold">
+                      <TableCell className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                         {emp.designation}
                       </TableCell>
                       <TableCell
                         colSpan={4}
-                        className="text-center text-slate-400 text-xs italic dark:text-slate-500"
+                        className="text-center text-xs italic text-muted-foreground dark:text-muted-foreground"
                       >
                         Payroll not generated yet
                       </TableCell>
                       <TableCell>
                         <Badge
                           variant="outline"
-                          className="border-slate-300 text-slate-500 bg-slate-100 dark:border-slate-700 dark:text-slate-400 dark:bg-slate-800/50"
+                          className="border-slate-300 bg-slate-100 text-muted-foreground dark:border-slate-700 dark:bg-muted dark:text-muted-foreground"
                         >
-                          <AlertCircle className="w-3 h-3 mr-1" /> Not Generated
+                          <AlertCircle className="mr-1 h-3 w-3" /> Not Generated
                         </Badge>
                       </TableCell>
                       <TableCell className="text-right">
@@ -494,12 +514,12 @@ export function PayrollTable({ month, year }: PayrollTableProps) {
                           variant="outline"
                           onClick={() => handleGeneratePayroll(emp.employeeId)}
                           disabled={generatingId === emp.employeeId}
-                          className="h-7 gap-2 text-emerald-600 border-emerald-200 bg-emerald-50 hover:bg-emerald-100 hover:text-emerald-700 dark:text-emerald-400 dark:border-emerald-500/30 dark:bg-emerald-500/5 dark:hover:bg-emerald-500/10 dark:hover:text-emerald-300"
+                          className="h-7 gap-2 border-emerald-200 bg-emerald-50 text-emerald-600 hover:bg-emerald-100 hover:text-emerald-700 dark:border-emerald-500/30 dark:bg-emerald-500/5 dark:text-emerald-400 dark:hover:bg-emerald-500/10 dark:hover:text-emerald-300"
                         >
                           {generatingId === emp.employeeId ? (
-                            <Loader2 className="w-3 h-3 animate-spin" />
+                            <Loader2 className="h-3 w-3 animate-spin" />
                           ) : (
-                            <PlusCircle className="w-3 h-3" />
+                            <PlusCircle className="h-3 w-3" />
                           )}
                           Generate
                         </Button>
@@ -519,7 +539,7 @@ export function PayrollTable({ month, year }: PayrollTableProps) {
                     <TableRow
                       key={salary.id}
                       data-state={isSelected ? "selected" : undefined}
-                      className="border-slate-100 hover:bg-slate-50 transition-colors data-[state=selected]:bg-emerald-50 dark:border-emerald-500/10 dark:hover:bg-emerald-900/10 dark:data-[state=selected]:bg-emerald-900/20"
+                      className="border-slate-100 transition-colors hover:bg-slate-50 data-[state=selected]:bg-emerald-50 dark:border-emerald-500/10 dark:hover:bg-emerald-900/10 dark:data-[state=selected]:bg-emerald-900/20"
                     >
                       <TableCell>
                         <Checkbox
@@ -528,40 +548,42 @@ export function PayrollTable({ month, year }: PayrollTableProps) {
                             handleSelectOne(salary.id, checked as boolean)
                           }
                           aria-label="Select row"
-                          className="border-slate-300 data-[state=checked]:bg-emerald-600 data-[state=checked]:text-white dark:border-emerald-500/50"
+                          className="border-slate-300 data-[state=checked]:bg-emerald-600 data-[state=checked]:text-foreground dark:border-emerald-500/50"
                         />
                       </TableCell>
-                      <TableCell className="font-bold text-slate-900 dark:text-white">
+                      <TableCell className="font-bold text-slate-900 dark:text-foreground">
                         {salary.Employees.employeeName}
                       </TableCell>
-                      <TableCell className="text-slate-500 text-xs uppercase font-medium dark:text-slate-400">
+                      <TableCell className="text-xs font-medium uppercase text-muted-foreground dark:text-muted-foreground">
                         {salary.Employees.designation}
                       </TableCell>
-                      <TableCell className="text-slate-700 font-mono text-xs dark:text-slate-300">
+                      <TableCell className="font-mono text-xs text-slate-700 dark:text-foreground">
                         {salary.amount.toLocaleString()}
                       </TableCell>
-                      <TableCell className="text-emerald-600 font-mono text-xs dark:text-emerald-400">
+                      <TableCell className="font-mono text-xs text-emerald-600 dark:text-emerald-400">
                         +{salary.allowances?.toLocaleString() ?? 0}
                       </TableCell>
-                      <TableCell className="text-rose-600 font-mono text-xs dark:text-rose-400">
+                      <TableCell className="font-mono text-xs text-rose-600 dark:text-rose-400">
                         -{salary.deductions?.toLocaleString() ?? 0}
                       </TableCell>
-                      <TableCell className="text-right font-bold text-slate-900 font-mono dark:text-white">
+                      <TableCell className="text-right font-mono font-bold text-slate-900 dark:text-foreground">
                         Rs. {netPay.toLocaleString()}
                       </TableCell>
                       <TableCell>
                         <Badge
-                          variant={salary.status === "PAID" ? "default" : "outline"}
+                          variant={
+                            salary.status === "PAID" ? "default" : "outline"
+                          }
                           className={
                             salary.status === "PAID"
-                              ? "bg-emerald-600 hover:bg-emerald-700 text-white border-0"
-                              : "text-amber-600 border-amber-200 bg-amber-50 dark:text-amber-400 dark:border-amber-500/50 dark:bg-amber-500/10"
+                              ? "border-0 bg-emerald-600 text-foreground hover:bg-emerald-700"
+                              : "border-amber-200 bg-amber-50 text-amber-600 dark:border-amber-500/50 dark:bg-amber-500/10 dark:text-amber-400"
                           }
                         >
                           {salary.status === "PAID" ? (
-                            <CheckCircle className="w-3 h-3 mr-1" />
+                            <CheckCircle className="mr-1 h-3 w-3" />
                           ) : (
-                            <Clock className="w-3 h-3 mr-1" />
+                            <Clock className="mr-1 h-3 w-3" />
                           )}
                           {salary.status}
                         </Badge>
@@ -572,10 +594,10 @@ export function PayrollTable({ month, year }: PayrollTableProps) {
                             <Button
                               size="sm"
                               variant="outline"
-                              className="h-7 gap-1.5 text-xs text-emerald-600 border-emerald-200 bg-white hover:bg-emerald-50 hover:text-emerald-700 dark:text-emerald-400 dark:border-emerald-500/30 dark:bg-transparent dark:hover:bg-emerald-500/10 dark:hover:text-emerald-300"
+                              className="h-7 gap-1.5 border-emerald-200 bg-white text-xs text-emerald-600 hover:bg-emerald-50 hover:text-emerald-700 dark:border-emerald-500/30 dark:bg-transparent dark:text-emerald-400 dark:hover:bg-emerald-500/10 dark:hover:text-emerald-300"
                               onClick={() => handlePay(salary.id)}
                             >
-                              <Banknote className="w-3.5 h-3.5" />
+                              <Banknote className="h-3.5 w-3.5" />
                               Pay
                             </Button>
                           )}
@@ -585,19 +607,19 @@ export function PayrollTable({ month, year }: PayrollTableProps) {
                               <Button
                                 variant="ghost"
                                 size="icon"
-                                className="h-7 w-7 text-slate-500 hover:text-slate-900 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-white dark:hover:bg-emerald-500/20"
+                                className="h-7 w-7 text-muted-foreground hover:bg-slate-100 hover:text-slate-900 dark:text-muted-foreground dark:hover:bg-emerald-500/20 dark:hover:text-foreground"
                               >
                                 <MoreHorizontal className="h-4 w-4" />
                               </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent
                               align="end"
-                              className="bg-white border-slate-200 text-slate-700 dark:bg-slate-900 dark:border-emerald-500/20 dark:text-slate-200"
+                              className="border-slate-200 bg-white text-slate-700 dark:border-emerald-500/20 dark:bg-card dark:text-foreground"
                             >
                               <DropdownMenuLabel>Actions</DropdownMenuLabel>
                               <DropdownMenuItem
                                 onClick={() => setPreviewRecord(salary)}
-                                className="hover:bg-slate-100 focus:bg-slate-100 cursor-pointer dark:hover:bg-emerald-500/20 dark:focus:bg-emerald-500/20"
+                                className="cursor-pointer hover:bg-slate-100 focus:bg-slate-100 dark:hover:bg-emerald-500/20 dark:focus:bg-emerald-500/20"
                               >
                                 <Eye className="mr-2 h-4 w-4" /> View Slip
                               </DropdownMenuItem>
@@ -611,16 +633,18 @@ export function PayrollTable({ month, year }: PayrollTableProps) {
                                       salary.Employees.registrationNumber,
                                   })
                                 }
-                                className="hover:bg-slate-100 focus:bg-slate-100 cursor-pointer dark:hover:bg-emerald-500/20 dark:focus:bg-emerald-500/20"
+                                className="cursor-pointer hover:bg-slate-100 focus:bg-slate-100 dark:hover:bg-emerald-500/20 dark:focus:bg-emerald-500/20"
                               >
-                                <FileText className="mr-2 h-4 w-4" /> Annual Statement
+                                <FileText className="mr-2 h-4 w-4" /> Annual
+                                Statement
                               </DropdownMenuItem>
                               <DropdownMenuSeparator className="bg-slate-200 dark:bg-emerald-500/20" />
                               <DropdownMenuItem
                                 onClick={() => handleDelete(salary.id)}
-                                className="text-red-600 focus:text-red-700 focus:bg-red-50 cursor-pointer dark:text-red-400 dark:focus:text-red-300 dark:focus:bg-red-900/20"
+                                className="cursor-pointer text-red-600 focus:bg-red-50 focus:text-red-700 dark:text-red-400 dark:focus:bg-red-900/20 dark:focus:text-red-300"
                               >
-                                <Trash2 className="mr-2 h-4 w-4" /> Delete Record
+                                <Trash2 className="mr-2 h-4 w-4" /> Delete
+                                Record
                               </DropdownMenuItem>
                             </DropdownMenuContent>
                           </DropdownMenu>
@@ -633,6 +657,7 @@ export function PayrollTable({ month, year }: PayrollTableProps) {
             )}
           </TableBody>
         </Table>
+                      </div>
       </div>
 
       {/* Slip Preview Dialog */}
@@ -640,66 +665,72 @@ export function PayrollTable({ month, year }: PayrollTableProps) {
         open={!!previewRecord}
         onOpenChange={(open) => !open && setPreviewRecord(null)}
       >
-        <DialogContent className="max-w-3xl bg-white border-slate-200 text-slate-900 dark:bg-slate-900 dark:border-emerald-500/20 dark:text-white">
+        <DialogContent className="max-w-3xl border-slate-200 bg-white text-slate-900 dark:border-emerald-500/20 dark:bg-card dark:text-foreground">
           <DialogHeader>
             <DialogTitle>Payslip Preview</DialogTitle>
           </DialogHeader>
-          <div className="flex justify-center bg-slate-50 p-4 rounded-md overflow-auto max-h-[70vh] border border-slate-200 dark:bg-slate-950/50 dark:border-emerald-500/10">
+          <div className="flex max-h-[70vh] justify-center overflow-auto rounded-md border border-slate-200 bg-slate-50 p-4 dark:border-emerald-500/10 dark:bg-card">
             {previewRecord && (
               <div
                 ref={slipRef}
-                className="bg-white p-8 w-[210mm] min-h-[140mm] shadow-md text-sm text-gray-800"
+                className="min-h-[140mm] w-[210mm] bg-white p-8 text-sm text-gray-800 shadow-md"
               >
-                <div className="text-center border-b pb-4 mb-6">
+                <div className="mb-6 border-b pb-4 text-center">
                   <h1 className="text-2xl font-bold uppercase tracking-wide text-slate-900">
                     Academic Institute
                   </h1>
-                  <p className="text-slate-500">Salary Slip</p>
-                  <p className="font-medium mt-1">
+                  <p className="text-muted-foreground">Salary Slip</p>
+                  <p className="mt-1 font-medium">
                     {MONTHS[previewRecord.month - 1]} {previewRecord.year}
                   </p>
                 </div>
-                <div className="grid grid-cols-2 gap-8 mb-6">
+                <div className="mb-6 grid grid-cols-2 gap-8">
                   <div>
-                    <div className="flex justify-between py-1 border-b border-gray-100">
-                      <span className="text-slate-500">Employee Name</span>
+                    <div className="flex justify-between border-b border-gray-100 py-1">
+                      <span className="text-muted-foreground">
+                        Employee Name
+                      </span>
                       <span className="font-semibold">
                         {previewRecord.Employees.employeeName}
                       </span>
                     </div>
-                    <div className="flex justify-between py-1 border-b border-gray-100">
-                      <span className="text-slate-500">Designation</span>
+                    <div className="flex justify-between border-b border-gray-100 py-1">
+                      <span className="text-muted-foreground">Designation</span>
                       <span>{previewRecord.Employees.designation}</span>
                     </div>
                   </div>
                   <div>
-                    <div className="flex justify-between py-1 border-b border-gray-100">
-                      <span className="text-slate-500">Employee ID</span>
+                    <div className="flex justify-between border-b border-gray-100 py-1">
+                      <span className="text-muted-foreground">Employee ID</span>
                       <span className="font-mono">
                         {previewRecord.Employees.registrationNumber || "N/A"}
                       </span>
                     </div>
-                    <div className="flex justify-between py-1 border-b border-gray-100">
-                      <span className="text-slate-500">Payment Date</span>
+                    <div className="flex justify-between border-b border-gray-100 py-1">
+                      <span className="text-muted-foreground">
+                        Payment Date
+                      </span>
                       <span>
                         {previewRecord.paymentDate
-                          ? new Date(previewRecord.paymentDate).toLocaleDateString()
+                          ? new Date(
+                              previewRecord.paymentDate,
+                            ).toLocaleDateString()
                           : "Pending"}
                       </span>
                     </div>
                   </div>
                 </div>
-                <div className="mb-6 border rounded-sm">
-                  <div className="grid grid-cols-2 bg-slate-100 font-semibold p-2 border-b">
+                <div className="mb-6 rounded-sm border">
+                  <div className="grid grid-cols-2 border-b bg-slate-100 p-2 font-semibold">
                     <div>Description</div>
                     <div className="text-right">Amount (PKR)</div>
                   </div>
-                  <div className="p-2 border-b flex justify-between">
+                  <div className="flex justify-between border-b p-2">
                     <span>Base Salary</span>
                     <span>{previewRecord.amount.toLocaleString()}</span>
                   </div>
                   {(previewRecord.allowances ?? 0) > 0 && (
-                    <div className="p-2 border-b flex justify-between text-green-700">
+                    <div className="flex justify-between border-b p-2 text-green-700">
                       <span>Allowances</span>
                       <span>
                         +{(previewRecord.allowances ?? 0).toLocaleString()}
@@ -707,16 +738,16 @@ export function PayrollTable({ month, year }: PayrollTableProps) {
                     </div>
                   )}
                   {(previewRecord.deductions ?? 0) > 0 && (
-                    <div className="p-2 border-b flex justify-between text-red-600">
+                    <div className="flex justify-between border-b p-2 text-red-600">
                       <span>Deductions</span>
                       <span>
                         -{(previewRecord.deductions ?? 0).toLocaleString()}
                       </span>
                     </div>
                   )}
-                  <div className="p-4 bg-slate-50 flex justify-between items-center mt-auto">
-                    <span className="font-bold text-lg">Net Pay</span>
-                    <span className="font-bold text-xl text-slate-900">
+                  <div className="mt-auto flex items-center justify-between bg-slate-50 p-4">
+                    <span className="text-lg font-bold">Net Pay</span>
+                    <span className="text-xl font-bold text-slate-900">
                       PKR{" "}
                       {(
                         previewRecord.amount +
@@ -727,7 +758,7 @@ export function PayrollTable({ month, year }: PayrollTableProps) {
                     </span>
                   </div>
                 </div>
-                <div className="mt-12 text-center text-xs text-slate-400">
+                <div className="mt-12 text-center text-xs text-muted-foreground">
                   <p>Computer-generated document.</p>
                 </div>
               </div>
@@ -737,19 +768,19 @@ export function PayrollTable({ month, year }: PayrollTableProps) {
             <Button
               variant="outline"
               onClick={handlePrint}
-              className="gap-2 border-emerald-200 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 dark:border-emerald-500/30 dark:text-emerald-400 dark:hover:text-emerald-300 dark:hover:bg-emerald-500/10"
+              className="gap-2 border-emerald-200 text-emerald-600 hover:bg-emerald-50 hover:text-emerald-700 dark:border-emerald-500/30 dark:text-emerald-400 dark:hover:bg-emerald-500/10 dark:hover:text-emerald-300"
             >
-              <Printer className="w-4 h-4" /> Print
+              <Printer className="h-4 w-4" /> Print
             </Button>
             <Button
               onClick={handleDownloadPdf}
               disabled={isDownloading}
-              className="gap-2 bg-emerald-600 hover:bg-emerald-700 text-white dark:hover:bg-emerald-500"
+              className="gap-2 bg-emerald-600 text-foreground hover:bg-emerald-700 dark:hover:bg-emerald-500"
             >
               {isDownloading ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
+                <Loader2 className="h-4 w-4 animate-spin" />
               ) : (
-                <Download className="w-4 h-4" />
+                <Download className="h-4 w-4" />
               )}
               Download PDF
             </Button>

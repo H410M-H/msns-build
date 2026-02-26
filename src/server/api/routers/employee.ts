@@ -3,7 +3,7 @@ import { createTRPCRouter, publicProcedure, protectedProcedure } from "../trpc";
 import { z } from "zod";
 import { generatePdf } from "~/lib/pdf-reports";
 import { userReg } from "~/lib/utils";
-import { hash } from "bcrypt";
+import { hash } from "bcryptjs";
 
 // Define schema locally
 const employeeSchema = z.object({
@@ -30,7 +30,13 @@ const employeeSchema = z.object({
   cv: z.string().optional(),
 });
 
-type AccountTypeEnum = "ADMIN" | "PRINCIPAL" | "HEAD" | "CLERK" | "TEACHER" | "WORKER";
+type AccountTypeEnum =
+  | "ADMIN"
+  | "PRINCIPAL"
+  | "HEAD"
+  | "CLERK"
+  | "TEACHER"
+  | "WORKER";
 
 export const EmployeeRouter = createTRPCRouter({
   // Get employee profile by User ID (via accountId matching registrationNumber)
@@ -205,7 +211,7 @@ export const EmployeeRouter = createTRPCRouter({
     .input(
       z.object({
         employeeIds: z.string().array(),
-      })
+      }),
     )
     .mutation(async ({ ctx, input }) => {
       try {
@@ -236,7 +242,7 @@ export const EmployeeRouter = createTRPCRouter({
           "TEACHER",
           "WORKER",
         ]),
-      })
+      }),
     )
     .query(async ({ ctx, input }) => {
       try {
@@ -259,7 +265,7 @@ export const EmployeeRouter = createTRPCRouter({
     try {
       const employees = await ctx.db.employees.findMany();
       // Map data to match report requirements
-      const reportData = employees.map(emp => ({
+      const reportData = employees.map((emp) => ({
         ...emp,
         additionalContact: emp.additionalContact ?? "N/A",
         profilePic: emp.profilePic ?? "",
@@ -273,7 +279,11 @@ export const EmployeeRouter = createTRPCRouter({
         { key: "mobileNo", label: "Mobile" },
       ];
 
-      const pdfBuffer = await generatePdf(reportData, headers, "Employee Report");
+      const pdfBuffer = await generatePdf(
+        reportData,
+        headers,
+        "Employee Report",
+      );
 
       return {
         pdf: Buffer.from(pdfBuffer).toString("base64"),

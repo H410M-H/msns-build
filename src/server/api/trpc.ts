@@ -1,4 +1,3 @@
-
 import { initTRPC, TRPCError } from "@trpc/server";
 import superjson from "superjson";
 import { ZodError } from "zod";
@@ -31,7 +30,6 @@ const t = initTRPC.context<typeof createTRPCContext>().create({
 });
 
 export const createCallerFactory = t.createCallerFactory;
-
 
 export const createTRPCRouter = t.router;
 const timingMiddleware = t.middleware(async ({ next, path }) => {

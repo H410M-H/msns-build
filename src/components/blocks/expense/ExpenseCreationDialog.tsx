@@ -11,7 +11,10 @@ import {
 import { Button } from "~/components/ui/button";
 import { useRouter } from "next/navigation";
 import { api } from "~/trpc/react";
-import { ExpenseForm, type ExpenseFormData } from "~/components/forms/fee/ExpenseForm";
+import {
+  ExpenseForm,
+  type ExpenseFormData,
+} from "~/components/forms/fee/ExpenseForm";
 import { useToast } from "~/hooks/use-toast";
 
 export function ExpenseCreationDialog() {

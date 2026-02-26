@@ -1,5 +1,5 @@
-import React from 'react';
-import { useState } from 'react';
+import React from "react";
+import { useState } from "react";
 import { Button } from "~/components/ui/button";
 import { Calendar } from "~/components/ui/calendar";
 import { Input } from "~/components/ui/input";
@@ -23,7 +23,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "~/components/ui/popover";
-import { Plus, CalendarDays, Loader2 } from 'lucide-react';
+import { Plus, CalendarDays, Loader2 } from "lucide-react";
 import { format, addYears } from "date-fns";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -41,7 +41,7 @@ const formSchema = z.object({
 export function SessionCreationDialog() {
   const [isOpen, setIsOpen] = useState(false);
   const utils = api.useContext();
-  
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -59,11 +59,11 @@ export function SessionCreationDialog() {
 
   const onSubmit = (values: z.infer<typeof formSchema>) => {
     const sessionTo = addYears(values.sessionFrom, 1);
-    
+
     createSession.mutate({
       sessionName: values.sessionName,
-      sessionFrom: format(values.sessionFrom, 'yyyy-MM-dd'),
-      sessionTo: format(sessionTo, 'yyyy-MM-dd'),
+      sessionFrom: format(values.sessionFrom, "yyyy-MM-dd"),
+      sessionTo: format(sessionTo, "yyyy-MM-dd"),
     });
   };
 
@@ -75,12 +75,12 @@ export function SessionCreationDialog() {
           New Session
         </Button>
       </DialogTrigger>
-      
+
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>Create New Academic Session</DialogTitle>
         </DialogHeader>
-        
+
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             <FormField
@@ -99,7 +99,7 @@ export function SessionCreationDialog() {
                 </FormItem>
               )}
             />
-            
+
             <FormField
               control={form.control}
               name="sessionFrom"
@@ -113,7 +113,7 @@ export function SessionCreationDialog() {
                           variant="outline"
                           className={cn(
                             "w-full pl-3 text-left font-normal",
-                            !field.value && "text-muted-foreground"
+                            !field.value && "text-muted-foreground",
                           )}
                         >
                           {field.value ? (
@@ -137,14 +137,15 @@ export function SessionCreationDialog() {
                   </Popover>
                   {field.value && (
                     <p className="text-sm text-muted-foreground">
-                      Session will end on: {format(addYears(field.value, 1), "PPP")}
+                      Session will end on:{" "}
+                      {format(addYears(field.value, 1), "PPP")}
                     </p>
                   )}
                   <FormMessage />
                 </FormItem>
               )}
             />
-            
+
             <Button
               type="submit"
               className="w-full"

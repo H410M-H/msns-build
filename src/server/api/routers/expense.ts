@@ -57,7 +57,7 @@ export const expensesRouter = createTRPCRouter({
         searchTerm: z.string().optional(),
         page: z.number().min(1).default(1),
         pageSize: z.number().min(1).max(100).default(10),
-      })
+      }),
     )
     .query(async ({ ctx, input }) => {
       try {
@@ -72,7 +72,9 @@ export const expensesRouter = createTRPCRouter({
         if (input.searchTerm) {
           where.OR = [
             { title: { contains: input.searchTerm, mode: "insensitive" } },
-            { description: { contains: input.searchTerm, mode: "insensitive" } },
+            {
+              description: { contains: input.searchTerm, mode: "insensitive" },
+            },
           ];
         }
 
@@ -137,7 +139,7 @@ export const expensesRouter = createTRPCRouter({
       z.object({
         id: z.string(),
         data: expenseSchema.partial(),
-      })
+      }),
     )
     .mutation(async ({ ctx, input }) => {
       try {
@@ -212,7 +214,7 @@ export const expensesRouter = createTRPCRouter({
       z.object({
         month: z.number().min(1).max(12),
         year: z.number(),
-      })
+      }),
     )
     .query(async ({ ctx, input }) => {
       try {
@@ -224,12 +226,19 @@ export const expensesRouter = createTRPCRouter({
           orderBy: { createdAt: "desc" },
         });
 
-        const totalByCategory = expenses.reduce((acc, expense) => {
-          acc[expense.category] = (acc[expense.category] ?? 0) + expense.amount;
-          return acc;
-        }, {} as Record<string, number>);
+        const totalByCategory = expenses.reduce(
+          (acc, expense) => {
+            acc[expense.category] =
+              (acc[expense.category] ?? 0) + expense.amount;
+            return acc;
+          },
+          {} as Record<string, number>,
+        );
 
-        const totalAmount = expenses.reduce((sum, expense) => sum + expense.amount, 0);
+        const totalAmount = expenses.reduce(
+          (sum, expense) => sum + expense.amount,
+          0,
+        );
 
         return {
           expenses,
@@ -253,7 +262,7 @@ export const expensesRouter = createTRPCRouter({
         startYear: z.number(),
         endMonth: z.number().min(1).max(12).optional(),
         endYear: z.number().optional(),
-      })
+      }),
     )
     .query(async ({ ctx, input }) => {
       try {
@@ -301,23 +310,26 @@ export const expensesRouter = createTRPCRouter({
           byCategory: Record<string, number>;
         };
 
-        const summary = expenses.reduce((acc, expense) => {
-          const monthKey = `${expense.year}-${expense.month}`;
+        const summary = expenses.reduce(
+          (acc, expense) => {
+            const monthKey = `${expense.year}-${expense.month}`;
 
-          acc[monthKey] ??= {
+            acc[monthKey] ??= {
               month: expense.month,
               year: expense.year,
               total: 0,
               byCategory: {},
             };
 
-          const entry = acc[monthKey]; // non-null assertion safe due to check above
-          entry.total += expense.amount;
-          entry.byCategory[expense.category] =
-            (entry.byCategory[expense.category] ?? 0) + expense.amount;
+            const entry = acc[monthKey]; // non-null assertion safe due to check above
+            entry.total += expense.amount;
+            entry.byCategory[expense.category] =
+              (entry.byCategory[expense.category] ?? 0) + expense.amount;
 
-          return acc;
-        }, {} as Record<string, MonthSummary>);
+            return acc;
+          },
+          {} as Record<string, MonthSummary>,
+        );
 
         return {
           period: {
@@ -334,7 +346,7 @@ export const expensesRouter = createTRPCRouter({
           }),
           total: Object.values(summary).reduce(
             (sum, month) => sum + month.total,
-            0
+            0,
           ),
         };
       } catch (error) {

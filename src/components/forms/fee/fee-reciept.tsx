@@ -147,13 +147,13 @@ export function FeeReceipt({
         {/* Receipt Info */}
         <div className="mb-8 flex justify-between">
           <div>
-            <p className="text-sm uppercase tracking-wider text-slate-500">
+            <p className="text-sm uppercase tracking-wider text-muted-foreground">
               Receipt No
             </p>
             <p className="font-mono text-lg font-bold">{receiptNo}</p>
           </div>
           <div className="text-right">
-            <p className="text-sm uppercase tracking-wider text-slate-500">
+            <p className="text-sm uppercase tracking-wider text-muted-foreground">
               Date
             </p>
             <p className="font-medium">
@@ -166,30 +166,30 @@ export function FeeReceipt({
 
         {/* Student Info */}
         <div className="mb-8 rounded-lg border border-slate-100 bg-slate-50 p-6">
-          <h3 className="mb-4 text-xs font-bold uppercase tracking-wider text-slate-400">
+          <h3 className="mb-4 text-xs font-bold uppercase tracking-wider text-muted-foreground">
             Student Details
           </h3>
           <div className="grid grid-cols-2 gap-x-8 gap-y-4 text-sm">
             <div className="flex justify-between border-b border-slate-200 pb-1">
-              <span className="text-slate-500">Name</span>
+              <span className="text-muted-foreground">Name</span>
               <span className="font-medium text-slate-900">
                 {student.studentName}
               </span>
             </div>
             <div className="flex justify-between border-b border-slate-200 pb-1">
-              <span className="text-slate-500">Reg. No</span>
+              <span className="text-muted-foreground">Reg. No</span>
               <span className="font-mono text-slate-900">
                 {student.registrationNumber}
               </span>
             </div>
             <div className="flex justify-between border-b border-slate-200 pb-1">
-              <span className="text-slate-500">Class</span>
+              <span className="text-muted-foreground">Class</span>
               <span className="font-medium text-slate-900">
                 {className} - {section}
               </span>
             </div>
             <div className="flex justify-between border-b border-slate-200 pb-1">
-              <span className="text-slate-500">Father Name</span>
+              <span className="text-muted-foreground">Father Name</span>
               <span className="font-medium text-slate-900">
                 {student.fatherName}
               </span>
@@ -199,7 +199,7 @@ export function FeeReceipt({
 
         {/* Fee Breakdown */}
         <div className="mb-8">
-          <h3 className="mb-4 text-xs font-bold uppercase tracking-wider text-slate-400">
+          <h3 className="mb-4 text-xs font-bold uppercase tracking-wider text-muted-foreground">
             Fee Details ({months[(entry.month ?? 1) - 1]} {entry.year})
           </h3>
           <table className="w-full text-sm">
@@ -226,7 +226,7 @@ export function FeeReceipt({
                   Rs. {entry.fees.examFund.toLocaleString()}
                 </td>
               </tr>
-              {(entry.fees.computerLabFund && entry.fees.computerLabFund > 0) ? (
+              {entry.fees.computerLabFund && entry.fees.computerLabFund > 0 ? (
                 <tr>
                   <td className="p-3">Computer Lab Fund</td>
                   <td className="p-3 text-right">
@@ -268,7 +268,7 @@ export function FeeReceipt({
         </div>
 
         {/* Footer */}
-        <div className="mt-12 border-t border-slate-100 pt-6 text-center text-xs text-slate-400">
+        <div className="mt-12 border-t border-slate-100 pt-6 text-center text-xs text-muted-foreground">
           <p>This is a computer-generated receipt.</p>
           <p>Generated on {new Date().toLocaleString()}</p>
         </div>

@@ -1,6 +1,6 @@
-import * as React from "react"
-import { Dialog, DialogContent, DialogTitle } from "~/components/ui/dialog"
-import { VisuallyHidden } from "@radix-ui/react-visually-hidden"
+import * as React from "react";
+import { Dialog, DialogContent, DialogTitle } from "~/components/ui/dialog";
+import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 
 interface DialogWithTitleProps {
   children: React.ReactNode;
@@ -9,7 +9,12 @@ interface DialogWithTitleProps {
   title?: string;
 }
 
-export function DialogWithTitle({ children, open, onOpenChange, title = "Dialog Content" }: DialogWithTitleProps) {
+export function DialogWithTitle({
+  children,
+  open,
+  onOpenChange,
+  title = "Dialog Content",
+}: DialogWithTitleProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
@@ -19,6 +24,5 @@ export function DialogWithTitle({ children, open, onOpenChange, title = "Dialog 
         {children}
       </DialogContent>
     </Dialog>
-  )
+  );
 }
-

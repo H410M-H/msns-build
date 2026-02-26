@@ -1,7 +1,4 @@
-import {
-  SidebarInset,
-  SidebarProvider,
-} from "~/components/ui/sidebar";
+import { SidebarInset, SidebarProvider } from "~/components/ui/sidebar";
 import { AppSidebar } from "~/components/blocks/sidebar/app-sidebar";
 
 export default async function HeadDashboardLayout({

@@ -1,41 +1,54 @@
-"use client"
+"use client";
 
-import type React from "react"
-import { useState } from "react"
-import { api } from "~/trpc/react"
-import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "~/components/ui/table"
-import { Badge } from "~/components/ui/badge"
-import { Skeleton } from "~/components/ui/skeleton"
-import { Progress } from "~/components/ui/progress"
-import { Calendar, TrendingUp, DollarSign, Users } from "lucide-react"
-import { cn } from "~/lib/utils"
+import type React from "react";
+import { useState } from "react";
+import { api } from "~/trpc/react";
+import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "~/components/ui/select";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "~/components/ui/table";
+import { Badge } from "~/components/ui/badge";
+import { Skeleton } from "~/components/ui/skeleton";
+import { Progress } from "~/components/ui/progress";
+import { Calendar, TrendingUp, DollarSign, Users } from "lucide-react";
+import { cn } from "~/lib/utils";
 
 interface PaymentInfo {
-  isPaid: boolean
-  studentId: string
-  amount: number
+  isPaid: boolean;
+  studentId: string;
+  amount: number;
 }
 
 interface ClassFeeData {
-  className: string
-  studentCount: number
-  totalExpected: number
-  totalPaid: number
-  payments: PaymentInfo[]
+  className: string;
+  studentCount: number;
+  totalExpected: number;
+  totalPaid: number;
+  payments: PaymentInfo[];
 }
 
 interface MonthlyFeeData {
-  grandExpected: number
-  grandTotal: number
-  outstanding: number
-  feesByClass: ClassFeeData[]
+  grandExpected: number;
+  grandTotal: number;
+  outstanding: number;
+  feesByClass: ClassFeeData[];
 }
 
 interface MonthlyFeeSummaryProps {
-  sessionId: string
-  year: number
+  sessionId: string;
+  year: number;
 }
 
 const months = [
@@ -51,22 +64,28 @@ const months = [
   { value: 10, label: "October" },
   { value: 11, label: "November" },
   { value: 12, label: "December" },
-]
+];
 
 export function MonthlyFeeSummary({ sessionId, year }: MonthlyFeeSummaryProps) {
-  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1)
+  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
 
-  const monthlyData = api.fee.getFeeByEachMonth.useQuery({ month: selectedMonth, year }, { enabled: !!sessionId })
+  const monthlyData = api.fee.getFeeByEachMonth.useQuery(
+    { month: selectedMonth, year },
+    { enabled: !!sessionId },
+  );
 
-  const data = monthlyData.data as MonthlyFeeData | undefined
+  const data = monthlyData.data as MonthlyFeeData | undefined;
 
   return (
     <div className="space-y-6">
       {/* Month Selector and Summary */}
-      <div className="flex flex-col lg:flex-row gap-4 lg:items-center lg:justify-between">
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <div className="flex items-center gap-3">
-          <Calendar className="h-5 w-5 text-slate-500" />
-          <Select value={String(selectedMonth)} onValueChange={(v) => setSelectedMonth(Number(v))}>
+          <Calendar className="h-5 w-5 text-muted-foreground" />
+          <Select
+            value={String(selectedMonth)}
+            onValueChange={(v) => setSelectedMonth(Number(v))}
+          >
             <SelectTrigger className="w-[180px] bg-white">
               <SelectValue placeholder="Select Month" />
             </SelectTrigger>
@@ -78,7 +97,7 @@ export function MonthlyFeeSummary({ sessionId, year }: MonthlyFeeSummaryProps) {
               ))}
             </SelectContent>
           </Select>
-          <span className="text-slate-600 font-medium">{year}</span>
+          <span className="font-medium text-slate-600">{year}</span>
         </div>
 
         {data && (
@@ -109,7 +128,8 @@ export function MonthlyFeeSummary({ sessionId, year }: MonthlyFeeSummaryProps) {
       <Card className="bg-white">
         <CardHeader>
           <CardTitle className="text-lg">
-            Class-wise Collection for {months.find((m) => m.value === selectedMonth)?.label} {year}
+            Class-wise Collection for{" "}
+            {months.find((m) => m.value === selectedMonth)?.label} {year}
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -122,7 +142,9 @@ export function MonthlyFeeSummary({ sessionId, year }: MonthlyFeeSummaryProps) {
                 ))}
             </div>
           ) : !data?.feesByClass.length ? (
-            <div className="text-center py-8 text-slate-500">No fee data for this month</div>
+            <div className="py-8 text-center text-muted-foreground">
+              No fee data for this month
+            </div>
           ) : (
             <div className="overflow-x-auto">
               <Table>
@@ -138,13 +160,23 @@ export function MonthlyFeeSummary({ sessionId, year }: MonthlyFeeSummaryProps) {
                 </TableHeader>
                 <TableBody>
                   {data.feesByClass.map((cls: ClassFeeData) => {
-                    const collectionRate = cls.totalExpected > 0 ? (cls.totalPaid / cls.totalExpected) * 100 : 0
-                    const paidStudents = cls.payments.filter((p: PaymentInfo) => p.isPaid).length
+                    const collectionRate =
+                      cls.totalExpected > 0
+                        ? (cls.totalPaid / cls.totalExpected) * 100
+                        : 0;
+                    const paidStudents = cls.payments.filter(
+                      (p: PaymentInfo) => p.isPaid,
+                    ).length;
 
                     return (
-                      <TableRow key={cls.className} className="hover:bg-slate-50">
+                      <TableRow
+                        key={cls.className}
+                        className="hover:bg-slate-50"
+                      >
                         <TableCell>
-                          <span className="font-medium text-slate-900">{cls.className}</span>
+                          <span className="font-medium text-slate-900">
+                            {cls.className}
+                          </span>
                         </TableCell>
                         <TableCell className="text-right">
                           <Badge variant="outline" className="font-mono">
@@ -158,14 +190,18 @@ export function MonthlyFeeSummary({ sessionId, year }: MonthlyFeeSummaryProps) {
                           Rs. {cls.totalPaid.toLocaleString()}
                         </TableCell>
                         <TableCell className="text-right font-medium text-orange-600">
-                          Rs. {(cls.totalExpected - cls.totalPaid).toLocaleString()}
+                          Rs.{" "}
+                          {(cls.totalExpected - cls.totalPaid).toLocaleString()}
                         </TableCell>
                         <TableCell className="w-[150px]">
                           <div className="flex items-center gap-2">
-                            <Progress value={collectionRate} className="h-2 flex-1" />
+                            <Progress
+                              value={collectionRate}
+                              className="h-2 flex-1"
+                            />
                             <span
                               className={cn(
-                                "text-xs font-medium w-12 text-right",
+                                "w-12 text-right text-xs font-medium",
                                 collectionRate >= 90
                                   ? "text-emerald-600"
                                   : collectionRate >= 50
@@ -178,7 +214,7 @@ export function MonthlyFeeSummary({ sessionId, year }: MonthlyFeeSummaryProps) {
                           </div>
                         </TableCell>
                       </TableRow>
-                    )
+                    );
                   })}
                 </TableBody>
               </Table>
@@ -187,14 +223,14 @@ export function MonthlyFeeSummary({ sessionId, year }: MonthlyFeeSummaryProps) {
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }
 
 interface SummaryBadgeProps {
-  icon: React.ElementType
-  label: string
-  value: string
-  color: "blue" | "green" | "orange"
+  icon: React.ElementType;
+  label: string;
+  value: string;
+  color: "blue" | "green" | "orange";
 }
 
 function SummaryBadge({ icon: Icon, label, value, color }: SummaryBadgeProps) {
@@ -202,15 +238,20 @@ function SummaryBadge({ icon: Icon, label, value, color }: SummaryBadgeProps) {
     blue: "bg-blue-50 text-blue-700 border-blue-200",
     green: "bg-emerald-50 text-emerald-700 border-emerald-200",
     orange: "bg-orange-50 text-orange-700 border-orange-200",
-  }
+  };
 
   return (
-    <div className={cn("flex items-center gap-2 px-3 py-2 rounded-lg border", colorClasses[color])}>
+    <div
+      className={cn(
+        "flex items-center gap-2 rounded-lg border px-3 py-2",
+        colorClasses[color],
+      )}
+    >
       <Icon className="h-4 w-4" />
       <div>
         <p className="text-xs opacity-80">{label}</p>
         <p className="font-semibold">{value}</p>
       </div>
     </div>
-  )
+  );
 }

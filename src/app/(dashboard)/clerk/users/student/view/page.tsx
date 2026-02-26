@@ -9,27 +9,27 @@ export default function StudentsTablePage() {
   ];
 
   return (
-    <section className="min-h-screen w-full bg-slate-950 overflow-x-hidden selection:bg-emerald-500/30">
+    <section className="min-h-screen w-full overflow-x-hidden bg-card selection:bg-emerald-500/30">
       {/* BACKGROUND START - Consistent across your app */}
-      <div className="inset-0 z-0 pointer-events-none fixed">
+      <div className="pointer-events-none fixed inset-0 z-0">
         <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(45,255,196,0.05)_1px,transparent_1px),linear-gradient(to_bottom,rgba(45,255,196,0.05)_1px,transparent_1px)] bg-[size:3rem_3rem] sm:bg-[size:4rem_4rem]" />
         <div className="absolute inset-0 bg-gradient-to-br from-emerald-900/20 via-slate-950/80 to-slate-950" />
       </div>
       {/* BACKGROUND END */}
 
-      <div className="w-full relative z-10 flex flex-col min-h-screen">
+      <div className="relative z-10 flex min-h-screen w-full flex-col">
         <PageHeader breadcrumbs={breadcrumbs} />
 
-        <div className="flex-1 container mx-auto px-4 sm:px-6 lg:px-8 py-8 pt-20">
-          <div className="flex flex-col gap-8 max-w-[1600px] mx-auto animate-in fade-in slide-in-from-bottom-4 duration-700">
-            
+        <div className="container mx-auto flex-1 px-4 py-8 pt-20 sm:px-6 lg:px-8">
+          <div className="mx-auto flex max-w-[1600px] flex-col gap-8 duration-700 animate-in fade-in slide-in-from-bottom-4">
             {/* Header Section */}
             <div className="space-y-2">
-              <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-white font-serif">
+              <h1 className="font-serif text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
                 Registered Students
               </h1>
-              <p className="text-slate-400 text-sm sm:text-base max-w-2xl">
-                Manage the complete directory of registered students. Use the table below to filter, sort, edit, or export student data.
+              <p className="max-w-2xl text-sm text-muted-foreground sm:text-base">
+                Manage the complete directory of registered students. Use the
+                table below to filter, sort, edit, or export student data.
               </p>
             </div>
 
@@ -37,9 +37,8 @@ export default function StudentsTablePage() {
 
             {/* Table Container */}
             <div className="backdrop-blur-sm">
-                <StudentTable />
+              <StudentTable />
             </div>
-
           </div>
         </div>
       </div>

@@ -1,7 +1,7 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Button } from "~/components/ui/button"
+import { useState } from "react";
+import { Button } from "~/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -10,23 +10,23 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "~/components/ui/dialog"
-import { Input } from "~/components/ui/input"
-import { Label } from "~/components/ui/label"
-import { useToast } from "~/hooks/use-toast"
-import { api } from "~/trpc/react"
+} from "~/components/ui/dialog";
+import { Input } from "~/components/ui/input";
+import { Label } from "~/components/ui/label";
+import { useToast } from "~/hooks/use-toast";
+import { api } from "~/trpc/react";
 
 type FeeAllotmentDialogProps = {
-  sfcId: string
-  studentClassId: string
-  feeId: string
-  
-  initialDiscount: number
-  initialDiscountPercent: number
-  initialDiscountDescription: string
-  onUpdate: () => void
-  onRemove: () => void
-}
+  sfcId: string;
+  studentClassId: string;
+  feeId: string;
+
+  initialDiscount: number;
+  initialDiscountPercent: number;
+  initialDiscountDescription: string;
+  onUpdate: () => void;
+  onRemove: () => void;
+};
 
 export default function FeeAllotmentDialog({
   sfcId,
@@ -36,29 +36,33 @@ export default function FeeAllotmentDialog({
   onUpdate,
   onRemove,
 }: FeeAllotmentDialogProps) {
-  const [open, setOpen] = useState(false)
-  const [discount, setDiscount] = useState(initialDiscount.toString())
-  const [discountbypercent, setDiscountbypercent] = useState(initialDiscountPercent.toString())
-  const [discountDescription, setDiscountDescription] = useState(initialDiscountDescription)
+  const [open, setOpen] = useState(false);
+  const [discount, setDiscount] = useState(initialDiscount.toString());
+  const [discountbypercent, setDiscountbypercent] = useState(
+    initialDiscountPercent.toString(),
+  );
+  const [discountDescription, setDiscountDescription] = useState(
+    initialDiscountDescription,
+  );
 
-  const { toast } = useToast()
+  const { toast } = useToast();
 
   const updateFeeAssignment = api.fee.updateFeePayment.useMutation({
     onSuccess: () => {
       toast({
         title: "Fee assignment updated successfully",
         description: "The fee assignment has been updated.",
-      })
-      setOpen(false)
-      onUpdate()
+      });
+      setOpen(false);
+      onUpdate();
     },
     onError: (error) => {
       toast({
         title: "Error updating fee assignment",
         description: error.message,
-      })
+      });
     },
-  })
+  });
 
   const removeFeeAssignment = api.fee.removeFeeAssignment.useMutation({
     onSuccess: () => {
@@ -73,9 +77,9 @@ export default function FeeAllotmentDialog({
       toast({
         title: "Error removing fee assignment",
         description: error.message ?? "Unknown error occurred",
-      })
+      });
     },
-  })
+  });
 
   const handleSubmit = () => {
     updateFeeAssignment.mutate({
@@ -83,12 +87,12 @@ export default function FeeAllotmentDialog({
       discount: parseFloat(discount),
       discountbypercent: parseFloat(discountbypercent),
       discountDescription: discountDescription,
-    })
-  }
+    });
+  };
 
   const handleRemove = () => {
-    removeFeeAssignment.mutate({ feeStudentClassId: sfcId })
-  }
+    removeFeeAssignment.mutate({ feeStudentClassId: sfcId });
+  };
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -98,7 +102,9 @@ export default function FeeAllotmentDialog({
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>Edit Fee Assignment</DialogTitle>
-          <DialogDescription>Modify the fee assignment details or remove the assignment.</DialogDescription>
+          <DialogDescription>
+            Modify the fee assignment details or remove the assignment.
+          </DialogDescription>
         </DialogHeader>
         <div className="grid gap-4 py-4">
           <div className="grid grid-cols-4 items-center gap-4">
@@ -147,6 +153,5 @@ export default function FeeAllotmentDialog({
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  )
+  );
 }
-

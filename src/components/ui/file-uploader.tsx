@@ -1,22 +1,26 @@
-import { useCallback, type ChangeEvent } from 'react'
-import { Input } from '~/components/ui/input'
+import { useCallback, type ChangeEvent } from "react";
+import { Input } from "~/components/ui/input";
 
 interface FileUploaderProps {
-  accept?: string
-  onChange: (file: File) => void
-  className?: string
+  accept?: string;
+  onChange: (file: File) => void;
+  className?: string;
 }
 
-export function FileUploader({ accept, onChange, className }: FileUploaderProps) {
+export function FileUploader({
+  accept,
+  onChange,
+  className,
+}: FileUploaderProps) {
   const handleFileChange = useCallback(
     (event: ChangeEvent<HTMLInputElement>) => {
-      const file = event.target.files?.[0]
+      const file = event.target.files?.[0];
       if (file) {
-        onChange(file)
+        onChange(file);
       }
     },
-    [onChange]
-  )
+    [onChange],
+  );
 
   return (
     <Input
@@ -25,6 +29,5 @@ export function FileUploader({ accept, onChange, className }: FileUploaderProps)
       onChange={handleFileChange}
       className={className}
     />
-  )
+  );
 }
-

@@ -1,7 +1,7 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Button } from "~/components/ui/button"
+import { useState } from "react";
+import { Button } from "~/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -9,23 +9,29 @@ import {
   DialogTitle,
   DialogTrigger,
   DialogDescription,
-} from "~/components/ui/dialog"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select"
-import { Label } from "~/components/ui/label"
-import { Checkbox } from "~/components/ui/checkbox"
-import { Download, FileSpreadsheet, FileText, Loader2 } from "lucide-react"
-import { api } from "~/trpc/react"
-import { toast } from "sonner"
+} from "~/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "~/components/ui/select";
+import { Label } from "~/components/ui/label";
+import { Checkbox } from "~/components/ui/checkbox";
+import { Download, FileSpreadsheet, FileText, Loader2 } from "lucide-react";
+import { api } from "~/trpc/react";
+import { toast } from "sonner";
 import {
   exportToCSV,
   generateMonthlyFeeReportData,
   generateDefaultersReportData,
   type ExportData,
-} from "~/lib/export-utils"
+} from "~/lib/export-utils";
 
 interface ExportDialogProps {
-  sessionId: string
-  year: number
+  sessionId: string;
+  year: number;
 }
 
 const months = [
@@ -41,90 +47,101 @@ const months = [
   { value: 10, label: "October" },
   { value: 11, label: "November" },
   { value: 12, label: "December" },
-]
+];
 
-type ReportType = "monthly-summary" | "defaulters" | "class-wise" | "analytics"
+type ReportType = "monthly-summary" | "defaulters" | "class-wise" | "analytics";
 
 export function ExportDialog({ sessionId, year }: ExportDialogProps) {
-  const [open, setOpen] = useState(false)
-  const [reportType, setReportType] = useState<ReportType>("monthly-summary")
-  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1)
-  const [includeDetails, setIncludeDetails] = useState(false)
-  const [isExporting, setIsExporting] = useState(false)
+  const [open, setOpen] = useState(false);
+  const [reportType, setReportType] = useState<ReportType>("monthly-summary");
+  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
+  const [includeDetails, setIncludeDetails] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
 
   const summaryQuery = api.fee.getClassFeeSummary.useQuery(
     { sessionId, year },
     { enabled: !!sessionId && open && reportType === "monthly-summary" },
-  )
+  );
 
   const defaultersQuery = api.fee.getDefaultersList.useQuery(
     { sessionId, month: selectedMonth, year },
     { enabled: !!sessionId && open && reportType === "defaulters" },
-  )
+  );
 
   const handleExport = async () => {
-    setIsExporting(true)
+    setIsExporting(true);
 
     try {
-      let exportData: ExportData | null = null
-      let filename = ""
+      let exportData: ExportData | null = null;
+      let filename = "";
 
       switch (reportType) {
         case "monthly-summary":
           if (summaryQuery.data?.classes) {
-            exportData = generateMonthlyFeeReportData(summaryQuery.data.classes, year)
-            filename = `fee-summary-${year}`
+            exportData = generateMonthlyFeeReportData(
+              summaryQuery.data.classes,
+              year,
+            );
+            filename = `fee-summary-${year}`;
           }
-          break
+          break;
 
         case "defaulters":
           if (defaultersQuery.data) {
-            exportData = generateDefaultersReportData(defaultersQuery.data, selectedMonth, year)
-            filename = `defaulters-${months[selectedMonth - 1]?.label}-${year}`
+            exportData = generateDefaultersReportData(
+              defaultersQuery.data,
+              selectedMonth,
+              year,
+            );
+            filename = `defaulters-${months[selectedMonth - 1]?.label}-${year}`;
           }
-          break
+          break;
 
         case "class-wise":
           if (summaryQuery.data?.classes) {
             const columns = [
               { key: "className", label: "Class", width: 15 },
-              ...months.map((m) => ({ key: m.label.toLowerCase(), label: m.label.slice(0, 3), width: 10 })),
+              ...months.map((m) => ({
+                key: m.label.toLowerCase(),
+                label: m.label.slice(0, 3),
+                width: 10,
+              })),
               { key: "total", label: "Total", width: 12 },
-            ]
+            ];
 
             const rows = summaryQuery.data.classes.map((cls) => {
-              const row: Record<string, unknown> = { className: cls.className }
+              const row: Record<string, unknown> = { className: cls.className };
               cls.monthlyData.forEach((m, idx) => {
-                row[months[idx]?.label?.toLowerCase() ?? ""] = m.totalCollected
-              })
-              row.total = cls.yearlyTotals.totalCollected
-              return row
-            })
+                row[months[idx]?.label?.toLowerCase() ?? ""] = m.totalCollected;
+              });
+              row.total = cls.yearlyTotals.totalCollected;
+              return row;
+            });
 
             exportData = {
               columns,
               rows,
               sheetName: "Class-wise Collection",
               title: `Class-wise Fee Collection ${year}`,
-            }
-            filename = `class-wise-collection-${year}`
+            };
+            filename = `class-wise-collection-${year}`;
           }
-          break
+          break;
       }
 
       if (exportData) {
-        exportToCSV(exportData, filename)
-        toast.success("Report exported successfully")
-        setOpen(false)
+        exportToCSV(exportData, filename);
+        toast.success("Report exported successfully");
+        setOpen(false);
       } else {
-        toast.error("No data available to export")
+        toast.error("No data available to export");
       }
     } catch {
-      toast.error("Failed to export report")
+      toast.error("Failed to export report");
     } finally {
-      setIsExporting(false)
+      setIsExporting(false);
     }
-  }
+  };
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -140,13 +157,18 @@ export function ExportDialog({ sessionId, year }: ExportDialogProps) {
             <FileSpreadsheet className="h-5 w-5" />
             Export Fee Report
           </DialogTitle>
-          <DialogDescription>Select the report type and options to export your fee data.</DialogDescription>
+          <DialogDescription>
+            Select the report type and options to export your fee data.
+          </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4 py-4">
           <div className="space-y-2">
             <Label>Report Type</Label>
-            <Select value={reportType} onValueChange={(v) => setReportType(v as ReportType)}>
+            <Select
+              value={reportType}
+              onValueChange={(v) => setReportType(v as ReportType)}
+            >
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
@@ -176,7 +198,10 @@ export function ExportDialog({ sessionId, year }: ExportDialogProps) {
           {reportType === "defaulters" && (
             <div className="space-y-2">
               <Label>Month</Label>
-              <Select value={String(selectedMonth)} onValueChange={(v) => setSelectedMonth(Number(v))}>
+              <Select
+                value={String(selectedMonth)}
+                onValueChange={(v) => setSelectedMonth(Number(v))}
+              >
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
@@ -192,16 +217,21 @@ export function ExportDialog({ sessionId, year }: ExportDialogProps) {
           )}
 
           <div className="flex items-center gap-2">
-            <Checkbox id="details" checked={includeDetails} onCheckedChange={(c) => setIncludeDetails(!!c)} />
+            <Checkbox
+              id="details"
+              checked={includeDetails}
+              onCheckedChange={(c) => setIncludeDetails(!!c)}
+            />
             <Label htmlFor="details" className="text-sm text-slate-600">
               Include detailed breakdown
             </Label>
           </div>
 
-          <div className="bg-slate-50 rounded-lg p-3 text-sm text-slate-600">
+          <div className="rounded-lg bg-slate-50 p-3 text-sm text-slate-600">
             <p className="font-medium text-slate-900">Export Format: CSV</p>
             <p className="mt-1">
-              The report will be downloaded as a CSV file that can be opened in Excel or Google Sheets.
+              The report will be downloaded as a CSV file that can be opened in
+              Excel or Google Sheets.
             </p>
           </div>
         </div>
@@ -210,7 +240,11 @@ export function ExportDialog({ sessionId, year }: ExportDialogProps) {
           <Button variant="outline" onClick={() => setOpen(false)}>
             Cancel
           </Button>
-          <Button onClick={handleExport} disabled={isExporting} className="gap-2">
+          <Button
+            onClick={handleExport}
+            disabled={isExporting}
+            className="gap-2"
+          >
             {isExporting ? (
               <>
                 <Loader2 className="h-4 w-4 animate-spin" />
@@ -226,5 +260,5 @@ export function ExportDialog({ sessionId, year }: ExportDialogProps) {
         </div>
       </DialogContent>
     </Dialog>
-  )
+  );
 }

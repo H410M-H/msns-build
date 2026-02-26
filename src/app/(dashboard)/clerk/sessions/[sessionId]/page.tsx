@@ -34,7 +34,6 @@ export default function SessionDetailPage() {
   return (
     // Wrapper: Full width, standard spacing
     <div className="w-full space-y-6">
-      
       <PageHeader breadcrumbs={breadcrumbs} />
 
       <motion.div
@@ -43,59 +42,68 @@ export default function SessionDetailPage() {
         transition={{ duration: 0.4, ease: "easeOut" }}
       >
         {/* Header Section: Clean & Professional */}
-        <div className="mb-8 flex flex-col justify-between gap-4 md:flex-row md:items-end border-b border-white/5 pb-6">
+        <div className="mb-8 flex flex-col justify-between gap-4 border-b border-border pb-6 md:flex-row md:items-end">
           <div>
-            <div className="flex items-center gap-3 mb-2">
-              <div className="p-2 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                 <CalendarRange className="h-6 w-6" />
+            <div className="mb-2 flex items-center gap-3">
+              <div className="rounded-lg border border-emerald-500/20 bg-emerald-500/10 p-2 text-emerald-400">
+                <CalendarRange className="h-6 w-6" />
               </div>
-              <h1 className="text-3xl font-bold tracking-tight text-white">Session Overview</h1>
+              <h1 className="text-3xl font-bold tracking-tight text-foreground">
+                Session Overview
+              </h1>
             </div>
-            <p className="text-slate-400 max-w-2xl pl-1">
-              Manage classes, student allocations, and fee structures for this academic session.
+            <p className="max-w-2xl pl-1 text-muted-foreground">
+              Manage classes, student allocations, and fee structures for this
+              academic session.
             </p>
           </div>
-          
+
           <div className="flex items-center gap-2">
-             <Badge variant="outline" className="border-emerald-500/20 bg-emerald-500/5 text-emerald-300 px-3 py-1">
-               <Info className="mr-1 h-3 w-3" /> Active Session
-             </Badge>
+            <Badge
+              variant="outline"
+              className="border-emerald-500/20 bg-emerald-500/5 px-3 py-1 text-emerald-300"
+            >
+              <Info className="mr-1 h-3 w-3" /> Active Session
+            </Badge>
           </div>
         </div>
 
         {/* Main Content Card */}
-        <Card className="border border-white/5 bg-slate-900/40 backdrop-blur-md shadow-xl overflow-hidden">
-          <CardHeader className="border-b border-white/5 px-6 py-4 bg-black/20">
+        <Card className="overflow-hidden border border-border bg-card shadow-xl backdrop-blur-md">
+          <CardHeader className="border-b border-border bg-black/20 px-6 py-4">
             <div className="flex items-center gap-2">
-               <Layers className="h-5 w-5 text-emerald-500" />
-               <div>
-                  <CardTitle className="text-lg font-medium text-white">Class Management</CardTitle>
-                  <CardDescription className="text-slate-400 text-xs">Configure classes assigned to this session</CardDescription>
-               </div>
+              <Layers className="h-5 w-5 text-emerald-500" />
+              <div>
+                <CardTitle className="text-lg font-medium text-foreground">
+                  Class Management
+                </CardTitle>
+                <CardDescription className="text-xs text-muted-foreground">
+                  Configure classes assigned to this session
+                </CardDescription>
+              </div>
             </div>
           </CardHeader>
 
           <CardContent className="p-0">
             {/* Suspense Wrapper for Data Table */}
-            <Suspense 
+            <Suspense
               fallback={
-                <div className="p-6 space-y-4">
+                <div className="space-y-4 p-6">
                   <div className="flex items-center justify-between">
-                     <Skeleton className="h-10 w-48 bg-white/5" />
-                     <Skeleton className="h-10 w-32 bg-white/5" />
+                    <Skeleton className="h-10 w-48 bg-white/5" />
+                    <Skeleton className="h-10 w-32 bg-white/5" />
                   </div>
                   <Skeleton className="h-[400px] w-full rounded-xl bg-white/5" />
                 </div>
               }
             >
-               {/* Table Container */}
-               <div className="overflow-hidden">
-                 <ClassList sessionId={sessionId} />
-               </div>
+              {/* Table Container */}
+              <div className="overflow-hidden">
+                <ClassList sessionId={sessionId} />
+              </div>
             </Suspense>
           </CardContent>
         </Card>
-
       </motion.div>
     </div>
   );

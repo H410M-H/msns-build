@@ -33,7 +33,9 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning className="h-full">
       {/* Added h-full to body to ensure full screen rendering */}
-      <body className={`${inter.variable} ${geistMono.variable} font-sans antialiased h-full`}>
+      <body
+        className={`${inter.variable} ${geistMono.variable} h-full font-sans antialiased`}
+      >
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <Provider>
             {children}

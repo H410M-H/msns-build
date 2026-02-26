@@ -9,24 +9,24 @@ type PageProps = {
 
 export default async function FeeDetailsPage({ searchParams }: PageProps) {
   const searchProps = await searchParams;
-  const breadcrumbs = [
-    { href: "/clerk", label: "Dashboard" },
-  ];
+  const breadcrumbs = [{ href: "/clerk", label: "Dashboard" }];
   return (
     <div className="w-full">
-      <PageHeader breadcrumbs={breadcrumbs}/>
+      <PageHeader breadcrumbs={breadcrumbs} />
       <div className="pt-20">
-        
-      <Card>
-        <CardHeader>
-          <CardTitle>Fee details</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <ScrollArea className="h-[calc(100vh-300px)]">
-            <ClassFeeTable sessionId={searchProps.sessionId} classId={searchProps.classId} />
-          </ScrollArea>
-        </CardContent>
-      </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle>Fee details</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ScrollArea className="h-[calc(100vh-300px)]">
+              <ClassFeeTable
+                sessionId={searchProps.sessionId}
+                classId={searchProps.classId}
+              />
+            </ScrollArea>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

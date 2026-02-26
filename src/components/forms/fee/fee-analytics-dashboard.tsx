@@ -1,9 +1,9 @@
-"use client"
+"use client";
 
-import type React from "react"
-import { api } from "~/trpc/react"
-import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card"
-import { Skeleton } from "~/components/ui/skeleton"
+import type React from "react";
+import { api } from "~/trpc/react";
+import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
+import { Skeleton } from "~/components/ui/skeleton";
 import {
   BarChart,
   Bar,
@@ -17,30 +17,43 @@ import {
   PieChart,
   Pie,
   Cell,
-} from "recharts"
-import { TrendingUp, TrendingDown, DollarSign, Percent, AlertTriangle, Award } from "lucide-react"
+} from "recharts";
+import {
+  TrendingUp,
+  TrendingDown,
+  DollarSign,
+  Percent,
+  AlertTriangle,
+  Award,
+} from "lucide-react";
 
 interface FeeAnalyticsDashboardProps {
-  sessionId: string
-  year: number
+  sessionId: string;
+  year: number;
 }
 
-const COLORS = ["#3B82F6", "#10B981", "#F59E0B", "#EF4444", "#8B5CF6"]
+const COLORS = ["#3B82F6", "#10B981", "#F59E0B", "#EF4444", "#8B5CF6"];
 
-export function FeeAnalyticsDashboard({ sessionId, year }: FeeAnalyticsDashboardProps) {
-  const analyticsQuery = api.fee.getFeeAnalytics.useQuery({ sessionId, year }, { enabled: !!sessionId })
+export function FeeAnalyticsDashboard({
+  sessionId,
+  year,
+}: FeeAnalyticsDashboardProps) {
+  const analyticsQuery = api.fee.getFeeAnalytics.useQuery(
+    { sessionId, year },
+    { enabled: !!sessionId },
+  );
 
   const yearComparisonQuery = api.fee.getYearComparison.useQuery(
     { sessionId, years: [year - 2, year - 1, year] },
     { enabled: !!sessionId },
-  )
+  );
 
-  const analytics = analyticsQuery.data
-  const yearComparison = yearComparisonQuery.data
+  const analytics = analyticsQuery.data;
+  const yearComparison = yearComparisonQuery.data;
 
   if (analyticsQuery.isLoading) {
     return (
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         {Array(4)
           .fill(0)
           .map((_, i) => (
@@ -54,25 +67,25 @@ export function FeeAnalyticsDashboard({ sessionId, year }: FeeAnalyticsDashboard
             </Card>
           ))}
       </div>
-    )
+    );
   }
 
   if (!analytics) {
     return (
       <Card className="bg-white">
-        <CardContent className="py-12 text-center text-slate-500">
+        <CardContent className="py-12 text-center text-muted-foreground">
           No analytics data available. Select a session to view analytics.
         </CardContent>
       </Card>
-    )
+    );
   }
 
-  const { summary, monthlyTrend, categoryCollection } = analytics
+  const { summary, monthlyTrend, categoryCollection } = analytics;
 
   return (
     <div className="space-y-6">
       {/* Summary Stats */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         <StatCard
           title="Collection Rate"
           value={`${summary.collectionRate.toFixed(1)}%`}
@@ -101,7 +114,7 @@ export function FeeAnalyticsDashboard({ sessionId, year }: FeeAnalyticsDashboard
         />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         {/* Monthly Collection Trend */}
         <Card className="bg-white">
           <CardHeader>
@@ -113,13 +126,31 @@ export function FeeAnalyticsDashboard({ sessionId, year }: FeeAnalyticsDashboard
                 <BarChart data={monthlyTrend}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" />
                   <XAxis dataKey="month" tick={{ fontSize: 12 }} />
-                  <YAxis tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`} tick={{ fontSize: 12 }} />
-                  <Tooltip
-                    formatter={(value: number) => `Rs. ${value.toLocaleString()}`}
-                    contentStyle={{ borderRadius: "8px", border: "1px solid #E2E8F0" }}
+                  <YAxis
+                    tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`}
+                    tick={{ fontSize: 12 }}
                   />
-                  <Bar dataKey="collected" fill="#10B981" name="Collected" radius={[4, 4, 0, 0]} />
-                  <Bar dataKey="outstanding" fill="#F59E0B" name="Outstanding" radius={[4, 4, 0, 0]} />
+                  <Tooltip
+                    formatter={(value: number) =>
+                      `Rs. ${value.toLocaleString()}`
+                    }
+                    contentStyle={{
+                      borderRadius: "8px",
+                      border: "1px solid #E2E8F0",
+                    }}
+                  />
+                  <Bar
+                    dataKey="collected"
+                    fill="#10B981"
+                    name="Collected"
+                    radius={[4, 4, 0, 0]}
+                  />
+                  <Bar
+                    dataKey="outstanding"
+                    fill="#F59E0B"
+                    name="Outstanding"
+                    radius={[4, 4, 0, 0]}
+                  />
                 </BarChart>
               </ResponsiveContainer>
             </div>
@@ -144,13 +175,22 @@ export function FeeAnalyticsDashboard({ sessionId, year }: FeeAnalyticsDashboard
                     paddingAngle={2}
                     dataKey="collected"
                     nameKey="category"
-                    label={({ category, percent }) => `${category} (${(percent * 100).toFixed(0)}%)`}
+                    label={({ category, percent }) =>
+                      `${category} (${(percent * 100).toFixed(0)}%)`
+                    }
                   >
                     {categoryCollection.map((_, index) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                      <Cell
+                        key={`cell-${index}`}
+                        fill={COLORS[index % COLORS.length]}
+                      />
                     ))}
                   </Pie>
-                  <Tooltip formatter={(value: number) => `Rs. ${value.toLocaleString()}`} />
+                  <Tooltip
+                    formatter={(value: number) =>
+                      `Rs. ${value.toLocaleString()}`
+                    }
+                  />
                 </PieChart>
               </ResponsiveContainer>
             </div>
@@ -171,10 +211,18 @@ export function FeeAnalyticsDashboard({ sessionId, year }: FeeAnalyticsDashboard
                   <LineChart data={yearComparison}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" />
                     <XAxis dataKey="year" tick={{ fontSize: 12 }} />
-                    <YAxis tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`} tick={{ fontSize: 12 }} />
+                    <YAxis
+                      tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`}
+                      tick={{ fontSize: 12 }}
+                    />
                     <Tooltip
-                      formatter={(value: number) => `Rs. ${value.toLocaleString()}`}
-                      contentStyle={{ borderRadius: "8px", border: "1px solid #E2E8F0" }}
+                      formatter={(value: number) =>
+                        `Rs. ${value.toLocaleString()}`
+                      }
+                      contentStyle={{
+                        borderRadius: "8px",
+                        border: "1px solid #E2E8F0",
+                      }}
                     />
                     <Line
                       type="monotone"
@@ -196,21 +244,23 @@ export function FeeAnalyticsDashboard({ sessionId, year }: FeeAnalyticsDashboard
                 </ResponsiveContainer>
               </div>
             ) : (
-              <div className="text-center py-12 text-slate-500">No comparison data available</div>
+              <div className="py-12 text-center text-muted-foreground">
+                No comparison data available
+              </div>
             )}
           </CardContent>
         </Card>
       </div>
     </div>
-  )
+  );
 }
 
 interface StatCardProps {
-  title: string
-  value: string
-  icon: React.ElementType
-  trend?: "up" | "down"
-  color: "green" | "red" | "purple" | "orange"
+  title: string;
+  value: string;
+  icon: React.ElementType;
+  trend?: "up" | "down";
+  color: "green" | "red" | "purple" | "orange";
 }
 
 function StatCard({ title, value, icon: Icon, trend, color }: StatCardProps) {
@@ -219,7 +269,7 @@ function StatCard({ title, value, icon: Icon, trend, color }: StatCardProps) {
     red: "bg-red-50 text-red-600 border-red-200",
     purple: "bg-purple-50 text-purple-600 border-purple-200",
     orange: "bg-orange-50 text-orange-600 border-orange-200",
-  }
+  };
 
   return (
     <Card className={`border-2 ${colorClasses[color]}`}>
@@ -227,7 +277,7 @@ function StatCard({ title, value, icon: Icon, trend, color }: StatCardProps) {
         <div className="flex items-center justify-between">
           <div>
             <p className="text-sm opacity-80">{title}</p>
-            <p className="text-xl font-bold mt-1">{value}</p>
+            <p className="mt-1 text-xl font-bold">{value}</p>
           </div>
           <div className="flex items-center gap-1">
             {trend === "up" && <TrendingUp className="h-5 w-5" />}
@@ -237,5 +287,5 @@ function StatCard({ title, value, icon: Icon, trend, color }: StatCardProps) {
         </div>
       </CardContent>
     </Card>
-  )
+  );
 }

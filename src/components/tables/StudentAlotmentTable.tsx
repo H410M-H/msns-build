@@ -1,11 +1,18 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { Button } from "~/components/ui/button"
-import { Input } from "~/components/ui/input"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "~/components/ui/table"
-import { Checkbox } from "~/components/ui/checkbox"
-import { api } from "~/trpc/react"
+import { useState, useEffect } from "react";
+import { Button } from "~/components/ui/button";
+import { Input } from "~/components/ui/input";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "~/components/ui/table";
+import { Checkbox } from "~/components/ui/checkbox";
+import { api } from "~/trpc/react";
 import {
   type ColumnDef,
   flexRender,
@@ -15,116 +22,118 @@ import {
   getSortedRowModel,
   getFilteredRowModel,
   type SortingState,
-} from "@tanstack/react-table"
-import { ChevronDown, ChevronUp, Plus, RefreshCw, Trash2 } from "lucide-react"
-import AllotmentDialog from "../forms/class/StudentAlotment"
-import { toast } from "~/hooks/use-toast"
-import { Badge } from "~/components/ui/badge"
-import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card"
+} from "@tanstack/react-table";
+import { ChevronDown, ChevronUp, Plus, RefreshCw, Trash2 } from "lucide-react";
+import AllotmentDialog from "../forms/class/StudentAlotment";
+import { toast } from "~/hooks/use-toast";
+import { Badge } from "~/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 
 // The type for our table's transformed data
 type StudentAllotmentProps = {
-  registrationNumber: string
-  studentId: string
-  studentName: string
-  fatherName: string
-  grade: string
-  employeeName: string
-  sessionName: string
-  sessionId: string
-  classId: string
-}
+  registrationNumber: string;
+  studentId: string;
+  studentName: string;
+  fatherName: string;
+  grade: string;
+  employeeName: string;
+  sessionName: string;
+  sessionId: string;
+  classId: string;
+};
 
 // Define the shape of a single raw student record from the API
 type APIStudentAllotment = {
   Students: {
-    registrationNumber: string
-    studentId: string
-    studentName: string
-    fatherName: string
-  }
+    registrationNumber: string;
+    studentId: string;
+    studentName: string;
+    fatherName: string;
+  };
   Grades: {
-    grade: string
-    classId: string
-  }
+    grade: string;
+    classId: string;
+  };
   Employees?: {
-    employeeName: string
-  }
+    employeeName: string;
+  };
   Sessions: {
-    sessionName: string
-    sessionId: string
-  }
-}
+    sessionName: string;
+    sessionId: string;
+  };
+};
 
 type APIStudentAllotmentResponse = {
-  data: APIStudentAllotment[]
-  meta?: unknown
-}
-
-
-
+  data: APIStudentAllotment[];
+  meta?: unknown;
+};
 
 interface StudentAllotmentTableProps {
-  classId: string
-  sessionId: string
+  classId: string;
+  sessionId: string;
 }
 
-export function StudentAllotmentTable({ classId, sessionId }: StudentAllotmentTableProps) {
-  const [sorting, setSorting] = useState<SortingState>([])
-  const [rowSelection, setRowSelection] = useState<Record<string, boolean>>({})
-  const [data, setData] = useState<StudentAllotmentProps[]>([])
-  const [globalFilter, setGlobalFilter] = useState("")
-  const [allotmentOpen, setAllotmentOpen] = useState(false)
+export function StudentAllotmentTable({
+  classId,
+  sessionId,
+}: StudentAllotmentTableProps) {
+  const [sorting, setSorting] = useState<SortingState>([]);
+  const [rowSelection, setRowSelection] = useState<Record<string, boolean>>({});
+  const [data, setData] = useState<StudentAllotmentProps[]>([]);
+  const [globalFilter, setGlobalFilter] = useState("");
+  const [allotmentOpen, setAllotmentOpen] = useState(false);
 
-  const utils = api.useUtils()
+  const utils = api.useUtils();
 
   // Fetch students in class
   const studentsInClass = api.allotment.getStudentsByClassAndSession.useQuery({
     classId,
     sessionId,
-  })
+  });
 
   // Fetch available sessions for allotment dialog - provide empty input if required
   const { data: sessions } = api.session.getSessions.useQuery(undefined, {
     enabled: allotmentOpen, // Only fetch when dialog is open
-  })
-
+  });
 
   const removeStudent = api.allotment.deleteStudentsFromClass.useMutation({
     onSuccess: async () => {
       toast({
         title: "Success",
         description: "Student(s) removed from class successfully",
-      })
-      await utils.allotment.invalidate()
-      setRowSelection({})
+      });
+      await utils.allotment.invalidate();
+      setRowSelection({});
     },
     onError: (error) => {
       toast({
         title: "Error",
         description: error.message ?? "Failed to remove student(s)",
-      })
+      });
     },
-  })
+  });
 
   // Transform API data
   useEffect(() => {
     if (studentsInClass.data) {
-      const raw = studentsInClass.data as unknown as APIStudentAllotmentResponse
-      const transformedData: StudentAllotmentProps[] = raw.data.map((item: APIStudentAllotment) => ({
-        registrationNumber: item.Students.registrationNumber,
-        studentId: item.Students.studentId,
-        studentName: item.Students.studentName,
-        fatherName: item.Students.fatherName,
-        grade: item.Grades.grade,
-        employeeName: item.Employees?.employeeName ?? "Not Assigned",
-        sessionName: item.Sessions.sessionName,
-        sessionId: item.Sessions.sessionId,
-        classId: item.Grades.classId,
-      }))
-      setData(transformedData)
+      const raw =
+        studentsInClass.data as unknown as APIStudentAllotmentResponse;
+      const transformedData: StudentAllotmentProps[] = raw.data.map(
+        (item: APIStudentAllotment) => ({
+          registrationNumber: item.Students.registrationNumber,
+          studentId: item.Students.studentId,
+          studentName: item.Students.studentName,
+          fatherName: item.Students.fatherName,
+          grade: item.Grades.grade,
+          employeeName: item.Employees?.employeeName ?? "Not Assigned",
+          sessionName: item.Sessions.sessionName,
+          sessionId: item.Sessions.sessionId,
+          classId: item.Grades.classId,
+        }),
+      );
+      setData(transformedData);
     }
-  }, [studentsInClass.data])
+  }, [studentsInClass.data]);
 
   const columns = [
     {
@@ -150,7 +159,9 @@ export function StudentAllotmentTable({ classId, sessionId }: StudentAllotmentTa
       id: "registrationNumber",
       accessorFn: (row: StudentAllotmentProps) => row.registrationNumber,
       header: "Reg #",
-      cell: ({ getValue }) => <div className="font-medium text-blue-600">{getValue() as string}</div>,
+      cell: ({ getValue }) => (
+        <div className="font-medium text-blue-600">{getValue() as string}</div>
+      ),
     },
     {
       id: "studentName",
@@ -169,7 +180,9 @@ export function StudentAllotmentTable({ classId, sessionId }: StudentAllotmentTa
           )}
         </Button>
       ),
-      cell: ({ getValue }) => <div className="font-semibold">{getValue() as string}</div>,
+      cell: ({ getValue }) => (
+        <div className="font-semibold">{getValue() as string}</div>
+      ),
     },
     {
       id: "fatherName",
@@ -181,8 +194,12 @@ export function StudentAllotmentTable({ classId, sessionId }: StudentAllotmentTa
       accessorFn: (row: StudentAllotmentProps) => row.employeeName,
       header: "Teacher",
       cell: ({ getValue }) => {
-        const teacher = getValue() as string
-        return <Badge variant={teacher === "Not Assigned" ? "secondary" : "default"}>{teacher}</Badge>
+        const teacher = getValue() as string;
+        return (
+          <Badge variant={teacher === "Not Assigned" ? "secondary" : "default"}>
+            {teacher}
+          </Badge>
+        );
       },
     },
     {
@@ -217,16 +234,20 @@ export function StudentAllotmentTable({ classId, sessionId }: StudentAllotmentTa
               studentIds: [row.original.studentId],
               classId: classId,
               sessionId: sessionId,
-            })
+            });
           }}
           disabled={removeStudent.isPending}
           className="h-8"
         >
-          {removeStudent.isPending ? <RefreshCw className="h-3 w-3 animate-spin" /> : <Trash2 className="h-3 w-3" />}
+          {removeStudent.isPending ? (
+            <RefreshCw className="h-3 w-3 animate-spin" />
+          ) : (
+            <Trash2 className="h-3 w-3" />
+          )}
         </Button>
       ),
     },
-  ] satisfies ColumnDef<StudentAllotmentProps, unknown>[]
+  ] satisfies ColumnDef<StudentAllotmentProps, unknown>[];
 
   const table = useReactTable<StudentAllotmentProps>({
     data,
@@ -243,41 +264,42 @@ export function StudentAllotmentTable({ classId, sessionId }: StudentAllotmentTa
       rowSelection,
     },
     onGlobalFilterChange: setGlobalFilter,
-  })
+  });
 
-  const selectedStudentIds = table.getSelectedRowModel().rows.map((row) => row.original.studentId)
+  const selectedStudentIds = table
+    .getSelectedRowModel()
+    .rows.map((row) => row.original.studentId);
 
   const handleBulkRemove = () => {
     if (selectedStudentIds.length === 0) {
       toast({
         title: "No Selection",
         description: "Please select students to remove",
-      })
-      return
+      });
+      return;
     }
 
     removeStudent.mutate({
       studentIds: selectedStudentIds,
       classId: classId,
       sessionId: sessionId,
-    })
-  }
+    });
+  };
 
   const refreshData = async () => {
-    await utils.allotment.invalidate()
+    await utils.allotment.invalidate();
     toast({
       title: "Data Refreshed",
       description: "Student data has been refreshed",
-    })
-  }
+    });
+  };
 
   // Transform sessions data for the dialog - around line 312
   const transformedSessions =
     sessions?.map((session) => ({
       sessionId: session.sessionId,
       sessionName: session.sessionName,
-    })) ?? []
-
+    })) ?? [];
 
   return (
     <div className="space-y-6">
@@ -286,7 +308,7 @@ export function StudentAllotmentTable({ classId, sessionId }: StudentAllotmentTa
         <CardHeader>
           <CardTitle className="flex items-center justify-between">
             <span>Student Allotments</span>
-            <Badge variant="secondary" className="text-lg px-3 py-1">
+            <Badge variant="secondary" className="px-3 py-1 text-lg">
               {data.length} Students
             </Badge>
           </CardTitle>
@@ -294,11 +316,20 @@ export function StudentAllotmentTable({ classId, sessionId }: StudentAllotmentTa
         <CardContent>
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <div className="flex items-center gap-4">
-              <Button onClick={() => setAllotmentOpen(true)} className="gap-2" size="sm">
+              <Button
+                onClick={() => setAllotmentOpen(true)}
+                className="gap-2"
+                size="sm"
+              >
                 <Plus className="h-4 w-4" />
                 Add Student
               </Button>
-              <Button variant="outline" onClick={refreshData} size="sm" className="gap-2 bg-transparent">
+              <Button
+                variant="outline"
+                onClick={refreshData}
+                size="sm"
+                className="gap-2 bg-transparent"
+              >
                 <RefreshCw className="h-4 w-4" />
                 Refresh
               </Button>
@@ -308,7 +339,9 @@ export function StudentAllotmentTable({ classId, sessionId }: StudentAllotmentTa
               <Input
                 placeholder="Search students..."
                 value={globalFilter ?? ""}
-                onChange={(event) => setGlobalFilter(String(event.target.value))}
+                onChange={(event) =>
+                  setGlobalFilter(String(event.target.value))
+                }
                 className="max-w-sm"
               />
 
@@ -333,13 +366,19 @@ export function StudentAllotmentTable({ classId, sessionId }: StudentAllotmentTa
       <Card>
         <CardContent className="p-0">
           <div className="rounded-md border">
+            <div className="overflow-x-auto">
             <Table>
               <TableHeader>
                 {table.getHeaderGroups().map((headerGroup) => (
                   <TableRow key={headerGroup.id}>
                     {headerGroup.headers.map((header) => (
                       <TableHead key={header.id}>
-                        {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
+                        {header.isPlaceholder
+                          ? null
+                          : flexRender(
+                              header.column.columnDef.header,
+                              header.getContext(),
+                            )}
                       </TableHead>
                     ))}
                   </TableRow>
@@ -348,26 +387,45 @@ export function StudentAllotmentTable({ classId, sessionId }: StudentAllotmentTa
               <TableBody>
                 {studentsInClass.isLoading ? (
                   <TableRow>
-                    <TableCell colSpan={columns.length} className="h-24 text-center">
-                      <RefreshCw className="h-4 w-4 animate-spin mx-auto mb-2" />
+                    <TableCell
+                      colSpan={columns.length}
+                      className="h-24 text-center"
+                    >
+                      <RefreshCw className="mx-auto mb-2 h-4 w-4 animate-spin" />
                       Loading students...
                     </TableCell>
                   </TableRow>
                 ) : table.getRowModel().rows?.length ? (
                   table.getRowModel().rows.map((row) => (
-                    <TableRow key={row.id} data-state={row.getIsSelected() && "selected"}>
+                    <TableRow
+                      key={row.id}
+                      data-state={row.getIsSelected() && "selected"}
+                    >
                       {row.getVisibleCells().map((cell) => (
-                        <TableCell key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</TableCell>
+                        <TableCell key={cell.id}>
+                          {flexRender(
+                            cell.column.columnDef.cell,
+                            cell.getContext(),
+                          )}
+                        </TableCell>
                       ))}
                     </TableRow>
                   ))
                 ) : (
                   <TableRow>
-                    <TableCell colSpan={columns.length} className="h-24 text-center">
+                    <TableCell
+                      colSpan={columns.length}
+                      className="h-24 text-center"
+                    >
                       <div className="flex flex-col items-center gap-2">
                         <div className="text-gray-400">📚</div>
                         <div>No students allotted to this class.</div>
-                        <Button variant="outline" size="sm" onClick={() => setAllotmentOpen(true)} className="gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setAllotmentOpen(true)}
+                          className="gap-2"
+                        >
                           <Plus className="h-4 w-4" />
                           Add First Student
                         </Button>
@@ -377,6 +435,7 @@ export function StudentAllotmentTable({ classId, sessionId }: StudentAllotmentTa
                 )}
               </TableBody>
             </Table>
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -384,8 +443,8 @@ export function StudentAllotmentTable({ classId, sessionId }: StudentAllotmentTa
       {/* Pagination */}
       <div className="flex items-center justify-between">
         <div className="text-sm text-gray-500">
-          {table.getFilteredSelectedRowModel().rows.length} of {table.getFilteredRowModel().rows.length} row(s)
-          selected.
+          {table.getFilteredSelectedRowModel().rows.length} of{" "}
+          {table.getFilteredRowModel().rows.length} row(s) selected.
         </div>
         <div className="flex items-center space-x-2">
           <Button
@@ -397,9 +456,15 @@ export function StudentAllotmentTable({ classId, sessionId }: StudentAllotmentTa
             Previous
           </Button>
           <div className="text-sm text-gray-500">
-            Page {table.getState().pagination.pageIndex + 1} of {table.getPageCount()}
+            Page {table.getState().pagination.pageIndex + 1} of{" "}
+            {table.getPageCount()}
           </div>
-          <Button variant="outline" size="sm" onClick={() => table.nextPage()} disabled={!table.getCanNextPage()}>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => table.nextPage()}
+            disabled={!table.getCanNextPage()}
+          >
             Next
           </Button>
         </div>
@@ -413,5 +478,5 @@ export function StudentAllotmentTable({ classId, sessionId }: StudentAllotmentTa
         sessions={transformedSessions}
       />
     </div>
-  )
+  );
 }

@@ -107,7 +107,6 @@ export const RegisterEmployeeBioMetric = ({
           // Add the new capture to our array
           newThumbData = [...newThumbData, response.data.ISOTemplateBase64];
 
-
           // Update current capture count
           const newCaptureCount = i + 1;
           setCurrentCapture(newCaptureCount);
@@ -153,10 +152,15 @@ export const RegisterEmployeeBioMetric = ({
       setLoading(false);
       setCaptureProgress(0);
     }
-  }, [employeeId, fingerMutation, currentCapture, totalCaptures, simulateProgress]);
+  }, [
+    employeeId,
+    fingerMutation,
+    currentCapture,
+    totalCaptures,
+    simulateProgress,
+  ]);
 
   const resetCaptures = useCallback(() => {
-    
     setCurrentCapture(0);
     toast.info("Captures reset", {
       description: "You can now start fresh with new fingerprint captures.",
@@ -166,7 +170,7 @@ export const RegisterEmployeeBioMetric = ({
   useEffect(() => {
     if (savedFinger) {
       // Handle both old format (single string) and new format (array)
-      if (Array.isArray(savedFinger.thumb)) { 
+      if (Array.isArray(savedFinger.thumb)) {
         setCurrentCapture(savedFinger.thumb.length);
       } else if (savedFinger.thumb) {
         setCurrentCapture(1);

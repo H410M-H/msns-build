@@ -12,7 +12,7 @@ export async function POST(request: Request) {
   }
 
   const buffer = Buffer.from(await file.arrayBuffer());
-  
+
   // Ensure the directory exists
   const uploadDir = path.join(process.cwd(), "public/uploads");
   if (!existsSync(uploadDir)) {
@@ -28,6 +28,9 @@ export async function POST(request: Request) {
     return NextResponse.json({ url: `/uploads/${filename}` });
   } catch (error) {
     console.error("Error saving file:", error);
-    return NextResponse.json({ error: "Failed to save file." }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to save file." },
+      { status: 500 },
+    );
   }
 }

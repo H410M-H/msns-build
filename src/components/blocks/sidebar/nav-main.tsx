@@ -40,9 +40,11 @@ export const NavMain = ({ items }: UnifiedNavProps) => {
 
   return (
     <SidebarGroup>
-      <SidebarMenu className="text-slate-300">
+      <SidebarMenu className="text-foreground">
         {items.map((item) => {
-          const isActive = pathname.startsWith(item.url) || item.items?.some(sub => pathname.startsWith(sub.url));
+          const isActive =
+            pathname.startsWith(item.url) ||
+            item.items?.some((sub) => pathname.startsWith(sub.url));
 
           return item.items && item.items.length > 0 ? (
             <Collapsible
@@ -57,31 +59,42 @@ export const NavMain = ({ items }: UnifiedNavProps) => {
                     tooltip={item.title}
                     isActive={isActive}
                     className={cn(
-                        "hover:text-emerald-300 hover:bg-emerald-500/10 transition-colors",
-                        isActive && "text-emerald-400 font-medium"
+                      "transition-colors hover:bg-emerald-500/10 hover:text-emerald-300",
+                      isActive && "font-medium text-emerald-400",
                     )}
                   >
-                    {item.icon && <item.icon className={cn(isActive ? "text-emerald-400" : "text-emerald-500/60")} />}
+                    {item.icon && (
+                      <item.icon
+                        className={cn(
+                          isActive ? "text-emerald-400" : "text-emerald-500/60",
+                        )}
+                      />
+                    )}
                     <span>{item.title}</span>
-                    <ChevronRight className="ml-auto w-4 h-4 transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90 text-slate-500 group-hover/collapsible:text-emerald-400" />
+                    <ChevronRight className="ml-auto h-4 w-4 text-muted-foreground transition-transform duration-200 group-hover/collapsible:text-emerald-400 group-data-[state=open]/collapsible:rotate-90" />
                   </SidebarMenuButton>
                 </CollapsibleTrigger>
                 <CollapsibleContent>
                   <SidebarMenuSub className="border-l-emerald-500/20">
                     {item.items.map((subItem) => {
-                        const isSubActive = pathname === subItem.url;
-                        return (
-                            <SidebarMenuSubItem key={subItem.title}>
-                                <SidebarMenuSubButton asChild isActive={isSubActive} className={cn(
-                                    "hover:text-emerald-300 transition-colors",
-                                    isSubActive && "text-emerald-400 bg-emerald-500/10 font-medium"
-                                )}>
-                                <Link href={subItem.url}>
-                                    <span>{subItem.title}</span>
-                                </Link>
-                                </SidebarMenuSubButton>
-                            </SidebarMenuSubItem>
-                        );
+                      const isSubActive = pathname === subItem.url;
+                      return (
+                        <SidebarMenuSubItem key={subItem.title}>
+                          <SidebarMenuSubButton
+                            asChild
+                            isActive={isSubActive}
+                            className={cn(
+                              "transition-colors hover:text-emerald-300",
+                              isSubActive &&
+                                "bg-emerald-500/10 font-medium text-emerald-400",
+                            )}
+                          >
+                            <Link href={subItem.url}>
+                              <span>{subItem.title}</span>
+                            </Link>
+                          </SidebarMenuSubButton>
+                        </SidebarMenuSubItem>
+                      );
                     })}
                   </SidebarMenuSub>
                 </CollapsibleContent>
@@ -94,12 +107,21 @@ export const NavMain = ({ items }: UnifiedNavProps) => {
                 tooltip={item.title}
                 isActive={pathname === item.url}
                 className={cn(
-                    "hover:text-emerald-300 hover:bg-emerald-500/10 transition-colors",
-                    pathname === item.url && "text-emerald-400 bg-emerald-500/10 font-medium shadow-[inset_3px_0_0_0_rgba(16,185,129,1)]"
+                  "transition-colors hover:bg-emerald-500/10 hover:text-emerald-300",
+                  pathname === item.url &&
+                    "bg-emerald-500/10 font-medium text-emerald-400 shadow-[inset_3px_0_0_0_rgba(16,185,129,1)]",
                 )}
               >
                 <Link href={item.url}>
-                  {item.icon && <item.icon className={cn(pathname === item.url ? "text-emerald-400" : "text-emerald-500/60")} />}
+                  {item.icon && (
+                    <item.icon
+                      className={cn(
+                        pathname === item.url
+                          ? "text-emerald-400"
+                          : "text-emerald-500/60",
+                      )}
+                    />
+                  )}
                   <span>{item.title}</span>
                 </Link>
               </SidebarMenuButton>

@@ -4,17 +4,21 @@ import { useCallback, useMemo, useState } from "react";
 import dayjs, { type Dayjs } from "dayjs";
 import { Card } from "~/components/ui/card";
 import { Button } from "~/components/ui/button";
-import {
-  ChevronLeft,
-  ChevronRight,
-  User,
-} from "lucide-react";
+import { ChevronLeft, ChevronRight, User } from "lucide-react";
 import { api } from "~/trpc/react";
 import { cn } from "~/lib/utils";
 import { AttendanceModal } from "./attendance-dialog";
 import { useAttendance } from "~/hooks/use-attendance";
 
-const weekdayNames: string[] = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+const weekdayNames: string[] = [
+  "Sun",
+  "Mon",
+  "Tue",
+  "Wed",
+  "Thu",
+  "Fri",
+  "Sat",
+];
 
 export const CalendarGrid = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -130,7 +134,6 @@ export const CalendarGrid = () => {
         <div className="h-full w-full overflow-auto">
           {/* We use min-w-max to allow horizontal scroll without shrinking columns */}
           <div className="grid min-w-max grid-cols-[220px_repeat(31,_minmax(48px,_1fr))] divide-x divide-border/40 text-sm">
-            
             {/* 1. Header Row: Days */}
             {/* Sticky Corner (Top-Left) */}
             <div className="sticky left-0 top-0 z-20 flex h-20 flex-col justify-end bg-card p-3 font-medium text-muted-foreground shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">
@@ -210,7 +213,7 @@ export const CalendarGrid = () => {
                       key={`${employee.employeeId}-${date.format("YYYY-MM-DD")}`}
                       className={cn(
                         "relative border-t p-1 transition-colors hover:bg-muted/50",
-                        isWeekend && "bg-slate-50/50 dark:bg-slate-900/30",
+                        isWeekend && "bg-slate-50/50 dark:bg-card",
                         isToday && "bg-blue-50/30 dark:bg-blue-900/10",
                       )}
                     >
@@ -219,11 +222,11 @@ export const CalendarGrid = () => {
                         className={cn(
                           "flex h-full w-full flex-col gap-0.5 rounded-md p-0 text-[10px]",
                           // Only allow clicking if it's today or past
-                          !isFuture && "cursor-pointer", 
+                          !isFuture && "cursor-pointer",
                           isFuture && "cursor-not-allowed opacity-50",
                           isToday && "ring-1 ring-inset ring-primary/30",
                         )}
-                        disabled={isFuture} 
+                        disabled={isFuture}
                         onClick={() =>
                           openDialog(employee.employeeId, employee.employeeName)
                         }
@@ -255,7 +258,9 @@ export const CalendarGrid = () => {
                             {!isFuture && !isWeekend && (
                               <span className="h-1.5 w-1.5 rounded-full bg-rose-200 dark:bg-rose-900" />
                             )}
-                            {isWeekend && <span className="text-[9px]">OFF</span>}
+                            {isWeekend && (
+                              <span className="text-[9px]">OFF</span>
+                            )}
                           </div>
                         )}
                       </Button>
@@ -267,7 +272,7 @@ export const CalendarGrid = () => {
           </div>
         </div>
       </Card>
-      
+
       <AttendanceModal />
     </div>
   );

@@ -10,13 +10,16 @@ const reportTypeSchema = z.enum([
   "employees",
   "classes",
   "sessions",
-  "fees"
+  "fees",
 ]);
 
 export type ReportType = z.infer<typeof reportTypeSchema>;
 
 // Type-safe data fetchers
-const reportQueries: Record<ReportType, (prisma: Prisma.TransactionClient) => Promise<Array<Record<string, unknown>>>> = {
+const reportQueries: Record<
+  ReportType,
+  (prisma: Prisma.TransactionClient) => Promise<Array<Record<string, unknown>>>
+> = {
   students: async (prisma) => {
     const data = await prisma.students.findMany({
       select: {
@@ -28,56 +31,66 @@ const reportQueries: Record<ReportType, (prisma: Prisma.TransactionClient) => Pr
         gender: true,
         fatherName: true,
         studentMobile: true,
-        isAssign: true
-      }
+        isAssign: true,
+      },
     });
-    return data.map(s => ({ ...s, isAssign: s.isAssign ? "Assigned" : "Unassigned" }));
+    return data.map((s) => ({
+      ...s,
+      isAssign: s.isAssign ? "Assigned" : "Unassigned",
+    }));
   },
-  employees: async (prisma) => prisma.employees.findMany({
-    select: {
-      employeeId: true,
-      employeeName: true,
-      designation: true,
-      mobileNo: true,
-      doj: true
-    }
-  }),
-  classes: async (prisma) => prisma.grades.findMany({
-    select: {
-      classId: true,
-      grade: true,
-      section: true,
-      category: true,
-      fee: true
-    }
-  }),
-  sessions: async (prisma) => prisma.sessions.findMany({
-    select: {
-      sessionId: true,
-      sessionName: true,
-      sessionFrom: true,
-      sessionTo: true,
-      isActive: true
-    }
-  }),
-  fees: async (prisma) => prisma.fees.findMany({
-    select: {
-      feeId: true,
-      level: true,
-      admissionFee: true,
-      tuitionFee: true,
-      examFund: true,
-      computerLabFund: true,
-      studentIdCardFee: true,
-      infoAndCallsFee: true,
-      type: true,
-      createdAt: true
-    }
-  })
+  employees: async (prisma) =>
+    prisma.employees.findMany({
+      select: {
+        employeeId: true,
+        employeeName: true,
+        designation: true,
+        mobileNo: true,
+        doj: true,
+      },
+    }),
+  classes: async (prisma) =>
+    prisma.grades.findMany({
+      select: {
+        classId: true,
+        grade: true,
+        section: true,
+        category: true,
+        fee: true,
+      },
+    }),
+  sessions: async (prisma) =>
+    prisma.sessions.findMany({
+      select: {
+        sessionId: true,
+        sessionName: true,
+        sessionFrom: true,
+        sessionTo: true,
+        isActive: true,
+      },
+    }),
+  fees: async (prisma) =>
+    prisma.fees.findMany({
+      select: {
+        feeId: true,
+        level: true,
+        admissionFee: true,
+        tuitionFee: true,
+        examFund: true,
+        computerLabFund: true,
+        studentIdCardFee: true,
+        infoAndCallsFee: true,
+        type: true,
+        createdAt: true,
+      },
+    }),
 };
 
 // Header configurations
-const reportHeaders: Record<ReportType, Array<{ key: string; label: string }>> = {
+const reportHeaders: Record<
+  ReportType,
+  Array<{ key: string; label: string }>
+> = {
   students: [
     { key: "studentId", label: "ID" },
     { key: "studentName", label: "Student Name" },
@@ -87,26 +100,26 @@ const reportHeaders: Record<ReportType, Array<{ key: string; label: string }>> =
     { key: "gender", label: "Gender" },
     { key: "fatherName", label: "Father Name" },
     { key: "studentMobile", label: "Contact" },
-    { key: "isAssign", label: "Status" }
+    { key: "isAssign", label: "Status" },
   ],
   employees: [
     { key: "employeeId", label: "ID" },
     { key: "employeeName", label: "Name" },
     { key: "designation", label: "Designation" },
     { key: "mobileNo", label: "Contact" },
-    { key: "doj", label: "Join Date" }
+    { key: "doj", label: "Join Date" },
   ],
   classes: [
     { key: "grade", label: "Grade" },
     { key: "section", label: "Section" },
     { key: "category", label: "Category" },
-    { key: "fee", label: "Fee" }
+    { key: "fee", label: "Fee" },
   ],
   sessions: [
     { key: "sessionName", label: "Session Name" },
     { key: "sessionFrom", label: "Start Date" },
     { key: "sessionTo", label: "End Date" },
-    { key: "isActive", label: "Active" }
+    { key: "isActive", label: "Active" },
   ],
   fees: [
     { key: "level", label: "Level" },
@@ -114,8 +127,8 @@ const reportHeaders: Record<ReportType, Array<{ key: string; label: string }>> =
     { key: "admissionFee", label: "Admission" },
     { key: "tuitionFee", label: "Tuition" },
     { key: "examFund", label: "Exam Fund" },
-    { key: "infoAndCallsFee", label: "Info/Calls" }
-  ]
+    { key: "infoAndCallsFee", label: "Info/Calls" },
+  ],
 };
 
 // Utility function to format values for PDF
@@ -145,26 +158,31 @@ export const reportRouter = createTRPCRouter({
       // Note: This is a simplified calculation. Adjust based on exact fee logic.
       const fees = await ctx.db.feeStudentClass.findMany({
         where: { tuitionPaid: true }, // Simplified
-        include: { fees: true }
+        include: { fees: true },
       });
-      const totalRevenue = fees.reduce((acc, curr) => acc + curr.fees.tuitionFee, 0);
+      const totalRevenue = fees.reduce(
+        (acc, curr) => acc + curr.fees.tuitionFee,
+        0,
+      );
 
       // 2. Total Expenses
       const expenses = await ctx.db.expenses.aggregate({
-        _sum: { amount: true }
+        _sum: { amount: true },
       });
       const totalExpenses = expenses._sum.amount ?? 0;
 
       // 3. Staff Attendance (Today)
-      const today = new Date().toISOString().split('T')[0];
+      const today = new Date().toISOString().split("T")[0];
       const attendance = await ctx.db.employeeAttendance.groupBy({
-        by: ['morning'],
+        by: ["morning"],
         where: { date: today },
-        _count: { morning: true }
+        _count: { morning: true },
       });
 
-      const presentCount = attendance.find(a => a.morning === 'P')?._count.morning ?? 0;
-      const absentCount = attendance.find(a => a.morning === 'A')?._count.morning ?? 0;
+      const presentCount =
+        attendance.find((a) => a.morning === "P")?._count.morning ?? 0;
+      const absentCount =
+        attendance.find((a) => a.morning === "A")?._count.morning ?? 0;
 
       return {
         revenue: totalRevenue,
@@ -172,8 +190,8 @@ export const reportRouter = createTRPCRouter({
         attendance: {
           present: presentCount,
           absent: absentCount,
-          total: presentCount + absentCount
-        }
+          total: presentCount + absentCount,
+        },
       };
     } catch (error) {
       console.error("Error fetching principal stats:", error);
@@ -192,7 +210,10 @@ export const reportRouter = createTRPCRouter({
 
         const queryFn = reportQueries[reportType];
         if (!queryFn) {
-          throw new TRPCError({ code: "BAD_REQUEST", message: "Invalid report type" });
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "Invalid report type",
+          });
         }
 
         const rawData = await queryFn(ctx.db);
@@ -200,11 +221,14 @@ export const reportRouter = createTRPCRouter({
 
         if (!rawData || rawData.length === 0) {
           if (rawData.length === 0) {
-            throw new TRPCError({ code: "NOT_FOUND", message: "No data found for report" });
+            throw new TRPCError({
+              code: "NOT_FOUND",
+              message: "No data found for report",
+            });
           }
         }
 
-        const transformedData = rawData.map(row => {
+        const transformedData = rawData.map((row) => {
           const transformed: Record<string, unknown> = {};
           headers.forEach(({ key }) => {
             transformed[key] = formatPdfValue(row[key]);
@@ -216,15 +240,15 @@ export const reportRouter = createTRPCRouter({
 
         return {
           pdf: Buffer.from(pdfBuffer).toString("base64"),
-          filename: `${reportType}-report-${Date.now()}.pdf`
+          filename: `${reportType}-report-${Date.now()}.pdf`,
         };
       } catch (error) {
         console.error("Report generation failed:", error);
         if (error instanceof TRPCError) throw error;
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
-          message: "Failed to generate report"
+          message: "Failed to generate report",
         });
       }
-    })
+    }),
 });

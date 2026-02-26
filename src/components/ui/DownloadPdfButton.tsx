@@ -1,19 +1,30 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Button } from "~/components/ui/button"
-import { api } from "~/trpc/react"
-import { Loader2, FileDown } from "lucide-react"
-import { toast } from "sonner"
-import { cn } from "~/lib/utils"
+import { useState } from "react";
+import { Button } from "~/components/ui/button";
+import { api } from "~/trpc/react";
+import { Loader2, FileDown } from "lucide-react";
+import { toast } from "sonner";
+import { cn } from "~/lib/utils";
 
-export type ReportType = "students" | "employees" | "classes" | "fees" | "sessions"
+export type ReportType =
+  | "students"
+  | "employees"
+  | "classes"
+  | "fees"
+  | "sessions";
 
 interface DownloadPdfButtonProps {
-  reportType: ReportType
-  label?: string
-  className?: string
-  variant?: "default" | "destructive" | "outline" | "secondary" | "ghost" | "link"
+  reportType: ReportType;
+  label?: string;
+  className?: string;
+  variant?:
+    | "default"
+    | "destructive"
+    | "outline"
+    | "secondary"
+    | "ghost"
+    | "link";
 }
 
 // Explicitly define the response type
@@ -22,14 +33,14 @@ interface ReportResponse {
   filename: string;
 }
 
-export function DownloadPdfButton({ 
-  reportType, 
-  label, 
+export function DownloadPdfButton({
+  reportType,
+  label,
   className,
-  variant = "outline" 
+  variant = "outline",
 }: DownloadPdfButtonProps) {
-  const [isDownloading, setIsDownloading] = useState(false)
-  
+  const [isDownloading, setIsDownloading] = useState(false);
+
   const generateReport = api.report.generateReport.useMutation({
     onSuccess: (data: ReportResponse) => {
       try {
@@ -39,20 +50,20 @@ export function DownloadPdfButton({
         for (let i = 0; i < len; i++) {
           bytes[i] = binaryString.charCodeAt(i);
         }
-        
+
         const blob = new Blob([bytes], { type: "application/pdf" });
         const url = window.URL.createObjectURL(blob);
-        
+
         const link = document.createElement("a");
         link.href = url;
         link.download = data.filename ?? `${reportType}-report.pdf`;
-        
+
         document.body.appendChild(link);
         link.click();
-        
+
         document.body.removeChild(link);
         window.URL.revokeObjectURL(url);
-        
+
         toast.success(`${label ?? reportType} report downloaded`);
       } catch (error) {
         console.error("PDF processing error:", error);
@@ -66,13 +77,13 @@ export function DownloadPdfButton({
       console.error("Report generation error:", error);
       toast.error(error.message ?? "Failed to generate report");
       setIsDownloading(false);
-    }
+    },
   });
 
   const handleDownload = () => {
     setIsDownloading(true);
     generateReport.mutate({ reportType });
-  }
+  };
 
   return (
     <Button
@@ -87,7 +98,8 @@ export function DownloadPdfButton({
       ) : (
         <FileDown className="h-4 w-4" />
       )}
-      {label ?? `Download ${reportType.charAt(0).toUpperCase() + reportType.slice(1)} Report`}
+      {label ??
+        `Download ${reportType.charAt(0).toUpperCase() + reportType.slice(1)} Report`}
     </Button>
-  )
+  );
 }

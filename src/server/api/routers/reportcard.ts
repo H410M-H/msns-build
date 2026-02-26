@@ -83,8 +83,7 @@ export const reportCardRouter = createTRPCRouter({
             totalMarks: mark.totalMarks,
             obtainedMarks: mark.obtainedMarks,
             percentage,
-            remarks:
-              percentage >= exam.passingMarks ? "Passed" : "Failed",
+            remarks: percentage >= exam.passingMarks ? "Passed" : "Failed",
           });
         });
 
@@ -173,9 +172,9 @@ export const reportCardRouter = createTRPCRouter({
             subjectId: z.string().cuid(),
             obtainedMarks: z.number().min(0),
             totalMarks: z.number().min(1),
-          })
+          }),
         ),
-      })
+      }),
     )
     .mutation(async ({ ctx, input }) => {
       try {
@@ -204,7 +203,8 @@ export const reportCardRouter = createTRPCRouter({
             obtainedMarks: detail.obtainedMarks,
             totalMarks: detail.totalMarks,
             percentage,
-            remarks: percentage >= report.Exam.passingMarks ? "Passed" : "Failed",
+            remarks:
+              percentage >= report.Exam.passingMarks ? "Passed" : "Failed",
           };
         });
 
@@ -250,7 +250,7 @@ export const reportCardRouter = createTRPCRouter({
       z.object({
         studentId: z.string().cuid(),
         examId: z.string().cuid(),
-      })
+      }),
     )
     .query(async ({ ctx, input }) => {
       try {
@@ -297,7 +297,7 @@ export const reportCardRouter = createTRPCRouter({
       z.object({
         examId: z.string().cuid(),
         classId: z.string().cuid(),
-      })
+      }),
     )
     .query(async ({ ctx, input }) => {
       try {
@@ -334,7 +334,7 @@ export const reportCardRouter = createTRPCRouter({
       z.object({
         studentId: z.string().cuid(),
         sessionId: z.string().cuid(),
-      })
+      }),
     )
     .query(async ({ ctx, input }) => {
       try {

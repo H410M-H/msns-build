@@ -33,9 +33,9 @@ const CalendarDateCell: React.FC<CalendarDateCellProps> = ({
         onDateClick(date);
       }}
       className={cn(
-        "group relative flex min-h-[80px] sm:min-h-[120px] cursor-pointer flex-col border-r border-b border-gray-100 p-2 transition-all hover:bg-blue-50/50",
+        "group relative flex min-h-[80px] cursor-pointer flex-col border-b border-r border-gray-100 p-2 transition-all hover:bg-blue-50/50 sm:min-h-[120px]",
         isSelected && !isToday && "bg-blue-50 ring-1 ring-inset ring-blue-500", // Distinguish selection from today
-        isToday && "bg-blue-50/30" // Subtle background for today
+        isToday && "bg-blue-50/30", // Subtle background for today
       )}
     >
       <div className="flex items-center justify-between">
@@ -43,9 +43,9 @@ const CalendarDateCell: React.FC<CalendarDateCellProps> = ({
           className={cn(
             "flex h-7 w-7 items-center justify-center rounded-full text-sm font-medium transition-colors",
             isToday
-              ? "bg-blue-600 text-white shadow-md"
+              ? "bg-blue-600 text-foreground shadow-md"
               : "text-gray-700 group-hover:bg-white group-hover:shadow-sm",
-             isSelected && !isToday && "bg-blue-100 text-blue-700"
+            isSelected && !isToday && "bg-blue-100 text-blue-700",
           )}
         >
           {day}
@@ -57,8 +57,8 @@ const CalendarDateCell: React.FC<CalendarDateCellProps> = ({
           <div
             key={event.id}
             className={cn(
-              "hidden sm:block truncate rounded px-1.5 py-0.5 text-[10px] font-medium transition-opacity",
-              getEventColor(event.type)
+              "hidden truncate rounded px-1.5 py-0.5 text-[10px] font-medium transition-opacity sm:block",
+              getEventColor(event.type),
             )}
             title={event.title}
           >
@@ -67,17 +67,20 @@ const CalendarDateCell: React.FC<CalendarDateCellProps> = ({
         ))}
 
         {/* Mobile Dot Indicators */}
-        <div className="flex sm:hidden gap-1 mt-1 flex-wrap">
-             {displayEvents.map((event) => (
-                 <div 
-                    key={event.id} 
-                    className={cn("w-1.5 h-1.5 rounded-full", getEventDotColor(event.type))} 
-                 />
-             ))}
+        <div className="mt-1 flex flex-wrap gap-1 sm:hidden">
+          {displayEvents.map((event) => (
+            <div
+              key={event.id}
+              className={cn(
+                "h-1.5 w-1.5 rounded-full",
+                getEventDotColor(event.type),
+              )}
+            />
+          ))}
         </div>
 
         {remainingCount > 0 && (
-          <div className="text-[10px] text-gray-400 pl-1 font-medium">
+          <div className="pl-1 text-[10px] font-medium text-gray-400">
             +{remainingCount} more
           </div>
         )}
@@ -89,22 +92,32 @@ const CalendarDateCell: React.FC<CalendarDateCellProps> = ({
 // Simple color helper based on event type
 function getEventColor(type: string) {
   switch (type.toLowerCase()) {
-    case "exam": return "bg-red-100 text-red-700";
-    case "assignment": return "bg-orange-100 text-orange-700";
-    case "holiday": return "bg-green-100 text-green-700";
-    case "class": return "bg-blue-100 text-blue-700";
-    default: return "bg-gray-100 text-gray-700";
+    case "exam":
+      return "bg-red-100 text-red-700";
+    case "assignment":
+      return "bg-orange-100 text-orange-700";
+    case "holiday":
+      return "bg-green-100 text-green-700";
+    case "class":
+      return "bg-blue-100 text-blue-700";
+    default:
+      return "bg-gray-100 text-gray-700";
   }
 }
 
 function getEventDotColor(type: string) {
-    switch (type.toLowerCase()) {
-      case "exam": return "bg-red-500";
-      case "assignment": return "bg-orange-500";
-      case "holiday": return "bg-green-500";
-      case "class": return "bg-blue-500";
-      default: return "bg-gray-400";
-    }
+  switch (type.toLowerCase()) {
+    case "exam":
+      return "bg-red-500";
+    case "assignment":
+      return "bg-orange-500";
+    case "holiday":
+      return "bg-green-500";
+    case "class":
+      return "bg-blue-500";
+    default:
+      return "bg-gray-400";
   }
+}
 
 export default CalendarDateCell;

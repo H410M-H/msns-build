@@ -1,653 +1,693 @@
 generator client {
-    provider = "prisma-client-js"
+  provider = "prisma-client-js"
 }
 
 datasource db {
-    provider = "postgresql"
-    url      = env("DATABASE_URL")
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 model User {
-    id                 String      @id @default(cuid())
-    accountId          String
-    accountType        Designation @default(ADMIN)
-    createdAt          DateTime    @default(now())
-    password           String
-    username           String      @unique
-    email              String      @unique
-    bio                String?     @default("")
-    emailNotifications Boolean     @default(true)
-    marketingEmails    Boolean     @default(false)
-    profileVisibility  Boolean     @default(true)
-    pushNotifications  Boolean     @default(false)
-    twoFactorAuth      Boolean     @default(false)
-    EventAttendee      Attendee[]
-    Event              Event[]     @relation("EventCreator")
+  id                 String      @id @default(cuid())
+  accountId          String
+  accountType        Designation @default(ADMIN)
+  createdAt          DateTime    @default(now())
+  password           String
+  username           String      @unique
+  email              String      @unique
+  bio                String?     @default("")
+  emailNotifications Boolean     @default(true)
+  marketingEmails    Boolean     @default(false)
+  profileVisibility  Boolean     @default(true)
+  pushNotifications  Boolean     @default(false)
+  twoFactorAuth      Boolean     @default(false)
+  EventAttendee      Attendee[]
+  Event              Event[]     @relation("EventCreator")
 }
 
 model Timetable {
-    timetableId   String    @id @default(cuid())
-    classId       String
-    subjectId     String
-    employeeId    String
-    sessionId     String
-    dayOfWeek     DayOfWeek
-    lectureNumber Int
-    startTime     String
-    endTime       String
-    createdAt     DateTime  @default(now())
-    updatedAt     DateTime  @updatedAt
+  timetableId   String    @id @default(cuid())
+  classId       String
+  subjectId     String
+  employeeId    String
+  sessionId     String
+  dayOfWeek     DayOfWeek
+  lectureNumber Int
+  startTime     String
+  endTime       String
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
 
-    // Relations
-    Grades    Grades    @relation(fields: [classId], references: [classId])
-    Subject   Subject   @relation(fields: [subjectId], references: [subjectId])
-    Employees Employees @relation(fields: [employeeId], references: [employeeId])
-    Sessions  Sessions  @relation(fields: [sessionId], references: [sessionId])
+  // Relations
+  Grades    Grades    @relation(fields: [classId], references: [classId])
+  Subject   Subject   @relation(fields: [subjectId], references: [subjectId])
+  Employees Employees @relation(fields: [employeeId], references: [employeeId])
+  Sessions  Sessions  @relation(fields: [sessionId], references: [sessionId])
 
-    // Unique constraint to prevent duplicate entries for same class, day, and lecture
-    @@unique([classId, sessionId, dayOfWeek, lectureNumber])
+  // Unique constraint to prevent duplicate entries for same class, day, and lecture
+  @@unique([classId, sessionId, dayOfWeek, lectureNumber])
 }
 
 model ClassSubject {
-    csId       String    @id @default(cuid())
-    classId    String
-    subjectId  String
-    employeeId String
-    sessionId  String
-    Grades     Grades    @relation(fields: [classId], references: [classId])
-    Employees  Employees @relation(fields: [employeeId], references: [employeeId])
-    Sessions   Sessions  @relation(fields: [sessionId], references: [sessionId])
-    Subject    Subject   @relation(fields: [subjectId], references: [subjectId])
-    Marks      Marks[]
+  csId         String         @id @default(cuid())
+  classId      String
+  subjectId    String
+  employeeId   String
+  sessionId    String
+  Grades       Grades         @relation(fields: [classId], references: [classId])
+  Employees    Employees      @relation(fields: [employeeId], references: [employeeId])
+  Sessions     Sessions       @relation(fields: [sessionId], references: [sessionId])
+  Subject      Subject        @relation(fields: [subjectId], references: [subjectId])
+  Marks        Marks[]
+  SubjectDiary SubjectDiary[]
 }
 
 model Employees {
-    employeeId         String               @id @default(cuid())
-    registrationNumber String               @unique
-    employeeName       String               @db.VarChar(100)
-    fatherName         String               @db.VarChar(100)
-    admissionNumber    String               @unique
-    gender             Gender
-    dob                String               @default("none")
-    cnic               String               @default("0000-0000000-0")
-    maritalStatus      MaritalStatus
-    doj                String               @default("none")
-    designation        Designation
-    residentialAddress String
-    mobileNo           String               @default("none")
-    additionalContact  String?              @default("none")
-    education          String               @default("none")
-    isAssign           Boolean              @default(false)
-    profilePic         String?              @default("/user.jpg")
-    cv                 String?
-    BioMetric          BioMetric?
-    ClassSubject       ClassSubject[]
-    Timetable          Timetable[]
-    Salary             Salary[]
-    SalaryAssignment   SalaryAssignment[]
-    SalaryIncrement    SalaryIncrement[]
-    EmployeeAttendance EmployeeAttendance[]
-    Marks              Marks[]
-    PromotionHistory   PromotionHistory[]
+  employeeId         String               @id @default(cuid())
+  registrationNumber String               @unique
+  employeeName       String               @db.VarChar(100)
+  fatherName         String               @db.VarChar(100)
+  admissionNumber    String               @unique
+  gender             Gender
+  dob                String               @default("none")
+  cnic               String               @default("0000-0000000-0")
+  maritalStatus      MaritalStatus
+  doj                String               @default("none")
+  designation        Designation
+  residentialAddress String
+  mobileNo           String               @default("none")
+  additionalContact  String?              @default("none")
+  education          String               @default("none")
+  isAssign           Boolean              @default(false)
+  profilePic         String?              @default("/user.jpg")
+  cv                 String?
+  BioMetric          BioMetric?
+  ClassSubject       ClassSubject[]
+  Timetable          Timetable[]
+  Salary             Salary[]
+  SalaryAssignment   SalaryAssignment[]
+  SalaryIncrement    SalaryIncrement[]
+  EmployeeAttendance EmployeeAttendance[]
+  Marks              Marks[]
+  PromotionHistory   PromotionHistory[]
+  SubjectDiary       SubjectDiary[]       @relation("SubjectDiaries")
 }
 
 model BioMetric {
-    fingerId    String   @id @default(cuid())
-    thumb       String[] @default([]) @db.Text
-    indexFinger String[] @default([]) @db.Text
-    employeeId  String   @unique
+  fingerId    String   @id @default(cuid())
+  thumb       String[] @default([]) @db.Text
+  indexFinger String[] @default([]) @db.Text
+  employeeId  String   @unique
 
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-    employee Employees @relation(fields: [employeeId], references: [employeeId])
+  employee Employees @relation(fields: [employeeId], references: [employeeId])
 }
 
 model EmployeeAttendance {
-    employeeAttendanceId String    @id @default(cuid())
-    morning              String    @default("A")
-    afternoon            String    @default("A")
-    date                 String    @default("")
-    employeeId           String
-    employee             Employees @relation(fields: [employeeId], references: [employeeId])
-    createdAt            DateTime  @default(now())
-    updatedAt            DateTime  @updatedAt
+  employeeAttendanceId String    @id @default(cuid())
+  morning              String    @default("A")
+  afternoon            String    @default("A")
+  date                 String    @default("")
+  employeeId           String
+  employee             Employees @relation(fields: [employeeId], references: [employeeId])
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
 
-    @@unique([employeeId, date])
+  @@unique([employeeId, date])
 }
 
 model FeeStudentClass {
-    sfcId               String       @id @default(cuid())
-    studentClassId      String
-    feeId               String
-    tuitionPaid         Boolean      @default(false)
-    examFundPaid        Boolean      @default(false)
-    computerLabPaid     Boolean      @default(false)
-    studentIdCardPaid   Boolean      @default(false)
-    infoAndCallsPaid    Boolean      @default(false)
-    discount            Float        @default(0)
-    discountByPercent   Float        @default(0)
-    discountDescription String
-    month               Int          @default(1)
-    year                Int          @default(2024)
-    lateFee             Float        @default(0)
-    paidAt              DateTime?
-    createdAt           DateTime     @default(now())
-    updatedAt           DateTime     @updatedAt
-    fees                Fees         @relation(fields: [feeId], references: [feeId])
-    StudentClass        StudentClass @relation(fields: [studentClassId], references: [scId])
+  sfcId               String       @id @default(cuid())
+  studentClassId      String
+  feeId               String
+  tuitionPaid         Boolean      @default(false)
+  examFundPaid        Boolean      @default(false)
+  computerLabPaid     Boolean      @default(false)
+  studentIdCardPaid   Boolean      @default(false)
+  infoAndCallsPaid    Boolean      @default(false)
+  discount            Float        @default(0)
+  discountByPercent   Float        @default(0)
+  discountDescription String
+  month               Int          @default(1)
+  year                Int          @default(2024)
+  lateFee             Float        @default(0)
+  paidAt              DateTime?
+  createdAt           DateTime     @default(now())
+  updatedAt           DateTime     @updatedAt
+  fees                Fees         @relation(fields: [feeId], references: [feeId])
+  StudentClass        StudentClass @relation(fields: [studentClassId], references: [scId])
 
-    @@unique([studentClassId, feeId, month, year])
+  @@unique([studentClassId, feeId, month, year])
 }
 
 model Fees {
-    feeId            String            @id @default(cuid())
-    level            String
-    admissionFee     Float             @default(5000)
-    tuitionFee       Float
-    examFund         Float
-    computerLabFund  Float?
-    studentIdCardFee Float             @default(500)
-    infoAndCallsFee  Float             @default(500)
-    type             FeeCategory       @default(MonthlyFee)
-    createdAt        DateTime          @default(now())
-    updatedAt        DateTime          @updatedAt
-    FeeStudentClass  FeeStudentClass[]
+  feeId            String            @id @default(cuid())
+  level            String
+  admissionFee     Float             @default(5000)
+  tuitionFee       Float
+  examFund         Float
+  computerLabFund  Float?
+  studentIdCardFee Float             @default(500)
+  infoAndCallsFee  Float             @default(500)
+  type             FeeCategory       @default(MonthlyFee)
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  FeeStudentClass  FeeStudentClass[]
 }
 
 model Expenses {
-    expenseId   String          @id @default(cuid())
-    title       String
-    description String?
-    amount      Float
-    category    ExpenseCategory
-    month       Int
-    year        Int
-    date        DateTime        @default(now())
-    createdAt   DateTime        @default(now())
-    updatedAt   DateTime        @updatedAt
+  expenseId   String          @id @default(cuid())
+  title       String
+  description String?
+  amount      Float
+  category    ExpenseCategory
+  month       Int
+  year        Int
+  date        DateTime        @default(now())
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
 }
 
 model Grades {
-    classId      String         @id @default(cuid())
-    grade        String         @default("none")
-    section      String         @default("ROSE")
-    category     ClassCategory  @default(Montessori)
-    fee          Float          @default(0)
-    ClassSubject ClassSubject[]
-    StudentClass StudentClass[]
-    Timetable    Timetable[]
-    Exam         Exam[]
-    ReportCard   ReportCard[]
-    PromotionFrom PromotionHistory[] @relation("PromotionFrom")
-    PromotionTo   PromotionHistory[] @relation("PromotionTo")
+  classId           String              @id @default(cuid())
+  grade             String              @default("none")
+  section           String              @default("ROSE")
+  category          ClassCategory       @default(Montessori)
+  fee               Float               @default(0)
+  ClassSubject      ClassSubject[]
+  StudentClass      StudentClass[]
+  Timetable         Timetable[]
+  Exam              Exam[]
+  ReportCard        ReportCard[]
+  PromotionFrom     PromotionHistory[]  @relation("PromotionFrom")
+  PromotionTo       PromotionHistory[]  @relation("PromotionTo")
+  StudentAttendance StudentAttendance[]
 }
 
 model Salary {
-    id          String       @id @default(cuid())
-    employeeId  String
-    amount      Float
-    month       Int
-    year        Int
-    status      SalaryStatus @default(PENDING)
-    paymentDate DateTime?
-    deductions  Float        @default(0)
-    allowances  Float        @default(0)
-    bonus       Float        @default(0)
-    sessionId   String
-    createdAt   DateTime     @default(now())
-    updatedAt   DateTime     @updatedAt
+  id          String       @id @default(cuid())
+  employeeId  String
+  amount      Float
+  month       Int
+  year        Int
+  status      SalaryStatus @default(PENDING)
+  paymentDate DateTime?
+  deductions  Float        @default(0)
+  allowances  Float        @default(0)
+  bonus       Float        @default(0)
+  sessionId   String
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
 
-    // Relations
-    Employees Employees @relation(fields: [employeeId], references: [employeeId])
-    Sessions  Sessions  @relation(fields: [sessionId], references: [sessionId])
+  // Relations
+  Employees Employees @relation(fields: [employeeId], references: [employeeId])
+  Sessions  Sessions  @relation(fields: [sessionId], references: [sessionId])
 }
 
 model SalaryAssignment {
-    id           String    @id @default(cuid())
-    employeeId   String
-    baseSalary   Float
-    increment    Float
-    totalSalary  Float
-    assignedDate DateTime  @default(now())
-    sessionId    String
-    Employees    Employees @relation(fields: [employeeId], references: [employeeId])
-    Sessions     Sessions  @relation(fields: [sessionId], references: [sessionId])
+  id           String    @id @default(cuid())
+  employeeId   String
+  baseSalary   Float
+  increment    Float
+  totalSalary  Float
+  assignedDate DateTime  @default(now())
+  sessionId    String
+  Employees    Employees @relation(fields: [employeeId], references: [employeeId])
+  Sessions     Sessions  @relation(fields: [sessionId], references: [sessionId])
 }
 
 model SalaryIncrement {
-    id              String    @id @default(cuid())
-    employeeId      String
-    incrementAmount Float
-    reason          String
-    effectiveDate   DateTime
-    Employees       Employees @relation(fields: [employeeId], references: [employeeId])
+  id              String    @id @default(cuid())
+  employeeId      String
+  incrementAmount Float
+  reason          String
+  effectiveDate   DateTime
+  Employees       Employees @relation(fields: [employeeId], references: [employeeId])
 }
 
 model Sessions {
-    sessionId        String             @id @default(cuid())
-    sessionName      String             @default("none")
-    sessionFrom      String             @default("none")
-    sessionTo        String             @default("none")
-    isActive         Boolean            @default(false)
-    ClassSubject     ClassSubject[]
-    Timetable        Timetable[]
-    Salary           Salary[]
-    SalaryAssignment SalaryAssignment[]
-    StudentClass     StudentClass[]
-    Exam             Exam[]
-    ReportCard       ReportCard[]
-    PromotionFromSession PromotionHistory[] @relation("PromotionFromSession")
-    PromotionToSession   PromotionHistory[] @relation("PromotionToSession")
+  sessionId            String              @id @default(cuid())
+  sessionName          String              @default("none")
+  sessionFrom          String              @default("none")
+  sessionTo            String              @default("none")
+  isActive             Boolean             @default(false)
+  ClassSubject         ClassSubject[]
+  Timetable            Timetable[]
+  Salary               Salary[]
+  SalaryAssignment     SalaryAssignment[]
+  StudentClass         StudentClass[]
+  Exam                 Exam[]
+  ReportCard           ReportCard[]
+  PromotionFromSession PromotionHistory[]  @relation("PromotionFromSession")
+  PromotionToSession   PromotionHistory[]  @relation("PromotionToSession")
+  StudentAttendance    StudentAttendance[]
 }
 
 model Event {
-    id            String         @id @default(cuid())
-    title         String
-    description   String?
-    startDateTime DateTime
-    endDateTime   DateTime
-    timezone      String         @default("UTC")
-    location      String?
-    isOnline      Boolean        @default(false)
-    type          EventType
-    priority      Priority
-    status        EventStatus
-    recurring     RecurrenceType
-    recurrenceEnd DateTime?
-    maxAttendees  Int?
-    isPublic      Boolean        @default(false)
-    notes         String?
-    createdAt     DateTime       @default(now())
-    updatedAt     DateTime       @updatedAt
-    attendees     Attendee[]
-    tags          EventTag[]
-    reminders     Reminder[]
-    User          User[]         @relation("EventCreator")
+  id            String         @id @default(cuid())
+  title         String
+  description   String?
+  startDateTime DateTime
+  endDateTime   DateTime
+  timezone      String         @default("UTC")
+  location      String?
+  isOnline      Boolean        @default(false)
+  type          EventType
+  priority      Priority
+  status        EventStatus
+  recurring     RecurrenceType
+  recurrenceEnd DateTime?
+  maxAttendees  Int?
+  isPublic      Boolean        @default(false)
+  notes         String?
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  attendees     Attendee[]
+  tags          EventTag[]
+  reminders     Reminder[]
+  User          User[]         @relation("EventCreator")
 }
 
 model Tag {
-    id     String     @id @default(cuid())
-    name   String
-    color  String
-    events EventTag[]
+  id     String     @id @default(cuid())
+  name   String
+  color  String
+  events EventTag[]
 }
 
 model EventTag {
-    eventId String
-    tagId   String
-    event   Event  @relation(fields: [eventId], references: [id])
-    tag     Tag    @relation(fields: [tagId], references: [id])
+  eventId String
+  tagId   String
+  event   Event  @relation(fields: [eventId], references: [id])
+  tag     Tag    @relation(fields: [tagId], references: [id])
 
-    @@id([eventId, tagId])
+  @@id([eventId, tagId])
 }
 
 model Attendee {
-    eventId String
-    userId  String
-    status  AttendeeStatus
-    event   Event          @relation(fields: [eventId], references: [id])
-    user    User           @relation(fields: [userId], references: [id])
+  eventId String
+  userId  String
+  status  AttendeeStatus
+  event   Event          @relation(fields: [eventId], references: [id])
+  user    User           @relation(fields: [userId], references: [id])
 
-    @@id([eventId, userId])
+  @@id([eventId, userId])
 }
 
 model Reminder {
-    id            String       @id @default(cuid())
-    minutesBefore Int
-    type          ReminderType
-    eventId       String
-    event         Event        @relation(fields: [eventId], references: [id])
+  id            String       @id @default(cuid())
+  minutesBefore Int
+  type          ReminderType
+  eventId       String
+  event         Event        @relation(fields: [eventId], references: [id])
 }
 
 model StudentClass {
-    scId            String            @id @default(cuid())
-    studentId       String
-    classId         String
-    sessionId       String
-    FeeStudentClass FeeStudentClass[]
-    Grades          Grades            @relation(fields: [classId], references: [classId])
-    Sessions        Sessions          @relation(fields: [sessionId], references: [sessionId])
-    Students        Students          @relation(fields: [studentId], references: [studentId])
+  scId            String            @id @default(cuid())
+  studentId       String
+  classId         String
+  sessionId       String
+  FeeStudentClass FeeStudentClass[]
+  Grades          Grades            @relation(fields: [classId], references: [classId])
+  Sessions        Sessions          @relation(fields: [sessionId], references: [sessionId])
+  Students        Students          @relation(fields: [studentId], references: [studentId])
 }
 
 model Students {
-    studentId          String         @id @default(cuid())
-    registrationNumber String         @unique
-    studentMobile      String         @default("none")
-    fatherMobile       String         @default("none")
-    admissionNumber    String         @unique
-    studentName        String         @default("none")
-    gender             Gender
-    dateOfBirth        String         @default("none")
-    fatherName         String         @default("none")
-    studentCNIC        String         @default("0000-0000000-0")
-    fatherCNIC         String         @default("0000-0000000-0")
-    fatherProfession   String         @default("none")
-    bloodGroup         String?        @default("none")
-    guardianName       String?        @default("none")
-    caste              String         @default("none")
-    currentAddress     String         @default("none")
-    permanentAddress   String         @default("none")
-    medicalProblem     String?
-    createdAt          DateTime       @default(now())
-    updatedAt          DateTime       @updatedAt
-    isAssign           Boolean        @default(false)
-    profilePic         String?        @default("/user.jpg")
-    StudentClass       StudentClass[]
-    Marks              Marks[]
-    ReportCard         ReportCard[]
-    PromotionHistory   PromotionHistory[]
+  studentId          String              @id @default(cuid())
+  registrationNumber String              @unique
+  studentMobile      String              @default("none")
+  fatherMobile       String              @default("none")
+  admissionNumber    String              @unique
+  studentName        String              @default("none")
+  gender             Gender
+  dateOfBirth        String              @default("none")
+  fatherName         String              @default("none")
+  studentCNIC        String              @default("0000-0000000-0")
+  fatherCNIC         String              @default("0000-0000000-0")
+  fatherProfession   String              @default("none")
+  bloodGroup         String?             @default("none")
+  guardianName       String?             @default("none")
+  caste              String              @default("none")
+  currentAddress     String              @default("none")
+  permanentAddress   String              @default("none")
+  medicalProblem     String?
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+  isAssign           Boolean             @default(false)
+  profilePic         String?             @default("/user.jpg")
+  StudentClass       StudentClass[]
+  Marks              Marks[]
+  ReportCard         ReportCard[]
+  PromotionHistory   PromotionHistory[]
+  StudentAttendance  StudentAttendance[]
 }
 
 model Subject {
-    subjectId    String         @id @default(cuid())
-    subjectName  String
-    book         String?
-    description  String?
-    createdAt    DateTime       @default(now())
-    updatedAt    DateTime       @updatedAt
-    ClassSubject ClassSubject[]
-    Timetable    Timetable[]
-    Marks        Marks[]
-    ReportCardDetail ReportCardDetail[]
-    ExamDatesheet ExamDatesheet[]
+  subjectId        String             @id @default(cuid())
+  subjectName      String
+  book             String?
+  description      String?
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+  ClassSubject     ClassSubject[]
+  Timetable        Timetable[]
+  Marks            Marks[]
+  ReportCardDetail ReportCardDetail[]
+  ExamDatesheet    ExamDatesheet[]
 }
 
 // ============ EXAM MANAGEMENT SYSTEM ============
 
-
 model ExamType {
-    examTypeId  String         @id @default(cuid())
-    name        String         @db.VarChar(100)
-    description String?
-    category    ExamCategory
-    createdAt   DateTime       @default(now())
-    updatedAt   DateTime       @updatedAt
-    Exam        Exam[]
+  examTypeId  String       @id @default(cuid())
+  name        String       @db.VarChar(100)
+  description String?
+  category    ExamCategory
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  Exam        Exam[]
 }
 
 model Exam {
-    examId          String         @id @default(cuid())
-    examTypeId      String
-    sessionId       String
-    classId         String
-    examTypeEnum    ExamTypeEnum
-    startDate       DateTime
-    endDate         DateTime
-    totalMarks      Float          @default(100)
-    passingMarks    Float          @default(40)
-    status          ExamStatus     @default(SCHEDULED)
-    createdAt       DateTime       @default(now())
-    updatedAt       DateTime       @updatedAt
+  examId       String       @id @default(cuid())
+  examTypeId   String
+  sessionId    String
+  classId      String
+  examTypeEnum ExamTypeEnum
+  startDate    DateTime
+  endDate      DateTime
+  totalMarks   Float        @default(100)
+  passingMarks Float        @default(40)
+  status       ExamStatus   @default(SCHEDULED)
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
 
-    // Relations
-    ExamType      ExamType        @relation(fields: [examTypeId], references: [examTypeId])
-    Sessions      Sessions        @relation(fields: [sessionId], references: [sessionId])
-    Grades        Grades          @relation(fields: [classId], references: [classId])
-    Marks         Marks[]
-    ReportCard    ReportCard[]
-    ExamDatesheet ExamDatesheet[]
+  // Relations
+  ExamType      ExamType        @relation(fields: [examTypeId], references: [examTypeId])
+  Sessions      Sessions        @relation(fields: [sessionId], references: [sessionId])
+  Grades        Grades          @relation(fields: [classId], references: [classId])
+  Marks         Marks[]
+  ReportCard    ReportCard[]
+  ExamDatesheet ExamDatesheet[]
 }
 
 model ExamDatesheet {
-    id        String   @id @default(cuid())
-    examId    String
-    subjectId String
-    date      DateTime
-    startTime String?
-    endTime   String?
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
+  id        String   @id @default(cuid())
+  examId    String
+  subjectId String
+  date      DateTime
+  startTime String?
+  endTime   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-    Exam    Exam    @relation(fields: [examId], references: [examId], onDelete: Cascade)
-    Subject Subject @relation(fields: [subjectId], references: [subjectId], onDelete: Cascade)
+  Exam    Exam    @relation(fields: [examId], references: [examId], onDelete: Cascade)
+  Subject Subject @relation(fields: [subjectId], references: [subjectId], onDelete: Cascade)
 
-    @@unique([examId, subjectId])
+  @@unique([examId, subjectId])
 }
 
 model Marks {
-    marksId        String    @id @default(cuid())
-    examId         String
-    studentId      String
-    subjectId      String
-    classSubjectId String
-    obtainedMarks  Float
-    totalMarks     Float
-    uploadedBy     String
-    uploadedAt     DateTime  @default(now())
-    createdAt      DateTime  @default(now())
-    updatedAt      DateTime  @updatedAt
+  marksId        String   @id @default(cuid())
+  examId         String
+  studentId      String
+  subjectId      String
+  classSubjectId String
+  obtainedMarks  Float
+  totalMarks     Float
+  uploadedBy     String
+  uploadedAt     DateTime @default(now())
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 
-    // Relations
-    Exam         Exam        @relation(fields: [examId], references: [examId])
-    Students     Students    @relation(fields: [studentId], references: [studentId])
-    Subject      Subject     @relation(fields: [subjectId], references: [subjectId])
-    ClassSubject ClassSubject @relation(fields: [classSubjectId], references: [csId])
-    Employees    Employees   @relation(fields: [uploadedBy], references: [employeeId])
+  // Relations
+  Exam         Exam         @relation(fields: [examId], references: [examId])
+  Students     Students     @relation(fields: [studentId], references: [studentId])
+  Subject      Subject      @relation(fields: [subjectId], references: [subjectId])
+  ClassSubject ClassSubject @relation(fields: [classSubjectId], references: [csId])
+  Employees    Employees    @relation(fields: [uploadedBy], references: [employeeId])
 
-    // Unique constraint
-    @@unique([examId, studentId, subjectId])
+  // Unique constraint
+  @@unique([examId, studentId, subjectId])
 }
 
 model ReportCard {
-    reportCardId       String           @id @default(cuid())
-    studentId          String
-    examId             String
-    sessionId          String
-    classId            String
-    totalObtainedMarks Float
-    totalMaxMarks      Float
-    percentage         Float
-    status             ReportCardStatus
-    generatedAt        DateTime         @default(now())
-    createdAt          DateTime         @default(now())
-    updatedAt          DateTime         @updatedAt
+  reportCardId       String           @id @default(cuid())
+  studentId          String
+  examId             String
+  sessionId          String
+  classId            String
+  totalObtainedMarks Float
+  totalMaxMarks      Float
+  percentage         Float
+  status             ReportCardStatus
+  generatedAt        DateTime         @default(now())
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
 
-    // Relations
-    Students          Students           @relation(fields: [studentId], references: [studentId])
-    Exam              Exam               @relation(fields: [examId], references: [examId])
-    Sessions          Sessions           @relation(fields: [sessionId], references: [sessionId])
-    Grades            Grades             @relation(fields: [classId], references: [classId])
-    ReportCardDetail  ReportCardDetail[]
+  // Relations
+  Students         Students           @relation(fields: [studentId], references: [studentId])
+  Exam             Exam               @relation(fields: [examId], references: [examId])
+  Sessions         Sessions           @relation(fields: [sessionId], references: [sessionId])
+  Grades           Grades             @relation(fields: [classId], references: [classId])
+  ReportCardDetail ReportCardDetail[]
 }
 
 model ReportCardDetail {
-    reportCardDetailId String    @id @default(cuid())
-    reportCardId       String
-    subjectId          String
-    totalMarks         Float
-    obtainedMarks      Float
-    percentage         Float
-    remarks            String?
-    createdAt          DateTime  @default(now())
+  reportCardDetailId String   @id @default(cuid())
+  reportCardId       String
+  subjectId          String
+  totalMarks         Float
+  obtainedMarks      Float
+  percentage         Float
+  remarks            String?
+  createdAt          DateTime @default(now())
 
-    // Relations
-    ReportCard ReportCard @relation(fields: [reportCardId], references: [reportCardId])
-    Subject    Subject    @relation(fields: [subjectId], references: [subjectId])
+  // Relations
+  ReportCard ReportCard @relation(fields: [reportCardId], references: [reportCardId])
+  Subject    Subject    @relation(fields: [subjectId], references: [subjectId])
 }
 
 model PromotionHistory {
-    promotionHistoryId String          @id @default(cuid())
-    studentId          String
-    fromClassId        String
-    toClassId          String
-    fromSessionId      String
-    toSessionId        String
-    promotionReason    PromotionReason
-    remarks            String?
-    promotedBy         String
-    promotedAt         DateTime        @default(now())
-    createdAt          DateTime        @default(now())
+  promotionHistoryId String          @id @default(cuid())
+  studentId          String
+  fromClassId        String
+  toClassId          String
+  fromSessionId      String
+  toSessionId        String
+  promotionReason    PromotionReason
+  remarks            String?
+  promotedBy         String
+  promotedAt         DateTime        @default(now())
+  createdAt          DateTime        @default(now())
 
-    // Relations
-    Students      Students @relation(fields: [studentId], references: [studentId])
-    FromGrades    Grades   @relation("PromotionFrom", fields: [fromClassId], references: [classId])
-    ToGrades      Grades   @relation("PromotionTo", fields: [toClassId], references: [classId])
-    FromSessions  Sessions @relation("PromotionFromSession", fields: [fromSessionId], references: [sessionId])
-    ToSessions    Sessions @relation("PromotionToSession", fields: [toSessionId], references: [sessionId])
-    Employees     Employees @relation(fields: [promotedBy], references: [employeeId])
+  // Relations
+  Students     Students  @relation(fields: [studentId], references: [studentId])
+  FromGrades   Grades    @relation("PromotionFrom", fields: [fromClassId], references: [classId])
+  ToGrades     Grades    @relation("PromotionTo", fields: [toClassId], references: [classId])
+  FromSessions Sessions  @relation("PromotionFromSession", fields: [fromSessionId], references: [sessionId])
+  ToSessions   Sessions  @relation("PromotionToSession", fields: [toSessionId], references: [sessionId])
+  Employees    Employees @relation(fields: [promotedBy], references: [employeeId])
 }
 
+model SubjectDiary {
+  subjectDiaryId String   @id @default(cuid())
+  classSubjectId String
+  teacherId      String
+  date           DateTime @default(now())
+  content        String   @db.Text
+  attachments    String[] @default([])
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 
+  // Relations
+  ClassSubject ClassSubject @relation(fields: [classSubjectId], references: [csId], onDelete: Cascade)
+  Teacher      Employees    @relation("SubjectDiaries", fields: [teacherId], references: [employeeId], onDelete: Cascade)
+
+  @@index([classSubjectId])
+  @@index([teacherId])
+}
+
+model StudentAttendance {
+  studentAttendanceId String   @id @default(cuid())
+  studentId           String
+  classId             String
+  sessionId           String
+  date                String // Format: YYYY-MM-DD
+  status              String   @default("A") // P, A, L (Present, Absent, Leave)
+  remarks             String?
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  // Relations
+  Student Students @relation(fields: [studentId], references: [studentId], onDelete: Cascade)
+  Class   Grades   @relation(fields: [classId], references: [classId], onDelete: Cascade)
+  Session Sessions @relation(fields: [sessionId], references: [sessionId], onDelete: Cascade)
+
+  @@unique([studentId, classId, sessionId, date])
+  @@index([classId])
+  @@index([sessionId])
+}
 
 // Enums
 enum ClassCategory {
-    Montessori
-    Primary
-    Middle
-    SSC_I
-    SSC_II
+  Montessori
+  Primary
+  Middle
+  SSC_I
+  SSC_II
 }
 
 enum Designation {
-    PRINCIPAL
-    ADMIN
-    HEAD
-    CLERK
-    TEACHER
-    WORKER
-    NONE
-    ALL
-    STUDENT
-    FACULTY
+  PRINCIPAL
+  ADMIN
+  HEAD
+  CLERK
+  TEACHER
+  WORKER
+  NONE
+  ALL
+  STUDENT
+  FACULTY
 }
 
 enum FeePayment {
-    ADMISSION
-    TUITION
-    EXAM
-    LAB
-    CARD
-    CALLS
+  ADMISSION
+  TUITION
+  EXAM
+  LAB
+  CARD
+  CALLS
 }
 
 enum FeeType {
-    MONTHLY
-    ANNUAL
+  MONTHLY
+  ANNUAL
 }
 
 enum FeeCategory {
-    MonthlyFee
-    AnnualFee
+  MonthlyFee
+  AnnualFee
 }
 
 enum SalaryStatus {
-    PAID
-    PENDING
-    PARTIAL
+  PAID
+  PENDING
+  PARTIAL
 }
 
 enum ExpenseCategory {
-    UTILITIES
-    SUPPLIES
-    MAINTENANCE
-    SALARIES
-    TRANSPORT
-    FOOD
-    EQUIPMENT
-    OTHER
-    BISE
+  UTILITIES
+  SUPPLIES
+  MAINTENANCE
+  SALARIES
+  TRANSPORT
+  FOOD
+  EQUIPMENT
+  OTHER
+  BISE
 }
 
 enum Gender {
-    MALE
-    FEMALE
-    CUSTOM
+  MALE
+  FEMALE
+  CUSTOM
 }
 
 enum MaritalStatus {
-    Married
-    Unmarried
-    Widow
-    Divorced
+  Married
+  Unmarried
+  Widow
+  Divorced
 }
 
 enum EventType {
-    MEETING
-    WORKSHOP
-    CONFERENCE
-    TRAINING
-    WEBINAR
-    SOCIAL
-    OTHER
+  MEETING
+  WORKSHOP
+  CONFERENCE
+  TRAINING
+  WEBINAR
+  SOCIAL
+  OTHER
 }
 
 enum Priority {
-    LOW
-    MEDIUM
-    HIGH
-    URGENT
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
 }
 
 enum EventStatus {
-    CONFIRMED
-    TENTATIVE
-    CANCELLED
+  CONFIRMED
+  TENTATIVE
+  CANCELLED
 }
 
 enum RecurrenceType {
-    NONE
-    DAILY
-    WEEKLY
-    MONTHLY
-    YEARLY
+  NONE
+  DAILY
+  WEEKLY
+  MONTHLY
+  YEARLY
 }
 
 enum AttendeeStatus {
-    PENDING
-    ACCEPTED
-    DECLINED
-    MAYBE
+  PENDING
+  ACCEPTED
+  DECLINED
+  MAYBE
 }
 
 enum ReminderType {
-    EMAIL
-    PUSH
-    SMS
+  EMAIL
+  PUSH
+  SMS
 }
 
 // New enum for timetable days
 enum DayOfWeek {
-    Monday
-    Tuesday
-    Wednesday
-    Thursday
-    Friday
-    Saturday
-    Sunday
+  Monday
+  Tuesday
+  Wednesday
+  Thursday
+  Friday
+  Saturday
+  Sunday
 }
 
 enum ExamCategory {
-    STANDARD
-    PHASE_TEST
+  STANDARD
+  PHASE_TEST
 }
 
 enum ExamTypeEnum {
-    MIDTERM
-    FINAL
-    PHASE_1
-    PHASE_2
-    PHASE_3
-    PHASE_4
-    PHASE_5
-    PHASE_6
+  MIDTERM
+  FINAL
+  PHASE_1
+  PHASE_2
+  PHASE_3
+  PHASE_4
+  PHASE_5
+  PHASE_6
 }
 
 enum ExamStatus {
-    SCHEDULED
-    ONGOING
-    COMPLETED
+  SCHEDULED
+  ONGOING
+  COMPLETED
 }
 
 enum ReportCardStatus {
-    PASSED
-    FAILED
-    PENDING
+  PASSED
+  FAILED
+  PENDING
 }
 
 enum PromotionReason {
-    PASSED
-    SPECIAL_CASE
+  PASSED
+  SPECIAL_CASE
 }
-

@@ -1,16 +1,16 @@
-"use client"
+"use client";
 
-import { useState, useEffect, type ReactNode } from "react"
-import { useForm } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { z } from "zod"
-import { Check, ChevronsUpDown } from "lucide-react"
+import { useState, useEffect, type ReactNode } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { Check, ChevronsUpDown } from "lucide-react";
 
-import { api } from "~/trpc/react"
-import { useToast } from "~/hooks/use-toast"
-import { cn } from "~/lib/utils"
+import { api } from "~/trpc/react";
+import { useToast } from "~/hooks/use-toast";
+import { cn } from "~/lib/utils";
 
-import { Button } from "~/components/ui/button"
+import { Button } from "~/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -18,7 +18,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "~/components/ui/dialog"
+} from "~/components/ui/dialog";
 // Removed Select imports as we are now using Command/Popover for everything
 import {
   Command,
@@ -27,29 +27,29 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-} from "~/components/ui/command"
+} from "~/components/ui/command";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "~/components/ui/popover"
-import { Label } from "~/components/ui/label"
+} from "~/components/ui/popover";
+import { Label } from "~/components/ui/label";
 
 // Schema
 const AllotmentSchema = z.object({
   classId: z.string().cuid(),
   studentId: z.string().cuid(),
   sessionId: z.string().cuid(),
-})
+});
 
-type AllotmentSchemaType = z.infer<typeof AllotmentSchema>
+type AllotmentSchemaType = z.infer<typeof AllotmentSchema>;
 
 interface AllotmentDialogProps {
-  open?: boolean
-  onOpenChange?: (open: boolean) => void
-  sessions: { sessionId: string; sessionName: string }[]
-  classId: string
-  children?: ReactNode
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  sessions: { sessionId: string; sessionName: string }[];
+  classId: string;
+  children?: ReactNode;
 }
 
 export default function AllotmentDialog({
@@ -60,9 +60,9 @@ export default function AllotmentDialog({
   children,
 }: AllotmentDialogProps) {
   // State for the Comboboxes
-  const [studentOpen, setStudentOpen] = useState(false)
-  const [sessionOpen, setSessionOpen] = useState(false)
-  
+  const [studentOpen, setStudentOpen] = useState(false);
+  const [sessionOpen, setSessionOpen] = useState(false);
+
   const form = useForm<AllotmentSchemaType>({
     resolver: zodResolver(AllotmentSchema),
     defaultValues: {
@@ -70,61 +70,62 @@ export default function AllotmentDialog({
       studentId: "",
       classId,
     },
-  })
+  });
 
-  const utils = api.useUtils()
-  const { toast } = useToast()
+  const utils = api.useUtils();
+  const { toast } = useToast();
 
   // Fetch unallocated students
-  const { data: unallocatedStudentsData, isLoading: studentsLoading } = 
+  const { data: unallocatedStudentsData, isLoading: studentsLoading } =
     api.student.getUnAllocateStudents.useQuery(
       {
         page: 1,
-        pageSize: 100, 
+        pageSize: 100,
       },
       {
-        enabled: open, 
-      }
-    )
+        enabled: open,
+      },
+    );
 
   const allotment = api.allotment.addToClass.useMutation({
     onSuccess: async () => {
       toast({
         title: "Success",
         description: "Student has been successfully allotted to the class.",
-      })
+      });
       // Reset logic: keep session, clear student
       form.reset({
-        sessionId: form.getValues("sessionId"), 
+        sessionId: form.getValues("sessionId"),
         studentId: "",
         classId,
-      })
-      await utils.student.getUnAllocateStudents.invalidate()
-      await utils.allotment.invalidate()
-      onOpenChange?.(false)
+      });
+      await utils.student.getUnAllocateStudents.invalidate();
+      await utils.allotment.invalidate();
+      onOpenChange?.(false);
     },
     onError: (error) => {
       toast({
         title: "Error",
         description: error.message || "Failed to allot student to class.",
-        variant: "destructive"
-      })
+        variant: "destructive",
+      });
     },
-  })
+  });
 
   const onSubmit = (data: AllotmentSchemaType) => {
     allotment.mutate({
       ...data,
       classId,
-    })
-  }
+    });
+  };
 
-  const unallocatedStudents = unallocatedStudentsData?.data?.map(student => ({
-    studentId: student.studentId,
-    studentName: student.studentName,
-    fatherName: student.fatherName,
-    admissionNumber: student.admissionNumber
-  })) ?? []
+  const unallocatedStudents =
+    unallocatedStudentsData?.data?.map((student) => ({
+      studentId: student.studentId,
+      studentName: student.studentName,
+      fatherName: student.fatherName,
+      admissionNumber: student.admissionNumber,
+    })) ?? [];
 
   // Reset form when dialog opens/closes
   useEffect(() => {
@@ -133,9 +134,9 @@ export default function AllotmentDialog({
         sessionId: "",
         studentId: "",
         classId,
-      })
+      });
     }
-  }, [open, form, classId])
+  }, [open, form, classId]);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -143,15 +144,17 @@ export default function AllotmentDialog({
         {children ?? <Button>Allot Student</Button>}
       </DialogTrigger>
 
-      <DialogContent className="sm:max-w-[425px] overflow-visible">
+      <DialogContent className="overflow-visible sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>Allot Student to Class</DialogTitle>
         </DialogHeader>
 
-        <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-4 py-2">
-          
+        <form
+          onSubmit={form.handleSubmit(onSubmit)}
+          className="flex flex-col gap-4 py-2"
+        >
           {/* IMPROVED: Session Dropdown (Combobox) */}
-          <div className="space-y-2 flex flex-col">
+          <div className="flex flex-col space-y-2">
             <Label>Session</Label>
             <Popover open={sessionOpen} onOpenChange={setSessionOpen}>
               <PopoverTrigger asChild>
@@ -161,12 +164,13 @@ export default function AllotmentDialog({
                   aria-expanded={sessionOpen}
                   className={cn(
                     "w-full justify-between",
-                    !form.watch("sessionId") && "text-muted-foreground"
+                    !form.watch("sessionId") && "text-muted-foreground",
                   )}
                 >
                   {form.watch("sessionId")
                     ? sessions.find(
-                        (session) => session.sessionId === form.watch("sessionId")
+                        (session) =>
+                          session.sessionId === form.watch("sessionId"),
                       )?.sessionName
                     : "Select session..."}
                   <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
@@ -183,8 +187,8 @@ export default function AllotmentDialog({
                           key={session.sessionId}
                           value={session.sessionName}
                           onSelect={() => {
-                            form.setValue("sessionId", session.sessionId)
-                            setSessionOpen(false)
+                            form.setValue("sessionId", session.sessionId);
+                            setSessionOpen(false);
                           }}
                         >
                           <Check
@@ -192,7 +196,7 @@ export default function AllotmentDialog({
                               "mr-2 h-4 w-4",
                               form.watch("sessionId") === session.sessionId
                                 ? "opacity-100"
-                                : "opacity-0"
+                                : "opacity-0",
                             )}
                           />
                           {session.sessionName}
@@ -211,7 +215,7 @@ export default function AllotmentDialog({
           </div>
 
           {/* Student Searchable Select (Combobox) */}
-          <div className="space-y-2 flex flex-col">
+          <div className="flex flex-col space-y-2">
             <Label>Student</Label>
             <Popover open={studentOpen} onOpenChange={setStudentOpen}>
               <PopoverTrigger asChild>
@@ -220,16 +224,19 @@ export default function AllotmentDialog({
                   role="combobox"
                   aria-expanded={studentOpen}
                   className={cn(
-                    "w-full justify-between h-auto min-h-[40px]", 
-                    !form.watch("studentId") && "text-muted-foreground"
+                    "h-auto min-h-[40px] w-full justify-between",
+                    !form.watch("studentId") && "text-muted-foreground",
                   )}
                   disabled={studentsLoading}
                 >
                   {form.watch("studentId")
                     ? unallocatedStudents.find(
-                        (student) => student.studentId === form.watch("studentId")
+                        (student) =>
+                          student.studentId === form.watch("studentId"),
                       )?.studentName
-                    : studentsLoading ? "Loading..." : "Select student..."}
+                    : studentsLoading
+                      ? "Loading..."
+                      : "Select student..."}
                   <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                 </Button>
               </PopoverTrigger>
@@ -242,26 +249,32 @@ export default function AllotmentDialog({
                       {unallocatedStudents.map((student) => (
                         <CommandItem
                           key={student.studentId}
-                          value={`${student.studentName} ${student.fatherName} ${student.admissionNumber ?? ''}`}
+                          value={`${student.studentName} ${student.fatherName} ${student.admissionNumber ?? ""}`}
                           onSelect={() => {
-                            form.setValue("studentId", student.studentId)
-                            setStudentOpen(false)
+                            form.setValue("studentId", student.studentId);
+                            setStudentOpen(false);
                           }}
                         >
                           <Check
                             className={cn(
-                              "mr-2 h-4 w-4 shrink-0", 
+                              "mr-2 h-4 w-4 shrink-0",
                               form.watch("studentId") === student.studentId
                                 ? "opacity-100"
-                                : "opacity-0"
+                                : "opacity-0",
                             )}
                           />
                           <div className="flex flex-col">
-                            <span className="font-medium">{student.studentName}</span>
+                            <span className="font-medium">
+                              {student.studentName}
+                            </span>
                             <span className="text-xs text-muted-foreground">
-                              {student.fatherName && `S/O ${student.fatherName}`}
-                              {student.fatherName && student.admissionNumber && " • "}
-                              {student.admissionNumber && `Adm: ${student.admissionNumber}`}
+                              {student.fatherName &&
+                                `S/O ${student.fatherName}`}
+                              {student.fatherName &&
+                                student.admissionNumber &&
+                                " • "}
+                              {student.admissionNumber &&
+                                `Adm: ${student.admissionNumber}`}
                             </span>
                           </div>
                         </CommandItem>
@@ -271,7 +284,7 @@ export default function AllotmentDialog({
                 </Command>
               </PopoverContent>
             </Popover>
-            
+
             {form.formState.errors.studentId && (
               <p className="text-sm text-red-500">
                 {form.formState.errors.studentId.message}
@@ -302,7 +315,7 @@ export default function AllotmentDialog({
         </form>
       </DialogContent>
     </Dialog>
-  )
+  );
 }
 
-export { AllotmentDialog }
+export { AllotmentDialog };

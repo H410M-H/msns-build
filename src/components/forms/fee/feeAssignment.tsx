@@ -1,7 +1,7 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Button } from "~/components/ui/button"
+import { useState } from "react";
+import { Button } from "~/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -10,16 +10,29 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "~/components/ui/dialog"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select"
-import { useToast } from "~/hooks/use-toast"
-import { api } from "~/trpc/react"
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "~/components/ui/form"
-import { useForm } from "react-hook-form"
-import { z } from "zod"
-import { WalletCards, Users, Loader2 } from "lucide-react"
-import { Badge } from "~/components/ui/badge"
-import { zodResolver } from "@hookform/resolvers/zod"
+} from "~/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "~/components/ui/select";
+import { useToast } from "~/hooks/use-toast";
+import { api } from "~/trpc/react";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "~/components/ui/form";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { WalletCards, Users, Loader2 } from "lucide-react";
+import { Badge } from "~/components/ui/badge";
+import { zodResolver } from "@hookform/resolvers/zod";
 
 const formSchema = z.object({
   sessionId: z.string().min(1, "Session is required"),
@@ -27,7 +40,7 @@ const formSchema = z.object({
   feeId: z.string().min(1, "Fee structure is required"),
   month: z.string().min(1, "Month is required"),
   year: z.string().min(1, "Year is required"),
-})
+});
 
 const months = [
   { value: "1", label: "January" },
@@ -42,18 +55,18 @@ const months = [
   { value: "10", label: "October" },
   { value: "11", label: "November" },
   { value: "12", label: "December" },
-]
+];
 
-const currentYear = new Date().getFullYear()
+const currentYear = new Date().getFullYear();
 const years = Array.from({ length: 5 }, (_, i) => ({
   value: String(currentYear - 2 + i),
   label: String(currentYear - 2 + i),
-}))
+}));
 
 export function FeeAssignmentDialog() {
-  const [open, setOpen] = useState(false)
-  const { toast } = useToast()
-  const utils = api.useUtils()
+  const [open, setOpen] = useState(false);
+  const { toast } = useToast();
+  const utils = api.useUtils();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -61,11 +74,11 @@ export function FeeAssignmentDialog() {
       month: String(new Date().getMonth() + 1),
       year: String(currentYear),
     },
-  })
+  });
 
-  const feeData = api.fee.getAllFees.useQuery()
-  const sessionData = api.session.getSessions.useQuery()
-  const classData = api.class.getClasses.useQuery()
+  const feeData = api.fee.getAllFees.useQuery();
+  const sessionData = api.session.getSessions.useQuery();
+  const classData = api.class.getClasses.useQuery();
 
   const studentCountData = api.allotment.getStudentsByClassAndSession.useQuery(
     {
@@ -75,25 +88,25 @@ export function FeeAssignmentDialog() {
     {
       enabled: !!form.watch("classId") && !!form.watch("sessionId"),
     },
-  )
+  );
 
   const assignFee = api.fee.assignFeeToClass.useMutation({
     onSuccess: (data) => {
       toast({
         title: "Fee assigned successfully",
         description: `Assigned to ${data.assignedCount} students. ${data.skippedCount > 0 ? `${data.skippedCount} already had fees assigned.` : ""}`,
-      })
-      void utils.fee.invalidate()
-      setOpen(false)
-      form.reset()
+      });
+      void utils.fee.invalidate();
+      setOpen(false);
+      form.reset();
     },
     onError: (error) => {
       toast({
         title: "Error assigning fee",
         description: error.message,
-      })
+      });
     },
-  })
+  });
 
   const onSubmit = (values: z.infer<typeof formSchema>) => {
     assignFee.mutate({
@@ -102,26 +115,28 @@ export function FeeAssignmentDialog() {
       sessionId: values.sessionId,
       month: Number.parseInt(values.month),
       year: Number.parseInt(values.year),
-    })
-  }
+    });
+  };
 
-  const studentCount = studentCountData.data?.data?.length ?? 0
+  const studentCount = studentCountData.data?.data?.length ?? 0;
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button
           size="sm"
-          className="h-11 px-4 rounded-xl gap-2 bg-gradient-to-r from-emerald-600 to-teal-600 text-white hover:shadow-md"
+          className="h-11 gap-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 px-4 text-foreground hover:shadow-md"
         >
-          <WalletCards className="w-4 h-4" />
+          <WalletCards className="h-4 w-4" />
           Assign Fee
         </Button>
       </DialogTrigger>
 
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle className="text-xl font-bold">Bulk Fee Assignment</DialogTitle>
+          <DialogTitle className="text-xl font-bold">
+            Bulk Fee Assignment
+          </DialogTitle>
           <DialogDescription className="text-sm text-muted-foreground">
             Assign monthly fee to all students in a class at once.
           </DialogDescription>
@@ -136,7 +151,11 @@ export function FeeAssignmentDialog() {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Academic Session</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value} disabled={sessionData.isLoading}>
+                  <Select
+                    onValueChange={field.onChange}
+                    value={field.value}
+                    disabled={sessionData.isLoading}
+                  >
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Select session" />
@@ -144,7 +163,10 @@ export function FeeAssignmentDialog() {
                     </FormControl>
                     <SelectContent>
                       {sessionData.data?.map((session) => (
-                        <SelectItem key={session.sessionId} value={session.sessionId}>
+                        <SelectItem
+                          key={session.sessionId}
+                          value={session.sessionId}
+                        >
                           {session.sessionName}
                         </SelectItem>
                       ))}
@@ -174,7 +196,10 @@ export function FeeAssignmentDialog() {
                     </FormControl>
                     <SelectContent>
                       {classData.data?.map((classItem) => (
-                        <SelectItem key={classItem.classId} value={classItem.classId}>
+                        <SelectItem
+                          key={classItem.classId}
+                          value={classItem.classId}
+                        >
                           {classItem.grade} - {classItem.section}
                         </SelectItem>
                       ))}
@@ -186,14 +211,15 @@ export function FeeAssignmentDialog() {
             />
 
             {form.watch("classId") && form.watch("sessionId") && (
-              <div className="flex items-center gap-2 p-3 bg-blue-50 rounded-lg border border-blue-100">
-                <Users className="w-4 h-4 text-blue-600" />
+              <div className="flex items-center gap-2 rounded-lg border border-blue-100 bg-blue-50 p-3">
+                <Users className="h-4 w-4 text-blue-600" />
                 <span className="text-sm text-blue-800">
                   {studentCountData.isLoading ? (
                     "Loading students..."
                   ) : (
                     <>
-                      <strong>{studentCount}</strong> students will be assigned this fee
+                      <strong>{studentCount}</strong> students will be assigned
+                      this fee
                     </>
                   )}
                 </span>
@@ -260,7 +286,11 @@ export function FeeAssignmentDialog() {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Fee Structure</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value} disabled={feeData.isLoading}>
+                  <Select
+                    onValueChange={field.onChange}
+                    value={field.value}
+                    disabled={feeData.isLoading}
+                  >
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Select fee structure" />
@@ -284,18 +314,30 @@ export function FeeAssignmentDialog() {
               )}
             />
 
-            <DialogFooter className="pt-4 border-t">
-              <Button type="button" variant="outline" onClick={() => setOpen(false)}>
+            <DialogFooter className="border-t pt-4">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setOpen(false)}
+              >
                 Cancel
               </Button>
-              <Button type="submit" disabled={assignFee.isPending || studentCount === 0} className="gap-2">
-                {assignFee.isPending && <Loader2 className="w-4 h-4 animate-spin" />}
-                {assignFee.isPending ? "Assigning..." : `Assign to ${studentCount} Students`}
+              <Button
+                type="submit"
+                disabled={assignFee.isPending || studentCount === 0}
+                className="gap-2"
+              >
+                {assignFee.isPending && (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                )}
+                {assignFee.isPending
+                  ? "Assigning..."
+                  : `Assign to ${studentCount} Students`}
               </Button>
             </DialogFooter>
           </form>
         </Form>
       </DialogContent>
     </Dialog>
-  )
+  );
 }

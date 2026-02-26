@@ -4,5 +4,6 @@
         "titleBar.activeBackground": "#244815",
         "titleBar.activeForeground": "#F6FCF3"
     },
-    "prisma.pinToPrisma6": true
+    "prisma.pinToPrisma6": true,
+    "css.lint.unknownAtRules": "ignore"
 }

@@ -1,10 +1,10 @@
 export interface EventType {
-  id: string
-  label: string
-  color: string
-  bgColor: string
-  borderColor: string
-  description: string
+  id: string;
+  label: string;
+  color: string;
+  bgColor: string;
+  borderColor: string;
+  description: string;
 }
 
 export const EVENT_TYPES: EventType[] = [
@@ -64,18 +64,18 @@ export const EVENT_TYPES: EventType[] = [
     borderColor: "border-gray-500",
     description: "Miscellaneous events and activities",
   },
-]
+];
 
 export const getEventTypeById = (id: string): EventType | undefined => {
-  return EVENT_TYPES.find((type) => type.id === id)
-}
+  return EVENT_TYPES.find((type) => type.id === id);
+};
 
 export const getEventTypeColor = (typeId: string): EventType => {
-  const found = getEventTypeById(typeId.toUpperCase())
-  return found ?? EVENT_TYPES.find((type) => type.id === "OTHER")!
-}
+  const found = getEventTypeById(typeId.toUpperCase());
+  return found ?? EVENT_TYPES.find((type) => type.id === "OTHER")!;
+};
 
 export const getEventTypeLabel = (typeId: string): string => {
-  const eventType = getEventTypeById(typeId.toUpperCase())
-  return eventType ? eventType.label : "Unknown"
-}
+  const eventType = getEventTypeById(typeId.toUpperCase());
+  return eventType ? eventType.label : "Unknown";
+};

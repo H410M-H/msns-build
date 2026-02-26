@@ -8,8 +8,7 @@ import { LoginForm } from "~/components/forms/auth/LoginForm";
 export default function SignInPage() {
   return (
     // h-dvh ensures full screen on mobile (ignoring address bar resizing)
-    <main className="relative flex h-dvh w-full items-center justify-center overflow-hidden bg-slate-950">
-      
+    <main className="relative flex h-dvh w-full items-center justify-center overflow-hidden bg-card">
       {/* --- LAYER 1: Background Image --- */}
       <div className="absolute inset-0 z-0">
         <Image
@@ -26,16 +25,16 @@ export default function SignInPage() {
       </div>
 
       {/* --- LAYER 2: Animated Ambient Glow --- */}
-      <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
-        <motion.div 
-            animate={{ rotate: 360 }}
-            transition={{ duration: 50, repeat: Infinity, ease: "linear" }}
-            className="absolute -top-[20%] -left-[10%] w-[70vh] h-[70vh] rounded-full bg-emerald-500/20 blur-[100px]" 
+      <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden">
+        <motion.div
+          animate={{ rotate: 360 }}
+          transition={{ duration: 50, repeat: Infinity, ease: "linear" }}
+          className="absolute -left-[10%] -top-[20%] h-[70vh] w-[70vh] rounded-full bg-emerald-500/20 blur-[100px]"
         />
-         <motion.div 
-            animate={{ rotate: -360 }}
-            transition={{ duration: 60, repeat: Infinity, ease: "linear" }}
-            className="absolute -bottom-[20%] -right-[10%] w-[60vh] h-[60vh] rounded-full bg-blue-500/20 blur-[100px]" 
+        <motion.div
+          animate={{ rotate: -360 }}
+          transition={{ duration: 60, repeat: Infinity, ease: "linear" }}
+          className="absolute -bottom-[20%] -right-[10%] h-[60vh] w-[60vh] rounded-full bg-blue-500/20 blur-[100px]"
         />
       </div>
 
@@ -45,11 +44,10 @@ export default function SignInPage() {
           initial={{ opacity: 0, scale: 0.95, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           transition={{ duration: 0.5, ease: "easeOut" }}
-          className="mx-auto w-full max-w-[450px] overflow-hidden rounded-3xl border border-white/20 bg-white/10 p-6 shadow-2xl backdrop-blur-xl sm:p-10"
+          className="mx-auto w-full max-w-[450px] overflow-hidden rounded-3xl border border-border bg-white/10 p-6 shadow-2xl backdrop-blur-xl sm:p-10"
         >
           {/* Header */}
           <div className="mb-8 flex flex-col items-center text-center">
-            
             {/* ⚡️ LOGO ANIMATION RESTORED HERE ⚡️ */}
             <motion.div
               initial={{ scale: 0, opacity: 0 }}
@@ -57,27 +55,27 @@ export default function SignInPage() {
               transition={{ duration: 0.5, ease: "backOut" }}
               className="relative mb-4 h-28 w-28 sm:h-32 sm:w-32"
             >
-               {/* Inner wrapper handles the infinite jump loop */}
-               <motion.div
-                  animate={{ y: [0, -15, 0] }}
-                  transition={{ 
-                    duration: 2, 
-                    repeat: Infinity, 
-                    ease: "easeInOut" 
-                  }}
-                  className="relative h-full w-full"
-               >
-                  <Image
-                    src="https://res.cloudinary.com/dvvbxrs55/image/upload/v1729267533/Official_LOGO_grn_ic9ldd.png"
-                    alt="Logo"
-                    fill
-                    className="object-contain drop-shadow-2xl"
-                    priority
-                  />
-               </motion.div>
+              {/* Inner wrapper handles the infinite jump loop */}
+              <motion.div
+                animate={{ y: [0, -15, 0] }}
+                transition={{
+                  duration: 2,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                }}
+                className="relative h-full w-full"
+              >
+                <Image
+                  src="https://res.cloudinary.com/dvvbxrs55/image/upload/v1729267533/Official_LOGO_grn_ic9ldd.png"
+                  alt="Logo"
+                  fill
+                  className="object-contain drop-shadow-2xl"
+                  priority
+                />
+              </motion.div>
             </motion.div>
-            
-            <h1 className="font-serif text-3xl font-bold tracking-tight text-white sm:text-4xl drop-shadow-md">
+
+            <h1 className="font-serif text-3xl font-bold tracking-tight text-foreground drop-shadow-md sm:text-4xl">
               MSNS-LMS
             </h1>
             <p className="mt-2 text-base font-medium text-emerald-100/80">
@@ -91,19 +89,29 @@ export default function SignInPage() {
           </div>
 
           {/* Footer Links */}
-          <div className="mt-8 flex items-center justify-center gap-4 text-xs text-white/40">
-            <Link href="https://msns.edu.pk/terms" className="hover:text-emerald-300 transition-colors">Terms</Link>
+          <div className="mt-8 flex items-center justify-center gap-4 text-xs text-foreground/40">
+            <Link
+              href="https://msns.edu.pk/terms"
+              className="transition-colors hover:text-emerald-300"
+            >
+              Terms
+            </Link>
             <span>•</span>
-            <Link href="https://msns.edu.pk/privacy" className="hover:text-emerald-300 transition-colors">Privacy</Link>
+            <Link
+              href="https://msns.edu.pk/privacy"
+              className="transition-colors hover:text-emerald-300"
+            >
+              Privacy
+            </Link>
           </div>
         </motion.div>
 
         {/* Copyright */}
-        <motion.p 
+        <motion.p
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.8 }}
-          className="absolute -bottom-16 left-0 right-0 text-center text-xs text-white/30"
+          className="absolute -bottom-16 left-0 right-0 text-center text-xs text-foreground/30"
         >
           © {new Date().getFullYear()} MSNS-DEV™. All rights reserved.
         </motion.p>

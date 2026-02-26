@@ -1,74 +1,78 @@
-"use client"
+"use client";
 
-import { useState, useRef } from "react"
-import { api } from "~/trpc/react"
+import { useState, useRef } from "react";
+import { api } from "~/trpc/react";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogFooter,
-} from "~/components/ui/dialog"
-import { Button } from "~/components/ui/button"
+} from "~/components/ui/dialog";
+import { Button } from "~/components/ui/button";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "~/components/ui/select"
-import { Loader2, Printer, Download, FileText } from "lucide-react"
-import { toast } from "~/hooks/use-toast"
-import * as jsPDF from "jspdf"
-import * as html2canvas from "html2canvas-pro"
-import { AnnualSalarySlip } from "./AnnualSalarySlip"
+} from "~/components/ui/select";
+import { Loader2, Printer, Download, FileText } from "lucide-react";
+import { toast } from "~/hooks/use-toast";
+import * as jsPDF from "jspdf";
+import * as html2canvas from "html2canvas-pro";
+import { AnnualSalarySlip } from "./AnnualSalarySlip";
 
 interface SalaryRecord {
-  id: string
-  amount: number
-  allowances: number | null
-  bonus: number | null
-  deductions: number | null
-  status: "PAID" | "PENDING" | "PARTIAL"
-  month: number
-  year: number
-  paymentDate: Date | null
+  id: string;
+  amount: number;
+  allowances: number | null;
+  bonus: number | null;
+  deductions: number | null;
+  status: "PAID" | "PENDING" | "PARTIAL";
+  month: number;
+  year: number;
+  paymentDate: Date | null;
 }
 
 interface AnnualSalaryDialogProps {
-  open: boolean
-  onOpenChange: (open: boolean) => void
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
   employee: {
-    id: string
-    name: string
-    designation: string
-    registrationNumber: string
-  }
+    id: string;
+    name: string;
+    designation: string;
+    registrationNumber: string;
+  };
 }
 
 export function AnnualSalaryDialog({
   open,
   onOpenChange,
-  employee
+  employee,
 }: AnnualSalaryDialogProps) {
-  const [selectedYear, setSelectedYear] = useState<string>(String(new Date().getFullYear()))
-  const [isDownloading, setIsDownloading] = useState(false)
-  const annualRef = useRef<HTMLDivElement>(null)
+  const [selectedYear, setSelectedYear] = useState<string>(
+    String(new Date().getFullYear()),
+  );
+  const [isDownloading, setIsDownloading] = useState(false);
+  const annualRef = useRef<HTMLDivElement>(null);
 
-  const { data: history, isLoading } = api.salary.getEmployeeSalarySummary.useQuery(
-    { employeeId: employee.id },
-    { enabled: open }
-  )
+  const { data: history, isLoading } =
+    api.salary.getEmployeeSalarySummary.useQuery(
+      { employeeId: employee.id },
+      { enabled: open },
+    );
 
-  const annualRecords = history?.records.filter(r => r.year === Number(selectedYear)) ?? []
+  const annualRecords =
+    history?.records.filter((r) => r.year === Number(selectedYear)) ?? [];
 
   // --- Print/Download Logic ---
   const handlePrint = () => {
-    const content = annualRef.current
-    if (!content) return
+    const content = annualRef.current;
+    if (!content) return;
 
-    const printWindow = window.open("", "_blank")
-    if (!printWindow) return
+    const printWindow = window.open("", "_blank");
+    if (!printWindow) return;
 
     printWindow.document.write(`
       <!DOCTYPE html>
@@ -92,82 +96,86 @@ export function AnnualSalaryDialog({
           </script>
         </body>
       </html>
-    `)
-    printWindow.document.close()
-  }
+    `);
+    printWindow.document.close();
+  };
 
   const handleDownloadPdf = async () => {
-    if (!annualRef.current) return
+    if (!annualRef.current) return;
 
     try {
-      setIsDownloading(true)
-      const element = annualRef.current
-      
+      setIsDownloading(true);
+      const element = annualRef.current;
+
       const canvas = await html2canvas.default(element, {
         scale: 2,
         useCORS: true,
         logging: false,
         backgroundColor: "#ffffff",
-      })
+      });
 
       const pdf = new jsPDF.default({
         orientation: "portrait",
         unit: "mm",
         format: "a4",
-      })
+      });
 
-      const imgData = canvas.toDataURL("image/png")
-      const pdfWidth = pdf.internal.pageSize.getWidth()
-      const pdfHeight = (canvas.height * pdfWidth) / canvas.width
+      const imgData = canvas.toDataURL("image/png");
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
 
-      pdf.addImage(imgData, "PNG", 0, 10, pdfWidth, pdfHeight)
-      pdf.save(`Annual-Statement-${employee.name}-${selectedYear}.pdf`)
+      pdf.addImage(imgData, "PNG", 0, 10, pdfWidth, pdfHeight);
+      pdf.save(`Annual-Statement-${employee.name}-${selectedYear}.pdf`);
     } catch (error) {
-      console.error("PDF Generation Error:", error)
-      toast({ title: "Error", description: "Failed to generate PDF" })
+      console.error("PDF Generation Error:", error);
+      toast({ title: "Error", description: "Failed to generate PDF" });
     } finally {
-      setIsDownloading(false)
+      setIsDownloading(false);
     }
-  }
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl h-[90vh] flex flex-col">
-        <DialogHeader className="flex flex-row items-center justify-between space-y-0 pb-4 border-b">
+      <DialogContent className="flex h-[90vh] max-w-4xl flex-col">
+        <DialogHeader className="flex flex-row items-center justify-between space-y-0 border-b pb-4">
           <DialogTitle className="flex items-center gap-2">
-            <FileText className="w-5 h-5 text-indigo-600" />
+            <FileText className="h-5 w-5 text-indigo-600" />
             Annual Salary Statement
           </DialogTitle>
-          
-          <div className="flex items-center gap-2 mr-8">
-            <span className="text-sm font-medium text-slate-500">Fiscal Year:</span>
+
+          <div className="mr-8 flex items-center gap-2">
+            <span className="text-sm font-medium text-muted-foreground">
+              Fiscal Year:
+            </span>
             <Select value={selectedYear} onValueChange={setSelectedYear}>
-              <SelectTrigger className="w-[100px] h-8">
+              <SelectTrigger className="h-8 w-[100px]">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {[2023, 2024, 2025, 2026].map(y => (
-                  <SelectItem key={y} value={String(y)}>{y}</SelectItem>
+                {[2023, 2024, 2025, 2026].map((y) => (
+                  <SelectItem key={y} value={String(y)}>
+                    {y}
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
           </div>
         </DialogHeader>
-        
+
         {isLoading ? (
-          <div className="flex items-center justify-center flex-1">
-            <Loader2 className="w-8 h-8 animate-spin text-indigo-600" />
+          <div className="flex flex-1 items-center justify-center">
+            <Loader2 className="h-8 w-8 animate-spin text-indigo-600" />
           </div>
         ) : (
-          <div className="flex-1 bg-gray-100 p-6 overflow-auto rounded-md">
-            <div className="flex justify-center min-h-full">
-              <AnnualSalarySlip 
+          <div className="flex-1 overflow-auto rounded-md bg-gray-100 p-6">
+            <div className="flex min-h-full justify-center">
+              <AnnualSalarySlip
                 ref={annualRef}
                 year={Number(selectedYear)}
                 employee={{
                   name: employee.name,
                   designation: employee.designation,
-                  registrationNumber: employee.registrationNumber
+                  registrationNumber: employee.registrationNumber,
                 }}
                 records={annualRecords as unknown as SalaryRecord[]}
               />
@@ -175,20 +183,24 @@ export function AnnualSalaryDialog({
           </div>
         )}
 
-        <DialogFooter className="pt-4 border-t">
+        <DialogFooter className="border-t pt-4">
           <Button variant="outline" onClick={handlePrint} className="gap-2">
-            <Printer className="w-4 h-4" /> Print
+            <Printer className="h-4 w-4" /> Print
           </Button>
-          <Button 
-            onClick={handleDownloadPdf} 
-            disabled={isDownloading} 
-            className="gap-2 bg-indigo-600 hover:bg-indigo-700 text-white"
+          <Button
+            onClick={handleDownloadPdf}
+            disabled={isDownloading}
+            className="gap-2 bg-indigo-600 text-foreground hover:bg-indigo-700"
           >
-            {isDownloading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
+            {isDownloading ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Download className="h-4 w-4" />
+            )}
             Download PDF
           </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  )
+  );
 }

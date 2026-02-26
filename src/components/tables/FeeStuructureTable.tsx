@@ -25,8 +25,8 @@ export function FeeStructureTable() {
   const [selectedFees, setSelectedFees] = useState<string[]>([]);
 
   const toggleSelect = (id: string) => {
-    setSelectedFees(prev => 
-      prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
+    setSelectedFees((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
     );
   };
 
@@ -47,7 +47,10 @@ export function FeeStructureTable() {
         <CardTitle>Fee Structures</CardTitle>
         <div className="flex gap-2">
           {selectedFees.length > 0 && (
-            <FeeDeletionDialog feeIds={selectedFees} onDeleteSuccess={handleRefetch}>
+            <FeeDeletionDialog
+              feeIds={selectedFees}
+              onDeleteSuccess={handleRefetch}
+            >
               Delete Selected
             </FeeDeletionDialog>
           )}
@@ -60,6 +63,7 @@ export function FeeStructureTable() {
         </div>
       </CardHeader>
       <CardContent>
+        <div className="overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow>
@@ -76,7 +80,7 @@ export function FeeStructureTable() {
             {fees.map((fee) => (
               <TableRow key={fee.feeId}>
                 <TableCell>
-                  <Checkbox 
+                  <Checkbox
                     checked={selectedFees.includes(fee.feeId)}
                     onCheckedChange={() => toggleSelect(fee.feeId)}
                   />
@@ -85,8 +89,12 @@ export function FeeStructureTable() {
                 <TableCell>
                   <Badge variant="outline">{fee.type}</Badge>
                 </TableCell>
-                <TableCell className="text-right">Rs. {fee.tuitionFee.toLocaleString()}</TableCell>
-                <TableCell className="text-right">Rs. {fee.admissionFee.toLocaleString()}</TableCell>
+                <TableCell className="text-right">
+                  Rs. {fee.tuitionFee.toLocaleString()}
+                </TableCell>
+                <TableCell className="text-right">
+                  Rs. {fee.admissionFee.toLocaleString()}
+                </TableCell>
                 <TableCell className="text-right">
                   <div className="flex flex-col text-xs text-muted-foreground">
                     <span>Exam: {fee.examFund}</span>
@@ -94,19 +102,24 @@ export function FeeStructureTable() {
                   </div>
                 </TableCell>
                 <TableCell className="text-right font-bold text-green-600">
-                   Rs. {fee.tuitionFee + fee.infoAndCallsFee + fee.studentIdCardFee}
+                  Rs.{" "}
+                  {fee.tuitionFee + fee.infoAndCallsFee + fee.studentIdCardFee}
                 </TableCell>
               </TableRow>
             ))}
             {fees.length === 0 && (
               <TableRow>
-                <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
+                <TableCell
+                  colSpan={7}
+                  className="py-8 text-center text-muted-foreground"
+                >
                   No fee structures defined. Create one to get started.
                 </TableCell>
               </TableRow>
             )}
           </TableBody>
         </Table>
+        </div>
       </CardContent>
     </Card>
   );

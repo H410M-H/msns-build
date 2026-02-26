@@ -1,21 +1,40 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { api } from "~/trpc/react"
-import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "~/components/ui/table"
-import { Badge } from "~/components/ui/badge"
-import { Button } from "~/components/ui/button"
-import { Skeleton } from "~/components/ui/skeleton"
-import { AlertCircle, Phone, MessageSquare, FileSearch, Download } from "lucide-react"
-import { toast } from "sonner"
-import { exportToCSV, generateDefaultersReportData } from "~/lib/export-utils"
-import { SendReminderDialog } from "./send-reminder-dialog"
+import { useState } from "react";
+import { api } from "~/trpc/react";
+import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "~/components/ui/select";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "~/components/ui/table";
+import { Badge } from "~/components/ui/badge";
+import { Button } from "~/components/ui/button";
+import { Skeleton } from "~/components/ui/skeleton";
+import {
+  AlertCircle,
+  Phone,
+  MessageSquare,
+  FileSearch,
+  Download,
+} from "lucide-react";
+import { toast } from "sonner";
+import { exportToCSV, generateDefaultersReportData } from "~/lib/export-utils";
+import { SendReminderDialog } from "./send-reminder-dialog";
 
 interface DefaultersListProps {
-  sessionId: string
-  year: number
+  sessionId: string;
+  year: number;
 }
 
 const months = [
@@ -31,44 +50,56 @@ const months = [
   { value: 10, label: "October" },
   { value: 11, label: "November" },
   { value: 12, label: "December" },
-]
+];
 
 export function DefaultersList({ sessionId, year }: DefaultersListProps) {
-  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1)
+  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
 
   const defaultersQuery = api.fee.getDefaultersList.useQuery(
     { sessionId, month: selectedMonth, year },
     { enabled: !!sessionId },
-  )
+  );
 
-  const defaulters = defaultersQuery.data ?? []
-  const totalDue = defaulters.reduce((sum, d) => sum + d.dueAmount, 0)
+  const defaulters = defaultersQuery.data ?? [];
+  const totalDue = defaulters.reduce((sum, d) => sum + d.dueAmount, 0);
 
   const handleExport = () => {
     if (defaulters.length === 0) {
-      toast.error("No data to export")
-      return
+      toast.error("No data to export");
+      return;
     }
-    const exportData = generateDefaultersReportData(defaulters, selectedMonth, year)
-    exportToCSV(exportData, `defaulters-${months[selectedMonth - 1]?.label}-${year}`)
-    toast.success("Defaulters list exported successfully")
-  }
+    const exportData = generateDefaultersReportData(
+      defaulters,
+      selectedMonth,
+      year,
+    );
+    exportToCSV(
+      exportData,
+      `defaulters-${months[selectedMonth - 1]?.label}-${year}`,
+    );
+    toast.success("Defaulters list exported successfully");
+  };
 
   const handleBulkReminders = () => {
-    const withContact = defaulters.filter((d) => d.student.fatherMobile)
+    const withContact = defaulters.filter((d) => d.student.fatherMobile);
     toast.success(`Sending reminders to ${withContact.length} parents`, {
       description: "This may take a few moments...",
-    })
-  }
+    });
+  };
 
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col lg:flex-row gap-4 lg:items-center lg:justify-between">
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <div className="flex items-center gap-3">
           <AlertCircle className="h-5 w-5 text-red-500" />
-          <h2 className="text-lg font-semibold text-slate-900">Fee Defaulters</h2>
-          <Select value={String(selectedMonth)} onValueChange={(v) => setSelectedMonth(Number(v))}>
+          <h2 className="text-lg font-semibold text-slate-900">
+            Fee Defaulters
+          </h2>
+          <Select
+            value={String(selectedMonth)}
+            onValueChange={(v) => setSelectedMonth(Number(v))}
+          >
             <SelectTrigger className="w-[180px] bg-white">
               <SelectValue placeholder="Select Month" />
             </SelectTrigger>
@@ -84,14 +115,25 @@ export function DefaultersList({ sessionId, year }: DefaultersListProps) {
 
         {defaulters.length > 0 && (
           <div className="flex items-center gap-4">
-            <Badge variant="destructive" className="text-sm px-3 py-1">
-              {defaulters.length} Defaulters | Total Due: Rs. {totalDue.toLocaleString()}
+            <Badge variant="destructive" className="px-3 py-1 text-sm">
+              {defaulters.length} Defaulters | Total Due: Rs.{" "}
+              {totalDue.toLocaleString()}
             </Badge>
-            <Button variant="outline" size="sm" className="gap-2 bg-transparent" onClick={handleExport}>
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-2 bg-transparent"
+              onClick={handleExport}
+            >
               <Download className="h-4 w-4" />
               Export
             </Button>
-            <Button variant="outline" size="sm" className="gap-2 bg-transparent" onClick={handleBulkReminders}>
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-2 bg-transparent"
+              onClick={handleBulkReminders}
+            >
               <MessageSquare className="h-4 w-4" />
               Send Bulk Reminders
             </Button>
@@ -103,7 +145,8 @@ export function DefaultersList({ sessionId, year }: DefaultersListProps) {
       <Card className="bg-white">
         <CardHeader>
           <CardTitle className="text-base">
-            {months.find((m) => m.value === selectedMonth)?.label} {year} - Pending Payments
+            {months.find((m) => m.value === selectedMonth)?.label} {year} -
+            Pending Payments
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -117,9 +160,13 @@ export function DefaultersList({ sessionId, year }: DefaultersListProps) {
             </div>
           ) : defaulters.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 text-center">
-              <FileSearch className="h-12 w-12 text-emerald-300 mb-4" />
-              <p className="text-slate-600 font-medium">No defaulters for this month!</p>
-              <p className="text-sm text-slate-500 mt-1">All students have cleared their dues</p>
+              <FileSearch className="mb-4 h-12 w-12 text-emerald-300" />
+              <p className="font-medium text-slate-600">
+                No defaulters for this month!
+              </p>
+              <p className="mt-1 text-sm text-muted-foreground">
+                All students have cleared their dues
+              </p>
             </div>
           ) : (
             <div className="overflow-x-auto">
@@ -140,8 +187,12 @@ export function DefaultersList({ sessionId, year }: DefaultersListProps) {
                     <TableRow key={d.sfcId} className="hover:bg-red-50/50">
                       <TableCell>
                         <div>
-                          <p className="font-medium text-slate-900">{d.student.studentName}</p>
-                          <p className="text-xs text-slate-500">{d.student.registrationNumber}</p>
+                          <p className="font-medium text-slate-900">
+                            {d.student.studentName}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            {d.student.registrationNumber}
+                          </p>
                         </div>
                       </TableCell>
                       <TableCell>
@@ -149,11 +200,13 @@ export function DefaultersList({ sessionId, year }: DefaultersListProps) {
                           {d.class.grade} - {d.class.section}
                         </Badge>
                       </TableCell>
-                      <TableCell className="text-slate-600">{d.student.fatherName}</TableCell>
+                      <TableCell className="text-slate-600">
+                        {d.student.fatherName}
+                      </TableCell>
                       <TableCell>
                         <a
                           href={`tel:${d.student.fatherMobile}`}
-                          className="flex items-center gap-1 text-blue-600 hover:underline text-sm"
+                          className="flex items-center gap-1 text-sm text-blue-600 hover:underline"
                         >
                           <Phone className="h-3 w-3" />
                           {d.student.fatherMobile}
@@ -209,5 +262,5 @@ export function DefaultersList({ sessionId, year }: DefaultersListProps) {
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }

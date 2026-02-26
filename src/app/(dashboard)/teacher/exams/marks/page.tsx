@@ -82,17 +82,17 @@ export default function MarksUploadPage() {
 
   const { data: examsForSession } = api.exam.getExamsForSession.useQuery(
     { sessionId: selectedSession },
-    { enabled: !!selectedSession }
+    { enabled: !!selectedSession },
   );
 
   const { data: examDetails } = api.exam.getExamDetails.useQuery(
     { examId: selectedExam },
-    { enabled: !!selectedExam }
+    { enabled: !!selectedExam },
   );
 
   const { data: classStudents } = api.student.getUnAllocateStudents.useQuery(
     { page: 1, pageSize: 1000 },
-    { enabled: !!selectedClass }
+    { enabled: !!selectedClass },
   );
 
   // API mutations
@@ -145,7 +145,7 @@ export default function MarksUploadPage() {
           studentName: student.studentName,
           admissionNumber: student.admissionNumber,
           obtainedMarks: 0,
-        }))
+        })),
       );
     }
   };
@@ -170,31 +170,31 @@ export default function MarksUploadPage() {
             <div className="rounded-lg border border-emerald-200 bg-emerald-100 p-2 text-emerald-600 dark:border-emerald-500/20 dark:bg-emerald-500/10 dark:text-emerald-400">
               <ClipboardEdit className="h-6 w-6" />
             </div>
-            <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
+            <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-foreground">
               Upload{" "}
               <span className="text-emerald-600 dark:text-emerald-500">
                 Marks
               </span>
             </h1>
           </div>
-          <p className="max-w-xl pl-1 text-sm text-slate-500 dark:text-slate-400">
+          <p className="max-w-xl pl-1 text-sm text-muted-foreground dark:text-muted-foreground">
             Upload marks for your assigned subjects and exams.
           </p>
         </div>
       </div>
 
       {/* --- Selection Section --- */}
-      <Card className="overflow-hidden border border-slate-200 bg-white/50 shadow-sm backdrop-blur-md transition-all dark:border-white/5 dark:bg-slate-900/40 dark:shadow-xl">
-        <CardHeader className="border-b border-slate-100 bg-slate-50/50 px-6 py-4 dark:border-white/5 dark:bg-black/20">
+      <Card className="overflow-hidden border border-slate-200 bg-white/50 shadow-sm backdrop-blur-md transition-all dark:border-border dark:bg-card dark:shadow-xl">
+        <CardHeader className="border-b border-slate-100 bg-slate-50/50 px-6 py-4 dark:border-border dark:bg-black/20">
           <div className="flex items-center gap-2">
             <div className="rounded-lg border border-emerald-200 bg-emerald-100 p-1.5 dark:border-emerald-500/20 dark:bg-emerald-500/10">
               <Filter className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
             </div>
             <div>
-              <CardTitle className="text-base font-bold text-slate-900 dark:text-white">
+              <CardTitle className="text-base font-bold text-slate-900 dark:text-foreground">
                 Select Exam Details
               </CardTitle>
-              <CardDescription className="text-xs text-slate-500 dark:text-slate-400">
+              <CardDescription className="text-xs text-muted-foreground dark:text-muted-foreground">
                 Choose session, class, exam, and subject to upload marks
               </CardDescription>
             </div>
@@ -204,14 +204,14 @@ export default function MarksUploadPage() {
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
             {/* Session */}
             <div className="space-y-2">
-              <label className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+              <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground dark:text-muted-foreground">
                 Session
               </label>
               <Select
                 value={selectedSession}
                 onValueChange={setSelectedSession}
               >
-                <SelectTrigger className="border-slate-200 bg-white transition-all focus:border-emerald-500/50 focus:ring-emerald-500/50 dark:border-white/10 dark:bg-slate-950/50 dark:text-white">
+                <SelectTrigger className="border-slate-200 bg-white transition-all focus:border-emerald-500/50 focus:ring-emerald-500/50 dark:border-border dark:bg-card dark:text-foreground">
                   <SelectValue placeholder="Select session" />
                 </SelectTrigger>
                 <SelectContent>
@@ -229,11 +229,11 @@ export default function MarksUploadPage() {
 
             {/* Exam */}
             <div className="space-y-2">
-              <label className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+              <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground dark:text-muted-foreground">
                 Exam
               </label>
               <Select value={selectedExam} onValueChange={setSelectedExam}>
-                <SelectTrigger className="border-slate-200 bg-white transition-all focus:border-emerald-500/50 focus:ring-emerald-500/50 dark:border-white/10 dark:bg-slate-950/50 dark:text-white">
+                <SelectTrigger className="border-slate-200 bg-white transition-all focus:border-emerald-500/50 focus:ring-emerald-500/50 dark:border-border dark:bg-card dark:text-foreground">
                   <SelectValue placeholder="Select exam" />
                 </SelectTrigger>
                 <SelectContent>
@@ -249,11 +249,11 @@ export default function MarksUploadPage() {
 
             {/* Class */}
             <div className="space-y-2">
-              <label className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+              <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground dark:text-muted-foreground">
                 Class
               </label>
               <Select value={selectedClass} onValueChange={setSelectedClass}>
-                <SelectTrigger className="border-slate-200 bg-white transition-all focus:border-emerald-500/50 focus:ring-emerald-500/50 dark:border-white/10 dark:bg-slate-950/50 dark:text-white">
+                <SelectTrigger className="border-slate-200 bg-white transition-all focus:border-emerald-500/50 focus:ring-emerald-500/50 dark:border-border dark:bg-card dark:text-foreground">
                   <SelectValue placeholder="Select class" />
                 </SelectTrigger>
                 <SelectContent>
@@ -268,21 +268,21 @@ export default function MarksUploadPage() {
 
             {/* Subject */}
             <div className="space-y-2">
-              <label className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+              <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground dark:text-muted-foreground">
                 Subject
               </label>
               <Input
                 placeholder="Subject assigned"
                 value={selectedSubject}
                 onChange={(e) => setSelectedSubject(e.target.value)}
-                className="border-slate-200 bg-white transition-all focus:border-emerald-500/50 focus:ring-emerald-500/50 dark:border-white/10 dark:bg-slate-950/50 dark:text-white dark:placeholder:text-slate-500"
+                className="border-slate-200 bg-white transition-all focus:border-emerald-500/50 focus:ring-emerald-500/50 dark:border-border dark:bg-card dark:text-foreground dark:placeholder:text-muted-foreground"
               />
             </div>
           </div>
 
           <Button
             onClick={handleLoadStudents}
-            className="w-full bg-emerald-600 text-white shadow-md shadow-emerald-200 hover:bg-emerald-700 dark:shadow-emerald-900/20"
+            className="w-full bg-emerald-600 text-foreground shadow-md shadow-emerald-200 hover:bg-emerald-700 dark:shadow-emerald-900/20"
           >
             <Users className="mr-2 h-4 w-4" />
             Load Students for This Class
@@ -292,18 +292,18 @@ export default function MarksUploadPage() {
 
       {/* --- Marks Entry Section --- */}
       {marksData.length > 0 && (
-        <Card className="overflow-hidden border border-slate-200 bg-white/50 shadow-sm backdrop-blur-md transition-all dark:border-white/5 dark:bg-slate-900/40 dark:shadow-xl">
-          <CardHeader className="border-b border-slate-100 bg-slate-50/50 px-6 py-4 dark:border-white/5 dark:bg-black/20">
+        <Card className="overflow-hidden border border-slate-200 bg-white/50 shadow-sm backdrop-blur-md transition-all dark:border-border dark:bg-card dark:shadow-xl">
+          <CardHeader className="border-b border-slate-100 bg-slate-50/50 px-6 py-4 dark:border-border dark:bg-black/20">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <div className="rounded-lg border border-emerald-200 bg-emerald-100 p-1.5 dark:border-emerald-500/20 dark:bg-emerald-500/10">
                   <TableIcon className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
                 </div>
                 <div>
-                  <CardTitle className="text-base font-bold text-slate-900 dark:text-white">
+                  <CardTitle className="text-base font-bold text-slate-900 dark:text-foreground">
                     Enter Student Marks
                   </CardTitle>
-                  <CardDescription className="text-xs text-slate-500 dark:text-slate-400">
+                  <CardDescription className="text-xs text-muted-foreground dark:text-muted-foreground">
                     Enter obtained marks for each student (out of{" "}
                     {examDetails?.totalMarks ?? 100})
                   </CardDescription>
@@ -316,17 +316,17 @@ export default function MarksUploadPage() {
             <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
-                  <TableRow className="border-b border-slate-100 bg-slate-50/80 dark:border-white/5 dark:bg-black/10">
-                    <TableHead className="w-12 text-center text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                  <TableRow className="border-b border-slate-100 bg-slate-50/80 dark:border-border dark:bg-black/10">
+                    <TableHead className="w-12 text-center text-xs font-bold uppercase tracking-wider text-muted-foreground dark:text-muted-foreground">
                       #
                     </TableHead>
-                    <TableHead className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                    <TableHead className="text-xs font-bold uppercase tracking-wider text-muted-foreground dark:text-muted-foreground">
                       Student Name
                     </TableHead>
-                    <TableHead className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                    <TableHead className="text-xs font-bold uppercase tracking-wider text-muted-foreground dark:text-muted-foreground">
                       Admission No.
                     </TableHead>
-                    <TableHead className="w-32 text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                    <TableHead className="w-32 text-xs font-bold uppercase tracking-wider text-muted-foreground dark:text-muted-foreground">
                       Obtained Marks
                     </TableHead>
                   </TableRow>
@@ -335,15 +335,15 @@ export default function MarksUploadPage() {
                   {marksData.map((mark, index) => (
                     <TableRow
                       key={mark.studentId}
-                      className="border-b border-slate-100 transition-colors hover:bg-slate-50/50 dark:border-white/5 dark:hover:bg-white/5"
+                      className="border-b border-slate-100 transition-colors hover:bg-slate-50/50 dark:border-border dark:hover:bg-white/5"
                     >
-                      <TableCell className="text-center font-mono text-sm text-slate-400 dark:text-slate-500">
+                      <TableCell className="text-center font-mono text-sm text-muted-foreground dark:text-muted-foreground">
                         {index + 1}
                       </TableCell>
-                      <TableCell className="font-semibold text-slate-900 dark:text-white">
+                      <TableCell className="font-semibold text-slate-900 dark:text-foreground">
                         {mark.studentName}
                       </TableCell>
-                      <TableCell className="font-mono text-sm text-slate-600 dark:text-slate-300">
+                      <TableCell className="font-mono text-sm text-slate-600 dark:text-foreground">
                         {mark.admissionNumber}
                       </TableCell>
                       <TableCell>
@@ -355,7 +355,7 @@ export default function MarksUploadPage() {
                           onChange={(e) =>
                             handleMarksChange(index, e.target.value)
                           }
-                          className="w-24 border-slate-200 bg-white text-center font-mono transition-all focus:border-emerald-500/50 focus:ring-emerald-500/50 dark:border-white/10 dark:bg-slate-950/50 dark:text-white"
+                          className="w-24 border-slate-200 bg-white text-center font-mono transition-all focus:border-emerald-500/50 focus:ring-emerald-500/50 dark:border-border dark:bg-card dark:text-foreground"
                           placeholder="0"
                         />
                       </TableCell>
@@ -369,16 +369,16 @@ export default function MarksUploadPage() {
             <div className="space-y-4 px-6 pb-6">
               {/* Validation Stats */}
               <div className="grid grid-cols-3 gap-3">
-                <div className="rounded-xl border border-slate-200 bg-slate-50/50 p-3 dark:border-white/5 dark:bg-black/20">
+                <div className="rounded-xl border border-slate-200 bg-slate-50/50 p-3 dark:border-border dark:bg-black/20">
                   <div className="flex items-center gap-2">
                     <div className="rounded-md bg-blue-100 p-1 dark:bg-blue-500/20">
                       <Users className="h-3 w-3 text-blue-600 dark:text-blue-400" />
                     </div>
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground dark:text-muted-foreground">
                       Total
                     </span>
                   </div>
-                  <p className="mt-1 text-xl font-bold text-slate-900 dark:text-white">
+                  <p className="mt-1 text-xl font-bold text-slate-900 dark:text-foreground">
                     {marksData.length}
                   </p>
                 </div>
@@ -416,7 +416,7 @@ export default function MarksUploadPage() {
                 disabled={
                   uploadMarksMutation.isPending || marksData.length === 0
                 }
-                className="w-full bg-emerald-600 text-white shadow-md shadow-emerald-200 hover:bg-emerald-700 dark:shadow-emerald-900/20"
+                className="w-full bg-emerald-600 text-foreground shadow-md shadow-emerald-200 hover:bg-emerald-700 dark:shadow-emerald-900/20"
                 size="lg"
               >
                 {uploadMarksMutation.isPending ? (

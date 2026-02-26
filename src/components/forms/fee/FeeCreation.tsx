@@ -135,7 +135,9 @@ export function FeeCreationDialog({}: FeeCreationDialogProps) {
               id="admissionFee"
               type="number"
               value={formData.admissionFee}
-              onChange={(e) => handleInputChange("admissionFee", e.target.value)}
+              onChange={(e) =>
+                handleInputChange("admissionFee", e.target.value)
+              }
               className="col-span-3"
               placeholder="Enter admission fee"
             />
@@ -177,7 +179,9 @@ export function FeeCreationDialog({}: FeeCreationDialogProps) {
               id="computerLabFund"
               type="number"
               value={formData.computerLabFund}
-              onChange={(e) => handleInputChange("computerLabFund", e.target.value)}
+              onChange={(e) =>
+                handleInputChange("computerLabFund", e.target.value)
+              }
               className="col-span-3"
               placeholder="Enter annual computer lab fund (optional)"
             />
@@ -191,7 +195,9 @@ export function FeeCreationDialog({}: FeeCreationDialogProps) {
               id="studentIdCardFee"
               type="number"
               value={formData.studentIdCardFee}
-              onChange={(e) => handleInputChange("studentIdCardFee", e.target.value)}
+              onChange={(e) =>
+                handleInputChange("studentIdCardFee", e.target.value)
+              }
               className="col-span-3"
               placeholder="Enter student ID card fee"
             />
@@ -205,15 +211,17 @@ export function FeeCreationDialog({}: FeeCreationDialogProps) {
               id="infoAndCallsFee"
               type="number"
               value={formData.infoAndCallsFee}
-              onChange={(e) => handleInputChange("infoAndCallsFee", e.target.value)}
+              onChange={(e) =>
+                handleInputChange("infoAndCallsFee", e.target.value)
+              }
               className="col-span-3"
               placeholder="Enter info and calls fee"
             />
           </div>
         </div>
         <DialogFooter>
-          <Button 
-            type="submit" 
+          <Button
+            type="submit"
             onClick={handleSubmit}
             disabled={createFee.isPending}
           >
@@ -224,4 +232,3 @@ export function FeeCreationDialog({}: FeeCreationDialogProps) {
     </Dialog>
   );
 }
-

@@ -5,7 +5,8 @@ import { SessionProvider } from "next-auth/react";
 
 export const metadata: Metadata = {
   title: "Session Management | Admin Dashboard",
-  description: "Manage academic sessions, view statistics, and handle session fees",
+  description:
+    "Manage academic sessions, view statistics, and handle session fees",
   keywords: ["sessions", "academic", "dashboard", "management", "fees"],
 };
 
@@ -21,7 +22,7 @@ export default function SessionsLayout({
             Backgrounds, Fonts, and Sidebar logic are handled by the parent DashboardLayout.
             We only render the children and page-specific providers here.
         */}
-        <div className="relative flex flex-col w-full h-full">
+        <div className="relative flex h-full w-full flex-col">
           {children}
           <Toaster />
         </div>

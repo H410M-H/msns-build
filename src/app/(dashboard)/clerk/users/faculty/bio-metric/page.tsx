@@ -22,7 +22,10 @@ export default async function EmployeeRegistration(
     <ScrollArea className="items-center">
       <PageHeader breadcrumbs={breadcrumbs} />
       <div className="pt-14">
-        <RegisterEmployeeBioMetric employeeId={employeeId} employeeName={employeeName} />
+        <RegisterEmployeeBioMetric
+          employeeId={employeeId}
+          employeeName={employeeName}
+        />
       </div>
     </ScrollArea>
   );

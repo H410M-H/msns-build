@@ -1,4 +1,10 @@
-import { PDFDocument, StandardFonts, rgb, type PDFPage, type PDFFont } from "pdf-lib";
+import {
+  PDFDocument,
+  StandardFonts,
+  rgb,
+  type PDFPage,
+  type PDFFont,
+} from "pdf-lib";
 
 export interface ExportColumn {
   key: string;
@@ -19,11 +25,11 @@ export interface ExportData {
 // Helper to calculate column widths based on label length
 function calculateColumnWidths(
   headers: Array<{ key: string; label: string }>,
-  totalWidth: number
+  totalWidth: number,
 ): number[] {
   const colCount = headers.length;
   if (colCount === 0) return [];
-  
+
   const baseWidth = totalWidth / colCount;
   return headers.map((header) => {
     const labelLength = header.label.length;
@@ -46,16 +52,19 @@ function formatValueForPDF(value: unknown): string {
   }
   if (typeof value === "number") {
     if (Number.isInteger(value)) {
-      return value.toLocaleString('en-IN');
+      return value.toLocaleString("en-IN");
     } else {
-      return value.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      return value.toLocaleString("en-IN", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      });
     }
   }
   if (typeof value === "boolean") {
     return value ? "Yes" : "No";
   }
   if (value instanceof Date) {
-    return value.toLocaleDateString('en-IN');
+    return value.toLocaleDateString("en-IN");
   }
   if (Array.isArray(value)) {
     return value.map(formatValueForPDF).join(", ");
@@ -73,12 +82,12 @@ function formatValueForPDF(value: unknown): string {
 
 // Helper to add page footer
 function addPageFooter(
-  page: PDFPage, 
-  pageNumber: number, 
-  width: number, 
-  _height: number, 
-  margin: number, 
-  font: PDFFont
+  page: PDFPage,
+  pageNumber: number,
+  width: number,
+  _height: number,
+  margin: number,
+  font: PDFFont,
 ) {
   page.drawText(`Page ${pageNumber}`, {
     x: width - margin - 40,
@@ -93,7 +102,7 @@ function addPageFooter(
 export async function generatePdf(
   data: Array<Record<string, unknown>>,
   headers: Array<{ key: string; label: string }>,
-  title: string
+  title: string,
 ): Promise<Uint8Array> {
   const pdfDoc = await PDFDocument.create();
   const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
@@ -138,7 +147,7 @@ export async function generatePdf(
   // Draw Table Headers
   let xPos = margin;
   headers.forEach((header, index) => {
-    const colWidth = colWidths[index] ?? 100; 
+    const colWidth = colWidths[index] ?? 100;
 
     currentPage.drawRectangle({
       x: xPos - 2,
@@ -168,10 +177,10 @@ export async function generatePdf(
     if (currentY < margin + rowHeight) {
       addPageFooter(currentPage, pageNumber, width, height, margin, font);
       currentPage = pdfDoc.addPage([595.28, 841.89]);
-      ({ width, height } = currentPage.getSize()); 
+      ({ width, height } = currentPage.getSize());
       pageNumber++;
       currentY = height - margin - rowHeight;
-      
+
       // Draw headers on new page
       xPos = margin;
       headers.forEach((header, index) => {
@@ -184,7 +193,7 @@ export async function generatePdf(
           height: rowHeight,
           color: rgb(0.9, 0.9, 0.9),
         });
-        
+
         currentPage.drawText(header.label, {
           x: xPos + 5,
           y: currentY + 20,
@@ -220,7 +229,7 @@ export async function generatePdf(
       const colWidth = colWidths[colIndex] ?? 100;
       const rawValue = row[header.key];
       const value = formatValueForPDF(rawValue);
-      
+
       currentPage.drawText(value, {
         x: xPos + 5,
         y: currentY,
@@ -241,41 +250,49 @@ export async function generatePdf(
 }
 
 // Format value based on type for exports
-export function formatExportValue(value: unknown, format?: ExportColumn["format"]): string {
-  if (value === null || value === undefined) return ""
+export function formatExportValue(
+  value: unknown,
+  format?: ExportColumn["format"],
+): string {
+  if (value === null || value === undefined) return "";
 
   switch (format) {
     case "currency":
-      const numValue = typeof value === 'string' ? parseFloat(value) : Number(value)
-      return `Rs. ${isNaN(numValue) ? '0' : numValue.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+      const numValue =
+        typeof value === "string" ? parseFloat(value) : Number(value);
+      return `Rs. ${isNaN(numValue) ? "0" : numValue.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
     case "percent":
-      const percentValue = typeof value === 'string' ? parseFloat(value) : Number(value)
-      return `${isNaN(percentValue) ? '0.0' : percentValue.toFixed(1)}%`
+      const percentValue =
+        typeof value === "string" ? parseFloat(value) : Number(value);
+      return `${isNaN(percentValue) ? "0.0" : percentValue.toFixed(1)}%`;
     case "date":
-      if (value instanceof Date) return value.toLocaleDateString('en-IN')
+      if (value instanceof Date) return value.toLocaleDateString("en-IN");
       if (typeof value === "string") {
         try {
-          return new Date(value).toLocaleDateString('en-IN')
+          return new Date(value).toLocaleDateString("en-IN");
         } catch {
-          return value
+          return value;
         }
       }
       if (typeof value === "number") {
-        return new Date(value).toLocaleDateString('en-IN')
+        return new Date(value).toLocaleDateString("en-IN");
       }
-      return formatValueForPDF(value)
+      return formatValueForPDF(value);
     default:
-      return formatValueForPDF(value)
+      return formatValueForPDF(value);
   }
 }
 
 // Enhanced PDF generation with ExportData interface
 export async function generateReportPdf(data: ExportData): Promise<Uint8Array> {
-  const headers = data.columns.map(col => ({ key: col.key, label: col.label }));
-  
-  const formattedRows = data.rows.map(row => {
+  const headers = data.columns.map((col) => ({
+    key: col.key,
+    label: col.label,
+  }));
+
+  const formattedRows = data.rows.map((row) => {
     const formattedRow: Record<string, unknown> = {};
-    data.columns.forEach(col => {
+    data.columns.forEach((col) => {
       const value = row[col.key];
       formattedRow[col.key] = formatExportValue(value, col.format);
     });
@@ -289,11 +306,11 @@ export async function generateReportPdf(data: ExportData): Promise<Uint8Array> {
 // Download PDF helper
 export function downloadPdf(pdfBytes: Uint8Array, filename: string) {
   // Fix: Cast to any to resolve ArrayBufferLike mismatch in strict TS environments
-  // This satisfies the Blob constructor which expects strictly ArrayBuffer, 
+  // This satisfies the Blob constructor which expects strictly ArrayBuffer,
   // while Uint8Array might be inferred as having SharedArrayBuffer
-  const blob = new Blob([pdfBytes as never], { type: 'application/pdf' });
+  const blob = new Blob([pdfBytes as never], { type: "application/pdf" });
   const url = URL.createObjectURL(blob);
-  const link = document.createElement('a');
+  const link = document.createElement("a");
   link.href = url;
   link.download = `${filename}.pdf`;
   document.body.appendChild(link);
@@ -306,10 +323,10 @@ export function downloadPdf(pdfBytes: Uint8Array, filename: string) {
 export async function exportToPDF(data: ExportData) {
   try {
     const pdfBytes = await generateReportPdf(data);
-    const fileName = data.fileName ?? data.sheetName ?? 'export';
+    const fileName = data.fileName ?? data.sheetName ?? "export";
     downloadPdf(pdfBytes, fileName);
   } catch (error) {
-    console.error('Error generating PDF:', error);
+    console.error("Error generating PDF:", error);
     throw error;
   }
 }

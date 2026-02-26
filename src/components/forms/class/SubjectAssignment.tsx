@@ -58,36 +58,36 @@ export function SubjectAssignmentDialog({
     if (lectureNumber >= 1) {
       setValidLectureNumber(lectureNumber);
     } else {
-      console.warn(`Invalid lectureNumber: ${lectureNumber}. Using default value 1.`);
+      console.warn(
+        `Invalid lectureNumber: ${lectureNumber}. Using default value 1.`,
+      );
       setValidLectureNumber(1);
     }
   }, [lectureNumber]);
 
   // Get ALL subjects
-  const subjectsQuery = api.subject.getAllSubjects.useQuery(
-    undefined,
-    { 
-      enabled: open,
-      refetchOnWindowFocus: false
-    }
-  );
+  const subjectsQuery = api.subject.getAllSubjects.useQuery(undefined, {
+    enabled: open,
+    refetchOnWindowFocus: false,
+  });
 
   // Get ALL employees
-  const employeesQuery = api.employee.getEmployees.useQuery(
-    undefined,
-    { 
-      enabled: open,
-      refetchOnWindowFocus: false
-    }
-  );
+  const employeesQuery = api.employee.getEmployees.useQuery(undefined, {
+    enabled: open,
+    refetchOnWindowFocus: false,
+  });
 
   const subjects = subjectsQuery.data ?? [];
   const employees = employeesQuery.data ?? [];
 
   const assignToSlot = api.timetable.assignTeacher.useMutation({
     onSuccess: () => {
-      const subjectName = subjects.find(s => s.subjectId === selectedSubject)?.subjectName ?? "Subject";
-      const employeeName = employees.find(e => e.employeeId === selectedEmployee)?.employeeName ?? "Employee";
+      const subjectName =
+        subjects.find((s) => s.subjectId === selectedSubject)?.subjectName ??
+        "Subject";
+      const employeeName =
+        employees.find((e) => e.employeeId === selectedEmployee)
+          ?.employeeName ?? "Employee";
 
       toast({
         title: "✅ Assigned Successfully",
@@ -107,7 +107,7 @@ export function SubjectAssignmentDialog({
         title: "⚠ Error",
         description: errorMessage,
       });
-    }
+    },
   });
 
   const handleAssign = async () => {
@@ -154,7 +154,8 @@ export function SubjectAssignmentDialog({
     Thursday: "Thursday",
     Friday: "Friday",
     Saturday: "Saturday",
-    Sunday: "Sunday",};
+    Sunday: "Sunday",
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -162,15 +163,15 @@ export function SubjectAssignmentDialog({
         <Button
           variant="outline"
           size="sm"
-          className="hover:scale-[1.03] transition-all w-full sm:w-auto"
+          className="w-full transition-all hover:scale-[1.03] sm:w-auto"
         >
           <Users className="mr-1 h-4 w-4" /> Assign
         </Button>
       </DialogTrigger>
 
-      <DialogContent className="w-[95%] sm:max-w-md rounded-2xl p-2 sm:p-4">
+      <DialogContent className="w-[95%] rounded-2xl p-2 sm:max-w-md sm:p-4">
         <DialogHeader>
-          <DialogTitle className="text-lg text-center sm:text-left">
+          <DialogTitle className="text-center text-lg sm:text-left">
             Assign Subject & Employee
           </DialogTitle>
           <DialogDescription className="sr-only">
@@ -178,16 +179,16 @@ export function SubjectAssignmentDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <section className="p-3 sm:p-4 bg-muted/40 rounded-xl text-center font-medium">
+        <section className="rounded-xl bg-muted/40 p-3 text-center font-medium sm:p-4">
           📅 {dayNames[dayOfWeek]} — 🎓 Lecture {validLectureNumber}
           {lectureNumber !== validLectureNumber && (
-            <div className="text-xs text-yellow-600 mt-1">
+            <div className="mt-1 text-xs text-yellow-600">
               (Adjusted from {lectureNumber})
             </div>
           )}
         </section>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
+        <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div className="space-y-2 sm:col-span-1">
             <Label className="flex items-center gap-1">
               <BookOpen className="h-4 w-4" /> Subject *
@@ -195,21 +196,27 @@ export function SubjectAssignmentDialog({
             {subjectsQuery.isLoading ? (
               <Skeleton className="h-10 w-full rounded-xl" />
             ) : subjectsQuery.isError ? (
-              <div className="text-sm text-destructive p-2 border border-destructive rounded-xl">
+              <div className="rounded-xl border border-destructive p-2 text-sm text-destructive">
                 Failed to load subjects
               </div>
             ) : subjects.length === 0 ? (
-              <div className="text-sm text-muted-foreground p-2 border border-dashed rounded-xl">
+              <div className="rounded-xl border border-dashed p-2 text-sm text-muted-foreground">
                 No subjects available. Create subjects first.
               </div>
             ) : (
-              <Select value={selectedSubject} onValueChange={setSelectedSubject}>
+              <Select
+                value={selectedSubject}
+                onValueChange={setSelectedSubject}
+              >
                 <SelectTrigger className="rounded-xl">
                   <SelectValue placeholder="Select subject" />
                 </SelectTrigger>
                 <SelectContent>
                   {subjects.map((subject) => (
-                    <SelectItem key={subject.subjectId} value={subject.subjectId}>
+                    <SelectItem
+                      key={subject.subjectId}
+                      value={subject.subjectId}
+                    >
                       {subject.subjectName}
                     </SelectItem>
                   ))}
@@ -225,23 +232,31 @@ export function SubjectAssignmentDialog({
             {employeesQuery.isLoading ? (
               <Skeleton className="h-10 w-full rounded-xl" />
             ) : employeesQuery.isError ? (
-              <div className="text-sm text-destructive p-2 border border-destructive rounded-xl">
+              <div className="rounded-xl border border-destructive p-2 text-sm text-destructive">
                 Failed to load employees
               </div>
             ) : employees.length === 0 ? (
-              <div className="text-sm text-muted-foreground p-2 border border-dashed rounded-xl">
+              <div className="rounded-xl border border-dashed p-2 text-sm text-muted-foreground">
                 No employees available
               </div>
             ) : (
-              <Select value={selectedEmployee} onValueChange={setSelectedEmployee}>
+              <Select
+                value={selectedEmployee}
+                onValueChange={setSelectedEmployee}
+              >
                 <SelectTrigger className="rounded-xl">
                   <SelectValue placeholder="Select employee" />
                 </SelectTrigger>
                 <SelectContent>
                   {employees.map((employee) => (
-                    <SelectItem key={employee.employeeId} value={employee.employeeId}>
+                    <SelectItem
+                      key={employee.employeeId}
+                      value={employee.employeeId}
+                    >
                       <div className="flex flex-col">
-                        <span className="font-medium">{employee.employeeName}</span>
+                        <span className="font-medium">
+                          {employee.employeeName}
+                        </span>
                         {employee.designation && (
                           <span className="text-xs text-muted-foreground">
                             {employee.designation}
@@ -256,7 +271,7 @@ export function SubjectAssignmentDialog({
           </div>
         </div>
 
-        <footer className="flex flex-col sm:flex-row gap-2 sm:gap-3 mt-6 px-2">
+        <footer className="mt-6 flex flex-col gap-2 px-2 sm:flex-row sm:gap-3">
           <Button
             variant="outline"
             onClick={() => {
@@ -264,15 +279,21 @@ export function SubjectAssignmentDialog({
               setSelectedEmployee("");
               onOpenChange(false);
             }}
-            className="w-full sm:w-1/2 rounded-xl hover:bg-red-50"
+            className="w-full rounded-xl hover:bg-red-50 sm:w-1/2"
           >
             ✖ Cancel
           </Button>
 
           <Button
             onClick={handleAssign}
-            disabled={assignToSlot.isPending || !selectedSubject || !selectedEmployee || subjects.length === 0 || employees.length === 0}
-            className="w-full sm:w-1/2 rounded-xl hover:opacity-90 transition-all"
+            disabled={
+              assignToSlot.isPending ||
+              !selectedSubject ||
+              !selectedEmployee ||
+              subjects.length === 0 ||
+              employees.length === 0
+            }
+            className="w-full rounded-xl transition-all hover:opacity-90 sm:w-1/2"
           >
             {assignToSlot.isPending ? (
               <span className="flex items-center justify-center">
@@ -287,7 +308,7 @@ export function SubjectAssignmentDialog({
 
         {/* Debug information - remove in production */}
         {process.env.NODE_ENV === "development" && (
-          <div className="mt-4 p-2 text-xs bg-muted rounded-lg">
+          <div className="mt-4 rounded-lg bg-muted p-2 text-xs">
             <div>Class: {classId}</div>
             <div>Session: {sessionId}</div>
             <div>Original Lecture: {lectureNumber}</div>

@@ -168,12 +168,12 @@ export const promotionRouter = createTRPCRouter({
         });
 
         const passedStudentIds = new Set(
-          finalExam.ReportCard.map((r) => r.studentId)
+          finalExam.ReportCard.map((r) => r.studentId),
         );
 
         // Separate passed and failed students
         const studentsToPromote = currentStudents.filter((s) =>
-          passedStudentIds.has(s.studentId)
+          passedStudentIds.has(s.studentId),
         );
 
         const promotionRecords = [];
@@ -235,7 +235,7 @@ export const promotionRouter = createTRPCRouter({
         studentId: z.string().cuid().optional(),
         fromSessionId: z.string().cuid().optional(),
         limit: z.number().min(1).max(100).default(50),
-      })
+      }),
     )
     .query(async ({ ctx, input }) => {
       try {
@@ -336,7 +336,7 @@ export const promotionRouter = createTRPCRouter({
         fromClassId: z.string().cuid(),
         fromSessionId: z.string().cuid(),
         examIdForCheck: z.string().cuid(),
-      })
+      }),
     )
     .query(async ({ ctx, input }) => {
       try {
@@ -368,10 +368,10 @@ export const promotionRouter = createTRPCRouter({
         });
 
         const passedCount = exam.ReportCard.filter(
-          (r) => r.status === "PASSED"
+          (r) => r.status === "PASSED",
         ).length;
         const failedCount = exam.ReportCard.filter(
-          (r) => r.status === "FAILED"
+          (r) => r.status === "FAILED",
         ).length;
 
         return {

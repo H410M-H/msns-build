@@ -4,7 +4,7 @@ import { z } from "zod";
 import { generatePdf } from "~/lib/pdf-reports";
 import { type Prisma } from "@prisma/client";
 import { userReg } from "~/lib/utils";
-import { hash } from "bcrypt";
+import { hash } from "bcryptjs";
 import { studentSchema, studentCSVSchema } from "~/lib/schemas/student";
 
 type StudentReportData = {
@@ -77,9 +77,24 @@ export const StudentRouter = createTRPCRouter({
           isAssign: false,
           OR: input.searchTerm
             ? [
-              { studentName: { contains: input.searchTerm, mode: "insensitive" } },
-              { fatherName: { contains: input.searchTerm, mode: "insensitive" } },
-              { admissionNumber: { contains: input.searchTerm, mode: "insensitive" } },
+              {
+                studentName: {
+                  contains: input.searchTerm,
+                  mode: "insensitive",
+                },
+              },
+              {
+                fatherName: {
+                  contains: input.searchTerm,
+                  mode: "insensitive",
+                },
+              },
+              {
+                admissionNumber: {
+                  contains: input.searchTerm,
+                  mode: "insensitive",
+                },
+              },
             ]
             : undefined,
         };
@@ -120,7 +135,6 @@ export const StudentRouter = createTRPCRouter({
       }
     }),
 
-
   // Get student profile by User ID (via accountId matching registrationNumber)
   getProfileByUserId: protectedProcedure.query(async ({ ctx }) => {
     try {
@@ -143,20 +157,20 @@ export const StudentRouter = createTRPCRouter({
                 include: {
                   fees: true,
                 },
-                orderBy: { month: 'desc' },
-                take: 1
+                orderBy: { month: "desc" },
+                take: 1,
               },
             },
             orderBy: {
-              Sessions: { sessionName: 'desc' }
+              Sessions: { sessionName: "desc" },
             },
-            take: 1
+            take: 1,
           },
           ReportCard: {
-            where: { status: 'PASSED' },
-            orderBy: { generatedAt: 'desc' },
-            take: 5
-          }
+            where: { status: "PASSED" },
+            orderBy: { generatedAt: "desc" },
+            take: 5,
+          },
         },
       });
 
@@ -182,7 +196,9 @@ export const StudentRouter = createTRPCRouter({
     .input(studentSchema)
     .mutation(async ({ ctx, input }) => {
       try {
-        const usersCount = await ctx.db.user.count({ where: { accountType: "STUDENT" } });
+        const usersCount = await ctx.db.user.count({
+          where: { accountType: "STUDENT" },
+        });
         const userInfo = userReg(usersCount, "STUDENT");
 
         const newStudent = await ctx.db.students.create({
@@ -254,11 +270,11 @@ export const StudentRouter = createTRPCRouter({
               },
               orderBy: {
                 Sessions: {
-                  sessionName: 'desc'
-                }
+                  sessionName: "desc",
+                },
               },
-              take: 1
-            }
+              take: 1,
+            },
           },
         });
         if (!student) throw new TRPCError({ code: "NOT_FOUND" });
@@ -275,8 +291,12 @@ export const StudentRouter = createTRPCRouter({
   updateStudent: publicProcedure
     .input(
       studentSchema
-        .omit({ registrationNumber: true, admissionNumber: true, studentId: true })
-        .extend({ studentId: z.string().cuid() })
+        .omit({
+          registrationNumber: true,
+          admissionNumber: true,
+          studentId: true,
+        })
+        .extend({ studentId: z.string().cuid() }),
     )
     .mutation(async ({ ctx, input }) => {
       try {
@@ -303,7 +323,9 @@ export const StudentRouter = createTRPCRouter({
     .input(z.array(studentCSVSchema))
     .mutation(async ({ ctx, input }) => {
       try {
-        let usersCount = await ctx.db.user.count({ where: { accountType: "STUDENT" } });
+        let usersCount = await ctx.db.user.count({
+          where: { accountType: "STUDENT" },
+        });
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const studentsData: any[] = [];
@@ -315,7 +337,7 @@ export const StudentRouter = createTRPCRouter({
           const d = new Date(dateStr);
           if (!isNaN(d.getTime())) return d;
 
-          const parts = dateStr.split('/');
+          const parts = dateStr.split("/");
           if (parts.length === 3) {
             const [day, month, year] = parts;
             const d2 = new Date(`${year}-${month}-${day}`);
@@ -328,11 +350,14 @@ export const StudentRouter = createTRPCRouter({
           const userInfo = userReg(usersCount, "STUDENT");
           const password = await hash(userInfo.admissionNumber, 10);
           const dob = parseDate(student.dateOfBirth);
-          const admissionDate = parseDate(student.dateOfAdmission) ?? new Date();
+          const admissionDate =
+            parseDate(student.dateOfAdmission) ?? new Date();
           studentsData.push({
             studentName: student.studentName,
             fatherName: student.fatherName ?? "",
-            dateOfBirth: dob ? dob.toLocaleDateString() : (student.dateOfBirth ?? ""),
+            dateOfBirth: dob
+              ? dob.toLocaleDateString()
+              : (student.dateOfBirth ?? ""),
             currentAddress: student.address ?? "",
             studentMobile: student.contactNumber ?? "",
             fatherProfession: student.fatherOccupation ?? "",
@@ -363,12 +388,12 @@ export const StudentRouter = createTRPCRouter({
         const result = await ctx.db.$transaction([
           ctx.db.students.createMany({
             data: studentsData,
-            skipDuplicates: true
+            skipDuplicates: true,
           }),
           ctx.db.user.createMany({
             data: usersData,
-            skipDuplicates: true
-          })
+            skipDuplicates: true,
+          }),
         ]);
 
         return { count: result[0].count };
@@ -450,7 +475,11 @@ export const StudentRouter = createTRPCRouter({
         { key: "session", label: "Session" },
       ];
 
-      const pdfBuffer = await generatePdf(reportData, headers, "Student Directory Report");
+      const pdfBuffer = await generatePdf(
+        reportData,
+        headers,
+        "Student Directory Report",
+      );
 
       return {
         pdf: Buffer.from(pdfBuffer).toString("base64"),

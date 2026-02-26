@@ -1,7 +1,14 @@
 "use client";
 
 import { signOut, useSession } from "next-auth/react";
-import { ChevronsUpDown, LogOut, Settings, User } from "lucide-react";
+import {
+  ChevronsUpDown,
+  LogOut,
+  Settings,
+  User,
+  Moon,
+  Sun,
+} from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -19,11 +26,13 @@ import {
 } from "~/components/ui/sidebar";
 import { useState } from "react";
 import Link from "next/link";
+import { useTheme } from "next-themes";
 
 export const NavUser = () => {
   const { isMobile } = useSidebar();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const session = useSession();
+  const { theme, setTheme } = useTheme();
 
   const handleSignOut = async () => {
     setIsLoggingOut(true);
@@ -40,14 +49,14 @@ export const NavUser = () => {
               className="group data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
             >
               <User className="h-8 w-8 rounded-lg" />
-              <p className="line-clamp-1 text-xs text-white">
+              <p className="line-clamp-1 text-xs text-foreground">
                 {session.data?.user.email}
               </p>
               <ChevronsUpDown className="ml-auto size-4 opacity-70" />
             </SidebarMenuButton>
           </DropdownMenuTrigger>
           <DropdownMenuContent
-            className="w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-lg z-[1000000]"
+            className="z-[1000000] w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-lg"
             side={isMobile ? "bottom" : "right"}
             align="end"
             sideOffset={4}
@@ -70,6 +79,16 @@ export const NavUser = () => {
                   <span>Settings</span>
                 </Link>
               </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+              >
+                {theme === "dark" ? (
+                  <Sun className="mr-2 size-4 text-amber-500" />
+                ) : (
+                  <Moon className="mr-2 size-4 text-slate-500" />
+                )}
+                <span>Toggle Theme</span>
+              </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuItem
@@ -78,11 +97,13 @@ export const NavUser = () => {
               className="text-red-500 focus:bg-red-50 focus:text-red-500 dark:focus:bg-red-950/50"
             >
               <LogOut className="mr-2 size-4" />
-              <span>{isLoggingOut ? "/https://lms.msns.edu.pk/sign-in" : "Log out"}</span>
+              <span>
+                {isLoggingOut ? "/https://lms.msns.edu.pk/sign-in" : "Log out"}
+              </span>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </SidebarMenuItem>
     </SidebarMenu>
   );
-}
+};

@@ -10,39 +10,43 @@ interface SessionProps {
   isActive: boolean;
 }
 
-const dateSchema = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Invalid date format (YYYY-MM-DD)");
+const dateSchema = z
+  .string()
+  .regex(/^\d{4}-\d{2}-\d{2}$/, "Invalid date format (YYYY-MM-DD)");
 
 export const SessionRouter = createTRPCRouter({
-  getActiveSession: publicProcedure.query<SessionProps | null>(async ({ ctx }) => {
-    try {
-      const session = await ctx.db.sessions.findFirst({
-        where: { isActive: true },
-        select: {
-          sessionId: true,
-          sessionName: true,
-          sessionFrom: true,
-          sessionTo: true,
-          isActive: true,
-        },
-      });
+  getActiveSession: publicProcedure.query<SessionProps | null>(
+    async ({ ctx }) => {
+      try {
+        const session = await ctx.db.sessions.findFirst({
+          where: { isActive: true },
+          select: {
+            sessionId: true,
+            sessionName: true,
+            sessionFrom: true,
+            sessionTo: true,
+            isActive: true,
+          },
+        });
 
-      if (!session) return null;
+        if (!session) return null;
 
-      return {
-        sessionId: session.sessionId,
-        sessionName: session.sessionName,
-        sessionFrom: new Date(session.sessionFrom),
-        sessionTo: new Date(session.sessionTo),
-        isActive: session.isActive,
-      };
-    } catch (error) {
-      console.error("Error in getActiveSession:", error);
-      throw new TRPCError({
-        code: "INTERNAL_SERVER_ERROR",
-        message: "Failed to retrieve active session",
-      });
-    }
-  }),
+        return {
+          sessionId: session.sessionId,
+          sessionName: session.sessionName,
+          sessionFrom: new Date(session.sessionFrom),
+          sessionTo: new Date(session.sessionTo),
+          isActive: session.isActive,
+        };
+      } catch (error) {
+        console.error("Error in getActiveSession:", error);
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to retrieve active session",
+        });
+      }
+    },
+  ),
 
   getSessions: publicProcedure.query<SessionProps[]>(async ({ ctx }) => {
     try {
@@ -57,7 +61,7 @@ export const SessionRouter = createTRPCRouter({
         },
       });
 
-      return sessions.map(s => ({
+      return sessions.map((s) => ({
         sessionId: s.sessionId,
         sessionName: s.sessionName,
         sessionFrom: new Date(s.sessionFrom),
@@ -73,49 +77,52 @@ export const SessionRouter = createTRPCRouter({
     }
   }),
 
-  getGroupedSessions: publicProcedure.query<{ year: string; sessions: SessionProps[] }[]>(
-    async ({ ctx }) => {
-      try {
-        const sessions = await ctx.db.sessions.findMany({
-          orderBy: { sessionFrom: "desc" },
-          select: {
-            sessionId: true,
-            sessionName: true,
-            sessionFrom: true,
-            sessionTo: true,
-            isActive: true,
-          },
-        });
+  getGroupedSessions: publicProcedure.query<
+    { year: string; sessions: SessionProps[] }[]
+  >(async ({ ctx }) => {
+    try {
+      const sessions = await ctx.db.sessions.findMany({
+        orderBy: { sessionFrom: "desc" },
+        select: {
+          sessionId: true,
+          sessionName: true,
+          sessionFrom: true,
+          sessionTo: true,
+          isActive: true,
+        },
+      });
 
-        const groupedSessions = sessions.reduce((acc, session) => {
-          const sessionFromDate = new Date(session.sessionFrom);
-          const year = sessionFromDate.getFullYear().toString();
-          const existing = acc.get(year) ?? [];
-          
-          acc.set(year, [...existing, {
+      const groupedSessions = sessions.reduce((acc, session) => {
+        const sessionFromDate = new Date(session.sessionFrom);
+        const year = sessionFromDate.getFullYear().toString();
+        const existing = acc.get(year) ?? [];
+
+        acc.set(year, [
+          ...existing,
+          {
             sessionId: session.sessionId,
             sessionName: session.sessionName,
             sessionFrom: new Date(session.sessionFrom),
             sessionTo: new Date(session.sessionTo),
             isActive: session.isActive,
-          }]);
-          
-          return acc;
-        }, new Map<string, SessionProps[]>());
+          },
+        ]);
 
-        return Array.from(groupedSessions, ([year, sessions]) => ({
-          year,
-          sessions,
-        }));
-      } catch (error) {
-        console.error("Error in getGroupedSessions:", error);
-        throw new TRPCError({
-          code: "INTERNAL_SERVER_ERROR",
-          message: "Failed to retrieve grouped sessions",
-        });
-      }
+        return acc;
+      }, new Map<string, SessionProps[]>());
+
+      return Array.from(groupedSessions, ([year, sessions]) => ({
+        year,
+        sessions,
+      }));
+    } catch (error) {
+      console.error("Error in getGroupedSessions:", error);
+      throw new TRPCError({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "Failed to retrieve grouped sessions",
+      });
     }
-  ),
+  }),
 
   createSession: publicProcedure
     .input(
@@ -123,14 +130,14 @@ export const SessionRouter = createTRPCRouter({
         sessionName: z.string().min(1, "Session name is required"),
         sessionFrom: dateSchema,
         sessionTo: dateSchema,
-      })
+      }),
     )
     .mutation<SessionProps>(async ({ ctx, input }) => {
       try {
         // Validate that sessionFrom is before sessionTo
         const fromDate = new Date(input.sessionFrom);
         const toDate = new Date(input.sessionTo);
-        
+
         if (fromDate >= toDate) {
           throw new TRPCError({
             code: "BAD_REQUEST",
@@ -151,7 +158,7 @@ export const SessionRouter = createTRPCRouter({
             sessionFrom: true,
             sessionTo: true,
             isActive: true,
-          }
+          },
         });
 
         return {
@@ -163,7 +170,7 @@ export const SessionRouter = createTRPCRouter({
         };
       } catch (error) {
         if (error instanceof TRPCError) throw error;
-        
+
         console.error("Error in createSession:", error);
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
@@ -178,9 +185,9 @@ export const SessionRouter = createTRPCRouter({
       try {
         // Prevent deleting active session
         const activeSession = await ctx.db.sessions.findFirst({
-          where: { 
+          where: {
             sessionId: { in: input.sessionIds },
-            isActive: true 
+            isActive: true,
           },
         });
 
@@ -194,11 +201,11 @@ export const SessionRouter = createTRPCRouter({
         const result = await ctx.db.sessions.deleteMany({
           where: { sessionId: { in: input.sessionIds } },
         });
-        
+
         return { count: result.count };
       } catch (error) {
         if (error instanceof TRPCError) throw error;
-        
+
         console.error("Error in deleteSessionsByIds:", error);
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
@@ -226,7 +233,7 @@ export const SessionRouter = createTRPCRouter({
               sessionTo: true,
               isActive: true,
             },
-          })
+          }),
         ]);
 
         const activatedSession = await ctx.db.sessions.findUniqueOrThrow({

@@ -177,7 +177,7 @@ export const salaryRouter = createTRPCRouter({
         status: z.enum(["PAID", "PENDING", "PARTIAL"]).optional(),
         limit: z.number().default(50),
         cursor: z.string().optional(),
-      })
+      }),
     )
     .query(async ({ ctx, input }) => {
       const where: Prisma.SalaryWhereInput = {};
@@ -206,7 +206,7 @@ export const salaryRouter = createTRPCRouter({
 
   getPendingSalaries: protectedProcedure
     .input(
-      z.object({ month: z.number(), year: z.number(), sessionId: z.string() })
+      z.object({ month: z.number(), year: z.number(), sessionId: z.string() }),
     )
     .query(async ({ ctx, input }) => {
       return ctx.db.salary.findMany({
@@ -296,10 +296,7 @@ export const salaryRouter = createTRPCRouter({
         if (idx >= 0 && idx < 12) {
           const currentTotal = monthlyData[idx] ?? 0;
           monthlyData[idx] =
-            currentTotal +
-            s.amount +
-            (s.allowances ?? 0) +
-            (s.bonus ?? 0);
+            currentTotal + s.amount + (s.allowances ?? 0) + (s.bonus ?? 0);
         }
       });
 
@@ -317,7 +314,7 @@ export const salaryRouter = createTRPCRouter({
         month: z.number().optional(),
         year: z.number(),
         sessionId: z.string().optional(),
-      })
+      }),
     )
     .query(async ({ ctx, input }) => {
       const where: Prisma.SalaryWhereInput = {
@@ -341,7 +338,7 @@ export const salaryRouter = createTRPCRouter({
 
   getUnpaidEmployees: protectedProcedure
     .input(
-      z.object({ month: z.number(), year: z.number(), sessionId: z.string() })
+      z.object({ month: z.number(), year: z.number(), sessionId: z.string() }),
     )
     .query(async ({ ctx, input }) => {
       const allEmployees = await ctx.db.employees.findMany({
@@ -365,7 +362,7 @@ export const salaryRouter = createTRPCRouter({
       z.object({
         employeeId: z.string(),
         year: z.number().optional(),
-      })
+      }),
     )
     .query(async ({ ctx, input }) => {
       const where: Prisma.SalaryWhereInput = {
@@ -387,7 +384,7 @@ export const salaryRouter = createTRPCRouter({
             (s.allowances ?? 0) +
             (s.bonus ?? 0) -
             (s.deductions ?? 0),
-          0
+          0,
         );
 
       return { records: salaries, totalPaid };
@@ -400,7 +397,7 @@ export const salaryRouter = createTRPCRouter({
         employeeId: z.string().optional(),
         month: z.number().optional(),
         year: z.number().optional(),
-      })
+      }),
     )
     .query(async ({ ctx, input }) => {
       const where: Prisma.SalaryWhereInput = {};

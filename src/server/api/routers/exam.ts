@@ -20,12 +20,16 @@ const createExamSchema = z.object({
   endDate: z.date(),
   totalMarks: z.number().min(1),
   passingMarks: z.number().min(1),
-  datesheet: z.array(z.object({
-    subjectId: z.string().cuid(),
-    date: z.date(),
-    startTime: z.string().optional(),
-    endTime: z.string().optional(),
-  })).optional(),
+  datesheet: z
+    .array(
+      z.object({
+        subjectId: z.string().cuid(),
+        date: z.date(),
+        startTime: z.string().optional(),
+        endTime: z.string().optional(),
+      }),
+    )
+    .optional(),
 });
 
 const updateExamSchema = z.object({
@@ -54,7 +58,8 @@ export const examRouter = createTRPCRouter({
         }
 
         // Determine exam category based on grade and exam type
-        const isMatriculation = grades.category === "MATRICULATION" as typeof grades.category;
+        const isMatriculation =
+          grades.category === ("MATRICULATION" as typeof grades.category);
         const isPhaseTest = input.examTypeEnum.startsWith("PHASE_");
 
         if (isMatriculation && !isPhaseTest) {
@@ -97,16 +102,17 @@ export const examRouter = createTRPCRouter({
             totalMarks: input.totalMarks,
             passingMarks: input.passingMarks,
             status: "SCHEDULED",
-            ...(input.datesheet && input.datesheet.length > 0 && {
-              ExamDatesheet: {
-                create: input.datesheet.map((ds) => ({
-                  subjectId: ds.subjectId,
-                  date: ds.date,
-                  startTime: ds.startTime,
-                  endTime: ds.endTime,
-                })),
-              },
-            }),
+            ...(input.datesheet &&
+              input.datesheet.length > 0 && {
+                ExamDatesheet: {
+                  create: input.datesheet.map((ds) => ({
+                    subjectId: ds.subjectId,
+                    date: ds.date,
+                    startTime: ds.startTime,
+                    endTime: ds.endTime,
+                  })),
+                },
+              }),
           },
           include: {
             ExamDatesheet: true,
@@ -183,7 +189,7 @@ export const examRouter = createTRPCRouter({
       z.object({
         classId: z.string().cuid(),
         sessionId: z.string().cuid().optional(),
-      })
+      }),
     )
     .query(async ({ ctx, input }) => {
       try {
@@ -203,9 +209,8 @@ export const examRouter = createTRPCRouter({
 
         // Calculate marks coverage for each exam
         const examsWithCoverage = exams.map((exam) => {
-          const uniqueStudents = new Set(
-            exam.Marks.map((m) => m.studentId)
-          ).size;
+          const uniqueStudents = new Set(exam.Marks.map((m) => m.studentId))
+            .size;
           return {
             ...exam,
             marksUploaded: exam.Marks.length,

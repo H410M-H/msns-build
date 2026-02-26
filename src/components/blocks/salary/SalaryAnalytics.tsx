@@ -29,7 +29,7 @@ export function SalaryAnalytics({ year }: { year: number }) {
     {
       refetchInterval: 5000,
       refetchOnWindowFocus: true,
-    }
+    },
   );
 
   // Calculate summary statistics
@@ -44,7 +44,7 @@ export function SalaryAnalytics({ year }: { year: number }) {
 
   if (isLoading) {
     return (
-      <div className="flex h-[400px] w-full flex-col items-center justify-center rounded-xl border border-emerald-500/20 bg-slate-900/40 text-emerald-500 animate-pulse">
+      <div className="flex h-[400px] w-full animate-pulse flex-col items-center justify-center rounded-xl border border-emerald-500/20 bg-card text-emerald-500">
         <Loader2 className="mb-2 h-8 w-8 animate-spin" />
         <p className="text-sm">Loading analytics...</p>
       </div>
@@ -59,13 +59,13 @@ export function SalaryAnalytics({ year }: { year: number }) {
   }: TooltipProps<number, string>) => {
     if (active && payload?.length) {
       return (
-        <div className="rounded-lg border border-emerald-500/20 bg-slate-950/90 p-3 shadow-2xl backdrop-blur-md">
-          <p className="mb-1 text-sm font-bold text-white">
+        <div className="rounded-lg border border-emerald-500/20 bg-card p-3 shadow-2xl backdrop-blur-md">
+          <p className="mb-1 text-sm font-bold text-foreground">
             {label} {year}
           </p>
           <div className="flex items-center gap-2">
             <div className="h-2 w-2 rounded-full bg-emerald-500" />
-            <p className="text-xs text-slate-300">
+            <p className="text-xs text-foreground">
               Payout:{" "}
               <span className="font-mono font-medium text-emerald-400">
                 Rs. {Number(payload[0]?.value).toLocaleString()}
@@ -79,52 +79,51 @@ export function SalaryAnalytics({ year }: { year: number }) {
   };
 
   return (
-    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
-      
+    <div className="space-y-6 duration-700 animate-in fade-in slide-in-from-bottom-4">
       {/* Summary Cards */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <Card className="border-emerald-500/20 bg-slate-900/40 backdrop-blur-sm shadow-lg">
-          <CardContent className="p-4 flex items-center gap-4">
-            <div className="p-2.5 bg-emerald-500/10 rounded-xl border border-emerald-500/20">
-              <DollarSign className="w-5 h-5 text-emerald-400" />
+        <Card className="border-emerald-500/20 bg-card shadow-lg backdrop-blur-sm">
+          <CardContent className="flex items-center gap-4 p-4">
+            <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/10 p-2.5">
+              <DollarSign className="h-5 w-5 text-emerald-400" />
             </div>
             <div>
-              <p className="text-[10px] uppercase tracking-wider text-slate-400 font-semibold">
+              <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
                 Total Payout
               </p>
-              <p className="text-xl font-bold text-white">
+              <p className="text-xl font-bold text-foreground">
                 Rs. {stats.total.toLocaleString()}
               </p>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="border-emerald-500/20 bg-slate-900/40 backdrop-blur-sm shadow-lg">
-          <CardContent className="p-4 flex items-center gap-4">
-            <div className="p-2.5 bg-blue-500/10 rounded-xl border border-blue-500/20">
-              <TrendingUp className="w-5 h-5 text-blue-400" />
+        <Card className="border-emerald-500/20 bg-card shadow-lg backdrop-blur-sm">
+          <CardContent className="flex items-center gap-4 p-4">
+            <div className="rounded-xl border border-blue-500/20 bg-blue-500/10 p-2.5">
+              <TrendingUp className="h-5 w-5 text-blue-400" />
             </div>
             <div>
-              <p className="text-[10px] uppercase tracking-wider text-slate-400 font-semibold">
+              <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
                 Avg. Monthly
               </p>
-              <p className="text-xl font-bold text-white">
+              <p className="text-xl font-bold text-foreground">
                 Rs. {Math.round(stats.average).toLocaleString()}
               </p>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="border-emerald-500/20 bg-slate-900/40 backdrop-blur-sm shadow-lg">
-          <CardContent className="p-4 flex items-center gap-4">
-            <div className="p-2.5 bg-purple-500/10 rounded-xl border border-purple-500/20">
-              <Activity className="w-5 h-5 text-purple-400" />
+        <Card className="border-emerald-500/20 bg-card shadow-lg backdrop-blur-sm">
+          <CardContent className="flex items-center gap-4 p-4">
+            <div className="rounded-xl border border-purple-500/20 bg-purple-500/10 p-2.5">
+              <Activity className="h-5 w-5 text-purple-400" />
             </div>
             <div>
-              <p className="text-[10px] uppercase tracking-wider text-slate-400 font-semibold">
+              <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
                 Peak Month
               </p>
-              <p className="text-xl font-bold text-white">
+              <p className="text-xl font-bold text-foreground">
                 Rs. {stats.highest.toLocaleString()}
               </p>
             </div>
@@ -133,20 +132,20 @@ export function SalaryAnalytics({ year }: { year: number }) {
       </div>
 
       {/* Main Chart */}
-      <Card className="border border-emerald-500/20 bg-slate-900/60 shadow-xl backdrop-blur-xl overflow-hidden">
+      <Card className="overflow-hidden border border-emerald-500/20 bg-card shadow-xl backdrop-blur-xl">
         <CardHeader className="border-b border-emerald-500/10 pb-4">
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle className="text-lg text-white flex items-center gap-2">
+              <CardTitle className="flex items-center gap-2 text-lg text-foreground">
                 Monthly Distribution
               </CardTitle>
-              <CardDescription className="text-slate-400 text-xs">
+              <CardDescription className="text-xs text-muted-foreground">
                 Salary disbursement trends for {year}
               </CardDescription>
             </div>
-            <div className="flex items-center gap-2 px-2 py-1 bg-emerald-900/20 border border-emerald-500/20 rounded text-[10px] text-emerald-400 animate-pulse">
-                <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                Live Updates
+            <div className="flex animate-pulse items-center gap-2 rounded border border-emerald-500/20 bg-emerald-900/20 px-2 py-1 text-[10px] text-emerald-400">
+              <div className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+              Live Updates
             </div>
           </div>
         </CardHeader>

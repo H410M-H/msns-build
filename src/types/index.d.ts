@@ -1,17 +1,50 @@
 // Enums from Prisma Schema
 type ClassCategory = "Montessori" | "Primary" | "Middle" | "SSC_I" | "SSC_II";
-type Designation = "PRINCIPAL" | "ADMIN" | "HEAD" | "CLERK" | "TEACHER" | "WORKER" | "NONE" | "ALL" | "STUDENT" | "FACULTY";
+type Designation =
+  | "PRINCIPAL"
+  | "ADMIN"
+  | "HEAD"
+  | "CLERK"
+  | "TEACHER"
+  | "WORKER"
+  | "NONE"
+  | "ALL"
+  | "STUDENT"
+  | "FACULTY";
 type FeeCategory = "MonthlyFee" | "AnnualFee";
-type ExpenseCategory = "UTILITIES" | "SUPPLIES" | "MAINTENANCE" | "SALARIES" | "TRANSPORT" | "FOOD" | "EQUIPMENT" | "OTHER" | "BISE";
+type ExpenseCategory =
+  | "UTILITIES"
+  | "SUPPLIES"
+  | "MAINTENANCE"
+  | "SALARIES"
+  | "TRANSPORT"
+  | "FOOD"
+  | "EQUIPMENT"
+  | "OTHER"
+  | "BISE";
 type Gender = "MALE" | "FEMALE" | "CUSTOM";
 type MaritalStatus = "Married" | "Unmarried" | "Widow" | "Divorced";
-type EventType = "MEETING" | "WORKSHOP" | "CONFERENCE" | "TRAINING" | "WEBINAR" | "SOCIAL" | "OTHER";
+type EventType =
+  | "MEETING"
+  | "WORKSHOP"
+  | "CONFERENCE"
+  | "TRAINING"
+  | "WEBINAR"
+  | "SOCIAL"
+  | "OTHER";
 type Priority = "LOW" | "MEDIUM" | "HIGH" | "URGENT";
 type EventStatus = "CONFIRMED" | "TENTATIVE" | "CANCELLED";
 type RecurrenceType = "NONE" | "DAILY" | "WEEKLY" | "MONTHLY" | "YEARLY";
 type AttendeeStatus = "PENDING" | "ACCEPTED" | "DECLINED" | "MAYBE";
 type ReminderType = "EMAIL" | "PUSH" | "SMS";
-type DayOfWeek = "Monday" | "Tuesday" | "Wednesday" | "Thursday" | "Friday" | "Saturday" | "Sunday";
+type DayOfWeek =
+  | "Monday"
+  | "Tuesday"
+  | "Wednesday"
+  | "Thursday"
+  | "Friday"
+  | "Saturday"
+  | "Sunday";
 type AccountTypeEnum = Designation;
 
 // Navigation

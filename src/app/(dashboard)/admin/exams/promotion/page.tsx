@@ -94,7 +94,8 @@ export default function PromotionManagementPage() {
   const [selectedToClass, setSelectedToClass] = useState<string>("");
   const [selectedExam, setSelectedExam] = useState<string>("");
   const [showPromotionDialog, setShowPromotionDialog] = useState(false);
-  const [promotionResult, setPromotionResult] = useState<PromotionResult | null>(null);
+  const [promotionResult, setPromotionResult] =
+    useState<PromotionResult | null>(null);
 
   // API queries
   const { data: sessions } = api.session.getSessions.useQuery();
@@ -102,7 +103,7 @@ export default function PromotionManagementPage() {
 
   const { data: examsForSession } = api.exam.getExamsForSession.useQuery(
     { sessionId: selectedFromSession },
-    { enabled: !!selectedFromSession }
+    { enabled: !!selectedFromSession },
   );
 
   const { data: promotionCheck } = api.promotion.canPromoteClass.useQuery(
@@ -111,7 +112,7 @@ export default function PromotionManagementPage() {
       fromSessionId: selectedFromSession,
       examIdForCheck: selectedExam,
     },
-    { enabled: !!selectedFromClass && !!selectedFromSession && !!selectedExam }
+    { enabled: !!selectedFromClass && !!selectedFromSession && !!selectedExam },
   );
 
   // API mutations
@@ -177,14 +178,14 @@ export default function PromotionManagementPage() {
             <div className="rounded-lg border border-emerald-200 bg-emerald-100 p-2 text-emerald-600 dark:border-emerald-500/20 dark:bg-emerald-500/10 dark:text-emerald-400">
               <ArrowUpRight className="h-6 w-6" />
             </div>
-            <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
+            <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-foreground">
               Student{" "}
               <span className="text-emerald-600 dark:text-emerald-500">
                 Promotion
               </span>
             </h1>
           </div>
-          <p className="max-w-xl pl-1 text-sm text-slate-500 dark:text-slate-400">
+          <p className="max-w-xl pl-1 text-sm text-muted-foreground dark:text-muted-foreground">
             Promote students who passed their exams to the next class and
             session.
           </p>
@@ -211,17 +212,17 @@ export default function PromotionManagementPage() {
       )}
 
       {/* --- Promotion Form --- */}
-      <Card className="overflow-hidden border border-slate-200 bg-white/50 shadow-sm backdrop-blur-md transition-all dark:border-white/5 dark:bg-slate-900/40 dark:shadow-xl">
-        <CardHeader className="border-b border-slate-100 bg-slate-50/50 px-6 py-4 dark:border-white/5 dark:bg-black/20">
+      <Card className="overflow-hidden border border-slate-200 bg-white/50 shadow-sm backdrop-blur-md transition-all dark:border-border dark:bg-card dark:shadow-xl">
+        <CardHeader className="border-b border-slate-100 bg-slate-50/50 px-6 py-4 dark:border-border dark:bg-black/20">
           <div className="flex items-center gap-2">
             <div className="rounded-lg border border-emerald-200 bg-emerald-100 p-1.5 dark:border-emerald-500/20 dark:bg-emerald-500/10">
               <UserCheck className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
             </div>
             <div>
-              <CardTitle className="text-base font-bold text-slate-900 dark:text-white">
+              <CardTitle className="text-base font-bold text-slate-900 dark:text-foreground">
                 Batch Promotion
               </CardTitle>
-              <CardDescription className="text-xs text-slate-500 dark:text-slate-400">
+              <CardDescription className="text-xs text-muted-foreground dark:text-muted-foreground">
                 Promote students who passed the final exam to the next class
               </CardDescription>
             </div>
@@ -232,20 +233,20 @@ export default function PromotionManagementPage() {
           <div>
             <div className="mb-4 flex items-center gap-2">
               <div className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-              <h3 className="text-sm font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+              <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground dark:text-muted-foreground">
                 From (Current Class)
               </h3>
             </div>
             <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
               <div className="space-y-2">
-                <label className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground dark:text-muted-foreground">
                   Session
                 </label>
                 <Select
                   value={selectedFromSession}
                   onValueChange={setSelectedFromSession}
                 >
-                  <SelectTrigger className="border-slate-200 bg-white transition-all focus:border-emerald-500/50 focus:ring-emerald-500/50 dark:border-white/10 dark:bg-slate-950/50 dark:text-white">
+                  <SelectTrigger className="border-slate-200 bg-white transition-all focus:border-emerald-500/50 focus:ring-emerald-500/50 dark:border-border dark:bg-card dark:text-foreground">
                     <SelectValue placeholder="Select session" />
                   </SelectTrigger>
                   <SelectContent>
@@ -262,14 +263,14 @@ export default function PromotionManagementPage() {
               </div>
 
               <div className="space-y-2">
-                <label className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground dark:text-muted-foreground">
                   Class
                 </label>
                 <Select
                   value={selectedFromClass}
                   onValueChange={setSelectedFromClass}
                 >
-                  <SelectTrigger className="border-slate-200 bg-white transition-all focus:border-emerald-500/50 focus:ring-emerald-500/50 dark:border-white/10 dark:bg-slate-950/50 dark:text-white">
+                  <SelectTrigger className="border-slate-200 bg-white transition-all focus:border-emerald-500/50 focus:ring-emerald-500/50 dark:border-border dark:bg-card dark:text-foreground">
                     <SelectValue placeholder="Select class" />
                   </SelectTrigger>
                   <SelectContent>
@@ -283,11 +284,11 @@ export default function PromotionManagementPage() {
               </div>
 
               <div className="space-y-2">
-                <label className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground dark:text-muted-foreground">
                   Final Exam
                 </label>
                 <Select value={selectedExam} onValueChange={setSelectedExam}>
-                  <SelectTrigger className="border-slate-200 bg-white transition-all focus:border-emerald-500/50 focus:ring-emerald-500/50 dark:border-white/10 dark:bg-slate-950/50 dark:text-white">
+                  <SelectTrigger className="border-slate-200 bg-white transition-all focus:border-emerald-500/50 focus:ring-emerald-500/50 dark:border-border dark:bg-card dark:text-foreground">
                     <SelectValue placeholder="Select exam" />
                   </SelectTrigger>
                   <SelectContent>
@@ -303,7 +304,7 @@ export default function PromotionManagementPage() {
               {/* Promotion Check Summary */}
               {promotionCheck && (
                 <div className="space-y-2">
-                  <label className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                  <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground dark:text-muted-foreground">
                     Status
                   </label>
                   <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-sm dark:border-emerald-500/20 dark:bg-emerald-500/5">
@@ -322,20 +323,20 @@ export default function PromotionManagementPage() {
           <div>
             <div className="mb-4 flex items-center gap-2">
               <div className="h-1.5 w-1.5 rounded-full bg-blue-500" />
-              <h3 className="text-sm font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+              <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground dark:text-muted-foreground">
                 To (New Class)
               </h3>
             </div>
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <div className="space-y-2">
-                <label className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground dark:text-muted-foreground">
                   New Session
                 </label>
                 <Select
                   value={selectedToSession}
                   onValueChange={setSelectedToSession}
                 >
-                  <SelectTrigger className="border-slate-200 bg-white transition-all focus:border-emerald-500/50 focus:ring-emerald-500/50 dark:border-white/10 dark:bg-slate-950/50 dark:text-white">
+                  <SelectTrigger className="border-slate-200 bg-white transition-all focus:border-emerald-500/50 focus:ring-emerald-500/50 dark:border-border dark:bg-card dark:text-foreground">
                     <SelectValue placeholder="Select new session" />
                   </SelectTrigger>
                   <SelectContent>
@@ -352,14 +353,14 @@ export default function PromotionManagementPage() {
               </div>
 
               <div className="space-y-2">
-                <label className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground dark:text-muted-foreground">
                   New Class
                 </label>
                 <Select
                   value={selectedToClass}
                   onValueChange={setSelectedToClass}
                 >
-                  <SelectTrigger className="border-slate-200 bg-white transition-all focus:border-emerald-500/50 focus:ring-emerald-500/50 dark:border-white/10 dark:bg-slate-950/50 dark:text-white">
+                  <SelectTrigger className="border-slate-200 bg-white transition-all focus:border-emerald-500/50 focus:ring-emerald-500/50 dark:border-border dark:bg-card dark:text-foreground">
                     <SelectValue placeholder="Select new class" />
                   </SelectTrigger>
                   <SelectContent>
@@ -376,13 +377,13 @@ export default function PromotionManagementPage() {
 
           {/* Promotion Check Details */}
           {promotionCheck && (
-            <div className="rounded-xl border border-slate-200 bg-slate-50/50 p-5 dark:border-white/5 dark:bg-black/20">
+            <div className="rounded-xl border border-slate-200 bg-slate-50/50 p-5 dark:border-border dark:bg-black/20">
               <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
                 <div className="space-y-1">
-                  <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground dark:text-muted-foreground">
                     Total Students
                   </p>
-                  <p className="text-2xl font-bold text-slate-900 dark:text-white">
+                  <p className="text-2xl font-bold text-slate-900 dark:text-foreground">
                     {promotionCheck.totalStudents}
                   </p>
                 </div>
@@ -403,7 +404,7 @@ export default function PromotionManagementPage() {
                   </p>
                 </div>
                 <div className="space-y-1">
-                  <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground dark:text-muted-foreground">
                     Can Promote
                   </p>
                   <Badge
@@ -434,37 +435,36 @@ export default function PromotionManagementPage() {
             <DialogTrigger asChild>
               <Button
                 size="lg"
-                className="w-full bg-emerald-600 text-white shadow-md shadow-emerald-200 hover:bg-emerald-700 dark:shadow-emerald-900/20"
+                className="w-full bg-emerald-600 text-foreground shadow-md shadow-emerald-200 hover:bg-emerald-700 dark:shadow-emerald-900/20"
                 disabled={!promotionCheck?.canPromote}
               >
                 <Users className="mr-2 h-4 w-4" />
                 Promote {promotionCheck?.passedStudents ?? 0} Students
               </Button>
             </DialogTrigger>
-            <DialogContent className="border-slate-200 bg-white dark:border-white/10 dark:bg-slate-900">
+            <DialogContent className="border-slate-200 bg-white dark:border-border dark:bg-card">
               <DialogHeader>
-                <DialogTitle className="text-slate-900 dark:text-white">
+                <DialogTitle className="text-slate-900 dark:text-foreground">
                   Confirm Promotion
                 </DialogTitle>
-                <DialogDescription className="text-slate-500 dark:text-slate-400">
+                <DialogDescription className="text-muted-foreground dark:text-muted-foreground">
                   You are about to promote{" "}
                   <strong className="text-emerald-600 dark:text-emerald-400">
                     {promotionCheck?.passedStudents}
                   </strong>{" "}
                   students from{" "}
-                  <strong className="text-slate-700 dark:text-slate-200">
+                  <strong className="text-slate-700 dark:text-foreground">
                     {
                       classes?.find(
-                        (c: Class) => c.classId === selectedFromClass
+                        (c: Class) => c.classId === selectedFromClass,
                       )?.grade
                     }
                   </strong>{" "}
                   to{" "}
-                  <strong className="text-slate-700 dark:text-slate-200">
+                  <strong className="text-slate-700 dark:text-foreground">
                     {
-                      classes?.find(
-                        (c: Class) => c.classId === selectedToClass
-                      )?.grade
+                      classes?.find((c: Class) => c.classId === selectedToClass)
+                        ?.grade
                     }
                   </strong>
                   . This action cannot be undone.
@@ -483,14 +483,14 @@ export default function PromotionManagementPage() {
                   <Button
                     variant="outline"
                     onClick={() => setShowPromotionDialog(false)}
-                    className="border-slate-200 dark:border-white/10 dark:text-slate-300"
+                    className="border-slate-200 dark:border-border dark:text-foreground"
                   >
                     Cancel
                   </Button>
                   <Button
                     onClick={handleBatchPromotion}
                     disabled={batchPromoteMutation.isPending}
-                    className="bg-emerald-600 text-white hover:bg-emerald-700"
+                    className="bg-emerald-600 text-foreground hover:bg-emerald-700"
                   >
                     {batchPromoteMutation.isPending ? (
                       <>
@@ -509,75 +509,76 @@ export default function PromotionManagementPage() {
       </Card>
 
       {/* --- Promotion History --- */}
-      {promotionHistoryQuery.data &&
-        promotionHistoryQuery.data.length > 0 && (
-          <Card className="overflow-hidden border border-slate-200 bg-white/50 shadow-sm backdrop-blur-md transition-all dark:border-white/5 dark:bg-slate-900/40 dark:shadow-xl">
-            <CardHeader className="border-b border-slate-100 bg-slate-50/50 px-6 py-4 dark:border-white/5 dark:bg-black/20">
-              <div className="flex items-center gap-2">
-                <div className="rounded-lg border border-emerald-200 bg-emerald-100 p-1.5 dark:border-emerald-500/20 dark:bg-emerald-500/10">
-                  <History className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
-                </div>
-                <div>
-                  <CardTitle className="text-base font-bold text-slate-900 dark:text-white">
-                    Recent Promotions
-                  </CardTitle>
-                  <CardDescription className="text-xs text-slate-500 dark:text-slate-400">
-                    History of student promotions for this session
-                  </CardDescription>
-                </div>
+      {promotionHistoryQuery.data && promotionHistoryQuery.data.length > 0 && (
+        <Card className="overflow-hidden border border-slate-200 bg-white/50 shadow-sm backdrop-blur-md transition-all dark:border-border dark:bg-card dark:shadow-xl">
+          <CardHeader className="border-b border-slate-100 bg-slate-50/50 px-6 py-4 dark:border-border dark:bg-black/20">
+            <div className="flex items-center gap-2">
+              <div className="rounded-lg border border-emerald-200 bg-emerald-100 p-1.5 dark:border-emerald-500/20 dark:bg-emerald-500/10">
+                <History className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
               </div>
-            </CardHeader>
-            <CardContent className="p-0">
-              <div className="overflow-x-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow className="border-b border-slate-100 bg-slate-50/80 dark:border-white/5 dark:bg-black/10">
-                      <TableHead className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                        Student Name
-                      </TableHead>
-                      <TableHead className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                        From Class
-                      </TableHead>
-                      <TableHead className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                        To Class
-                      </TableHead>
-                      <TableHead className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                        Promoted By
-                      </TableHead>
-                      <TableHead className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                        Date
-                      </TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {promotionHistoryQuery.data.map((promo: PromotionHistoryItem) => (
+              <div>
+                <CardTitle className="text-base font-bold text-slate-900 dark:text-foreground">
+                  Recent Promotions
+                </CardTitle>
+                <CardDescription className="text-xs text-muted-foreground dark:text-muted-foreground">
+                  History of student promotions for this session
+                </CardDescription>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent className="p-0">
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow className="border-b border-slate-100 bg-slate-50/80 dark:border-border dark:bg-black/10">
+                    <TableHead className="text-xs font-bold uppercase tracking-wider text-muted-foreground dark:text-muted-foreground">
+                      Student Name
+                    </TableHead>
+                    <TableHead className="text-xs font-bold uppercase tracking-wider text-muted-foreground dark:text-muted-foreground">
+                      From Class
+                    </TableHead>
+                    <TableHead className="text-xs font-bold uppercase tracking-wider text-muted-foreground dark:text-muted-foreground">
+                      To Class
+                    </TableHead>
+                    <TableHead className="text-xs font-bold uppercase tracking-wider text-muted-foreground dark:text-muted-foreground">
+                      Promoted By
+                    </TableHead>
+                    <TableHead className="text-xs font-bold uppercase tracking-wider text-muted-foreground dark:text-muted-foreground">
+                      Date
+                    </TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {promotionHistoryQuery.data.map(
+                    (promo: PromotionHistoryItem) => (
                       <TableRow
                         key={promo.promotionHistoryId}
-                        className="border-b border-slate-100 transition-colors hover:bg-slate-50/50 dark:border-white/5 dark:hover:bg-white/5"
+                        className="border-b border-slate-100 transition-colors hover:bg-slate-50/50 dark:border-border dark:hover:bg-white/5"
                       >
-                        <TableCell className="font-semibold text-slate-900 dark:text-white">
+                        <TableCell className="font-semibold text-slate-900 dark:text-foreground">
                           {promo.Students.studentName}
                         </TableCell>
-                        <TableCell className="text-slate-600 dark:text-slate-300">
+                        <TableCell className="text-slate-600 dark:text-foreground">
                           {promo.FromGrades.grade} {promo.FromGrades.section}
                         </TableCell>
-                        <TableCell className="text-slate-600 dark:text-slate-300">
+                        <TableCell className="text-slate-600 dark:text-foreground">
                           {promo.ToGrades.grade} {promo.ToGrades.section}
                         </TableCell>
-                        <TableCell className="text-slate-600 dark:text-slate-300">
+                        <TableCell className="text-slate-600 dark:text-foreground">
                           {promo.Employees.employeeName}
                         </TableCell>
-                        <TableCell className="font-mono text-sm text-slate-600 dark:text-slate-300">
+                        <TableCell className="font-mono text-sm text-slate-600 dark:text-foreground">
                           {new Date(promo.promotedAt).toLocaleDateString()}
                         </TableCell>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
-            </CardContent>
-          </Card>
-        )}
+                    ),
+                  )}
+                </TableBody>
+              </Table>
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }

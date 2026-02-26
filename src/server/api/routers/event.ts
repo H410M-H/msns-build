@@ -1,8 +1,17 @@
-import { z } from 'zod';
-import { createTRPCRouter, publicProcedure } from '../trpc';
-import { type Prisma } from '@prisma/client';
-import { AttendeeStatusSchema, CreateEventSchema, EventStatusSchema, UpdateEventSchema } from '~/lib/event-schemas';
-import { safeTransformEventForDatabase, safeTransformEventForFrontend, type FrontendEventData } from '~/lib/event-helpers';
+import { z } from "zod";
+import { createTRPCRouter, publicProcedure } from "../trpc";
+import { type Prisma } from "@prisma/client";
+import {
+  AttendeeStatusSchema,
+  CreateEventSchema,
+  EventStatusSchema,
+  UpdateEventSchema,
+} from "~/lib/event-schemas";
+import {
+  safeTransformEventForDatabase,
+  safeTransformEventForFrontend,
+  type FrontendEventData,
+} from "~/lib/event-helpers";
 
 export const EventRouter = createTRPCRouter({
   create: publicProcedure
@@ -94,7 +103,7 @@ export const EventRouter = createTRPCRouter({
     }),
 
   getById: publicProcedure
-    .input(z.object({ id: z.string().min(1, 'Event ID is required') }))
+    .input(z.object({ id: z.string().min(1, "Event ID is required") }))
     .query(async ({ ctx, input }): Promise<FrontendEventData> => {
       const event = await ctx.db.event.findUnique({
         where: { id: input.id },
@@ -106,7 +115,7 @@ export const EventRouter = createTRPCRouter({
         },
       });
       if (!event) {
-        throw new Error('Event not found');
+        throw new Error("Event not found");
       }
       return safeTransformEventForFrontend(event);
     }),
@@ -118,47 +127,59 @@ export const EventRouter = createTRPCRouter({
         status: EventStatusSchema.optional(),
         offset: z.number().int().nonnegative().default(0),
         limit: z.number().int().positive().default(10),
-      })
+      }),
     )
-    .query(async ({ ctx, input }): Promise<{ events: FrontendEventData[]; total: number }> => {
-      const where: Prisma.EventWhereInput = {
-        AND: [
-          input.search
-            ? {
-                OR: [
-                  { title: { contains: input.search, mode: 'insensitive' } },
-                  { description: { contains: input.search, mode: 'insensitive' } },
-                  { location: { contains: input.search, mode: 'insensitive' } },
-                ],
-              }
-            : {},
-          input.status ? { status: input.status } : {},
-        ],
-      };
+    .query(
+      async ({
+        ctx,
+        input,
+      }): Promise<{ events: FrontendEventData[]; total: number }> => {
+        const where: Prisma.EventWhereInput = {
+          AND: [
+            input.search
+              ? {
+                  OR: [
+                    { title: { contains: input.search, mode: "insensitive" } },
+                    {
+                      description: {
+                        contains: input.search,
+                        mode: "insensitive",
+                      },
+                    },
+                    {
+                      location: { contains: input.search, mode: "insensitive" },
+                    },
+                  ],
+                }
+              : {},
+            input.status ? { status: input.status } : {},
+          ],
+        };
 
-      const [events, total] = await Promise.all([
-        ctx.db.event.findMany({
-          where,
-          include: {
-            User: true,
-            tags: { include: { tag: true } },
-            attendees: { include: { user: true } },
-            reminders: true,
-          },
-          skip: input.offset,
-          take: input.limit,
-        }),
-        ctx.db.event.count({ where }),
-      ]);
+        const [events, total] = await Promise.all([
+          ctx.db.event.findMany({
+            where,
+            include: {
+              User: true,
+              tags: { include: { tag: true } },
+              attendees: { include: { user: true } },
+              reminders: true,
+            },
+            skip: input.offset,
+            take: input.limit,
+          }),
+          ctx.db.event.count({ where }),
+        ]);
 
-      return {
-        events: events.map(safeTransformEventForFrontend),
-        total,
-      };
-    }),
+        return {
+          events: events.map(safeTransformEventForFrontend),
+          total,
+        };
+      },
+    ),
 
   delete: publicProcedure
-    .input(z.object({ id: z.string().min(1, 'Event ID is required') }))
+    .input(z.object({ id: z.string().min(1, "Event ID is required") }))
     .mutation(async ({ ctx, input }): Promise<{ success: boolean }> => {
       await ctx.db.event.delete({
         where: { id: input.id },
@@ -169,38 +190,51 @@ export const EventRouter = createTRPCRouter({
   updateAttendeeStatus: publicProcedure
     .input(
       z.object({
-        eventId: z.string().min(1, 'Event ID is required'),
-        userId: z.string().min(1, 'User ID is required'),
+        eventId: z.string().min(1, "Event ID is required"),
+        userId: z.string().min(1, "User ID is required"),
         status: AttendeeStatusSchema,
-      })
+      }),
     )
-    .mutation(async ({ ctx, input }): Promise<{ userId: string; status: string }> => {
-      const attendee = await ctx.db.attendee.upsert({
-        where: {
-          eventId_userId: { eventId: input.eventId, userId: input.userId },
-        },
-        update: { status: input.status },
-        create: {
-          eventId: input.eventId,
-          userId: input.userId,
-          status: input.status,
-        },
-        include: { user: true },
-      });
-      return { userId: attendee.userId, status: attendee.status };
-    }),
+    .mutation(
+      async ({ ctx, input }): Promise<{ userId: string; status: string }> => {
+        const attendee = await ctx.db.attendee.upsert({
+          where: {
+            eventId_userId: { eventId: input.eventId, userId: input.userId },
+          },
+          update: { status: input.status },
+          create: {
+            eventId: input.eventId,
+            userId: input.userId,
+            status: input.status,
+          },
+          include: { user: true },
+        });
+        return { userId: attendee.userId, status: attendee.status };
+      },
+    ),
 
   createTag: publicProcedure
-    .input(z.object({ name: z.string().min(1, 'Tag name is required'), color: z.string().min(1, 'Tag color is required') }))
-    .mutation(async ({ ctx, input }): Promise<{ id: string; name: string; color: string }> => {
-      const tag = await ctx.db.tag.create({
-        data: { name: input.name, color: input.color },
-      });
-      return { id: tag.id, name: tag.name, color: tag.color };
-    }),
+    .input(
+      z.object({
+        name: z.string().min(1, "Tag name is required"),
+        color: z.string().min(1, "Tag color is required"),
+      }),
+    )
+    .mutation(
+      async ({
+        ctx,
+        input,
+      }): Promise<{ id: string; name: string; color: string }> => {
+        const tag = await ctx.db.tag.create({
+          data: { name: input.name, color: input.color },
+        });
+        return { id: tag.id, name: tag.name, color: tag.color };
+      },
+    ),
 
-  getTags: publicProcedure
-    .query(async ({ ctx }): Promise<{ id: string; name: string; color: string }[]> => {
+  getTags: publicProcedure.query(
+    async ({ ctx }): Promise<{ id: string; name: string; color: string }[]> => {
       return ctx.db.tag.findMany();
-    }),
+    },
+  ),
 });

@@ -10,7 +10,7 @@ const uploadMarksSchema = z.object({
     z.object({
       studentId: z.string().cuid(),
       obtainedMarks: z.number().min(0),
-    })
+    }),
   ),
 });
 
@@ -131,7 +131,7 @@ export const marksRouter = createTRPCRouter({
       z.object({
         examId: z.string().cuid(),
         classSubjectId: z.string().optional(),
-      })
+      }),
     )
     .query(async ({ ctx, input }) => {
       try {
@@ -165,7 +165,7 @@ export const marksRouter = createTRPCRouter({
       z.object({
         studentId: z.string().cuid(),
         examId: z.string().cuid(),
-      })
+      }),
     )
     .query(async ({ ctx, input }) => {
       try {
@@ -195,7 +195,7 @@ export const marksRouter = createTRPCRouter({
       z.object({
         examId: z.string().cuid(),
         classId: z.string().cuid(),
-      })
+      }),
     )
     .query(async ({ ctx, input }) => {
       try {
@@ -234,7 +234,7 @@ export const marksRouter = createTRPCRouter({
         const requiredCombinations = classSubjects.length * students.length;
         const uploadedCombinations = exam.Marks.length;
         const percentage = Math.round(
-          (uploadedCombinations / requiredCombinations) * 100
+          (uploadedCombinations / requiredCombinations) * 100,
         );
 
         return {
