@@ -75,38 +75,35 @@ export const subjectDiaryRouter = createTRPCRouter({
       }),
     )
     .query(async ({ ctx, input }) => {
-      try {
-        const whereClause: Prisma.SubjectDiaryWhereInput = { teacherId: input.teacherId };
+      const startDate = input.date ? new Date(input.date) : undefined;
+      if (startDate) startDate.setHours(0, 0, 0, 0);
+      const endDate = input.date ? new Date(input.date) : undefined;
+      if (endDate) endDate.setHours(23, 59, 59, 999);
 
-        // If date is provided, match exactly by day
-        if (input.date) {
-          const startDate = new Date(input.date);
-          startDate.setHours(0, 0, 0, 0);
-          const endDate = new Date(input.date);
-          endDate.setHours(23, 59, 59, 999);
-
-          whereClause.date = {
-            gte: startDate,
-            lte: endDate,
-          };
-        }
-
-        return await ctx.db.subjectDiary.findMany({
-          where: whereClause,
-          include: {
-            ClassSubject: {
-              include: {
-                Subject: { select: { subjectName: true } },
-                Grades: { select: { grade: true, section: true } },
+      const whereClause: Prisma.SubjectDiaryWhereInput = {
+        teacherId: input.teacherId,
+        ...(input.date && startDate && endDate
+          ? {
+              date: {
+                gte: startDate,
+                lte: endDate,
               },
+            }
+          : {}),
+      };
+
+      return await ctx.db.subjectDiary.findMany({
+        where: whereClause,
+        include: {
+          ClassSubject: {
+            include: {
+              Subject: { select: { subjectName: true } },
+              Grades: { select: { grade: true, section: true } },
             },
           },
-          orderBy: { date: "desc" },
-        });
-      } catch (error) {
-        console.error("Error fetching teacher diaries:", error);
-        throw new Error("Failed to fetch teacher diaries");
-      }
+        },
+        orderBy: { date: "desc" },
+      });
     }),
 
   getClassDiaries: protectedProcedure
@@ -118,41 +115,37 @@ export const subjectDiaryRouter = createTRPCRouter({
       }),
     )
     .query(async ({ ctx, input }) => {
-      try {
-        const whereClause: Prisma.SubjectDiaryWhereInput = {
-          ClassSubject: {
-            classId: input.classId,
-            sessionId: input.sessionId,
-          },
-        };
+      const startDate = input.date ? new Date(input.date) : undefined;
+      if (startDate) startDate.setHours(0, 0, 0, 0);
+      const endDate = input.date ? new Date(input.date) : undefined;
+      if (endDate) endDate.setHours(23, 59, 59, 999);
 
-        if (input.date) {
-          const startDate = new Date(input.date);
-          startDate.setHours(0, 0, 0, 0);
-          const endDate = new Date(input.date);
-          endDate.setHours(23, 59, 59, 999);
-
-          whereClause.date = {
-            gte: startDate,
-            lte: endDate,
-          };
-        }
-
-        return await ctx.db.subjectDiary.findMany({
-          where: whereClause,
-          include: {
-            Teacher: { select: { employeeName: true } },
-            ClassSubject: {
-              include: {
-                Subject: { select: { subjectName: true } },
+      const whereClause: Prisma.SubjectDiaryWhereInput = {
+        ClassSubject: {
+          classId: input.classId,
+          sessionId: input.sessionId,
+        },
+        ...(input.date && startDate && endDate
+          ? {
+              date: {
+                gte: startDate,
+                lte: endDate,
               },
+            }
+          : {}),
+      };
+
+      return await ctx.db.subjectDiary.findMany({
+        where: whereClause,
+        include: {
+          Teacher: { select: { employeeName: true } },
+          ClassSubject: {
+            include: {
+              Subject: { select: { subjectName: true } },
             },
           },
-          orderBy: { date: "desc" },
-        });
-      } catch (error) {
-        console.error("Error fetching class diaries:", error);
-        throw new Error("Failed to fetch class diaries");
-      }
+        },
+        orderBy: { date: "desc" },
+      });
     }),
 });

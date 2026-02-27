@@ -87,7 +87,7 @@ export function ClassDiariesTab({
           </div>
         ) : (
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
-            {diaries.map((diary: Diary) => (
+            {(diaries as Diary[]).map((diary) => (
               <Card
                 key={diary.subjectDiaryId}
                 className="overflow-hidden border-t-4 border-border border-t-indigo-500 bg-card shadow-lg"
@@ -102,7 +102,12 @@ export function ClassDiariesTab({
                     </Badge>
                     <span className="flex items-center gap-1 text-xs text-muted-foreground">
                       <CalendarIcon className="h-3 w-3" />
-                      {format(new Date(diary.date), "MMM d, yyyy")}
+                      {format(
+                        typeof diary.date === "string"
+                          ? new Date(diary.date)
+                          : diary.date,
+                        "MMM d, yyyy"
+                      )}
                     </span>
                   </div>
                   <div className="mt-2 flex items-center gap-2 text-sm text-foreground">
