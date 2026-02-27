@@ -488,3 +488,5 @@ export function ExpensesTable({ onEdit, onDelete }: ExpensesTableProps) {
     </Card>
   );
 }
+
+export default ExpensesTable;
