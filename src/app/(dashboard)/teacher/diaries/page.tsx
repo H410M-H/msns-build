@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { PageHeader } from "~/components/blocks/nav/PageHeader";
-import { BookOpen, Edit2, Trash2, Filter } from "lucide-react";
+import { BookOpen, Edit2, Trash2, Filter, Loader2 } from "lucide-react";
 import { api } from "~/trpc/react";
 import { format } from "date-fns";
 import {
@@ -52,9 +52,12 @@ export default function TeacherDiariesPage() {
 
   // Get teacher ID from profile or session
   api.profile.getProfile.useQuery(undefined, {
-    onSuccess: (data) => {
-      if (data && typeof data === "object" && "accountId" in data && typeof data.accountId === "string") {
-        setTeacherId(data.accountId);
+    onSuccess: (data: unknown) => {
+      if (data && typeof data === "object" && "accountId" in data) {
+        const accountId = (data as { accountId: unknown }).accountId;
+        if (typeof accountId === "string") {
+          setTeacherId(accountId);
+        }
       }
     },
   });
@@ -114,7 +117,7 @@ export default function TeacherDiariesPage() {
     diary.ClassSubject.Subject.subjectName
       .toLowerCase()
       .includes(searchSubject.toLowerCase())
-  ) || [];
+  ) ?? [];
 
   return (
     <div className="w-full space-y-6">
