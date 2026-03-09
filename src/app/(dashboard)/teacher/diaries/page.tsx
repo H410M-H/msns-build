@@ -48,24 +48,15 @@ export default function TeacherDiariesPage() {
   const [editContent, setEditContent] = useState<string>("");
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [teacherId, setTeacherId] = useState<string | null>(null);
 
-  // Get teacher ID from profile or session
-  api.profile.getProfile.useQuery(undefined, {
-    onSuccess: (data: unknown) => {
-      if (data && typeof data === "object" && "accountId" in data) {
-        const accountId = (data as { accountId: unknown }).accountId;
-        if (typeof accountId === "string") {
-          setTeacherId(accountId);
-        }
-      }
-    },
-  });
+  // Get teacher ID from profile
+  const { data: userProfile } = api.profile.getProfile.useQuery();
+  const teacherId = userProfile?.accountId ?? "";
 
   // Fetch user's diaries
   const { data: diaries, isLoading, refetch } = api.subjectDiary.getTeacherDiaries.useQuery(
     {
-      teacherId: teacherId ?? "",
+      teacherId,
       ...(selectedDate ? { date: new Date(selectedDate) } : {}),
     },
     { enabled: !!teacherId }

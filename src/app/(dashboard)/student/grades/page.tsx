@@ -1,7 +1,9 @@
 "use client";
 
+import { useState } from "react";
 import { motion } from "framer-motion";
-import { TrendingUp, Award, FileText } from "lucide-react";
+import { TrendingUp, Award, FileText, Loader2 } from "lucide-react";
+import { api } from "~/trpc/react";
 import { PageHeader } from "~/components/blocks/nav/PageHeader";
 import {
   Card,
@@ -14,39 +16,7 @@ import { Progress } from "~/components/ui/progress";
 import { Button } from "~/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 
-const REPORT_CARDS = [
-  {
-    id: "RC-001",
-    exam: "Midterm Exam 2025",
-    totalMarks: 500,
-    obtainedMarks: 425,
-    percentage: 85,
-    grade: "A",
-    subjects: [
-      { name: "Mathematics", marks: 85, total: 100 },
-      { name: "English", marks: 88, total: 100 },
-      { name: "Science", marks: 92, total: 100 },
-      { name: "Social Studies", marks: 80, total: 100 },
-      { name: "Computer Science", marks: 80, total: 100 },
-    ],
-    issued: "2025-01-30",
-  },
-  {
-    id: "RC-002",
-    exam: "Unit Test 1",
-    totalMarks: 300,
-    obtainedMarks: 255,
-    percentage: 85,
-    grade: "A",
-    subjects: [
-      { name: "Mathematics", marks: 84, total: 100 },
-      { name: "English", marks: 86, total: 100 },
-      { name: "Science", marks: 85, total: 100 },
-    ],
-    issued: "2025-01-15",
-  },
-];
-
+// Grade scale reference
 const GRADE_SCALE = [
   { grade: "A+", percentage: "90-100", color: "text-emerald-400" },
   { grade: "A", percentage: "80-89", color: "text-blue-400" },
@@ -55,20 +25,43 @@ const GRADE_SCALE = [
   { grade: "D", percentage: "50-59", color: "text-red-400" },
 ];
 
-const CUMULATIVE_PERFORMANCE = [
-  { month: "October", average: 78, trend: "up" },
-  { month: "November", average: 81, trend: "up" },
-  { month: "December", average: 82, trend: "up" },
-  { month: "January", average: 85, trend: "up" },
-];
-
 export default function StudentGradesPage() {
   const breadcrumbs = [
     { href: "/student", label: "Dashboard", current: false },
     { href: "/student/grades", label: "Grades", current: true },
   ];
 
-  const latestReportCard = REPORT_CARDS[0]!;
+  // Get current user profile to fetch their report cards
+  const { data: userProfile } = api.profile.getProfile.useQuery();
+  const studentId = userProfile?.accountId ?? "";
+
+  // Fetch report cards for the student
+  const { data: reportCards, isLoading } = api.reportCard.getStudentReportCards.useQuery(
+    { studentId },
+    { enabled: !!studentId }
+  );
+
+  const latestReportCard = reportCards?.[0];
+  const cumulativePerformance = reportCards?.map((card, idx) => ({
+    month: ["January", "February", "March", "April", "May", "June"][idx] || `Month ${idx + 1}`,
+    average: card.percentage || 0,
+    trend: "up" as const,
+  })) ?? [];
+
+  if (isLoading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <div className="flex items-center gap-2">
+          <Loader2 className="h-6 w-6 animate-spin" />
+          <p className="text-muted-foreground">Loading grades...</p>
+        </div>
+      </div>
+    );
+  }
+
+  const avgScore = reportCards && reportCards.length > 0
+    ? Math.round(reportCards.reduce((sum, card) => sum + (card.percentage ?? 0), 0) / reportCards.length)
+    : 0;
 
   return (
     <div className="w-full space-y-8 p-6">
@@ -89,10 +82,10 @@ export default function StudentGradesPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-foreground">
-              {latestReportCard.percentage}%
+              {latestReportCard?.percentage ?? "—"}%
             </div>
             <p className="mt-1 text-xs text-muted-foreground">
-              Grade: {latestReportCard.grade}
+              Grade: {latestReportCard?.grade ?? "—"}
             </p>
           </CardContent>
         </Card>
@@ -105,9 +98,9 @@ export default function StudentGradesPage() {
             <TrendingUp className="h-4 w-4 text-blue-400" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-foreground">85%</div>
+            <div className="text-2xl font-bold text-foreground">{avgScore}%</div>
             <p className="mt-1 text-xs text-blue-400">
-              +3% from last month
+              Across all exams
             </p>
           </CardContent>
         </Card>
@@ -115,16 +108,16 @@ export default function StudentGradesPage() {
         <Card className="border-slate-200 bg-white/50 shadow-sm backdrop-blur-md dark:border-border dark:bg-card">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
-              Best Subject
+              Total Reports
             </CardTitle>
             <Award className="h-4 w-4 text-purple-400" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-foreground">
-              Science
+              {reportCards?.length ?? 0}
             </div>
             <p className="mt-1 text-xs text-muted-foreground">
-              92% average score
+              Report cards issued
             </p>
           </CardContent>
         </Card>
@@ -161,7 +154,8 @@ export default function StudentGradesPage() {
           {/* Report Cards Tab */}
           <TabsContent value="reports">
             <div className="space-y-4">
-              {REPORT_CARDS.map((reportCard, index) => (
+              {reportCards && reportCards.length > 0 ? (
+                reportCards.map((reportCard, index) => (
                 <motion.div
                   key={reportCard.id}
                   initial={{ opacity: 0, y: 20 }}
@@ -175,10 +169,10 @@ export default function StudentGradesPage() {
                         <div className="flex items-start justify-between">
                           <div className="space-y-1">
                             <h3 className="text-lg font-bold text-foreground">
-                              {reportCard.exam}
+                              {reportCard.examName}
                             </h3>
                             <p className="text-xs text-muted-foreground">
-                              Issued: {reportCard.issued}
+                              Issued: {new Date(reportCard.createdAt).toLocaleDateString()}
                             </p>
                           </div>
                           <div className="text-right">
@@ -191,56 +185,23 @@ export default function StudentGradesPage() {
                           </div>
                         </div>
 
-                        {/* Overall Score */}
-                        <div className="border-t border-border pt-4">
-                          <div className="mb-2 flex items-center justify-between">
-                            <span className="text-sm text-muted-foreground">
-                              Overall Score
-                            </span>
-                            <span className="font-medium text-foreground">
-                              {reportCard.obtainedMarks}/{reportCard.totalMarks}
-                            </span>
-                          </div>
-                          <Progress
-                            value={reportCard.percentage}
-                            className="h-2 bg-muted"
-                          />
-                        </div>
-
-                        {/* Subject-wise Breakdown */}
-                        <div className="space-y-3 border-t border-border pt-4">
-                          <p className="text-sm font-semibold text-foreground">
-                            Subject-wise Performance
-                          </p>
-                          {reportCard.subjects.map((subject) => (
-                            <div
-                              key={subject.name}
-                              className="rounded-lg bg-black/20 p-3"
-                            >
-                              <div className="mb-1 flex items-center justify-between">
-                                <span className="text-sm text-foreground">
-                                  {subject.name}
-                                </span>
-                                <span className="font-semibold text-emerald-400">
-                                  {subject.marks}/{subject.total}
-                                </span>
-                              </div>
-                              <Progress
-                                value={(subject.marks / subject.total) * 100}
-                                className="h-1.5 bg-white/10"
-                              />
-                            </div>
-                          ))}
-                        </div>
-
                         <Button variant="outline" className="w-full gap-2">
-                          <FileText className="h-4 w-4" /> Download Report Card
+                          <FileText className="h-4 w-4" /> View Full Report
                         </Button>
                       </div>
                     </CardContent>
                   </Card>
                 </motion.div>
-              ))}
+              ))
+              ) : (
+                <Card className="border-slate-200 bg-white/50 shadow-sm backdrop-blur-md dark:border-border dark:bg-card">
+                  <CardContent className="pt-6">
+                    <p className="text-center text-muted-foreground">
+                      No report cards available yet.
+                    </p>
+                  </CardContent>
+                </Card>
+              )}
             </div>
           </TabsContent>
 
@@ -249,46 +210,49 @@ export default function StudentGradesPage() {
             <Card className="border-slate-200 bg-white/50 shadow-sm backdrop-blur-md dark:border-border dark:bg-card">
               <CardHeader>
                 <CardTitle>Performance Trends</CardTitle>
-                <CardDescription>
-                  Your academic progress over time
-                </CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {CUMULATIVE_PERFORMANCE.map((item, index) => (
-                    <div
-                      key={index}
-                      className="rounded-lg border border-border bg-black/20 p-4"
-                    >
-                      <div className="mb-3 flex items-center justify-between">
-                        <h4 className="font-semibold text-foreground">
-                          {item.month}
-                        </h4>
-                        <div className="flex items-center gap-2">
-                          <span className="text-lg font-bold text-emerald-400">
-                            {item.average}%
-                          </span>
-                          {item.trend === "up" && (
-                            <TrendingUp className="h-4 w-4 text-emerald-400" />
-                          )}
+                  {cumulativePerformance.length > 0 ? (
+                    <>
+                      {cumulativePerformance.map((item, index) => (
+                        <div
+                          key={index}
+                          className="rounded-lg border border-border bg-black/20 p-4"
+                        >
+                          <div className="mb-3 flex items-center justify-between">
+                            <h4 className="font-semibold text-foreground">
+                              {item.month}
+                            </h4>
+                            <div className="flex items-center gap-2">
+                              <span className="text-lg font-bold text-emerald-400">
+                                {item.average}%
+                              </span>
+                              {item.trend === "up" && (
+                                <TrendingUp className="h-4 w-4 text-emerald-400" />
+                              )}
+                            </div>
+                          </div>
+                          <Progress
+                            value={item.average}
+                            className="h-2 bg-muted"
+                          />
                         </div>
+                      ))}
+                      <div className="mt-6 rounded-lg border border-emerald-500/20 bg-emerald-500/10 p-4">
+                        <p className="text-sm font-medium text-emerald-200">
+                          Performance Summary
+                        </p>
+                        <p className="mt-1 text-sm text-emerald-100/70">
+                          View your academic progress across all report cards above.
+                        </p>
                       </div>
-                      <Progress
-                        value={item.average}
-                        className="h-2 bg-muted"
-                      />
-                    </div>
-                  ))}
-                </div>
-
-                <div className="mt-6 rounded-lg border border-emerald-500/20 bg-emerald-500/10 p-4">
-                  <p className="text-sm font-medium text-emerald-200">
-                    Positive Trend
-                  </p>
-                  <p className="mt-1 text-sm text-emerald-100/70">
-                    Your performance has been improving consistently. Keep up
-                    the good work!
-                  </p>
+                    </>
+                  ) : (
+                    <p className="text-center text-muted-foreground">
+                      No trend data available yet.
+                    </p>
+                  )}
                 </div>
               </CardContent>
             </Card>
