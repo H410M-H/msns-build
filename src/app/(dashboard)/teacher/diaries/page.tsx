@@ -31,7 +31,7 @@ interface DiaryEntry {
     Subject: { subjectName: string };
     Grades: { grade: string; section: string };
   };
-  date: string;
+  date: Date;
   content: string;
   attachments: string[];
 }
@@ -42,10 +42,13 @@ const breadcrumbs = [
 ];
 
 export default function TeacherDiariesPage() {
-  const [selectedDate, setSelectedDate] = useState<string>("");
-  const [searchSubject, setSearchSubject] = useState<string>("");
+  const [selectedDate, setSelectedDate] = useState<string>("",
+  );
+  const [searchSubject, setSearchSubject] = useState<string>("",
+  );
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [editContent, setEditContent] = useState<string>("");
+  const [editContent, setEditContent] = useState<string>("",
+  );
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -186,15 +189,14 @@ export default function TeacherDiariesPage() {
                           {diary.ClassSubject.Subject.subjectName}
                         </Badge>
                         <p className="text-xs text-muted-foreground">
-                          {diary.ClassSubject.Grades.grade} -{" "}
-                          {diary.ClassSubject.Grades.section}
+                          {diary.ClassSubject.Grades.grade} - {diary.ClassSubject.Grades.section}
                         </p>
                       </div>
                       <div className="flex gap-1 opacity-0 transition-opacity group-hover:opacity-100">
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => handleEditOpen(diary as DiaryEntry)}
+                          onClick={() => handleEditOpen(diary)}
                           className="h-8 w-8 p-0"
                         >
                           <Edit2 className="h-3 w-3" />
@@ -210,7 +212,7 @@ export default function TeacherDiariesPage() {
                       </div>
                     </div>
                     <p className="text-xs text-muted-foreground">
-                      {format(new Date(diary.date), "MMM dd, yyyy")}
+                      {format(diary.date, "MMM dd, yyyy")}
                     </p>
                   </CardHeader>
                   <CardContent>
