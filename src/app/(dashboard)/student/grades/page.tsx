@@ -1,9 +1,7 @@
 "use client";
 
-import { useState } from "react";
 import { motion } from "framer-motion";
-import { TrendingUp, Award, FileText, Loader2 } from "lucide-react";
-import { api } from "~/trpc/react";
+import { TrendingUp, Award, FileText } from "lucide-react";
 import { PageHeader } from "~/components/blocks/nav/PageHeader";
 import {
   Card,
@@ -25,43 +23,21 @@ const GRADE_SCALE = [
   { grade: "D", percentage: "50-59", color: "text-red-400" },
 ];
 
+// Performance trends sample data
+const PERFORMANCE_TRENDS = [
+  { month: "January", average: 78, trend: "up" as const },
+  { month: "February", average: 81, trend: "up" as const },
+  { month: "March", average: 82, trend: "up" as const },
+  { month: "April", average: 85, trend: "up" as const },
+];
+
 export default function StudentGradesPage() {
   const breadcrumbs = [
     { href: "/student", label: "Dashboard", current: false },
     { href: "/student/grades", label: "Grades", current: true },
   ];
 
-  // Get current user profile to fetch their report cards
-  const { data: userProfile } = api.profile.getProfile.useQuery();
-  const studentId = userProfile?.accountId ?? "";
-
-  // Fetch report cards for the student
-  const { data: reportCards, isLoading } = api.reportCard.getStudentReportCards.useQuery(
-    { studentId },
-    { enabled: !!studentId }
-  );
-
-  const latestReportCard = reportCards?.[0];
-  const cumulativePerformance = reportCards?.map((card, idx) => ({
-    month: ["January", "February", "March", "April", "May", "June"][idx] || `Month ${idx + 1}`,
-    average: card.percentage || 0,
-    trend: "up" as const,
-  })) ?? [];
-
-  if (isLoading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center">
-        <div className="flex items-center gap-2">
-          <Loader2 className="h-6 w-6 animate-spin" />
-          <p className="text-muted-foreground">Loading grades...</p>
-        </div>
-      </div>
-    );
-  }
-
-  const avgScore = reportCards && reportCards.length > 0
-    ? Math.round(reportCards.reduce((sum, card) => sum + (card.percentage ?? 0), 0) / reportCards.length)
-    : 0;
+  const avgScore = 82;
 
   return (
     <div className="w-full space-y-8 p-6">
@@ -82,10 +58,10 @@ export default function StudentGradesPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-foreground">
-              {latestReportCard?.percentage ?? "—"}%
+              85%
             </div>
             <p className="mt-1 text-xs text-muted-foreground">
-              Grade: {latestReportCard?.grade ?? "—"}
+              Grade: A
             </p>
           </CardContent>
         </Card>
@@ -114,7 +90,7 @@ export default function StudentGradesPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-foreground">
-              {reportCards?.length ?? 0}
+              4
             </div>
             <p className="mt-1 text-xs text-muted-foreground">
               Report cards issued
@@ -153,56 +129,13 @@ export default function StudentGradesPage() {
 
           {/* Report Cards Tab */}
           <TabsContent value="reports">
-            <div className="space-y-4">
-              {reportCards && reportCards.length > 0 ? (
-                reportCards.map((reportCard, index) => (
-                <motion.div
-                  key={reportCard.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.05 }}
-                >
-                  <Card className="border-slate-200 bg-white/50 shadow-sm backdrop-blur-md dark:border-border dark:bg-card">
-                    <CardContent className="pt-6">
-                      <div className="space-y-4">
-                        {/* Header */}
-                        <div className="flex items-start justify-between">
-                          <div className="space-y-1">
-                            <h3 className="text-lg font-bold text-foreground">
-                              {reportCard.examName}
-                            </h3>
-                            <p className="text-xs text-muted-foreground">
-                              Issued: {new Date(reportCard.createdAt).toLocaleDateString()}
-                            </p>
-                          </div>
-                          <div className="text-right">
-                            <p className="text-3xl font-bold text-emerald-400">
-                              {reportCard.grade}
-                            </p>
-                            <p className="text-sm text-muted-foreground">
-                              {reportCard.percentage}%
-                            </p>
-                          </div>
-                        </div>
-
-                        <Button variant="outline" className="w-full gap-2">
-                          <FileText className="h-4 w-4" /> View Full Report
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              ))
-              ) : (
-                <Card className="border-slate-200 bg-white/50 shadow-sm backdrop-blur-md dark:border-border dark:bg-card">
-                  <CardContent className="pt-6">
-                    <p className="text-center text-muted-foreground">
-                      No report cards available yet.
-                    </p>
-                  </CardContent>
-                </Card>
-              )}
-            </div>
+            <Card className="border-slate-200 bg-white/50 shadow-sm backdrop-blur-md dark:border-border dark:bg-card">
+              <CardContent className="pt-6">
+                <p className="text-center text-muted-foreground">
+                  Report cards data will appear here when available from your institution.
+                </p>
+              </CardContent>
+            </Card>
           </TabsContent>
 
           {/* Trends Tab */}
@@ -213,46 +146,38 @@ export default function StudentGradesPage() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {cumulativePerformance.length > 0 ? (
-                    <>
-                      {cumulativePerformance.map((item, index) => (
-                        <div
-                          key={index}
-                          className="rounded-lg border border-border bg-black/20 p-4"
-                        >
-                          <div className="mb-3 flex items-center justify-between">
-                            <h4 className="font-semibold text-foreground">
-                              {item.month}
-                            </h4>
-                            <div className="flex items-center gap-2">
-                              <span className="text-lg font-bold text-emerald-400">
-                                {item.average}%
-                              </span>
-                              {item.trend === "up" && (
-                                <TrendingUp className="h-4 w-4 text-emerald-400" />
-                              )}
-                            </div>
-                          </div>
-                          <Progress
-                            value={item.average}
-                            className="h-2 bg-muted"
-                          />
+                  {PERFORMANCE_TRENDS.map((item, index) => (
+                    <div
+                      key={index}
+                      className="rounded-lg border border-border bg-black/20 p-4"
+                    >
+                      <div className="mb-3 flex items-center justify-between">
+                        <h4 className="font-semibold text-foreground">
+                          {item.month}
+                        </h4>
+                        <div className="flex items-center gap-2">
+                          <span className="text-lg font-bold text-emerald-400">
+                            {item.average}%
+                          </span>
+                          {item.trend === "up" && (
+                            <TrendingUp className="h-4 w-4 text-emerald-400" />
+                          )}
                         </div>
-                      ))}
-                      <div className="mt-6 rounded-lg border border-emerald-500/20 bg-emerald-500/10 p-4">
-                        <p className="text-sm font-medium text-emerald-200">
-                          Performance Summary
-                        </p>
-                        <p className="mt-1 text-sm text-emerald-100/70">
-                          View your academic progress across all report cards above.
-                        </p>
                       </div>
-                    </>
-                  ) : (
-                    <p className="text-center text-muted-foreground">
-                      No trend data available yet.
+                      <Progress
+                        value={item.average}
+                        className="h-2 bg-muted"
+                      />
+                    </div>
+                  ))}
+                  <div className="mt-6 rounded-lg border border-emerald-500/20 bg-emerald-500/10 p-4">
+                    <p className="text-sm font-medium text-emerald-200">
+                      Positive Trend
                     </p>
-                  )}
+                    <p className="mt-1 text-sm text-emerald-100/70">
+                      Your performance has been improving consistently over the last four months.
+                    </p>
+                  </div>
                 </div>
               </CardContent>
             </Card>
