@@ -68,7 +68,7 @@ export default function StudentGradesPage() {
     { href: "/student/grades", label: "Grades", current: true },
   ];
 
-  const latestReportCard = REPORT_CARDS[0];
+  const latestReportCard = REPORT_CARDS[0]!;
 
   return (
     <div className="w-full space-y-8 p-6">
