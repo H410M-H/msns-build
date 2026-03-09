@@ -1,6 +1,6 @@
 "use client";
-import { PageHeader } from "@/components/blocks/nav/PageHeader";
-import { Button } from "@/components/ui/button";
+import { PageHeader } from "~/components/blocks/nav/PageHeader";
+import { Button } from "~/components/ui/button";
 import { Download } from "lucide-react";
 import React from "react";
 

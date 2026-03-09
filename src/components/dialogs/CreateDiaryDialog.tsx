@@ -6,10 +6,10 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog";
-import { Button } from "../ui/button";
+} from "~/components/ui/dialog";
+import { Button } from "~/components/ui/button";
 import { PlusIcon } from "lucide-react";
-import { trpc } from "@/trpc/react";
+import { trpc } from "~/trpc/react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
