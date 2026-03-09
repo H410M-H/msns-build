@@ -2,7 +2,6 @@
 
 import { motion } from "framer-motion";
 import {
-  DollarSign,
   TrendingUp,
   TrendingDown,
   BarChart3,
@@ -18,13 +17,6 @@ import {
   CardDescription,
 } from "~/components/ui/card";
 import { Button } from "~/components/ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "~/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 
 const FINANCIAL_SUMMARY = {

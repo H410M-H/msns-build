@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { TrendingUp, Award, Calendar, FileText } from "lucide-react";
+import { TrendingUp, Award, FileText } from "lucide-react";
 import { PageHeader } from "~/components/blocks/nav/PageHeader";
 import {
   Card,

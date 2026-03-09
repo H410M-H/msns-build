@@ -17,7 +17,6 @@ import {
   CardHeader,
   CardTitle,
   CardContent,
-  CardDescription,
 } from "~/components/ui/card";
 import { Button } from "~/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
@@ -102,9 +101,6 @@ export default function TeacherAssignmentsPage() {
 
   const activeAssignments = TEACHER_ASSIGNMENTS.filter(
     (a) => a.status === "active"
-  ).length;
-  const closedAssignments = TEACHER_ASSIGNMENTS.filter(
-    (a) => a.status === "closed"
   ).length;
 
   return (

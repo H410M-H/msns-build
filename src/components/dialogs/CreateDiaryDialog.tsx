@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Loader2, X, Plus, Trash2 } from "lucide-react";
+import { Loader2, Plus, Trash2 } from "lucide-react";
 import { api } from "~/trpc/react";
 import {
   Dialog,
@@ -69,13 +69,13 @@ export function CreateDiaryDialog({
     if (classSubjects && classSubjects.length > 0) {
       const initialWorks = classSubjects.map((cs) => ({
         csId: cs.csId,
-        subjectName: cs.Subject?.subjectName || "Unknown",
+        subjectName: cs.Subject?.subjectName ?? "Unknown",
         work: "",
         employeeName: cs.Employees?.employeeName,
       }));
       setSubjectWorks(initialWorks);
       if (initialWorks.length > 0) {
-        setSelectedSubject(initialWorks[0]?.csId || "");
+        setSelectedSubject(initialWorks[0]?.csId ?? "");
       }
     }
   }, [classSubjects]);
@@ -98,7 +98,7 @@ export function CreateDiaryDialog({
     // Move to next subject
     const nextIndex = currentSubjectIndex + 1;
     if (nextIndex < subjectWorks.length) {
-      setSelectedSubject(subjectWorks[nextIndex]?.csId || "");
+      setSelectedSubject(subjectWorks[nextIndex]?.csId ?? "");
       setWorkText("");
     } else {
       setWorkText("");
@@ -195,7 +195,7 @@ export function CreateDiaryDialog({
                       onChange={(e) => {
                         setWorkText(subjectWorks.find(
                           (sw) => sw.csId === e.target.value
-                        )?.work || "");
+                        )?.work ?? "");
                         setSelectedSubject(e.target.value);
                       }}
                       className="flex h-10 flex-1 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-0"

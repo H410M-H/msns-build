@@ -5,7 +5,6 @@ import {
   DollarSign,
   AlertCircle,
   CheckCircle,
-  Clock,
   FileText,
 } from "lucide-react";
 import { PageHeader } from "~/components/blocks/nav/PageHeader";
@@ -17,7 +16,6 @@ import {
   CardDescription,
 } from "~/components/ui/card";
 import { Button } from "~/components/ui/button";
-import { Progress } from "~/components/ui/progress";
 import { Alert, AlertDescription, AlertTitle } from "~/components/ui/alert";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 

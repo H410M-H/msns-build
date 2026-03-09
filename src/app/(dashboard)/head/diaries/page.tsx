@@ -2,14 +2,13 @@
 
 import { useState } from "react";
 import { PageHeader } from "~/components/blocks/nav/PageHeader";
-import { BookOpen, Filter, Loader2, Eye } from "lucide-react";
+import { BookOpen, Filter, Eye } from "lucide-react";
 import { format } from "date-fns";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-  CardDescription,
 } from "~/components/ui/card";
 import { Button } from "~/components/ui/button";
 import { Badge } from "~/components/ui/badge";

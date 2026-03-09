@@ -148,7 +148,7 @@ export default function ClerkExpensePage() {
           />
         </div>
 
-        <Select value={selectedCategory || ""} onValueChange={(v) => setSelectedCategory(v || null)}>
+        <Select value={selectedCategory ?? ""} onValueChange={(v) => setSelectedCategory(v ?? null)}>
           <SelectTrigger className="w-full border-slate-200 bg-white/50 dark:border-border dark:bg-card md:w-[200px]">
             <Filter className="h-4 w-4" />
             <SelectValue placeholder="All Categories" />

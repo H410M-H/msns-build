@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { PageHeader } from "~/components/blocks/nav/PageHeader";
-import { BookOpen, Plus, Edit2, Trash2, Loader2, Filter } from "lucide-react";
+import { BookOpen, Edit2, Trash2, Filter } from "lucide-react";
 import { api } from "~/trpc/react";
 import { format } from "date-fns";
 import {
@@ -10,7 +10,6 @@ import {
   CardContent,
   CardHeader,
   CardTitle,
-  CardDescription,
 } from "~/components/ui/card";
 import { Button } from "~/components/ui/button";
 import { Badge } from "~/components/ui/badge";
@@ -20,25 +19,9 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogDescription,
   DialogFooter,
 } from "~/components/ui/dialog";
 import { Textarea } from "~/components/ui/textarea";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "~/components/ui/select";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "~/components/ui/table";
 import { motion } from "framer-motion";
 
 interface DiaryEntry {
@@ -68,9 +51,9 @@ export default function TeacherDiariesPage() {
   const [teacherId, setTeacherId] = useState<string | null>(null);
 
   // Get teacher ID from profile or session
-  const { data: userProfile } = api.profile.getProfile.useQuery(undefined, {
+  api.profile.getProfile.useQuery(undefined, {
     onSuccess: (data) => {
-      if (data?.accountId) {
+      if (data && typeof data === "object" && "accountId" in data && typeof data.accountId === "string") {
         setTeacherId(data.accountId);
       }
     },
@@ -79,7 +62,7 @@ export default function TeacherDiariesPage() {
   // Fetch user's diaries
   const { data: diaries, isLoading, refetch } = api.subjectDiary.getTeacherDiaries.useQuery(
     {
-      teacherId: teacherId || "",
+      teacherId: teacherId ?? "",
       ...(selectedDate ? { date: new Date(selectedDate) } : {}),
     },
     { enabled: !!teacherId }
@@ -106,7 +89,7 @@ export default function TeacherDiariesPage() {
       });
       setShowEditDialog(false);
       setEditingId(null);
-      refetch();
+      void refetch();
     } catch (error) {
       console.error("Error updating diary:", error);
       alert("Failed to update diary");
@@ -120,7 +103,7 @@ export default function TeacherDiariesPage() {
 
     try {
       await deleteDiaryMutation.mutateAsync({ subjectDiaryId: diaryId });
-      refetch();
+      void refetch();
     } catch (error) {
       console.error("Error deleting diary:", error);
       alert("Failed to delete diary");

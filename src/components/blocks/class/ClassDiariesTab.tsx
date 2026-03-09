@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { BookOpen, CalendarIcon, Loader2, User, Plus, Edit2, Trash2 } from "lucide-react";
+import { BookOpen, CalendarIcon, User, Plus } from "lucide-react";
 import { format } from "date-fns";
 import { api } from "~/trpc/react";
 import {
@@ -9,7 +9,6 @@ import {
   CardContent,
   CardHeader,
   CardTitle,
-  CardDescription,
 } from "~/components/ui/card";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
@@ -30,21 +29,14 @@ type Diary = {
   content: string;
 };
 
-type DiaryWithAccess = Diary & {
-  canEdit?: boolean;
-  canDelete?: boolean;
-};
-
 export function ClassDiariesTab({
   classId,
   sessionId,
   userRole,
-  userId,
 }: {
   classId: string;
   sessionId: string;
   userRole?: string;
-  userId?: string;
 }) {
   const [date, setDate] = useState<string>("");
   const [showCreateDialog, setShowCreateDialog] = useState(false);
@@ -57,9 +49,7 @@ export function ClassDiariesTab({
     });
 
   // Check if user can create diaries (teacher, admin, clerk)
-  const canCreateDiaries = ["TEACHER", "ADMIN", "CLERK"].includes(userRole || "");
-  // Check if user can only view (head, principal)
-  const canOnlyView = ["HEAD", "PRINCIPAL"].includes(userRole || "");
+  const canCreateDiaries = ["TEACHER", "ADMIN", "CLERK"].includes(userRole ?? "");
 
   return (
     <>
@@ -161,7 +151,7 @@ export function ClassDiariesTab({
         open={showCreateDialog}
         onOpenChange={setShowCreateDialog}
         onSuccess={() => {
-          refetch();
+          void refetch();
           setShowCreateDialog(false);
         }}
       />

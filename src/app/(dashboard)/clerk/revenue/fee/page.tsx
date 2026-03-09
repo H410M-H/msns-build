@@ -153,7 +153,7 @@ export default function ClerkFeeReportPage() {
                     Fee collection status by class
                   </CardDescription>
                 </div>
-                <Select value={selectedClass || ""} onValueChange={(v) => setSelectedClass(v || null)}>
+                <Select value={selectedClass ?? ""} onValueChange={(v) => setSelectedClass(v ?? null)}>
                   <SelectTrigger className="w-[150px] border-slate-200 dark:border-border">
                     <Filter className="h-4 w-4" />
                     <SelectValue placeholder="All Classes" />
