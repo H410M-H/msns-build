@@ -101,6 +101,7 @@ export default async function ClassDetailsPage({ searchParams }: PageProps) {
             <ClassDiariesTab
               classId={searchProps.classId}
               sessionId={searchProps.sessionId}
+              userRole="ADMIN"
             />
           </TabsContent>
         </Tabs>

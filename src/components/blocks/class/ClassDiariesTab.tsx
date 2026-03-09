@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { BookOpen, CalendarIcon, Loader2, User } from "lucide-react";
+import { BookOpen, CalendarIcon, Loader2, User, Plus, Edit2, Trash2 } from "lucide-react";
 import { format } from "date-fns";
 import { api } from "~/trpc/react";
 import {
@@ -12,6 +12,8 @@ import {
   CardDescription,
 } from "~/components/ui/card";
 import { Badge } from "~/components/ui/badge";
+import { Button } from "~/components/ui/button";
+import { CreateDiaryDialog } from "~/components/dialogs/CreateDiaryDialog";
 
 type Diary = {
   subjectDiaryId: string;
@@ -19,6 +21,7 @@ type Diary = {
     Subject: {
       subjectName: string;
     };
+    csId: string;
   };
   date: string | Date;
   Teacher: {
@@ -27,54 +30,83 @@ type Diary = {
   content: string;
 };
 
+type DiaryWithAccess = Diary & {
+  canEdit?: boolean;
+  canDelete?: boolean;
+};
+
 export function ClassDiariesTab({
   classId,
   sessionId,
+  userRole,
+  userId,
 }: {
   classId: string;
   sessionId: string;
+  userRole?: string;
+  userId?: string;
 }) {
   const [date, setDate] = useState<string>("");
+  const [showCreateDialog, setShowCreateDialog] = useState(false);
 
-  const { data: diaries, isLoading } =
+  const { data: diaries, isLoading, refetch } =
     api.subjectDiary.getClassDiaries.useQuery({
       classId,
       sessionId,
       ...(date ? { date: new Date(date) } : {}),
     });
 
+  // Check if user can create diaries (teacher, admin, clerk)
+  const canCreateDiaries = ["TEACHER", "ADMIN", "CLERK"].includes(userRole || "");
+  // Check if user can only view (head, principal)
+  const canOnlyView = ["HEAD", "PRINCIPAL"].includes(userRole || "");
+
   return (
-    <Card className="rounded-2xl border-border bg-card shadow-2xl duration-500 animate-in fade-in md:mt-4">
-      <CardHeader className="border-b border-border pb-4 md:px-8">
-        <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
-          <div>
-            <CardTitle className="flex items-center gap-2 text-xl text-indigo-400">
-              <BookOpen className="h-5 w-5" />
-              Subject Diaries
-            </CardTitle>
-            <CardDescription className="mt-1 text-muted-foreground">
-              Daily updates and homework assigned by teachers.
-            </CardDescription>
+    <>
+      <Card className="rounded-2xl border-border bg-card shadow-2xl duration-500 animate-in fade-in md:mt-4">
+        <CardHeader className="border-b border-border pb-4 md:px-8">
+          <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
+            <div>
+              <CardTitle className="flex items-center gap-2 text-xl text-indigo-400">
+                <BookOpen className="h-5 w-5" />
+                Subject Diaries
+              </CardTitle>
+              <CardDescription className="mt-1 text-muted-foreground">
+                Daily updates and homework assigned by teachers.
+              </CardDescription>
+            </div>
+            <div className="flex flex-col gap-2 md:flex-row md:items-center">
+              <div className="flex items-center gap-2 rounded-lg border border-border bg-card p-1.5 text-sm">
+                <CalendarIcon className="ml-1 h-4 w-4 text-muted-foreground" />
+                <input
+                  type="date"
+                  value={date}
+                  onChange={(e) => setDate(e.target.value)}
+                  className="mr-2 border-none bg-transparent text-foreground outline-none"
+                />
+                {date && (
+                  <button
+                    onClick={() => setDate("")}
+                    className="px-2 text-xs text-muted-foreground hover:text-foreground"
+                  >
+                    Clear
+                  </button>
+                )}
+              </div>
+              {canCreateDiaries && (
+                <Button
+                  onClick={() => setShowCreateDialog(true)}
+                  size="sm"
+                  className="gap-2"
+                  variant="default"
+                >
+                  <Plus className="h-4 w-4" />
+                  Add Work
+                </Button>
+              )}
+            </div>
           </div>
-          <div className="flex items-center gap-2 rounded-lg border border-border bg-card p-1.5 text-sm">
-            <CalendarIcon className="ml-1 h-4 w-4 text-muted-foreground" />
-            <input
-              type="date"
-              value={date}
-              onChange={(e) => setDate(e.target.value)}
-              className="mr-2 border-none bg-transparent text-foreground outline-none"
-            />
-            {date && (
-              <button
-                onClick={() => setDate("")}
-                className="px-2 text-xs text-muted-foreground hover:text-foreground"
-              >
-                Clear
-              </button>
-            )}
-          </div>
-        </div>
-      </CardHeader>
+        </CardHeader>
       <CardContent className="pt-6 md:px-8">
         {isLoading ? (
           <div className="flex justify-center p-12">
@@ -121,5 +153,19 @@ export function ClassDiariesTab({
         )}
       </CardContent>
     </Card>
+    
+    {showCreateDialog && (
+      <CreateDiaryDialog
+        classId={classId}
+        sessionId={sessionId}
+        open={showCreateDialog}
+        onOpenChange={setShowCreateDialog}
+        onSuccess={() => {
+          refetch();
+          setShowCreateDialog(false);
+        }}
+      />
+    )}
+    </>
   );
 }

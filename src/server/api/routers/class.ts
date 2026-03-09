@@ -78,6 +78,44 @@ export const ClassRouter = createTRPCRouter({
       }
     }),
 
+  getClassSubjects: publicProcedure
+    .input(z.object({ classId: z.string(), sessionId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      try {
+        return await ctx.db.classSubject.findMany({
+          where: {
+            classId: input.classId,
+            sessionId: input.sessionId,
+          },
+          include: {
+            Subject: {
+              select: {
+                subjectId: true,
+                subjectName: true,
+              },
+            },
+            Employees: {
+              select: {
+                employeeId: true,
+                employeeName: true,
+              },
+            },
+          },
+          orderBy: {
+            Subject: {
+              subjectName: "asc",
+            },
+          },
+        });
+      } catch (error) {
+        console.error("Error in getClassSubjects:", error);
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to retrieve class subjects",
+        });
+      }
+    }),
+
   getGroupedClasses: publicProcedure.query<Record<ClassCategory, ClassProps[]>>(
     async ({ ctx }) => {
       try {
