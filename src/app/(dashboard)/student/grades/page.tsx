@@ -1,58 +1,40 @@
 "use client";
 import { PageHeader } from "~/components/blocks/nav/PageHeader";
 import { Button } from "~/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
-import { Download, TrendingUp, AlertCircle } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
+import { Download } from "lucide-react";
 import React, { useState } from "react";
-
-interface ReportCardData {
-  reportCardId: string;
-  percentage: number;
-  grade: string;
-  subject?: string;
-  status: string;
-  generatedAt: Date;
-}
+import { AnalyticsDashboard } from "~/components/dashboard/AnalyticsDashboard";
+import { ExamScheduleComponent } from "~/components/dashboard/ExamScheduleComponent";
+import { ParentPortal } from "~/components/dashboard/ParentPortal";
+import { GradeImprovementPlans } from "~/components/dashboard/GradeImprovementPlans";
 
 const Page = () => {
   const [isLoading, setIsLoading] = useState(false);
 
-  // Placeholder data - replace with actual API call
-  const reportCards: ReportCardData[] = [
-    {
-      reportCardId: "1",
-      percentage: 85,
-      grade: "A",
-      subject: "Mathematics",
-      status: "PASS",
-      generatedAt: new Date(),
-    },
-    {
-      reportCardId: "2",
-      percentage: 78,
-      grade: "B+",
-      subject: "English",
-      status: "PASS",
-      generatedAt: new Date(),
-    },
-  ];
-
-  const latestReportCard = reportCards[0];
-  const averagePercentage =
-    reportCards.length > 0
-      ? Math.round(
-          reportCards.reduce((sum, card) => sum + card.percentage, 0) /
-            reportCards.length
-        )
-      : 0;
+  // Get current student ID and class ID from session/context
+  // For now using placeholder - in production, get from useSession or similar
+  const studentId = "student-id-placeholder";
+  const classId = "class-id-placeholder";
 
   const handleDownload = async () => {
     setIsLoading(true);
     try {
-      // Add download logic here
-      console.log("Downloading report card...");
+      // Generate PDF report
+      const response = await fetch(`/api/student/analytics?studentId=${studentId}`);
+      const data = await response.json();
+      
+      // Create CSV or PDF
+      const csv = generateReportCSV(data);
+      const element = document.createElement("a");
+      element.setAttribute("href", "data:text/csv;charset=utf-8," + encodeURIComponent(csv));
+      element.setAttribute("download", "performance-report.csv");
+      element.style.display = "none";
+      document.body.appendChild(element);
+      element.click();
+      document.body.removeChild(element);
     } catch (error) {
-      console.error("Error downloading report card:", error);
+      console.error("Error downloading report:", error);
     } finally {
       setIsLoading(false);
     }
@@ -61,8 +43,8 @@ const Page = () => {
   return (
     <div className="h-full w-full">
       <PageHeader
-        title="Grades"
-        description="View your grades and performance."
+        title="Academic Performance Center"
+        description="Comprehensive view of your grades, analytics, and academic progress."
       >
         <div className="flex gap-2">
           <Button
@@ -71,107 +53,66 @@ const Page = () => {
             disabled={isLoading}
           >
             <Download className="w-4 h-4 mr-2" />
-            {isLoading ? "Downloading..." : "Download"}
+            {isLoading ? "Downloading..." : "Export Report"}
           </Button>
         </div>
       </PageHeader>
 
-      <div className="space-y-6 p-6">
-        {/* Overall Performance Card */}
-        {latestReportCard && (
-          <Card className="border-l-4 border-l-blue-500">
-            <CardHeader>
-              <CardTitle>Latest Report Card</CardTitle>
-              <CardDescription>
-                Generated on{" "}
-                {latestReportCard.generatedAt.toLocaleDateString()}
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-2 gap-6 md:grid-cols-4">
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">
-                    Percentage
-                  </p>
-                  <div className="text-3xl font-bold text-foreground">
-                    {latestReportCard.percentage}%
-                  </div>
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">
-                    Grade
-                  </p>
-                  <div className="text-3xl font-bold text-green-600">
-                    {latestReportCard.grade}
-                  </div>
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">
-                    Status
-                  </p>
-                  <div className="text-sm font-semibold text-green-600">
-                    {latestReportCard.status}
-                  </div>
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">
-                    Average
-                  </p>
-                  <div className="text-3xl font-bold text-foreground">
-                    {averagePercentage}%
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        )}
+      <div className="p-6">
+        <Tabs defaultValue="dashboard" className="w-full">
+          <TabsList className="grid w-full grid-cols-5">
+            <TabsTrigger value="dashboard">Analytics</TabsTrigger>
+            <TabsTrigger value="schedule">Exams</TabsTrigger>
+            <TabsTrigger value="improvement">Improvement</TabsTrigger>
+            <TabsTrigger value="parent">Parent Portal</TabsTrigger>
+            <TabsTrigger value="settings">Settings</TabsTrigger>
+          </TabsList>
 
-        {/* All Report Cards */}
-        <div>
-          <h3 className="mb-4 text-lg font-semibold">All Report Cards</h3>
-          <div className="grid gap-4 md:grid-cols-2">
-            {reportCards.map((card) => (
-              <Card key={card.reportCardId}>
-                <CardHeader>
-                  <CardTitle className="text-base">{card.subject}</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-2">
-                  <div className="flex items-end justify-between">
-                    <div>
-                      <p className="text-sm font-medium text-muted-foreground">
-                        Score
-                      </p>
-                      <p className="text-2xl font-bold">{card.percentage}%</p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-sm font-medium text-muted-foreground">
-                        Grade
-                      </p>
-                      <p className="text-2xl font-bold text-green-600">
-                        {card.grade}
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
+          {/* Analytics Dashboard Tab */}
+          <TabsContent value="dashboard" className="space-y-6">
+            <AnalyticsDashboard studentId={studentId} classId={classId} />
+          </TabsContent>
 
-        {/* Empty State */}
-        {reportCards.length === 0 && (
-          <Card className="border-dashed">
-            <CardContent className="flex flex-col items-center justify-center py-12">
-              <AlertCircle className="mb-4 h-8 w-8 text-muted-foreground" />
-              <p className="text-muted-foreground">
-                No report cards available yet
-              </p>
-            </CardContent>
-          </Card>
-        )}
+          {/* Exam Schedule Tab */}
+          <TabsContent value="schedule" className="space-y-6">
+            <ExamScheduleComponent studentId={studentId} classId={classId} />
+          </TabsContent>
+
+          {/* Improvement Plans Tab */}
+          <TabsContent value="improvement" className="space-y-6">
+            <GradeImprovementPlans studentId={studentId} />
+          </TabsContent>
+
+          {/* Parent Portal Tab */}
+          <TabsContent value="parent" className="space-y-6">
+            <ParentPortal studentId={studentId} />
+          </TabsContent>
+
+          {/* Settings Tab */}
+          <TabsContent value="settings" className="space-y-6">
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 text-center">
+              <p className="text-blue-900">Notification preferences and account settings coming soon</p>
+            </div>
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );
 };
+
+function generateReportCSV(data: any) {
+  let csv = "Performance Report\n";
+  csv += `Overall Average,${data.overallAverage}\n`;
+  csv += `Total Exams,${data.totalExams}\n`;
+  csv += `Passing Rate,${data.passingRate}\n\n`;
+  
+  csv += "Subject Performance\n";
+  csv += "Subject,Average\n";
+  data.subjectWisePerformance?.forEach((subject: any) => {
+    csv += `${subject.subjectName},${subject.average.toFixed(2)}\n`;
+  });
+  
+  return csv;
+}
 
 export default Page;
