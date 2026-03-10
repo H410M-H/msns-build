@@ -121,8 +121,8 @@ export default function BulkPrintPage() {
 
   // [FIX] Updated to standard useReactToPrint syntax to avoid type errors
   const handlePrint = useReactToPrint({
-    contentRef: printRef, // Use contentRef for react-to-print v3+
-    onBeforePrint: () => {
+    content: () => printRef.current,
+    onBeforeGetContent: () => {
       setIsPrinting(true);
       return Promise.resolve();
     },

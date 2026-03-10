@@ -1,50 +1,81 @@
 "use client";
+import Link from "next/link";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+} from "~/components/ui/card";
+import { Button } from "~/components/ui/button";
+import { ArrowRight } from "lucide-react";
+import {
+  Users,
+  BookOpen,
+  DollarSign,
+  Calendar,
+  ClipboardList,
+  Building,
+} from "lucide-react";
 
-import { Shield, Trophy } from "lucide-react";
-import AlumniCard from "~/components/cards/AlumniCard";
+const MANAGEMENT_CARDS = [
+  {
+    title: "Session Management",
+    description: "Manage academic sessions, terms, and school years.",
+    icon: Calendar,
+    href: "/clerk/sessions",
+  },
+  {
+    title: "User Management",
+    description: "Manage students, faculty, and other user accounts.",
+    icon: Users,
+    href: "/clerk/users",
+  },
+  {
+    title: "Revenue Management",
+    description: "Manage fees, salaries and other financial transactions.",
+    icon: DollarSign,
+    href: "/clerk/revenue",
+  },
+];
 
-export const ClerkSection = () => {
+export function ClerkSection() {
   return (
-    <section className="mb-12">
-      {/* Section Header */}
-      <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center">
-        <div className="flex items-center gap-4">
-          <div className="relative">
-            <div className="rotate-1 transform rounded-2xl bg-gradient-to-br from-purple-500 to-pink-600 p-3 shadow-lg shadow-purple-500/20 transition-transform duration-300 hover:rotate-0 dark:shadow-purple-900/20">
-              <Shield className="h-6 w-6 text-foreground" />
-            </div>
-            {/* Decorative dot */}
-            <div className="absolute -bottom-1 -left-1 h-3 w-3 rounded-full bg-orange-400 ring-2 ring-white dark:ring-slate-900"></div>
-          </div>
-
-          <div className="space-y-0.5">
-            <h2 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-foreground">
-              Quick Management
-            </h2>
-            <p className="text-sm text-muted-foreground dark:text-purple-100/50">
-              Clerical tools and controls
-            </p>
-          </div>
-        </div>
-
-        {/* Access Badge */}
-        <div className="ml-auto hidden items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1.5 shadow-sm dark:border-border dark:bg-white/5 dark:shadow-none lg:flex">
-          <Trophy className="h-4 w-4 text-yellow-500 dark:text-yellow-400" />
-          <span className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-purple-100/80">
-            Clerical Access
-          </span>
-        </div>
-      </div>
-
-      {/* Content Container */}
-      <div className="group relative">
-        {/* Ambient Glow: Purple/Pink */}
-        <div className="absolute inset-0 scale-[0.99] transform rounded-3xl bg-gradient-to-r from-purple-100/50 to-pink-100/50 blur-2xl transition-all duration-500 group-hover:scale-100 dark:from-purple-500/10 dark:to-pink-500/10"></div>
-
-        <div className="relative rounded-3xl border border-slate-200 bg-white/50 p-8 shadow-sm backdrop-blur-xl dark:border-border dark:bg-card dark:shadow-2xl">
-          <AlumniCard />
-        </div>
-      </div>
-    </section>
+    <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+      {MANAGEMENT_CARDS.map((card, idx) => {
+        const Icon = card.icon;
+        return (
+          <Card
+            key={idx}
+            className="group flex transform-gpu flex-col justify-between border-slate-200 bg-white/50 shadow-sm backdrop-blur-md transition-all duration-300 hover:-translate-y-1 hover:shadow-lg dark:border-border dark:bg-card/50"
+          >
+            <CardHeader>
+              <div className="mb-4 flex items-center justify-center">
+                <div className="rounded-full bg-emerald-100/50 p-4 dark:bg-emerald-500/10">
+                  <Icon className="h-8 w-8 text-emerald-600 dark:text-emerald-400" />
+                </div>
+              </div>
+              <CardTitle className="text-center text-lg font-semibold text-slate-800 dark:text-foreground">
+                {card.title}
+              </CardTitle>
+              <CardDescription className="text-center text-sm text-muted-foreground">
+                {card.description}
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Link href={card.href} passHref>
+                <Button
+                  variant="outline"
+                  className="w-full gap-2 border-emerald-200 bg-transparent text-emerald-700 transition-colors group-hover:bg-emerald-50 dark:border-emerald-500/20 dark:text-emerald-300 dark:group-hover:bg-emerald-500/10"
+                >
+                  Go to {card.title}
+                  <ArrowRight className="h-4 w-4" />
+                </Button>
+              </Link>
+            </CardContent>
+          </Card>
+        );
+      })}
+    </div>
   );
-};
+}

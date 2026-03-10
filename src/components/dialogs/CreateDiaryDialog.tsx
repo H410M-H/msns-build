@@ -9,7 +9,7 @@ import {
 } from "~/components/ui/dialog";
 import { Button } from "~/components/ui/button";
 import { PlusIcon } from "lucide-react";
-import { trpc } from "~/trpc/react";
+import { api } from "~/trpc/react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
@@ -24,21 +24,33 @@ interface CreateDiaryDialogProps {
   refetch: () => void;
 }
 
+// Define the shape of the subject data
+interface Subject {
+  id: string;
+  teacherId: string | null;
+  Subject: {
+    subjectName: string;
+  };
+}
+
 export function CreateDiaryDialog({
   classId,
   refetch,
 }: CreateDiaryDialogProps) {
   const [diaryDate, setDiaryDate] = useState<string>(
-    new Date().toISOString().split("T")[0] || ""
+    new Date().toISOString().split("T")[0] ?? ""
   );
   const [subjectWorks, setSubjectWorks] = useState<SubjectWork[]>([]);
   const [selectedSubject, setSelectedSubject] = useState<string>("");
   const [work, setWork] = useState("");
 
-  const { data: subjects } = trpc.subject.getSubjectsByClass.useQuery({
+  const { data: subjectsData } = api.subject.getSubjectsByClass.useQuery({
     classId,
   });
-  const createDiary = trpc.subjectDiary.createSubjectDiary.useMutation();
+  // Cast the data to the defined interface
+  const subjects = subjectsData as Subject[] | undefined;
+
+  const createDiary = api.subjectDiary.createDiary.useMutation();
   const router = useRouter();
 
   const handleAddSubjectWork = () => {
@@ -54,16 +66,44 @@ export function CreateDiaryDialog({
 
   const handleCreateDiary = async () => {
     try {
-      await createDiary.mutateAsync({
-        classId,
-        date: new Date(diaryDate),
-        subjects: subjectWorks,
-      });
+      if (subjectWorks.length === 0) {
+        toast.info("Please add at least one subject work.");
+        return;
+      }
+      if (!subjects) {
+        toast.error("Subjects are not loaded yet.");
+        return;
+      }
+
+      await Promise.all(
+        subjectWorks.map((sw) => {
+          const subject = subjects.find((s) => s.id === sw.subjectId);
+          if (!subject) {
+            throw new Error(`Could not find subject with id ${sw.subjectId}`);
+          }
+          if (!subject.teacherId) {
+            throw new Error(`Could not find a teacher for the subject.`);
+          }
+          
+          return createDiary.mutateAsync({
+            classSubjectId: sw.subjectId,
+            teacherId: subject.teacherId,
+            date: new Date(diaryDate),
+            content: sw.work,
+          });
+        })
+      );
+
       toast.success("Diary created successfully");
+      setSubjectWorks([]);
       refetch();
       router.refresh();
     } catch (error) {
-      toast.error("Failed to create diary");
+      if (error instanceof Error) {
+        toast.error(error.message);
+      } else {
+        toast.error("An unknown error occurred while creating the diary.");
+      }
     }
   };
 
@@ -95,7 +135,7 @@ export function CreateDiaryDialog({
               <option value="">Select Subject</option>
               {subjects?.map((subject) => (
                 <option key={subject.id} value={subject.id}>
-                  {subject.name}
+                  {subject.Subject.subjectName}
                 </option>
               ))}
             </select>
@@ -111,11 +151,14 @@ export function CreateDiaryDialog({
           <div>
             <h3>Subject Works:</h3>
             <ul>
-              {subjectWorks.map((sw, index) => (
-                <li key={index}>
-                  {subjects?.find((s) => s.id === sw.subjectId)?.name}: {sw.work}
-                </li>
-              ))}
+              {subjectWorks.map((sw, index) => {
+                const subjectName = subjects?.find(s => s.id === sw.subjectId)?.Subject.subjectName;
+                return (
+                  <li key={index}>
+                    {subjectName}: {sw.work}
+                  </li>
+                );
+              })}
             </ul>
           </div>
           <Button onClick={handleCreateDiary} disabled={createDiary.isPending}>

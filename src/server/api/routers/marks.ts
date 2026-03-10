@@ -1,5 +1,5 @@
 import { TRPCError } from "@trpc/server";
-import { createTRPCRouter, publicProcedure } from "../trpc";
+import { createTRPCRouter, protectedProcedure } from "../trpc";
 import { z } from "zod";
 import type { Prisma } from "@prisma/client";
 
@@ -20,23 +20,27 @@ const updateMarksSchema = z.object({
 });
 
 export const marksRouter = createTRPCRouter({
-  uploadMarks: publicProcedure
+  uploadMarks: protectedProcedure
     .input(uploadMarksSchema)
     .mutation(async ({ ctx, input }) => {
       try {
+        const employeeId = ctx.session.user.accountId;
+
         // Verify teacher is assigned to this class subject
         const classSubject = await ctx.db.classSubject.findUnique({
-          where: { csId: input.classSubjectId },
+          where: {
+            csId: input.classSubjectId,
+            employeeId: employeeId,
+          },
           include: {
-            Employees: { select: { employeeId: true } },
             Subject: { select: { subjectId: true } },
           },
         });
 
         if (!classSubject) {
           throw new TRPCError({
-            code: "NOT_FOUND",
-            message: "Class subject not found",
+            code: "FORBIDDEN",
+            message: "You are not assigned to this class subject.",
           });
         }
 
@@ -52,14 +56,6 @@ export const marksRouter = createTRPCRouter({
           });
         }
 
-        const uploadedBy = ctx.session?.user?.id;
-        if (!uploadedBy) {
-          throw new TRPCError({
-            code: "UNAUTHORIZED",
-            message: "User must be authenticated",
-          });
-        }
-
         // Batch create marks
         const marksData = input.marks.map((mark) => ({
           examId: input.examId,
@@ -68,7 +64,7 @@ export const marksRouter = createTRPCRouter({
           classSubjectId: input.classSubjectId,
           obtainedMarks: mark.obtainedMarks,
           totalMarks: exam.totalMarks,
-          uploadedBy,
+          uploadedBy: employeeId,
         }));
 
         const createdMarks = await ctx.db.marks.createMany({
@@ -91,7 +87,7 @@ export const marksRouter = createTRPCRouter({
       }
     }),
 
-  updateMarks: publicProcedure
+  updateMarks: protectedProcedure
     .input(updateMarksSchema)
     .mutation(async ({ ctx, input }) => {
       try {
@@ -126,7 +122,7 @@ export const marksRouter = createTRPCRouter({
       }
     }),
 
-  getMarksForExam: publicProcedure
+  getMarksForExam: protectedProcedure
     .input(
       z.object({
         examId: z.string().cuid(),
@@ -160,7 +156,7 @@ export const marksRouter = createTRPCRouter({
       }
     }),
 
-  getStudentMarksForExam: publicProcedure
+  getStudentMarksForExam: protectedProcedure
     .input(
       z.object({
         studentId: z.string().cuid(),
@@ -190,7 +186,7 @@ export const marksRouter = createTRPCRouter({
       }
     }),
 
-  checkMarksCoverage: publicProcedure
+  checkMarksCoverage: protectedProcedure
     .input(
       z.object({
         examId: z.string().cuid(),

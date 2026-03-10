@@ -7,7 +7,6 @@ export const subjectDiaryRouter = createTRPCRouter({
     .input(
       z.object({
         classSubjectId: z.string(),
-        teacherId: z.string(),
         date: z.date(),
         content: z.string(),
         attachments: z.array(z.string()).optional(),
@@ -15,10 +14,11 @@ export const subjectDiaryRouter = createTRPCRouter({
     )
     .mutation(async ({ ctx, input }) => {
       try {
+        const teacherId = ctx.session.user.accountId;
         return await ctx.db.subjectDiary.create({
           data: {
             classSubjectId: input.classSubjectId,
-            teacherId: input.teacherId,
+            teacherId: teacherId,
             date: input.date,
             content: input.content,
             attachments: input.attachments ?? [],
@@ -70,13 +70,13 @@ export const subjectDiaryRouter = createTRPCRouter({
   getTeacherDiaries: protectedProcedure
     .input(
       z.object({
-        teacherId: z.string(),
         date: z.date().optional(),
       }),
     )
     .query(async ({ ctx, input }) => {
       try {
-        const whereClause: Prisma.SubjectDiaryWhereInput = { teacherId: input.teacherId };
+        const teacherId = ctx.session.user.accountId;
+        const whereClause: Prisma.SubjectDiaryWhereInput = { teacherId: teacherId };
 
         // If date is provided, match exactly by day
         if (input.date) {

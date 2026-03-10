@@ -1,7 +1,7 @@
 import { TRPCError } from "@trpc/server";
 import { createTRPCRouter, publicProcedure } from "../trpc";
 import { z } from "zod";
-import type { Prisma } from "@prisma/client";
+import { ClassCategory, type Prisma } from "@prisma/client";
 
 const createExamSchema = z.object({
   sessionId: z.string().cuid(),
@@ -59,7 +59,8 @@ export const examRouter = createTRPCRouter({
 
         // Determine exam category based on grade and exam type
         const isMatriculation =
-          grades.category === ("MATRICULATION" as typeof grades.category);
+          grades.category === ClassCategory.SSC_I ||
+          grades.category === ClassCategory.SSC_II;
         const isPhaseTest = input.examTypeEnum.startsWith("PHASE_");
 
         if (isMatriculation && !isPhaseTest) {
