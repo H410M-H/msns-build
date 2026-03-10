@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import {
   Dialog,
@@ -8,162 +8,272 @@ import {
   DialogTrigger,
 } from "~/components/ui/dialog";
 import { Button } from "~/components/ui/button";
-import { PlusIcon } from "lucide-react";
+import { PlusIcon, Loader2, Trash2, X } from "lucide-react";
 import { api } from "~/trpc/react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import { Label } from "~/components/ui/label";
+import { Textarea } from "~/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "~/components/ui/select";
+import { Card } from "~/components/ui/card";
 
 interface SubjectWork {
-  subjectId: string;
-  work: string;
+  classSubjectId: string;
+  subjectName: string;
+  teacherName: string;
+  content: string;
 }
 
 interface CreateDiaryDialogProps {
   classId: string;
+  sessionId: string;
   refetch: () => void;
-}
-
-// Define the shape of the subject data
-interface Subject {
-  id: string;
-  teacherId: string | null;
-  Subject: {
-    subjectName: string;
-  };
 }
 
 export function CreateDiaryDialog({
   classId,
+  sessionId,
   refetch,
 }: CreateDiaryDialogProps) {
+  const [open, setOpen] = useState(false);
   const [diaryDate, setDiaryDate] = useState<string>(
     new Date().toISOString().split("T")[0] ?? ""
   );
   const [subjectWorks, setSubjectWorks] = useState<SubjectWork[]>([]);
   const [selectedSubject, setSelectedSubject] = useState<string>("");
-  const [work, setWork] = useState("");
+  const [content, setContent] = useState("");
 
-  const { data: subjectsData } = api.subject.getSubjectsByClass.useQuery({
-    classId,
-  });
-  // Cast the data to the defined interface
-  const subjects = subjectsData as Subject[] | undefined;
-
-  const createDiary = api.subjectDiary.createDiary.useMutation();
   const router = useRouter();
 
-  const handleAddSubjectWork = () => {
-    if (selectedSubject && work) {
-      setSubjectWorks([
-        ...subjectWorks,
-        { subjectId: selectedSubject, work },
-      ]);
+  const { data: subjectsData, isLoading: subjectsLoading } =
+    api.subject.getSubjectsByClass.useQuery(
+      { classId, sessionId },
+      { enabled: open }
+    );
+
+  const createDiary = api.subjectDiary.createDiary.useMutation({
+    onSuccess: () => {
+      toast.success("Diary created successfully");
+      setSubjectWorks([]);
       setSelectedSubject("");
-      setWork("");
+      setContent("");
+      refetch();
+      router.refresh();
+      setOpen(false);
+    },
+    onError: (error) => {
+      toast.error(error.message || "Failed to create diary");
+    },
+  });
+
+  const handleAddSubjectWork = () => {
+    if (!selectedSubject || !content.trim()) {
+      toast.error("Please select a subject and enter content");
+      return;
     }
+
+    const subject = subjectsData?.find((s) => s.csId === selectedSubject);
+    if (!subject) {
+      toast.error("Subject not found");
+      return;
+    }
+
+    // Check for duplicates
+    if (subjectWorks.find((sw) => sw.classSubjectId === selectedSubject)) {
+      toast.error("This subject is already added");
+      return;
+    }
+
+    setSubjectWorks([
+      ...subjectWorks,
+      {
+        classSubjectId: selectedSubject,
+        subjectName: subject.Subject.subjectName,
+        teacherName: subject.Employees.employeeName,
+        content: content.trim(),
+      },
+    ]);
+
+    setSelectedSubject("");
+    setContent("");
   };
 
   const handleCreateDiary = async () => {
+    if (subjectWorks.length === 0) {
+      toast.error("Please add at least one diary entry");
+      return;
+    }
+
     try {
-      if (subjectWorks.length === 0) {
-        toast.info("Please add at least one subject work.");
-        return;
-      }
-      if (!subjects) {
-        toast.error("Subjects are not loaded yet.");
-        return;
-      }
-
       await Promise.all(
-        subjectWorks.map((sw) => {
-          const subject = subjects.find((s) => s.id === sw.subjectId);
-          if (!subject) {
-            throw new Error(`Could not find subject with id ${sw.subjectId}`);
-          }
-          if (!subject.teacherId) {
-            throw new Error(`Could not find a teacher for the subject.`);
-          }
-          
-          return createDiary.mutateAsync({
-            classSubjectId: sw.subjectId,
-            teacherId: subject.teacherId,
+        subjectWorks.map((sw) =>
+          createDiary.mutateAsync({
+            classSubjectId: sw.classSubjectId,
             date: new Date(diaryDate),
-            content: sw.work,
-          });
-        })
+            content: sw.content,
+          })
+        )
       );
-
-      toast.success("Diary created successfully");
-      setSubjectWorks([]);
-      refetch();
-      router.refresh();
     } catch (error) {
-      if (error instanceof Error) {
-        toast.error(error.message);
-      } else {
-        toast.error("An unknown error occurred while creating the diary.");
-      }
+      console.error("Diary creation error:", error);
     }
   };
 
+  const handleRemoveEntry = (index: number) => {
+    setSubjectWorks(subjectWorks.filter((_, i) => i !== index));
+  };
+
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button>
-          <PlusIcon className="w-4 h-4 mr-2" />
+        <Button variant="outline" size="sm">
+          <PlusIcon className="mr-2 h-4 w-4" />
           Create Diary
         </Button>
       </DialogTrigger>
-      <DialogContent>
+
+      <DialogContent className="max-h-[80vh] overflow-y-auto sm:max-w-2xl">
         <DialogHeader>
-          <DialogTitle>Create Subject Diary</DialogTitle>
+          <DialogTitle>Create Subject Diaries</DialogTitle>
         </DialogHeader>
-        <div className="flex flex-col gap-4">
-          <input
-            type="date"
-            value={diaryDate}
-            onChange={(e) => setDiaryDate(e.target.value)}
-            className="p-2 border rounded"
-          />
-          <div className="flex gap-2">
-            <select
-              value={selectedSubject}
-              onChange={(e) => setSelectedSubject(e.target.value)}
-              className="p-2 border rounded"
-            >
-              <option value="">Select Subject</option>
-              {subjects?.map((subject) => (
-                <option key={subject.id} value={subject.id}>
-                  {subject.Subject.subjectName}
-                </option>
-              ))}
-            </select>
+
+        <div className="space-y-6">
+          {/* Date Selection */}
+          <div className="space-y-2">
+            <Label>Date</Label>
             <input
-              type="text"
-              value={work}
-              onChange={(e) => setWork(e.target.value)}
-              placeholder="Work"
-              className="p-2 border rounded"
+              type="date"
+              value={diaryDate}
+              onChange={(e) => setDiaryDate(e.target.value)}
+              className="w-full rounded-md border border-input bg-background px-3 py-2"
             />
-            <Button onClick={handleAddSubjectWork}>Add</Button>
           </div>
-          <div>
-            <h3>Subject Works:</h3>
-            <ul>
-              {subjectWorks.map((sw, index) => {
-                const subjectName = subjects?.find(s => s.id === sw.subjectId)?.Subject.subjectName;
-                return (
-                  <li key={index}>
-                    {subjectName}: {sw.work}
-                  </li>
-                );
-              })}
-            </ul>
+
+          {/* Subject Selection */}
+          <div className="space-y-2">
+            <Label>Select Subject</Label>
+            {subjectsLoading ? (
+              <div className="flex items-center justify-center p-4 text-sm text-muted-foreground">
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Loading subjects...
+              </div>
+            ) : !subjectsData || subjectsData.length === 0 ? (
+              <div className="rounded-md border border-dashed border-muted-foreground bg-muted/20 p-4 text-center text-sm text-muted-foreground">
+                No subjects assigned to this class
+              </div>
+            ) : (
+              <Select value={selectedSubject} onValueChange={setSelectedSubject}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Choose a subject" />
+                </SelectTrigger>
+                <SelectContent>
+                  {subjectsData.map((subject) => (
+                    <SelectItem key={subject.csId} value={subject.csId}>
+                      <div className="flex flex-col">
+                        <span className="font-medium">
+                          {subject.Subject.subjectName}
+                        </span>
+                        <span className="text-xs text-muted-foreground">
+                          by {subject.Employees.employeeName}
+                        </span>
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
           </div>
-          <Button onClick={handleCreateDiary} disabled={createDiary.isPending}>
-            {createDiary.isPending ? "Creating..." : "Create"}
+
+          {/* Content Input */}
+          <div className="space-y-2">
+            <Label>Diary Content</Label>
+            <Textarea
+              value={content}
+              onChange={(e) => setContent(e.target.value)}
+              placeholder="Enter what was taught today, homework, notes, etc..."
+              className="min-h-24 resize-none rounded-md"
+            />
+          </div>
+
+          {/* Add Button */}
+          <Button
+            onClick={handleAddSubjectWork}
+            disabled={!selectedSubject || !content.trim() || subjectsLoading}
+            className="w-full"
+          >
+            <PlusIcon className="mr-2 h-4 w-4" />
+            Add Entry
           </Button>
+
+          {/* Added Entries List */}
+          {subjectWorks.length > 0 && (
+            <div className="space-y-3">
+              <h3 className="font-semibold">Diary Entries ({subjectWorks.length})</h3>
+              <div className="space-y-2">
+                {subjectWorks.map((entry, idx) => (
+                  <Card key={idx} className="p-4">
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="min-w-0 flex-1 space-y-1">
+                        <div className="font-semibold text-sm">
+                          {entry.subjectName}
+                        </div>
+                        <div className="text-xs text-muted-foreground">
+                          {entry.teacherName}
+                        </div>
+                        <p className="whitespace-pre-wrap text-sm leading-relaxed text-foreground">
+                          {entry.content}
+                        </p>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleRemoveEntry(idx)}
+                        className="h-8 w-8 shrink-0 hover:bg-destructive/10 hover:text-destructive"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </Card>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Action Buttons */}
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              onClick={() => setOpen(false)}
+              className="flex-1"
+            >
+              <X className="mr-2 h-4 w-4" />
+              Cancel
+            </Button>
+            <Button
+              onClick={handleCreateDiary}
+              disabled={subjectWorks.length === 0 || createDiary.isPending}
+              className="flex-1"
+            >
+              {createDiary.isPending ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Creating...
+                </>
+              ) : (
+                <>
+                  <PlusIcon className="mr-2 h-4 w-4" />
+                  Create All
+                </>
+              )}
+            </Button>
+          </div>
         </div>
       </DialogContent>
     </Dialog>

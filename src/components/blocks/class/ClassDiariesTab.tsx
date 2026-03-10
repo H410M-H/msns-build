@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { BookOpen, CalendarIcon, Loader2, User } from "lucide-react";
+import { BookOpen, CalendarIcon, Loader2, User, Edit, Trash2 } from "lucide-react";
 import { format } from "date-fns";
 import { api } from "~/trpc/react";
 import {
@@ -12,6 +12,9 @@ import {
   CardDescription,
 } from "~/components/ui/card";
 import { Badge } from "~/components/ui/badge";
+import { Button } from "~/components/ui/button";
+import { CreateDiaryDialog } from "~/components/dialogs/CreateDiaryDialog";
+import { toast } from "sonner";
 
 type Diary = {
   subjectDiaryId: string;
@@ -19,11 +22,11 @@ type Diary = {
     Subject: {
       subjectName: string;
     };
+    Employees: {
+      employeeName: string;
+    };
   };
   date: string | Date;
-  Teacher: {
-    employeeName: string;
-  };
   content: string;
 };
 
@@ -36,12 +39,34 @@ export function ClassDiariesTab({
 }) {
   const [date, setDate] = useState<string>("");
 
-  const { data: diaries, isLoading } =
+  const { data: diaries, isLoading, refetch } =
     api.subjectDiary.getClassDiaries.useQuery({
       classId,
       sessionId,
       ...(date ? { date: new Date(date) } : {}),
     });
+
+  const deleteDiary = api.subjectDiary.deleteDiary.useMutation({
+    onSuccess: () => {
+      toast.success("Diary deleted successfully");
+      void refetch();
+    },
+    onError: (error) => {
+      toast.error(error.message || "Failed to delete diary");
+    },
+  });
+
+  const handleDeleteDiary = async (diaryId: string) => {
+    if (
+      window.confirm("Are you sure you want to delete this diary entry?")
+    ) {
+      try {
+        await deleteDiary.mutateAsync({ subjectDiaryId: diaryId });
+      } catch (error) {
+        console.error("Delete error:", error);
+      }
+    }
+  };
 
   return (
     <Card className="rounded-2xl border-border bg-card shadow-2xl duration-500 animate-in fade-in md:mt-4">
@@ -53,25 +78,32 @@ export function ClassDiariesTab({
               Subject Diaries
             </CardTitle>
             <CardDescription className="mt-1 text-muted-foreground">
-              Daily updates and homework assigned by teachers.
+              Daily updates and homework assigned by teachers. ({diaries?.length ?? 0} entries)
             </CardDescription>
           </div>
-          <div className="flex items-center gap-2 rounded-lg border border-border bg-card p-1.5 text-sm">
-            <CalendarIcon className="ml-1 h-4 w-4 text-muted-foreground" />
-            <input
-              type="date"
-              value={date}
-              onChange={(e) => setDate(e.target.value)}
-              className="mr-2 border-none bg-transparent text-foreground outline-none"
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+            <div className="flex items-center gap-2 rounded-lg border border-border bg-card p-1.5 text-sm">
+              <CalendarIcon className="ml-1 h-4 w-4 text-muted-foreground" />
+              <input
+                type="date"
+                value={date}
+                onChange={(e) => setDate(e.target.value)}
+                className="mr-2 border-none bg-transparent text-foreground outline-none"
+              />
+              {date && (
+                <button
+                  onClick={() => setDate("")}
+                  className="px-2 text-xs text-muted-foreground hover:text-foreground"
+                >
+                  Clear
+                </button>
+              )}
+            </div>
+            <CreateDiaryDialog
+              classId={classId}
+              sessionId={sessionId}
+              refetch={refetch}
             />
-            {date && (
-              <button
-                onClick={() => setDate("")}
-                className="px-2 text-xs text-muted-foreground hover:text-foreground"
-              >
-                Clear
-              </button>
-            )}
           </div>
         </div>
       </CardHeader>
@@ -90,7 +122,7 @@ export function ClassDiariesTab({
             {diaries.map((diary: Diary) => (
               <Card
                 key={diary.subjectDiaryId}
-                className="overflow-hidden border-t-4 border-border border-t-indigo-500 bg-card shadow-lg"
+                className="overflow-hidden border-t-4 border-border border-t-indigo-500 bg-card shadow-lg hover:shadow-xl transition-shadow"
               >
                 <CardHeader className="bg-white/[0.02] p-4 pb-2">
                   <div className="mb-2 flex items-start justify-between">
@@ -107,12 +139,24 @@ export function ClassDiariesTab({
                   </div>
                   <div className="mt-2 flex items-center gap-2 text-sm text-foreground">
                     <User className="h-4 w-4 text-muted-foreground" />
-                    {diary.Teacher.employeeName}
+                    {diary.ClassSubject.Employees.employeeName}
                   </div>
                 </CardHeader>
                 <CardContent className="p-4">
                   <div className="min-h-[100px] whitespace-pre-wrap rounded-lg border border-border bg-card p-3 text-sm leading-relaxed text-foreground">
                     {diary.content}
+                  </div>
+                  <div className="mt-3 flex gap-2">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="flex-1 text-xs hover:bg-red-50 hover:text-red-600"
+                      onClick={() => handleDeleteDiary(diary.subjectDiaryId)}
+                      disabled={deleteDiary.isPending}
+                    >
+                      <Trash2 className="mr-1 h-3 w-3" />
+                      Delete
+                    </Button>
                   </div>
                 </CardContent>
               </Card>
