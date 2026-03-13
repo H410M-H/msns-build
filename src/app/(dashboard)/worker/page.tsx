@@ -4,7 +4,6 @@ import { motion } from "framer-motion";
 import {
   Calendar,
   Clock,
-  Users,
   AlertCircle,
   CheckCircle2,
 } from "lucide-react";
@@ -22,7 +21,6 @@ import {
 import { Button } from "~/components/ui/button";
 import { Alert, AlertDescription, AlertTitle } from "~/components/ui/alert";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
-import Link from "next/link";
 
 // Sample tasks for worker
 const WORKER_TASKS = [

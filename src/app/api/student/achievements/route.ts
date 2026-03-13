@@ -1,4 +1,5 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 import { db } from '~/server/db';
 
 export async function GET(request: NextRequest) {
@@ -53,8 +54,17 @@ export async function GET(request: NextRequest) {
   }
 }
 
-function generateBadges(reportCards: any[]) {
-  const badges = [];
+interface Badge {
+  id: string;
+  name: string;
+  description: string;
+  icon: string;
+  earnedDate: Date;
+  points: number;
+}
+
+function generateBadges(reportCards: Array<{ status: string; percentage: number; generatedAt: Date; ReportCardDetail: Array<{ Subject: { subjectName: string }; percentage: number }> }>): Badge[] {
+  const badges: Badge[] = [];
 
   // Consistency Badge
   const passCount = reportCards.filter((rc) => rc.status === 'PASS').length;
@@ -133,8 +143,16 @@ function generateBadges(reportCards: any[]) {
   return badges;
 }
 
-function generateMilestones(reportCards: any[]) {
-  const milestones = [];
+interface Milestone {
+  id: string;
+  title: string;
+  description: string;
+  progress: number;
+  completedDate: Date;
+}
+
+function generateMilestones(reportCards: Array<{ generatedAt: Date; percentage: number }>): Milestone[] {
+  const milestones: Milestone[] = [];
 
   if (reportCards.length >= 1) {
     milestones.push({
@@ -181,8 +199,17 @@ function generateMilestones(reportCards: any[]) {
   return milestones;
 }
 
-function generateCertificates(reportCards: any[]) {
-  const certificates = [];
+interface Certificate {
+  id: string;
+  title: string;
+  description: string;
+  issuedDate: Date;
+  certificateNumber: string;
+  downloadable: boolean;
+}
+
+function generateCertificates(reportCards: Array<{ generatedAt: Date; percentage: number; ReportCardDetail: Array<{ subjectId: string; percentage: number; Subject: { subjectName: string } }> }>): Certificate[] {
+  const certificates: Certificate[] = [];
 
   // Merit Certificate
   const avgPercentage =
@@ -216,8 +243,8 @@ function generateCertificates(reportCards: any[]) {
   return certificates;
 }
 
-function calculatePoints(badges: any[], milestones: any[]): number {
-  const badgePoints = badges.reduce((sum, badge) => sum + (badge.points || 0), 0);
+function calculatePoints(badges: Badge[], milestones: Milestone[]): number {
+  const badgePoints = badges.reduce((sum, badge) => sum + badge.points, 0);
   const milestonePoints = milestones.length * 25;
   return badgePoints + milestonePoints;
 }

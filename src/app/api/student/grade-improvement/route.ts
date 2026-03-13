@@ -1,4 +1,5 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 import { db } from '~/server/db';
 
 export async function GET(request: NextRequest) {
@@ -60,8 +61,26 @@ export async function GET(request: NextRequest) {
   }
 }
 
-function analyzeSubjectPerformance(marks: any[]) {
-  const analysis: Record<string, any> = {};
+interface Mark {
+  obtainedMarks: number;
+  totalMarks: number;
+  subjectId: string;
+  Subject: { subjectName: string };
+  uploadedAt: Date;
+  Exam: { examTypeEnum: string };
+}
+
+interface SubjectAnalysis {
+  subjectId: string;
+  subjectName: string;
+  scores: Array<{ percentage: number; date: Date; examType: string }>;
+  attempts: number;
+  average: number;
+  trend: string;
+}
+
+function analyzeSubjectPerformance(marks: Mark[]): Record<string, SubjectAnalysis> {
+  const analysis: Record<string, SubjectAnalysis> = {};
 
   marks.forEach((mark) => {
     const percentage = (mark.obtainedMarks / mark.totalMarks) * 100;
@@ -82,13 +101,14 @@ function analyzeSubjectPerformance(marks: any[]) {
       date: mark.uploadedAt,
       examType: mark.Exam.examTypeEnum,
     });
+    analysis[mark.subjectId].attempts ??= 0;
     analysis[mark.subjectId].attempts += 1;
   });
 
   // Calculate averages and trends
   Object.keys(analysis).forEach((key) => {
     const subject = analysis[key];
-    const scores = subject.scores.map((s: any) => s.percentage);
+    const scores = subject.scores.map((s) => s.percentage);
     subject.average =
       scores.reduce((a: number, b: number) => a + b, 0) / scores.length;
 
@@ -108,7 +128,7 @@ function analyzeSubjectPerformance(marks: any[]) {
   return Object.values(analysis);
 }
 
-function generateImprovementPlans(subjects: any[]) {
+function generateImprovementPlans(subjects: SubjectAnalysis[]) {
   return subjects
     .filter((s) => s.average < 75)
     .map((subject) => ({
@@ -122,8 +142,8 @@ function generateImprovementPlans(subjects: any[]) {
     }));
 }
 
-function generateActionItems(subject: any) {
-  const items = [];
+function generateActionItems(subject: SubjectAnalysis): string[] {
+  const items: string[] = [];
 
   if (subject.average < 50) {
     items.push('Attend remedial classes');
@@ -141,7 +161,7 @@ function generateActionItems(subject: any) {
   return items;
 }
 
-function generateStudyRecommendations(subjects: any[], marks: any[]) {
+function generateStudyRecommendations(subjects: SubjectAnalysis[], marks: Mark[]) {
   const recommendations = [];
 
   const weakSubjects = subjects.filter((s) => s.average < 75);
@@ -191,7 +211,7 @@ function generateStudyRecommendations(subjects: any[], marks: any[]) {
   return recommendations;
 }
 
-function generateTutoringPlans(subjects: any[]) {
+function generateTutoringPlans(subjects: SubjectAnalysis[]) {
   const weakSubjects = subjects.filter((s) => s.average < 60);
 
   return weakSubjects.map((subject) => ({
@@ -205,7 +225,7 @@ function generateTutoringPlans(subjects: any[]) {
   }));
 }
 
-function generateStudyGroupSuggestions(subjects: any[]) {
+function generateStudyGroupSuggestions(subjects: SubjectAnalysis[]) {
   return subjects.map((subject) => ({
     subjectId: subject.subjectId,
     subject: subject.subjectName,
@@ -213,7 +233,7 @@ function generateStudyGroupSuggestions(subjects: any[]) {
     benefit: 'Peer learning and doubt clarification',
     frequency: '2-3 hours per week',
     focusAreas: subject.scores
-      .filter((s: any) => s.percentage < 70)
-      .map((s: any) => `Exam: ${s.examType}`),
+      .filter((s) => s.percentage < 70)
+      .map((s) => `Exam: ${s.examType}`),
   }));
 }

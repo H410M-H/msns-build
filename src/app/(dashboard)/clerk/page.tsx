@@ -3,14 +3,8 @@
 import { motion } from "framer-motion";
 import {
   DollarSign,
-  Receipt,
-  Users,
-  FileText,
-  Search,
-  Plus,
   TrendingUp,
   AlertCircle,
-  CheckCircle2,
   Clock,
 } from "lucide-react";
 
@@ -23,11 +17,7 @@ import {
   CardHeader,
   CardTitle,
   CardContent,
-  CardDescription,
 } from "~/components/ui/card";
-import { Button } from "~/components/ui/button";
-import { Input } from "~/components/ui/input";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import { Alert, AlertDescription, AlertTitle } from "~/components/ui/alert";
 
 // Financial KPIs for Clerk
