@@ -1,4 +1,5 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 import { db } from '~/server/db';
 
 export async function GET(request: NextRequest) {
@@ -19,7 +20,7 @@ export async function GET(request: NextRequest) {
     });
 
     // Get latest report cards to determine notifications
-    const recentReports = await prisma.reportCard.findMany({
+    const recentReports = await db.reportCard.findMany({
       where: { studentId },
       orderBy: { generatedAt: 'desc' },
       take: 3,

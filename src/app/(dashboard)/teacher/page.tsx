@@ -60,7 +60,7 @@ export default function TeacherDashboard() {
   const breadcrumbs = [{ href: "/teacher", label: "Dashboard", current: true }];
 
   return (
-    <div className="w-full space-y-8 p-6">
+    <div className="w-full space-y-8 px-4 sm:px-6">
       <PageHeader breadcrumbs={breadcrumbs} />
 
       {/* Top Section */}
@@ -85,12 +85,40 @@ export default function TeacherDashboard() {
         </motion.div>
       </div>
 
+      {/* Pending Assignments Alert */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.15 }}
+        className="flex flex-col gap-3"
+      >
+        <Card className="border-orange-500/20 bg-orange-500/5">
+          <CardContent className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center">
+            <div className="rounded-full bg-orange-500/10 p-2 text-orange-400">
+              <Sparkles className="h-5 w-5" />
+            </div>
+            <div className="flex-1">
+              <h4 className="font-medium text-orange-100">Assignment Submissions Pending Review</h4>
+              <p className="text-sm text-orange-200/70">
+                You have 5 assignments waiting for grading in your assigned classes.
+              </p>
+            </div>
+            <Button
+              size="sm"
+              className="bg-orange-600 hover:bg-orange-700 text-white"
+            >
+              Review Now
+            </Button>
+          </CardContent>
+        </Card>
+      </motion.div>
+
       {/* Analytics Cards */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.2 }}
-        className="grid w-full grid-cols-1 gap-6 md:grid-cols-3"
+        className="grid w-full grid-cols-1 gap-4 sm:gap-6 sm:grid-cols-2 md:grid-cols-3"
       >
         {TEACHER_ANALYTICS.map((stat, idx) => {
           const Icon = stat.icon;

@@ -36,7 +36,7 @@ export default function StudentDashboard() {
   const breadcrumbs = [{ href: "/student", label: "Dashboard", current: true }];
 
   return (
-    <div className="w-full space-y-8 p-6">
+    <div className="w-full space-y-8 px-4 sm:px-6">
       <PageHeader breadcrumbs={breadcrumbs} />
 
       {/* Top Section: Welcome & Profile */}
@@ -78,6 +78,51 @@ export default function StudentDashboard() {
           </div>
         </motion.div>
       </div>
+
+      {/* Performance Summary Cards */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.2 }}
+        className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-4"
+      >
+        <Card className="border-emerald-500/20 bg-emerald-500/5">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-emerald-600 dark:text-emerald-400">Overall GPA</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold text-foreground">3.85</div>
+            <p className="text-xs text-muted-foreground mt-1">Excellent Performance</p>
+          </CardContent>
+        </Card>
+        <Card className="border-blue-500/20 bg-blue-500/5">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-blue-600 dark:text-blue-400">Attendance</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold text-foreground">94%</div>
+            <p className="text-xs text-muted-foreground mt-1">Perfect Record</p>
+          </CardContent>
+        </Card>
+        <Card className="border-purple-500/20 bg-purple-500/5">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-purple-600 dark:text-purple-400">Assignments</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold text-foreground">12/12</div>
+            <p className="text-xs text-muted-foreground mt-1">All Submitted</p>
+          </CardContent>
+        </Card>
+        <Card className="border-orange-500/20 bg-orange-500/5">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-orange-600 dark:text-orange-400">Exams</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold text-foreground">8/8</div>
+            <p className="text-xs text-muted-foreground mt-1">Completed</p>
+          </CardContent>
+        </Card>
+      </motion.div>
 
       {/* Main Content Grid */}
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2">

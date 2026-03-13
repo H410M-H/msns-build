@@ -23,7 +23,7 @@ import { toast } from "~/hooks/use-toast";
 import { SubjectCreationDialog } from "../forms/class/SubjectCreation";
 import { SubjectAssignmentDialog } from "../forms/class/SubjectAssignment";
 import { SubjectDeletionDialog } from "../forms/class/SubjectDeletion";
-import AllotmentDialog from "../forms/class/StudentAlotment";
+import { AllotmentDialog } from "../forms/class/StudentAlotment";
 import { StudentReportCardsDialog } from "../forms/class/StudentReportCardsDialog";
 
 // --- Icons ---

@@ -100,7 +100,17 @@ const Page = () => {
   );
 };
 
-function generateReportCSV(data: any) {
+interface AnalyticsData {
+  overallAverage: number;
+  totalExams: number;
+  passingRate: number;
+  subjectWisePerformance?: Array<{
+    subjectName: string;
+    average: number;
+  }>;
+}
+
+function generateReportCSV(data: AnalyticsData) {
   let csv = "Performance Report\n";
   csv += `Overall Average,${data.overallAverage}\n`;
   csv += `Total Exams,${data.totalExams}\n`;
@@ -108,7 +118,7 @@ function generateReportCSV(data: any) {
   
   csv += "Subject Performance\n";
   csv += "Subject,Average\n";
-  data.subjectWisePerformance?.forEach((subject: any) => {
+  data.subjectWisePerformance?.forEach((subject) => {
     csv += `${subject.subjectName},${subject.average.toFixed(2)}\n`;
   });
   

@@ -1,4 +1,5 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 import { db } from '~/server/db';
 
 export async function GET(request: NextRequest) {
@@ -31,7 +32,7 @@ export async function GET(request: NextRequest) {
     });
 
     // Get past exams for study materials
-    const pastExams = await prisma.exam.findMany({
+    const pastExams = await db.exam.findMany({
       where: {
         classId,
         endDate: { lt: new Date() },
@@ -100,7 +101,20 @@ function getDuration(start: Date, end: Date): string {
   return `${days} days`;
 }
 
-function generateStudyTimeline(exams: any[]) {
+interface UpcomingExam {
+  examId: string;
+  name: string;
+  type: string;
+  startDate: Date;
+  endDate: Date;
+  duration: string;
+  subjects: Array<{ subject: string; date: Date; startTime: string; endTime: string }>;
+  totalMarks: number;
+  passingMarks: number;
+  daysUntilStart: number;
+}
+
+function generateStudyTimeline(exams: UpcomingExam[]) {
   if (exams.length === 0) return [];
 
   return exams.map((exam) => {

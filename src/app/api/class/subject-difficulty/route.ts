@@ -1,4 +1,5 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 import { db } from '~/server/db';
 
 export async function GET(request: NextRequest) {
@@ -31,7 +32,13 @@ export async function GET(request: NextRequest) {
     }
 
     // Calculate subject statistics
-    const subjectStats: Record<string, any> = {};
+    interface SubjectStat {
+      subjectId: string;
+      subjectName: string;
+      scores: number[];
+      totalAttempts: number;
+    }
+    const subjectStats: Record<string, SubjectStat> = {};
 
     reportCards.forEach((rc) => {
       rc.ReportCardDetail.forEach((detail) => {
@@ -45,12 +52,13 @@ export async function GET(request: NextRequest) {
         }
 
         subjectStats[detail.subjectId].scores.push(detail.percentage);
+        subjectStats[detail.subjectId].totalAttempts ??= 0;
         subjectStats[detail.subjectId].totalAttempts += 1;
       });
     });
 
     // Calculate difficulty levels
-    const subjectDifficulty = Object.values(subjectStats).map((subject: any) => {
+    const subjectDifficulty = Object.values(subjectStats).map((subject) => {
       const avgScore =
         subject.scores.reduce((a: number, b: number) => a + b, 0) /
         subject.scores.length;
@@ -73,7 +81,7 @@ export async function GET(request: NextRequest) {
         standardDeviation: Math.round(stdDev * 100) / 100,
         studentsAttempted: subject.totalAttempts,
         passingPercentage: Math.round(
-          (subject.scores.filter((s: number) => s >= 40).length /
+          (subject.scores.filter((s) => s >= 40).length /
             subject.scores.length) *
             100
         ),

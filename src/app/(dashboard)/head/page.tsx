@@ -68,7 +68,7 @@ export default function HeadDashboard() {
   const breadcrumbs = [{ href: "/head", label: "Dashboard", current: true }];
 
   return (
-    <div className="w-full space-y-8">
+    <div className="w-full space-y-8 px-4 sm:px-6">
       <PageHeader breadcrumbs={breadcrumbs} />
 
       {/* Top Section: Grid Layout */}
@@ -185,7 +185,7 @@ export default function HeadDashboard() {
             {/* Tab 3: Analytics */}
             <TabsContent
               value="analytics"
-              className="mt-0 focus-visible:outline-none"
+              className="mt-0 space-y-6 focus-visible:outline-none"
             >
               <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
                 {HEAD_ANALYTICS_CARDS.map((card, idx) => {
@@ -223,6 +223,53 @@ export default function HeadDashboard() {
                   );
                 })}
               </div>
+
+              {/* Department Performance */}
+              <Card className="border-border bg-card">
+                <CardHeader>
+                  <CardTitle>Department Performance Summary</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-3">
+                    <div className="rounded-lg border border-border bg-white/5 p-4">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <h4 className="font-semibold text-foreground">Mathematics Department</h4>
+                          <p className="text-sm text-muted-foreground">4 teachers, 120 students</p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-2xl font-bold text-emerald-400">A</p>
+                          <p className="text-xs text-muted-foreground">Avg Grade</p>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="rounded-lg border border-border bg-white/5 p-4">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <h4 className="font-semibold text-foreground">Science Department</h4>
+                          <p className="text-sm text-muted-foreground">3 teachers, 95 students</p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-2xl font-bold text-blue-400">A-</p>
+                          <p className="text-xs text-muted-foreground">Avg Grade</p>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="rounded-lg border border-border bg-white/5 p-4">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <h4 className="font-semibold text-foreground">Languages Department</h4>
+                          <p className="text-sm text-muted-foreground">5 teachers, 140 students</p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-2xl font-bold text-purple-400">B+</p>
+                          <p className="text-xs text-muted-foreground">Avg Grade</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
             </TabsContent>
           </div>
         </Tabs>
