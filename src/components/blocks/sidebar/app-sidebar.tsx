@@ -15,6 +15,7 @@ import {
   ShieldCheck,
   GraduationCap,
   FileText,
+  Hammer,
 } from "lucide-react";
 import {
   Sidebar,
@@ -147,10 +148,15 @@ const data: NavigationConfig = {
     { title: "Timetable", url: "/student/timetable", icon: List },
     { title: "Profile", url: "/student/profile", icon: Icons.Profile },
   ],
-
+  WORKER: [
+    { title: "Dashboard", url: "/worker", icon: Icons.Dashboard },
+    { title: "My Tasks", url: "/worker/tasks", icon: Hammer },
+    { title: "Schedule", url: "/worker/schedule", icon: Calendar },
+    { title: "Attendance", url: "/worker/attendance", icon: List },
+    { title: "Profile", url: "/worker/profile", icon: Icons.Profile },
+  ],
   NONE: [],
   ALL: [],
-  WORKER: [],
 };
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {

@@ -13,6 +13,10 @@ import {
   ArrowUpRight,
   Sparkles,
   FileText,
+  TrendingUp,
+  DollarSign,
+  AlertCircle,
+  CheckCircle2,
 } from "lucide-react";
 
 import { PageHeader } from "~/components/blocks/nav/PageHeader";
@@ -30,6 +34,7 @@ import {
 } from "~/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import { Button } from "~/components/ui/button";
+import { Alert, AlertDescription, AlertTitle } from "~/components/ui/alert";
 
 // --- Lazy Load Heavy Tables ---
 const EventsTable = lazy(() => import("~/components/tables/EventsTable"));
@@ -37,27 +42,27 @@ const EventsTable = lazy(() => import("~/components/tables/EventsTable"));
 // --- Analytics Configuration ---
 const ANALYTICS_CARDS = [
   {
-    title: "User Engagement",
-    description: "Active users vs Total users",
+    title: "Financial Health",
+    description: "Revenue vs Expenses",
     value: "+12.5%",
     trend: "up",
-    icon: Users,
-    color: "emerald", // Used for logic
+    icon: DollarSign,
+    color: "emerald",
   },
   {
-    title: "Course Velocity",
-    description: "Completion rate this term",
+    title: "Student Enrollment",
+    description: "Active students this session",
     value: "+8.2%",
     trend: "up",
-    icon: BookOpen,
+    icon: Users,
     color: "cyan",
   },
   {
-    title: "Event Attendance",
-    description: "Average turnout per event",
-    value: "84%",
+    title: "System Performance",
+    description: "Uptime this month",
+    value: "99.9%",
     trend: "neutral",
-    icon: Calendar,
+    icon: CheckCircle2,
     color: "purple",
   },
 ];
@@ -66,8 +71,23 @@ export default function DashboardPage() {
   const breadcrumbs = [{ href: "/admin", label: "Dashboard", current: true }];
 
   return (
-    <div className="w-full space-y-6 sm:space-y-8">
+    <div className="w-full space-y-6 px-4 sm:px-6 sm:space-y-8">
       <PageHeader breadcrumbs={breadcrumbs} />
+
+      {/* System Alert Section */}
+      <motion.div
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="flex flex-col gap-3"
+      >
+        <Alert className="border-amber-500/20 bg-amber-500/5 backdrop-blur-sm">
+          <AlertCircle className="h-4 w-4" />
+          <AlertTitle>Pending Actions Required</AlertTitle>
+          <AlertDescription>
+            3 fee waivers pending approval, 2 promotion requests awaiting verification
+          </AlertDescription>
+        </Alert>
+      </motion.div>
 
       {/* Top Section: Grid Layout */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
@@ -85,7 +105,7 @@ export default function DashboardPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="flex flex-col gap-4 lg:col-span-4"
+          className="flex flex-col gap-3 lg:col-span-4"
         >
           <Card className="relative flex-1 overflow-hidden border-slate-200 bg-white shadow-lg transition-all dark:border-emerald-500/20 dark:bg-gradient-to-br dark:from-emerald-900/40 dark:to-slate-900/40 dark:shadow-xl dark:backdrop-blur-md">
             <div className="pointer-events-none absolute right-0 top-0 p-4 opacity-10 dark:opacity-20">
@@ -99,7 +119,7 @@ export default function DashboardPage() {
                 Common administrative tasks
               </CardDescription>
             </CardHeader>
-            <CardContent className="grid grid-cols-2 gap-3">
+            <CardContent className="grid grid-cols-1 gap-2 sm:grid-cols-2">
               <Button
                 variant="outline"
                 className="border-emerald-200 bg-emerald-50 text-emerald-700 transition-colors hover:bg-emerald-100 dark:border-emerald-500/20 dark:bg-emerald-500/10 dark:text-emerald-200 dark:hover:bg-emerald-500/20"
@@ -111,6 +131,18 @@ export default function DashboardPage() {
                 className="border-slate-200 bg-slate-50 text-slate-700 transition-colors hover:bg-slate-100 dark:border-border dark:bg-white/5 dark:text-foreground dark:hover:bg-white/10"
               >
                 <FileText className="mr-2 h-4 w-4" /> Reports
+              </Button>
+              <Button
+                variant="outline"
+                className="border-blue-200 bg-blue-50 text-blue-700 transition-colors hover:bg-blue-100 dark:border-blue-500/20 dark:bg-blue-500/10 dark:text-blue-200 dark:hover:bg-blue-500/20"
+              >
+                <Users className="mr-2 h-4 w-4" /> Users
+              </Button>
+              <Button
+                variant="outline"
+                className="border-purple-200 bg-purple-50 text-purple-700 transition-colors hover:bg-purple-100 dark:border-purple-500/20 dark:bg-purple-500/10 dark:text-purple-200 dark:hover:bg-purple-500/20"
+              >
+                <Settings className="mr-2 h-4 w-4" /> Settings
               </Button>
             </CardContent>
           </Card>

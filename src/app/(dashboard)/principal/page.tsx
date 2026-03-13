@@ -68,7 +68,7 @@ export default function PrincipalDashboard() {
   ];
 
   return (
-    <div className="w-full space-y-8 p-6">
+    <div className="w-full space-y-8 px-4 sm:px-6">
       <PageHeader breadcrumbs={breadcrumbs} />
 
       {/* Top Section */}
@@ -192,27 +192,72 @@ export default function PrincipalDashboard() {
               <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                 <Card className="border-border bg-black/20">
                   <CardHeader>
-                    <CardTitle>Fee Collection Goals</CardTitle>
-                    <CardDescription>Monthly target vs Actual</CardDescription>
+                    <CardTitle>Fee Collection Progress</CardTitle>
+                    <CardDescription>Monthly target vs Actual collection</CardDescription>
                   </CardHeader>
-                  <CardContent className="flex h-[200px] items-center justify-center text-muted-foreground">
-                    {/* Placeholder for Chart */}
-                    Chart: 75% of target achieved
+                  <CardContent className="space-y-4">
+                    <div className="space-y-2">
+                      <div className="flex justify-between text-sm">
+                        <span className="text-muted-foreground">Target: Rs. 500,000</span>
+                        <span className="font-semibold">75%</span>
+                      </div>
+                      <div className="h-2 rounded-full bg-slate-700">
+                        <div className="h-full w-3/4 rounded-full bg-emerald-500"></div>
+                      </div>
+                      <p className="text-xs text-muted-foreground">Collected: Rs. 375,000</p>
+                    </div>
                   </CardContent>
                 </Card>
                 <Card className="border-border bg-black/20">
                   <CardHeader>
                     <CardTitle>Expense Breakdown</CardTitle>
                     <CardDescription>
-                      By category (Salaries, Maintenance, etc.)
+                      Current month expense distribution
                     </CardDescription>
                   </CardHeader>
-                  <CardContent className="flex h-[200px] items-center justify-center text-muted-foreground">
-                    {/* Placeholder for Chart */}
-                    Chart: 60% Salaries, 20% Utilities
+                  <CardContent className="space-y-3">
+                    <div className="space-y-2">
+                      <div className="flex justify-between text-sm">
+                        <span className="text-muted-foreground">Salaries</span>
+                        <span className="font-semibold">Rs. 300,000</span>
+                      </div>
+                      <div className="flex justify-between text-sm">
+                        <span className="text-muted-foreground">Utilities</span>
+                        <span className="font-semibold">Rs. 50,000</span>
+                      </div>
+                      <div className="flex justify-between text-sm">
+                        <span className="text-muted-foreground">Maintenance</span>
+                        <span className="font-semibold">Rs. 30,000</span>
+                      </div>
+                    </div>
                   </CardContent>
                 </Card>
               </div>
+              <Card className="border-border bg-black/20">
+                <CardHeader>
+                  <CardTitle>Key Performance Indicators</CardTitle>
+                  <CardDescription>Institutional performance metrics</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+                    <div className="rounded-lg border border-border bg-white/5 p-4">
+                      <p className="text-sm text-muted-foreground">Student Enrollment</p>
+                      <p className="mt-2 text-2xl font-bold text-foreground">1,240</p>
+                      <p className="mt-1 text-xs text-emerald-400">+5% this term</p>
+                    </div>
+                    <div className="rounded-lg border border-border bg-white/5 p-4">
+                      <p className="text-sm text-muted-foreground">Teacher Attendance</p>
+                      <p className="mt-2 text-2xl font-bold text-foreground">94%</p>
+                      <p className="mt-1 text-xs text-blue-400">3 on leave</p>
+                    </div>
+                    <div className="rounded-lg border border-border bg-white/5 p-4">
+                      <p className="text-sm text-muted-foreground">Avg. Class Size</p>
+                      <p className="mt-2 text-2xl font-bold text-foreground">32</p>
+                      <p className="mt-1 text-xs text-purple-400">Optimal load</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
             </TabsContent>
 
             <TabsContent value="calendar" className="mt-0">
