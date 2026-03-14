@@ -3,7 +3,7 @@ import { RegisterEmployeeBioMetric } from "~/components/attendance/register-bio"
 import { ScrollArea } from "~/components/ui/scroll-area";
 
 export default async function EmployeeRegistration(
-  props: PageProps<"/admin/users/faculty/bio-metric">,
+  props: PageProps<"/clerk/users/faculty/bio-metric">,
 ) {
   const { employeeId, employeeName } = (await props.searchParams) as {
     employeeId: string;

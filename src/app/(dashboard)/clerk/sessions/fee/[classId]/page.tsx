@@ -1,3 +1,5 @@
+// File: src/app/(dashboard)/clerk/sessions/fee/[classId]/page.tsx
+
 import { ScrollArea } from "~/components/ui/scroll-area";
 import {
   Card,
@@ -24,65 +26,60 @@ export default async function FeeDetailsPage({ searchParams }: PageProps) {
       href: `/clerk/sessions/${searchProps.sessionId}`,
       label: "Session Details",
     },
+    // Fixed: Added href="#" to satisfy the type definition
+    { href: "#", label: "Fee Structure", current: true },
   ];
 
   return (
-    <section className="relative min-h-screen w-full overflow-x-hidden bg-card selection:bg-emerald-500/30">
-      {/* === GLOBAL GRID BACKGROUND === */}
-      <div className="pointer-events-none fixed inset-0 z-0">
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(45,255,196,0.05)_1px,transparent_1px),linear-gradient(to_bottom,rgba(45,255,196,0.05)_1px,transparent_1px)] bg-[size:3rem_3rem] sm:bg-[size:4rem_4rem]" />
-        <div className="absolute inset-0 bg-gradient-to-br from-emerald-900/20 via-slate-950/80 to-slate-950" />
-      </div>
+    <div className="w-full space-y-6">
+      <PageHeader breadcrumbs={breadcrumbs} />
 
-      <div className="relative z-10 flex min-h-screen flex-col">
-        <PageHeader breadcrumbs={breadcrumbs} />
-
-        <div className="container mx-auto flex-1 px-4 py-8 pt-20 sm:px-6 lg:px-8">
-          <div className="mx-auto max-w-[1920px] space-y-6 duration-700 animate-in fade-in slide-in-from-bottom-4">
-            {/* Header Section */}
-            <div className="flex flex-col gap-2">
-              <h1 className="flex items-center gap-3 font-serif text-3xl font-bold tracking-tight text-foreground">
-                <span className="rounded-xl border border-emerald-500/20 bg-emerald-500/10 p-2 shadow-lg shadow-emerald-900/20">
-                  <Coins className="h-6 w-6 text-emerald-400" />
-                </span>
-                Fee Details
-              </h1>
-              <p className="ml-1 max-w-2xl text-muted-foreground">
-                Manage fee structures, update amounts, and track payment records
-                for this specific class within the active session.
-              </p>
-            </div>
-
-            {/* Main Card */}
-            <Card className="overflow-hidden rounded-2xl border border-emerald-500/20 bg-card shadow-2xl backdrop-blur-xl">
-              <CardHeader className="border-b border-emerald-500/10 bg-card p-6">
-                <div className="flex items-center justify-between">
-                  <div className="space-y-1">
-                    <CardTitle className="flex items-center gap-2 text-xl font-semibold text-foreground">
-                      <Receipt className="h-5 w-5 text-emerald-400" />
-                      Class Fee Registry
-                    </CardTitle>
-                    <CardDescription className="text-muted-foreground">
-                      Detailed breakdown of fees assigned to this class.
-                    </CardDescription>
-                  </div>
-                </div>
-              </CardHeader>
-
-              <CardContent className="p-0">
-                <ScrollArea className="h-[calc(100vh-300px)] w-full">
-                  <div className="p-6">
-                    <ClassFeeTable
-                      sessionId={searchProps.sessionId}
-                      classId={searchProps.classId}
-                    />
-                  </div>
-                </ScrollArea>
-              </CardContent>
-            </Card>
-          </div>
+      <div className="pt-2 duration-500 animate-in fade-in slide-in-from-bottom-4">
+        {/* Header Section */}
+        <div className="mb-6 flex flex-col gap-2">
+          <h1 className="flex items-center gap-3 text-2xl font-bold tracking-tight text-slate-900 dark:text-foreground sm:text-3xl">
+            <span className="rounded-xl border border-emerald-200 bg-emerald-100 p-2 shadow-sm dark:border-emerald-500/20 dark:bg-emerald-500/10">
+              <Coins className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
+            </span>
+            Fee Details
+          </h1>
+          <p className="ml-1 max-w-2xl text-sm leading-relaxed text-muted-foreground dark:text-muted-foreground sm:text-base">
+            Manage fee structures, update amounts, and track payment records for
+            this specific class within the active session.
+          </p>
         </div>
+
+        {/* Main Content Card */}
+        <Card className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm backdrop-blur-md transition-colors dark:border-border dark:bg-card dark:shadow-xl">
+          <CardHeader className="border-b border-slate-100 bg-slate-50/50 px-6 py-4 dark:border-border dark:bg-black/20">
+            <div className="flex items-center gap-3">
+              <div className="rounded-lg border border-slate-200 bg-white p-2 shadow-sm dark:border-emerald-500/20 dark:bg-emerald-500/10 dark:text-emerald-400 dark:shadow-none">
+                <Receipt className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+              </div>
+              <div>
+                <CardTitle className="text-lg font-bold text-slate-900 dark:text-foreground">
+                  Class Fee Registry
+                </CardTitle>
+                <CardDescription className="text-xs text-muted-foreground dark:text-muted-foreground sm:text-sm">
+                  Detailed breakdown of fees assigned to this class
+                </CardDescription>
+              </div>
+            </div>
+          </CardHeader>
+
+          <CardContent className="p-0">
+            {/* Scroll area adjusted to fit viewport nicely */}
+            <ScrollArea className="h-[calc(100vh-320px)] w-full">
+              <div className="p-4 sm:p-6">
+                <ClassFeeTable
+                  sessionId={searchProps.sessionId}
+                  classId={searchProps.classId}
+                />
+              </div>
+            </ScrollArea>
+          </CardContent>
+        </Card>
       </div>
-    </section>
+    </div>
   );
 }

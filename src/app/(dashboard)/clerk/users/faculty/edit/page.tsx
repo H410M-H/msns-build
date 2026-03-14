@@ -5,10 +5,10 @@ import { Separator } from "~/components/ui/separator";
 
 export default function EmployeeCardsPage() {
   const breadcrumbs = [
-    { href: "/admin", label: "Dashboard" },
-    { href: "/admin/users/faculty/view", label: "Faculty List" },
+    { href: "/clerk", label: "Dashboard" },
+    { href: "/clerk/users/faculty/view", label: "Faculty List" },
     {
-      href: "/admin/users/faculty/edit",
+      href: "/clerk/users/faculty/edit",
       label: "Employee Cards",
       current: true,
     },

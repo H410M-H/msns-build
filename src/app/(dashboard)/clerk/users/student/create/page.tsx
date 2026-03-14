@@ -7,10 +7,10 @@ import { motion } from "framer-motion";
 
 export default function StudentRegistration() {
   const breadcrumbs = [
-    { href: "/admin", label: "Dashboard" },
-    { href: "/admin/users", label: "User Management" },
+    { href: "/clerk", label: "Dashboard" },
+    { href: "/clerk/users", label: "User Management" },
     {
-      href: "/admin/users/student/create",
+      href: "/clerk/users/student/create",
       label: "Student Registration",
       current: true,
     },

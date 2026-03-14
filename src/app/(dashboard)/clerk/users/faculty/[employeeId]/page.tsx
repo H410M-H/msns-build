@@ -58,8 +58,8 @@ export default function EmployeeAttendanceDetails() {
 
   // Breadcrumbs
   const breadcrumbs = [
-    { href: "/admin", label: "Dashboard" },
-    { href: "/admin/users/faculty/view", label: "Faculty" },
+    { href: "/clerk", label: "Dashboard" },
+    { href: "/clerk/users/faculty/view", label: "Faculty" },
     { href: "#", label: "Attendance Details", current: true },
   ];
 

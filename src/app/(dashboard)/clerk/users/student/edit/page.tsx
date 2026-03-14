@@ -6,7 +6,7 @@ export default function StudentCred() {
   const breadcrumbs = [
     { href: "/dashboard", label: "Dashboard" },
     {
-      href: "/admin/users/student/edit",
+      href: "/clerk/users/student/edit",
       label: "Directory & Editing",
       current: true,
     },

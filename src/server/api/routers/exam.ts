@@ -105,15 +105,15 @@ export const examRouter = createTRPCRouter({
             status: "SCHEDULED",
             ...(input.datesheet &&
               input.datesheet.length > 0 && {
-                ExamDatesheet: {
-                  create: input.datesheet.map((ds) => ({
-                    subjectId: ds.subjectId,
-                    date: ds.date,
-                    startTime: ds.startTime,
-                    endTime: ds.endTime,
-                  })),
-                },
-              }),
+              ExamDatesheet: {
+                create: input.datesheet.map((ds) => ({
+                  subjectId: ds.subjectId,
+                  date: ds.date,
+                  startTime: ds.startTime,
+                  endTime: ds.endTime,
+                })),
+              },
+            }),
           },
           include: {
             ExamDatesheet: true,
@@ -134,6 +134,25 @@ export const examRouter = createTRPCRouter({
         });
       }
     }),
+
+  getAllExams: publicProcedure.query(async ({ ctx }) => {
+    try {
+      const exams = await ctx.db.exam.findMany({
+        include: {
+          ExamType: true,
+          Grades: true,
+        },
+        orderBy: { startDate: "desc" },
+      });
+      return exams;
+    } catch (error) {
+      console.error("Error fetching exams:", error);
+      throw new TRPCError({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "Failed to fetch exams",
+      });
+    }
+  }),
 
   updateExam: publicProcedure
     .input(updateExamSchema)

@@ -1,0 +1,124 @@
+// File: src/app/(dashboard)/principal/sessions/[sessionId]/page.tsx
+"use client";
+
+import { useParams } from "next/navigation";
+import Link from "next/link";
+import { motion } from "framer-motion";
+import { CalendarRange, Layers, Info, ClipboardList } from "lucide-react";
+import { Suspense } from "react";
+
+import { PageHeader } from "~/components/blocks/nav/PageHeader";
+import { ClassList } from "~/components/tables/ClassList";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "~/components/ui/card";
+import { Button } from "~/components/ui/button";
+import { Skeleton } from "~/components/ui/skeleton";
+import { Badge } from "~/components/ui/badge";
+
+export default function SessionDetailPage() {
+  const params = useParams();
+  const sessionId = params?.sessionId as string;
+
+  const breadcrumbs = [
+    { href: "/principal", label: "Dashboard" },
+    { href: "/principal/sessions", label: "Sessions" },
+    {
+      href: `/principal/sessions/${sessionId}`,
+      label: "Session Details",
+      current: true,
+    },
+  ];
+
+  return (
+    // Wrapper: Full width, standard spacing
+    <div className="w-full space-y-6">
+      <PageHeader breadcrumbs={breadcrumbs} />
+
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, ease: "easeOut" }}
+      >
+        {/* Header Section: Clean & Professional */}
+        <div className="mb-8 flex flex-col justify-between gap-4 border-b border-slate-200 pb-6 dark:border-border md:flex-row md:items-end">
+          <div>
+            <div className="mb-2 flex items-center gap-3">
+              <div className="rounded-lg border border-emerald-200 bg-emerald-100 p-2 text-emerald-600 dark:border-emerald-500/20 dark:bg-emerald-500/10 dark:text-emerald-400">
+                <CalendarRange className="h-6 w-6" />
+              </div>
+              <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-foreground">
+                Session Overview
+              </h1>
+            </div>
+            <p className="max-w-2xl pl-1 text-muted-foreground dark:text-muted-foreground">
+              Manage classes, student allocations, and fee structures for this
+              academic session.
+            </p>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <Badge
+              variant="outline"
+              className="border-emerald-200 bg-emerald-50 px-3 py-1 text-emerald-700 dark:border-emerald-500/20 dark:bg-emerald-500/5 dark:text-emerald-300"
+            >
+              <Info className="mr-1 h-3 w-3" /> Active Session
+            </Badge>
+            <Button
+              size="sm"
+              variant="outline"
+              className="border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 hover:text-emerald-800 dark:border-emerald-500/20 dark:bg-emerald-500/5 dark:text-emerald-300 dark:hover:bg-emerald-500/10"
+              asChild
+            >
+              <Link href="/principal/exams">
+                <ClipboardList className="mr-2 h-3.5 w-3.5" />
+                Exams
+              </Link>
+            </Button>
+          </div>
+        </div>
+
+        {/* Main Content Card */}
+        <Card className="overflow-hidden border border-slate-200 bg-white/50 shadow-sm backdrop-blur-md transition-all dark:border-border dark:bg-card dark:shadow-xl">
+          <CardHeader className="border-b border-slate-100 bg-slate-50/50 px-6 py-4 dark:border-border dark:bg-black/20">
+            <div className="flex items-center gap-2">
+              <Layers className="h-5 w-5 text-emerald-600 dark:text-emerald-500" />
+              <div>
+                <CardTitle className="text-lg font-bold text-slate-900 dark:text-foreground">
+                  Class Management
+                </CardTitle>
+                <CardDescription className="text-xs text-muted-foreground dark:text-muted-foreground">
+                  Configure classes assigned to this session
+                </CardDescription>
+              </div>
+            </div>
+          </CardHeader>
+
+          <CardContent className="p-0">
+            {/* Suspense Wrapper for Data Table */}
+            <Suspense
+              fallback={
+                <div className="space-y-4 p-6">
+                  <div className="flex items-center justify-between">
+                    <Skeleton className="h-10 w-48 bg-slate-100 dark:bg-white/5" />
+                    <Skeleton className="h-10 w-32 bg-slate-100 dark:bg-white/5" />
+                  </div>
+                  <Skeleton className="h-[400px] w-full rounded-xl bg-slate-100 dark:bg-white/5" />
+                </div>
+              }
+            >
+              {/* Table Container */}
+              <div className="overflow-hidden">
+                <ClassList sessionId={sessionId} />
+              </div>
+            </Suspense>
+          </CardContent>
+        </Card>
+      </motion.div>
+    </div>
+  );
+}
