@@ -1,6 +1,7 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { db } from '~/server/db';
+import { ExamStatus } from '@prisma/client';
 
 interface ExamInfo {
   examId: string;
@@ -9,7 +10,7 @@ interface ExamInfo {
   startDate: Date;
   endDate: Date;
   duration: string;
-  subjects: Array<{ subject: string; date: Date; startTime: string; endTime: string }>;
+  subjects: Array<{ subject: string; date: Date; startTime: string | null; endTime: string | null }>;
   totalMarks: number;
   passingMarks: number;
   daysUntilStart: number;
@@ -40,7 +41,7 @@ export async function GET(request: NextRequest) {
       where: {
         classId,
         startDate: { gte: new Date() },
-        status: 'SCHEDULED',
+        status: ExamStatus.SCHEDULED,
       },
       include: {
         ExamType: true,
@@ -93,7 +94,6 @@ export async function GET(request: NextRequest) {
       subjects: exam.ExamDatesheet.map((ed) => ed.Subject.subjectName),
     }));
 
-    // Suggested study timeline
     const timeline = generateStudyTimeline(upcomingExams);
 
     return NextResponse.json({
@@ -113,7 +113,7 @@ export async function GET(request: NextRequest) {
 function daysUntil(date: Date): number {
   const today = new Date();
   const diffTime = date.getTime() - today.getTime();
-  return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  return Math.max(0, Math.ceil(diffTime / (1000 * 60 * 60 * 24)));
 }
 
 function getDuration(start: Date, end: Date): string {
@@ -135,34 +135,22 @@ function generateStudyTimeline(exams: ExamInfo[]): TimelineItem[] {
       ),
       weeklySchedule: generateWeeklySchedule(subjects, daysAvailable),
       milestones: [
-        {
-          week: 1,
-          goal: 'Complete chapter reviews',
-        },
-        {
-          week: 2,
-          goal: 'Practice problem sets',
-        },
-        {
-          week: 3,
-          goal: 'Take mock tests',
-        },
-        {
-          week: Math.ceil(daysAvailable / 7),
-          goal: 'Final revision and doubt clearing',
-        },
+        { week: 1, goal: 'Complete chapter reviews' },
+        { week: 2, goal: 'Practice problem sets' },
+        { week: 3, goal: 'Take mock tests' },
+        { week: Math.max(1, Math.ceil(daysAvailable / 7)), goal: 'Final revision and doubt clearing' },
       ],
     };
   });
 }
 
 function generateWeeklySchedule(numSubjects: number, daysAvailable: number) {
-  const weeksAvailable = Math.ceil(daysAvailable / 7);
+  const weeksAvailable = Math.max(1, Math.ceil(daysAvailable / 7));
   const subjectsPerWeek = Math.max(1, Math.floor(numSubjects / weeksAvailable));
 
   return Array.from({ length: weeksAvailable }, (_, i) => ({
     week: i + 1,
     focus: `Focus on ${subjectsPerWeek} subject(s)`,
-    hoursPerDay: 2 + i * 0.5, // Increasing intensity as exam approaches
+    hoursPerDay: 2 + i * 0.5,
   }));
 }
