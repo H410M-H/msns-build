@@ -2,17 +2,15 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { ClipboardList, Star } from "lucide-react";
+import { ClipboardList, Star, Settings, BarChart3 } from "lucide-react";
 
 import { PageHeader } from "~/components/blocks/nav/PageHeader";
 import { WelcomeSection } from "~/components/blocks/dashboard/welcome";
 import { StatsCards } from "~/components/cards/StatCard";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
-import { Settings, BarChart3 } from "lucide-react";
 
 // Shared dashboard widgets
 import { TodayAtAGlance } from "~/components/dashboard/TodayAtAGlance";
-import { ActionRequired } from "~/components/dashboard/ActionRequired";
 import { ActivityFeed } from "~/components/dashboard/ActivityFeed";
 import { QuickActionToolbar } from "~/components/dashboard/QuickActionToolbar";
 import { PinnedNotices } from "~/components/dashboard/PinnedNotices";

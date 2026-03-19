@@ -22,7 +22,12 @@ const Page = () => {
     try {
       // Generate PDF report
       const response = await fetch(`/api/student/analytics?studentId=${studentId}`);
-      const data = await response.json();
+      const data = await response.json() as { 
+        overallAverage: number;
+        totalExams: number;
+        passingRate: number;
+        subjectWisePerformance?: Array<{ subjectName: string; average: number }>;
+      };
       
       // Create CSV or PDF
       const csv = generateReportCSV(data);
@@ -100,7 +105,14 @@ const Page = () => {
   );
 };
 
-function generateReportCSV(data: any) {
+interface AnalyticsData {
+  overallAverage: number;
+  totalExams: number;
+  passingRate: number;
+  subjectWisePerformance?: Array<{ subjectName: string; average: number }>;
+}
+
+function generateReportCSV(data: AnalyticsData): string {
   let csv = "Performance Report\n";
   csv += `Overall Average,${data.overallAverage}\n`;
   csv += `Total Exams,${data.totalExams}\n`;
@@ -108,7 +120,7 @@ function generateReportCSV(data: any) {
   
   csv += "Subject Performance\n";
   csv += "Subject,Average\n";
-  data.subjectWisePerformance?.forEach((subject: any) => {
+  data.subjectWisePerformance?.forEach((subject) => {
     csv += `${subject.subjectName},${subject.average.toFixed(2)}\n`;
   });
   

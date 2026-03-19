@@ -26,15 +26,12 @@ import {
 } from "~/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "~/components/ui/alert";
 import { Button } from "~/components/ui/button";
-import { Progress } from "~/components/ui/progress";
 import { Badge } from "~/components/ui/badge";
 import { Skeleton } from "~/components/ui/skeleton";
 import Link from "next/link";
 import { api } from "~/trpc/react";
 import { TodayAtAGlance } from "~/components/dashboard/TodayAtAGlance";
 import { PinnedNotices } from "~/components/dashboard/PinnedNotices";
-
-const DAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 
 function FeeStatusWidget() {
   const { data: profile, isLoading: isProfileLoading } = api.student.getProfileByUserId.useQuery();

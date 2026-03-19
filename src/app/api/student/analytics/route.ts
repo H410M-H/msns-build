@@ -1,4 +1,5 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 import { db } from '~/server/db';
 
 export async function GET(request: NextRequest) {
@@ -30,7 +31,7 @@ export async function GET(request: NextRequest) {
     });
 
     // Get student's marks across exams
-    const marks = await db.marks.findMany({
+    await db.marks.findMany({
       where: { studentId },
       include: {
         Exam: { include: { ExamType: true } },
@@ -47,10 +48,18 @@ export async function GET(request: NextRequest) {
       status: rc.status,
     }));
 
+    interface SubjectPerformance {
+      subjectId: string;
+      subjectName: string;
+      marks: number[];
+      percentages: number[];
+      average: number;
+    }
+
     const subjectWisePerformance = reportCards
       .flatMap((rc) => rc.ReportCardDetail)
-      .reduce((acc: any, detail) => {
-        const existing = acc.find((s: any) => s.subjectId === detail.subjectId);
+      .reduce((acc: SubjectPerformance[], detail) => {
+        const existing = acc.find((s: SubjectPerformance) => s.subjectId === detail.subjectId);
         if (existing) {
           existing.marks.push(detail.obtainedMarks);
           existing.percentages.push(detail.percentage);
@@ -68,7 +77,7 @@ export async function GET(request: NextRequest) {
       }, []);
 
     // Recalculate averages
-    subjectWisePerformance.forEach((subject: any) => {
+    subjectWisePerformance.forEach((subject: SubjectPerformance) => {
       subject.average =
         subject.percentages.reduce((a: number, b: number) => a + b, 0) /
         subject.percentages.length;
