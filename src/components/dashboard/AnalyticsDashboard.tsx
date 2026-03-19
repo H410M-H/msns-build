@@ -16,9 +16,6 @@ import {
   Tooltip,
   Legend,
   ResponsiveContainer,
-  PieChart,
-  Pie,
-  Cell,
 } from "recharts";
 import {
   TrendingUp,
@@ -29,28 +26,63 @@ import {
   Zap,
 } from "lucide-react";
 
+// --- START OF TYPE DEFINITIONS ---
+interface SubjectPerformance {
+  subjectName: string;
+  average: number;
+}
+
 interface AnalyticsData {
-  performanceData: any[];
-  subjectWisePerformance: any[];
+  performanceData: unknown[];
+  subjectWisePerformance: SubjectPerformance[];
   overallAverage: number;
-  trend: any[];
+  trend: unknown[];
   totalExams: number;
   passingRate: number;
+}
+
+interface TrendData {
+  improvementRate: number;
+  trends: Array<{ date: string; percentage: number }>;
+  projection?: number;
+}
+
+interface ComparativeData {
+  studentPercentage: number;
+  classAverage: number;
+  percentile: number;
+  rank: number;
+  subjectComparison: Array<{ subject: string; studentPercentage: number; classAverage: number }>;
+  subjectDifficulty: Array<{ subject: string; classAverage: number; difficulty: string }>;
+}
+
+interface AchievementData {
+  totalPoints: number;
+  badges: Array<{ id: string; name: string; description: string; icon: string; points: number }>;
+  milestones: Array<{ id: string; title: string; description: string }>;
+  certificates: Array<{ id: string; title: string; description: string; certificateNumber: string }>;
+}
+
+interface FeedbackData {
+  strengths: Array<{ subjectId: string; subjectName: string; average: number }>;
+  weaknesses: Array<{ subjectId: string; subjectName: string; average: number }>;
+  recommendations: Array<{ title: string; description: string; priority: string }>;
+  diaries: Array<{ date: string; subject: string; teacher: string; content: string }>;
 }
 
 interface DashboardProps {
   studentId: string;
   classId: string;
 }
-
-const COLORS = ["#3b82f6", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6"];
+// --- END OF TYPE DEFINITIONS ---
 
 export function AnalyticsDashboard({ studentId, classId }: DashboardProps) {
+  // Apply the strict types to our state to satisfy ESLint
   const [analytics, setAnalytics] = useState<AnalyticsData | null>(null);
-  const [trends, setTrends] = useState<any>(null);
-  const [comparative, setComparative] = useState<any>(null);
-  const [achievements, setAchievements] = useState<any>(null);
-  const [feedback, setFeedback] = useState<any>(null);
+  const [trends, setTrends] = useState<TrendData | null>(null);
+  const [comparative, setComparative] = useState<ComparativeData | null>(null);
+  const [achievements, setAchievements] = useState<AchievementData | null>(null);
+  const [feedback, setFeedback] = useState<FeedbackData | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -66,11 +98,12 @@ export function AnalyticsDashboard({ studentId, classId }: DashboardProps) {
             fetch(`/api/teacher/feedback?studentId=${studentId}`),
           ]);
 
-        const analyticsData = await analyticsRes.json();
-        const trendsData = await trendsRes.json();
-        const comparativeData = await comparativeRes.json();
-        const achievementsData = await achievementsRes.json();
-        const feedbackData = await feedbackRes.json();
+        // Cast the parsed JSON to our defined interfaces
+        const analyticsData = (await analyticsRes.json()) as AnalyticsData;
+        const trendsData = (await trendsRes.json()) as TrendData;
+        const comparativeData = (await comparativeRes.json()) as ComparativeData;
+        const achievementsData = (await achievementsRes.json()) as AchievementData;
+        const feedbackData = (await feedbackRes.json()) as FeedbackData;
 
         setAnalytics(analyticsData);
         setTrends(trendsData);
@@ -107,25 +140,25 @@ export function AnalyticsDashboard({ studentId, classId }: DashboardProps) {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <StatCard
               title="Overall Average"
-              value={`${analytics?.overallAverage.toFixed(1)}%`}
+              value={`${analytics?.overallAverage.toFixed(1) ?? '0'}%`}
               icon={<TrendingUp className="h-4 w-4" />}
               color="blue"
             />
             <StatCard
               title="Total Exams"
-              value={analytics?.totalExams.toString() || "0"}
+              value={analytics?.totalExams.toString() ?? "0"}
               icon={<BookOpen className="h-4 w-4" />}
               color="green"
             />
             <StatCard
               title="Passing Rate"
-              value={`${analytics?.passingRate.toFixed(1)}%`}
+              value={`${analytics?.passingRate.toFixed(1) ?? '0'}%`}
               icon={<Target className="h-4 w-4" />}
               color="amber"
             />
             <StatCard
               title="Points"
-              value={achievements?.totalPoints.toString() || "0"}
+              value={achievements?.totalPoints.toString() ?? "0"}
               icon={<Zap className="h-4 w-4" />}
               color="purple"
             />
@@ -166,7 +199,7 @@ export function AnalyticsDashboard({ studentId, classId }: DashboardProps) {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-3">
-                    {feedback.strengths?.slice(0, 3).map((s: any) => (
+                    {feedback.strengths?.slice(0, 3).map((s) => (
                       <div key={s.subjectId} className="flex items-center justify-between">
                         <span className="font-medium">{s.subjectName}</span>
                         <Badge variant="default">
@@ -184,7 +217,7 @@ export function AnalyticsDashboard({ studentId, classId }: DashboardProps) {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-3">
-                    {feedback.weaknesses?.slice(0, 3).map((w: any) => (
+                    {feedback.weaknesses?.slice(0, 3).map((w) => (
                       <div key={w.subjectId} className="flex items-center justify-between">
                         <span className="font-medium">{w.subjectName}</span>
                         <Badge variant="secondary">
@@ -205,7 +238,7 @@ export function AnalyticsDashboard({ studentId, classId }: DashboardProps) {
                 <CardTitle>Improvement Recommendations</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
-                {feedback.recommendations.map((rec: any, idx: number) => (
+                {feedback.recommendations.map((rec, idx) => (
                   <Alert key={idx}>
                     <AlertCircle className="h-4 w-4" />
                     <AlertDescription>
@@ -318,7 +351,7 @@ export function AnalyticsDashboard({ studentId, classId }: DashboardProps) {
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-3">
-                      {comparative.subjectDifficulty.map((sd: any) => (
+                      {comparative.subjectDifficulty.map((sd) => (
                         <div
                           key={sd.subject}
                           className="flex items-center justify-between p-3 bg-slate-50 rounded-lg"
@@ -354,7 +387,7 @@ export function AnalyticsDashboard({ studentId, classId }: DashboardProps) {
         <TabsContent value="feedback" className="space-y-4">
           {feedback && (
             <>
-              {feedback.recommendations?.map((rec: any, idx: number) => (
+              {feedback.recommendations?.map((rec, idx) => (
                 <Alert key={idx}>
                   <AlertCircle className="h-4 w-4" />
                   <AlertDescription>
@@ -373,7 +406,7 @@ export function AnalyticsDashboard({ studentId, classId }: DashboardProps) {
                     <CardTitle>Recent Teacher Notes</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-3">
-                    {feedback.diaries.slice(0, 5).map((diary: any, idx: number) => (
+                    {feedback.diaries.slice(0, 5).map((diary, idx) => (
                       <div key={idx} className="p-3 border-l-4 border-blue-500 bg-slate-50">
                         <div className="flex justify-between items-start">
                           <div>
@@ -412,7 +445,7 @@ export function AnalyticsDashboard({ studentId, classId }: DashboardProps) {
                   </CardHeader>
                   <CardContent>
                     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                      {achievements.badges.map((badge: any) => (
+                      {achievements.badges.map((badge) => (
                         <div
                           key={badge.id}
                           className="p-4 border rounded-lg text-center hover:shadow-lg transition"
@@ -438,7 +471,7 @@ export function AnalyticsDashboard({ studentId, classId }: DashboardProps) {
                     <CardTitle>Milestones</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-3">
-                    {achievements.milestones.map((milestone: any) => (
+                    {achievements.milestones.map((milestone) => (
                       <div key={milestone.id} className="p-3 bg-slate-50 rounded-lg">
                         <div className="flex items-center justify-between">
                           <div>
@@ -461,7 +494,7 @@ export function AnalyticsDashboard({ studentId, classId }: DashboardProps) {
                     <CardTitle>Certificates</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-3">
-                    {achievements.certificates.map((cert: any) => (
+                    {achievements.certificates.map((cert) => (
                       <div key={cert.id} className="p-3 border-l-4 border-amber-500 bg-amber-50">
                         <p className="font-semibold">{cert.title}</p>
                         <p className="text-sm text-gray-600">{cert.description}</p>
