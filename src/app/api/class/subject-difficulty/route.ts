@@ -49,9 +49,7 @@ export async function GET(request: NextRequest) {
             scores: [],
             totalAttempts: 0,
           };
-        }
-
-        subjectStats[detail.subjectId]!.scores.push(detail.percentage);
+               subjectStats[detail.subjectId]!.scores.push(detail.percentage);
         subjectStats[detail.subjectId]!.totalAttempts ??= 0;
         subjectStats[detail.subjectId]!.totalAttempts += 1;
       });
@@ -81,7 +79,7 @@ export async function GET(request: NextRequest) {
         standardDeviation: Math.round(stdDev * 100) / 100,
         studentsAttempted: subject.totalAttempts,
         passingPercentage: Math.round(
-          (subject.scores.filter((s: number) => s >= 40).length /
+          (subject.scores.filter((s) => s >= 40).length /
             subject.scores.length) *
             100
         ),

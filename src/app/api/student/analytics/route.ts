@@ -69,8 +69,7 @@ export async function GET(request: NextRequest) {
             subjectName: detail.Subject.subjectName,
             marks: [detail.obtainedMarks],
             percentages: [detail.percentage],
-            average:
-              detail.percentage,
+            average: detail.percentage,
           });
         }
         return acc;

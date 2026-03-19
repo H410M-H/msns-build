@@ -226,7 +226,7 @@ export default function TeacherDashboard() {
   const breadcrumbs = [{ href: "/teacher", label: "Dashboard", current: true }];
 
   return (
-    <div className="w-full space-y-8 p-6">
+    <div className="w-full space-y-8 px-4 sm:px-6">
       <PageHeader breadcrumbs={breadcrumbs} />
 
       {/* Top Section */}

@@ -234,7 +234,7 @@ function generateStudyGroupSuggestions(subjects: SubjectAnalysis[]): any[] {
     benefit: 'Peer learning and doubt clarification',
     frequency: '2-3 hours per week',
     focusAreas: subject.scores
-      .filter((s: any) => s.percentage < 70)
-      .map((s: any) => `Exam: ${s.examType}`),
+      .filter((s) => s.percentage < 70)
+      .map((s) => `Exam: ${s.examType}`),
   }));
 }

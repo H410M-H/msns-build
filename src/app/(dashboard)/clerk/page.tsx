@@ -114,8 +114,21 @@ export default function ClerkDashboard() {
     <div className="w-full space-y-6 p-6">
       <PageHeader breadcrumbs={breadcrumbs} />
 
-      {/* Top Section */}
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
+      {/* Urgent Tasks Alert */}
+      <motion.div
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+      >
+        <Alert className="border-red-500/20 bg-red-500/5 backdrop-blur-sm">
+          <AlertCircle className="h-4 w-4" />
+          <AlertTitle>Overdue Payments</AlertTitle>
+          <AlertDescription>
+            12 students have overdue fees exceeding 30 days. Automatic reminders sent.
+          </AlertDescription>
+        </Alert>
+      </motion.div>
+
+      {/* Top Section */}      <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}

@@ -25,7 +25,7 @@ export default function DashboardPage() {
   const breadcrumbs = [{ href: "/admin", label: "Dashboard", current: true }];
 
   return (
-    <div className="w-full space-y-6 sm:space-y-8">
+    <div className="w-full space-y-6 px-4 sm:px-6 sm:space-y-8">
       <PageHeader breadcrumbs={breadcrumbs} />
 
       {/* Top Section: Welcome + Today at a Glance */}
