@@ -2,17 +2,6 @@ import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { db } from '~/server/db';
 
-interface ExamData {
-  examId: string;
-  startDate: Date;
-  endDate: Date;
-  examTypeEnum: string;
-  ExamType: { name: string };
-  ExamDatesheet: Array<{ Subject: { subjectName: string }; date: Date; startTime: string; endTime: string }>;
-  totalMarks: number;
-  passingMarks: number;
-}
-
 interface ExamInfo {
   examId: string;
   name: string;
@@ -24,6 +13,13 @@ interface ExamInfo {
   totalMarks: number;
   passingMarks: number;
   daysUntilStart: number;
+}
+
+interface TimelineItem {
+  examName: string;
+  studyStartDate: Date;
+  weeklySchedule: Array<{ week: number; focus: string; hoursPerDay: number }>;
+  milestones: Array<{ week: number; goal: string }>;
 }
 
 export async function GET(request: NextRequest) {
@@ -125,7 +121,7 @@ function getDuration(start: Date, end: Date): string {
   return `${days} days`;
 }
 
-function generateStudyTimeline(exams: ExamInfo[]): any[] {
+function generateStudyTimeline(exams: ExamInfo[]): TimelineItem[] {
   if (exams.length === 0) return [];
 
   return exams.map((exam) => {
