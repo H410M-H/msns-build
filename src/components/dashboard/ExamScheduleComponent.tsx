@@ -3,8 +3,57 @@
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
 import { Badge } from "~/components/ui/badge";
-import { Calendar, Clock, BookOpen, AlertCircle } from "lucide-react";
+import { Calendar, Clock, BookOpen } from "lucide-react";
 import { Alert, AlertDescription } from "~/components/ui/alert";
+
+interface ExamSubject {
+  subject: string;
+  date: string;
+  startTime: string;
+  endTime: string;
+}
+
+interface UpcomingExam {
+  examId: string;
+  name: string;
+  startDate: string;
+  endDate: string;
+  daysUntilStart: number;
+  totalMarks: number;
+  passingMarks: number;
+  duration: string;
+  subjects: ExamSubject[];
+}
+
+interface Milestone {
+  week: number;
+  goal: string;
+}
+
+interface WeeklySchedule {
+  week: number;
+  hoursPerDay: number;
+}
+
+interface SuggestedTimeline {
+  examName: string;
+  studyStartDate: string;
+  milestones: Milestone[];
+  weeklySchedule: WeeklySchedule[];
+}
+
+interface StudyResource {
+  examId: string;
+  name: string;
+  type: string;
+  subjects: string[];
+}
+
+interface ScheduleData {
+  upcomingExams: UpcomingExam[];
+  suggestedTimeline: SuggestedTimeline[];
+  studyResources: StudyResource[];
+}
 
 interface ExamScheduleProps {
   studentId: string;
@@ -12,7 +61,7 @@ interface ExamScheduleProps {
 }
 
 export function ExamScheduleComponent({ studentId, classId }: ExamScheduleProps) {
-  const [scheduleData, setScheduleData] = useState<any>(null);
+  const [scheduleData, setScheduleData] = useState<ScheduleData | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -21,7 +70,7 @@ export function ExamScheduleComponent({ studentId, classId }: ExamScheduleProps)
         const response = await fetch(
           `/api/student/exam-schedule?studentId=${studentId}&classId=${classId}`
         );
-        const data = await response.json();
+        const data = (await response.json()) as ScheduleData;
         setScheduleData(data);
       } catch (error) {
         console.error("Error fetching exam schedule:", error);
@@ -53,7 +102,7 @@ export function ExamScheduleComponent({ studentId, classId }: ExamScheduleProps)
       <div>
         <h3 className="text-lg font-semibold mb-4">Upcoming Exams</h3>
         <div className="space-y-4">
-          {scheduleData.upcomingExams.map((exam: any) => (
+          {scheduleData.upcomingExams.map((exam) => (
             <Card key={exam.examId} className="border-l-4 border-l-blue-500">
               <CardHeader>
                 <div className="flex items-start justify-between">
@@ -107,7 +156,7 @@ export function ExamScheduleComponent({ studentId, classId }: ExamScheduleProps)
                     Subject Schedule
                   </h4>
                   <div className="space-y-2">
-                    {exam.subjects.map((subject: any, idx: number) => (
+                    {exam.subjects.map((subject, idx) => (
                       <div
                         key={idx}
                         className="p-3 bg-slate-50 rounded-lg flex items-center justify-between"
@@ -137,7 +186,7 @@ export function ExamScheduleComponent({ studentId, classId }: ExamScheduleProps)
         <div>
           <h3 className="text-lg font-semibold mb-4">Suggested Study Timeline</h3>
           <div className="space-y-4">
-            {scheduleData.suggestedTimeline.map((timeline: any, idx: number) => (
+            {scheduleData.suggestedTimeline.map((timeline, idx) => (
               <Card key={idx}>
                 <CardHeader>
                   <CardTitle className="text-base">{timeline.examName}</CardTitle>
@@ -152,7 +201,7 @@ export function ExamScheduleComponent({ studentId, classId }: ExamScheduleProps)
                   </Alert>
 
                   <div className="space-y-3">
-                    {timeline.milestones.map((milestone: any) => (
+                    {timeline.milestones.map((milestone) => (
                       <div
                         key={milestone.week}
                         className="p-3 border rounded-lg bg-slate-50"
@@ -166,7 +215,7 @@ export function ExamScheduleComponent({ studentId, classId }: ExamScheduleProps)
                   <div className="border-t pt-4">
                     <h4 className="font-semibold mb-3">Weekly Schedule</h4>
                     <div className="space-y-2">
-                      {timeline.weeklySchedule.map((week: any) => (
+                      {timeline.weeklySchedule.map((week) => (
                         <div key={week.week} className="flex items-center justify-between p-2 bg-slate-50 rounded">
                           <span className="text-sm">Week {week.week}</span>
                           <Badge variant="outline">
@@ -188,7 +237,7 @@ export function ExamScheduleComponent({ studentId, classId }: ExamScheduleProps)
         <div>
           <h3 className="text-lg font-semibold mb-4">Past Exam Resources</h3>
           <div className="grid md:grid-cols-2 gap-4">
-            {scheduleData.studyResources.map((resource: any) => (
+            {scheduleData.studyResources.map((resource) => (
               <Card key={resource.examId}>
                 <CardHeader>
                   <CardTitle className="text-base">{resource.name}</CardTitle>
@@ -196,7 +245,7 @@ export function ExamScheduleComponent({ studentId, classId }: ExamScheduleProps)
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-2">
-                    {resource.subjects.map((subject: string) => (
+                    {resource.subjects.map((subject) => (
                       <Badge key={subject} variant="secondary">
                         {subject}
                       </Badge>
