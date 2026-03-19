@@ -1,4 +1,5 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 import { db } from '~/server/db';
 
 export async function GET(request: NextRequest) {
@@ -31,7 +32,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Get all report cards for the class in the same exam
-    const classReportCards = await prisma.reportCard.findMany({
+    const classReportCards = await db.reportCard.findMany({
       where: {
         classId,
         examId: studentReportCard.examId,
@@ -41,22 +42,22 @@ export async function GET(request: NextRequest) {
     // Calculate class statistics
     const percentages = classReportCards.map((rc) => rc.percentage);
     const classAverage =
-      percentages.reduce((a, b) => a + b, 0) / percentages.length;
+      percentages.reduce((a: number, b: number) => a + b, 0) / percentages.length;
 
     // Calculate percentile and rank
     const studentPercentage = studentReportCard.percentage;
-    const betterScores = percentages.filter((p) => p > studentPercentage).length;
+    const betterScores = percentages.filter((p: number) => p > studentPercentage).length;
     const percentile =
       ((percentages.length - betterScores) / percentages.length) * 100;
     const rank = betterScores + 1;
 
     // Subject-wise class comparison
-    const studentDetails = await prisma.reportCardDetail.findMany({
+    const studentDetails = await db.reportCardDetail.findMany({
       where: { reportCardId: studentReportCard.reportCardId },
       include: { Subject: true },
     });
 
-    const classDetails = await prisma.reportCardDetail.findMany({
+    const classDetails = await db.reportCardDetail.findMany({
       where: {
         reportCard: {
           classId,

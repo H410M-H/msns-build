@@ -1,4 +1,5 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 import { db } from '~/server/db';
 
 export async function GET(request: NextRequest) {
@@ -53,7 +54,38 @@ export async function GET(request: NextRequest) {
   }
 }
 
-function generateBadges(reportCards: any[]) {
+interface Badge {
+  id: string;
+  name: string;
+  description: string;
+  icon: string;
+  earnedDate: Date;
+  points: number;
+}
+
+interface Milestone {
+  id: string;
+  title: string;
+  description: string;
+  progress: number;
+  completedDate: Date;
+}
+
+interface Certificate {
+  id: string;
+  title: string;
+  description: string;
+  issuedDate: Date;
+  certificateNumber: string;
+  downloadable: boolean;
+}
+
+interface SubjectAverage {
+  subject: string;
+  percentage: number;
+}
+
+function generateBadges(reportCards: any[]): Badge[] {
   const badges = [];
 
   // Consistency Badge
@@ -133,7 +165,7 @@ function generateBadges(reportCards: any[]) {
   return badges;
 }
 
-function generateMilestones(reportCards: any[]) {
+function generateMilestones(reportCards: any[]): Milestone[] {
   const milestones = [];
 
   if (reportCards.length >= 1) {
@@ -181,7 +213,7 @@ function generateMilestones(reportCards: any[]) {
   return milestones;
 }
 
-function generateCertificates(reportCards: any[]) {
+function generateCertificates(reportCards: any[]): Certificate[] {
   const certificates = [];
 
   // Merit Certificate
@@ -216,8 +248,8 @@ function generateCertificates(reportCards: any[]) {
   return certificates;
 }
 
-function calculatePoints(badges: any[], milestones: any[]): number {
-  const badgePoints = badges.reduce((sum, badge) => sum + (badge.points || 0), 0);
+function calculatePoints(badges: Badge[], milestones: Milestone[]): number {
+  const badgePoints = badges.reduce((sum, badge) => sum + (badge.points ?? 0), 0);
   const milestonePoints = milestones.length * 25;
   return badgePoints + milestonePoints;
 }
