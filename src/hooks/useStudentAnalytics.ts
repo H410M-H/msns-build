@@ -1,10 +1,11 @@
-import useSWR from 'swr';
+import useSWR, { type SWRResponse } from 'swr';
 
-// Make the fetcher generic so it stops returning 'any'
+// Type-safe fetcher that parses through `unknown` to satisfy ESLint's strict rules
 const fetcher = async <T>(url: string): Promise<T> => {
   const res = await fetch(url);
-  return (await res.json()) as T;
-};
+  const json = (await res.json()) as unknown;
+  return json as T;
+}
 
 // --- Interfaces ---
 export interface StudentAnalytics {
@@ -71,9 +72,9 @@ export interface NotificationsResponse {
 
 // --- Hooks ---
 export function useStudentAnalytics(studentId: string) {
-  const { data, error, isLoading } = useSWR<StudentAnalytics>(
+  const { data, error, isLoading }: SWRResponse<StudentAnalytics, Error> = useSWR(
     studentId ? `/api/student/analytics?studentId=${studentId}` : null,
-    fetcher
+    (url: string) => fetcher<StudentAnalytics>(url)
   );
 
   return {
@@ -84,9 +85,9 @@ export function useStudentAnalytics(studentId: string) {
 }
 
 export function usePerformanceTrends(studentId: string) {
-  const { data, error, isLoading } = useSWR<PerformanceTrendResponse>(
+  const { data, error, isLoading }: SWRResponse<PerformanceTrendResponse, Error> = useSWR(
     studentId ? `/api/student/performance-trends?studentId=${studentId}` : null,
-    fetcher
+    (url: string) => fetcher<PerformanceTrendResponse>(url)
   );
 
   return {
@@ -98,11 +99,11 @@ export function usePerformanceTrends(studentId: string) {
 }
 
 export function useComparativeAnalytics(studentId: string, classId: string) {
-  const { data, error, isLoading } = useSWR<ComparativeAnalytics>(
+  const { data, error, isLoading }: SWRResponse<ComparativeAnalytics, Error> = useSWR(
     studentId && classId
       ? `/api/student/comparative-analytics?studentId=${studentId}&classId=${classId}`
       : null,
-    fetcher
+    (url: string) => fetcher<ComparativeAnalytics>(url)
   );
 
   return {
@@ -113,9 +114,9 @@ export function useComparativeAnalytics(studentId: string, classId: string) {
 }
 
 export function useTeacherFeedback(studentId: string) {
-  const { data, error, isLoading } = useSWR<TeacherFeedbackResponse>(
+  const { data, error, isLoading }: SWRResponse<TeacherFeedbackResponse, Error> = useSWR(
     studentId ? `/api/teacher/feedback?studentId=${studentId}` : null,
-    fetcher
+    (url: string) => fetcher<TeacherFeedbackResponse>(url)
   );
 
   return {
@@ -128,11 +129,11 @@ export function useTeacherFeedback(studentId: string) {
 }
 
 export function useExamSchedule(studentId: string, classId: string) {
-  const { data, error, isLoading } = useSWR<ExamScheduleResponse>(
+  const { data, error, isLoading }: SWRResponse<ExamScheduleResponse, Error> = useSWR(
     studentId && classId
       ? `/api/student/exam-schedule?studentId=${studentId}&classId=${classId}`
       : null,
-    fetcher
+    (url: string) => fetcher<ExamScheduleResponse>(url)
   );
 
   return {
@@ -145,9 +146,9 @@ export function useExamSchedule(studentId: string, classId: string) {
 }
 
 export function useAchievements(studentId: string) {
-  const { data, error, isLoading } = useSWR<AchievementsResponse>(
+  const { data, error, isLoading }: SWRResponse<AchievementsResponse, Error> = useSWR(
     studentId ? `/api/student/achievements?studentId=${studentId}` : null,
-    fetcher
+    (url: string) => fetcher<AchievementsResponse>(url)
   );
 
   return {
@@ -160,9 +161,9 @@ export function useAchievements(studentId: string) {
 }
 
 export function useGradeImprovement(studentId: string) {
-  const { data, error, isLoading } = useSWR<GradeImprovementResponse>(
+  const { data, error, isLoading }: SWRResponse<GradeImprovementResponse, Error> = useSWR(
     studentId ? `/api/student/grade-improvement?studentId=${studentId}` : null,
-    fetcher
+    (url: string) => fetcher<GradeImprovementResponse>(url)
   );
 
   return {
@@ -175,10 +176,10 @@ export function useGradeImprovement(studentId: string) {
 }
 
 export function useNotifications(studentId: string) {
-  const { data, error, isLoading } = useSWR<NotificationsResponse>(
+  const { data, error, isLoading }: SWRResponse<NotificationsResponse, Error> = useSWR(
     studentId ? `/api/student/notifications?studentId=${studentId}` : null,
-    fetcher,
-    { refreshInterval: 60000 } // Refresh every minute
+    (url: string) => fetcher<NotificationsResponse>(url),
+    { refreshInterval: 60000 }
   );
 
   return {
