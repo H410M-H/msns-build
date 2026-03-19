@@ -1,16 +1,36 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { db } from '~/server/db';
+import { ExamStatus } from '@prisma/client';
 
 interface Notification {
   id: string;
   type: string;
   title: string;
   message: string;
-  data: Record<string, any>;
+  data: Record<string, string | number>;
   timestamp: Date;
   read: boolean;
   actionUrl: string;
+}
+
+interface ReportData {
+  reportCardId: string;
+  percentage: number;
+  generatedAt: Date;
+  Exam: {
+    ExamType: {
+      name: string;
+    };
+  };
+}
+
+interface ExamData {
+  examId: string;
+  startDate: Date;
+  ExamType: {
+    name: string;
+  };
 }
 
 export async function GET(request: NextRequest) {
@@ -25,12 +45,15 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Get student info and recent activity
-    const student = await db.student.findUnique({
+    // Notice we use db.students here based on your Prisma schema
+    const studentExists = await db.students.findUnique({
       where: { studentId },
     });
 
-    // Get latest report cards to determine notifications
+    if (!studentExists) {
+      return NextResponse.json({ error: 'Student not found' }, { status: 404 });
+    }
+
     const recentReports = await db.reportCard.findMany({
       where: { studentId },
       orderBy: { generatedAt: 'desc' },
@@ -40,7 +63,6 @@ export async function GET(request: NextRequest) {
       },
     });
 
-    // Get upcoming exams
     const student_classes = await db.studentClass.findFirst({
       where: { studentId },
     });
@@ -50,7 +72,7 @@ export async function GET(request: NextRequest) {
           where: {
             classId: student_classes.classId,
             startDate: { gte: new Date() },
-            status: 'SCHEDULED',
+            status: ExamStatus.SCHEDULED,
           },
           include: { ExamType: true },
           orderBy: { startDate: 'asc' },
@@ -59,9 +81,8 @@ export async function GET(request: NextRequest) {
       : [];
 
     const notifications = generateNotifications(
-      student,
-      recentReports,
-      upcomingExams
+      recentReports as ReportData[],
+      upcomingExams as ExamData[]
     );
 
     return NextResponse.json({
@@ -77,11 +98,10 @@ export async function GET(request: NextRequest) {
   }
 }
 
-function generateNotifications(student: any, reports: any[], exams: any[]): Notification[] {
+function generateNotifications(reports: ReportData[], exams: ExamData[]): Notification[] {
   const notifications: Notification[] = [];
 
-  // Grade release notification
-  if (reports.length > 0) {
+  if (reports[0]) {
     const latest = reports[0];
     notifications.push({
       id: `grade-${latest.reportCardId}`,
@@ -93,11 +113,7 @@ function generateNotifications(student: any, reports: any[], exams: any[]): Noti
       read: false,
       actionUrl: '/grades',
     });
-  }
 
-  // Performance milestone
-  if (reports.length > 0) {
-    const latest = reports[0];
     if (latest.percentage >= 90) {
       notifications.push({
         id: `milestone-${latest.reportCardId}`,
@@ -112,8 +128,7 @@ function generateNotifications(student: any, reports: any[], exams: any[]): Noti
     }
   }
 
-  // Performance drop alert
-  if (reports.length >= 2) {
+  if (reports[0] && reports[1]) {
     const latest = reports[0];
     const previous = reports[1];
     if (latest.percentage < previous.percentage - 10) {
@@ -122,10 +137,7 @@ function generateNotifications(student: any, reports: any[], exams: any[]): Noti
         type: 'alert',
         title: 'Performance Dip Detected',
         message: `Your score dropped from ${previous.percentage}% to ${latest.percentage}%`,
-        data: {
-          current: latest.percentage,
-          previous: previous.percentage,
-        },
+        data: { current: latest.percentage, previous: previous.percentage },
         timestamp: new Date(),
         read: false,
         actionUrl: '/grades?tab=feedback',
@@ -133,11 +145,10 @@ function generateNotifications(student: any, reports: any[], exams: any[]): Noti
     }
   }
 
-  // Upcoming exam reminder
   exams.forEach((exam) => {
-    const daysUntil = Math.ceil(
+    const daysUntil = Math.max(0, Math.ceil(
       (new Date(exam.startDate).getTime() - Date.now()) / (1000 * 60 * 60 * 24)
-    );
+    ));
 
     if (daysUntil <= 7 && daysUntil > 0) {
       notifications.push({
