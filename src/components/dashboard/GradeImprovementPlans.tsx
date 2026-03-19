@@ -6,12 +6,55 @@ import { Badge } from "~/components/ui/badge";
 import { Alert, AlertDescription } from "~/components/ui/alert";
 import { CheckCircle, AlertCircle, Target, BookOpen, Users } from "lucide-react";
 
+interface ImprovementPlan {
+  subjectId: string;
+  subject: string;
+  currentAverage: string;
+  targetAverage: number;
+  difficulty: string;
+  timeline: string;
+  actionItems: string[];
+}
+
+interface Recommendation {
+  priority: string;
+  type: string;
+  title: string;
+  description: string;
+  resources?: string[];
+}
+
+interface TutoringPlan {
+  subjectId: string;
+  subject: string;
+  recommendedHours: string;
+  frequency: string;
+  duration: string;
+  expectedImprovement: string;
+  costRange: string;
+}
+
+interface StudyGroup {
+  subjectId: string;
+  subject: string;
+  suggested: boolean;
+  benefit: string;
+  frequency: string;
+}
+
+interface GradeImprovementData {
+  improvementPlans: ImprovementPlan[];
+  recommendations: Recommendation[];
+  tutoringSuggestions: TutoringPlan[];
+  studyGroups: StudyGroup[];
+}
+
 interface GradeImprovementProps {
   studentId: string;
 }
 
 export function GradeImprovementPlans({ studentId }: GradeImprovementProps) {
-  const [data, setData] = useState<any>(null);
+  const [data, setData] = useState<GradeImprovementData | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -20,7 +63,7 @@ export function GradeImprovementPlans({ studentId }: GradeImprovementProps) {
         const response = await fetch(
           `/api/student/grade-improvement?studentId=${studentId}`
         );
-        const result = await response.json();
+        const result = (await response.json()) as GradeImprovementData;
         setData(result);
       } catch (error) {
         console.error("Error fetching grade improvement data:", error);
@@ -50,7 +93,7 @@ export function GradeImprovementPlans({ studentId }: GradeImprovementProps) {
             Improvement Plans
           </h3>
           <div className="space-y-4">
-            {data.improvementPlans.map((plan: any) => (
+            {data.improvementPlans.map((plan) => (
               <Card key={plan.subjectId} className="border-l-4 border-l-amber-500">
                 <CardHeader>
                   <div className="flex items-start justify-between">
@@ -80,7 +123,7 @@ export function GradeImprovementPlans({ studentId }: GradeImprovementProps) {
                   <div>
                     <h4 className="font-semibold text-sm mb-3">Action Items:</h4>
                     <ul className="space-y-2">
-                      {plan.actionItems.map((item: string, idx: number) => (
+                      {plan.actionItems.map((item, idx) => (
                         <li key={idx} className="flex items-center gap-2 text-sm">
                           <CheckCircle className="h-4 w-4 text-green-600 flex-shrink-0" />
                           {item}
@@ -103,7 +146,7 @@ export function GradeImprovementPlans({ studentId }: GradeImprovementProps) {
             Study Recommendations
           </h3>
           <div className="space-y-4">
-            {data.recommendations.map((rec: any, idx: number) => (
+            {data.recommendations.map((rec, idx) => (
               <Card key={idx}>
                 <CardHeader>
                   <div className="flex items-start justify-between">
@@ -128,7 +171,7 @@ export function GradeImprovementPlans({ studentId }: GradeImprovementProps) {
                         Recommended Resources:
                       </p>
                       <ul className="space-y-1">
-                        {rec.resources.map((resource: string, i: number) => (
+                        {rec.resources.map((resource, i) => (
                           <li key={i} className="text-xs text-gray-600 flex items-center gap-2">
                             <span className="w-1 h-1 bg-gray-400 rounded-full"></span>
                             {resource}
@@ -149,7 +192,7 @@ export function GradeImprovementPlans({ studentId }: GradeImprovementProps) {
         <div>
           <h3 className="text-lg font-semibold mb-4">Tutoring Recommendations</h3>
           <div className="space-y-3">
-            {data.tutoringSuggestions.map((tutoring: any) => (
+            {data.tutoringSuggestions.map((tutoring) => (
               <Card key={tutoring.subjectId} className="border-l-4 border-l-purple-500">
                 <CardContent className="pt-6">
                   <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
@@ -197,8 +240,8 @@ export function GradeImprovementPlans({ studentId }: GradeImprovementProps) {
           </h3>
           <div className="space-y-3">
             {data.studyGroups
-              .filter((group: any) => group.suggested)
-              .map((group: any) => (
+              .filter((group) => group.suggested)
+              .map((group) => (
                 <Card key={group.subjectId}>
                   <CardContent className="pt-6">
                     <div className="flex items-start justify-between">
