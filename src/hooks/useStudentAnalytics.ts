@@ -79,10 +79,12 @@ export function useTeacherFeedback(studentId: string) {
     fetcher
   );
 
+  const typedData = data as { feedback?: unknown[]; strengths?: unknown[]; weaknesses?: unknown[] } | undefined;
+
   return {
-    feedback: data?.feedback || [],
-    strengths: data?.strengths || [],
-    weaknesses: data?.weaknesses || [],
+    feedback: typedData?.feedback ?? [],
+    strengths: typedData?.strengths ?? [],
+    weaknesses: typedData?.weaknesses ?? [],
     isLoading,
     error,
   };
@@ -96,10 +98,12 @@ export function useExamSchedule(studentId: string, classId: string) {
     fetcher
   );
 
+  const typedData = data as { upcomingExams?: unknown[]; pastExams?: unknown[]; studyTimeline?: unknown } | undefined;
+
   return {
-    upcomingExams: data?.upcomingExams || [],
-    pastExams: data?.pastExams || [],
-    studyTimeline: data?.studyTimeline,
+    upcomingExams: typedData?.upcomingExams ?? [],
+    pastExams: typedData?.pastExams ?? [],
+    studyTimeline: typedData?.studyTimeline,
     isLoading,
     error,
   };
@@ -111,10 +115,12 @@ export function useAchievements(studentId: string) {
     fetcher
   );
 
+  const typedData = data as { badges?: unknown[]; certificates?: unknown[]; milestones?: unknown[] } | undefined;
+
   return {
-    badges: data?.badges || [],
-    certificates: data?.certificates || [],
-    milestones: data?.milestones || [],
+    badges: typedData?.badges ?? [],
+    certificates: typedData?.certificates ?? [],
+    milestones: typedData?.milestones ?? [],
     isLoading,
     error,
   };
@@ -126,10 +132,12 @@ export function useGradeImprovement(studentId: string) {
     fetcher
   );
 
+  const typedData = data as { improvementPlans?: unknown[]; recommendations?: unknown[]; resources?: unknown[] } | undefined;
+
   return {
-    improvementPlans: data?.improvementPlans || [],
-    recommendations: data?.recommendations || [],
-    resources: data?.resources || [],
+    improvementPlans: typedData?.improvementPlans ?? [],
+    recommendations: typedData?.recommendations ?? [],
+    resources: typedData?.resources ?? [],
     isLoading,
     error,
   };
@@ -142,9 +150,11 @@ export function useNotifications(studentId: string) {
     { refreshInterval: 60000 } // Refresh every minute
   );
 
+  const typedData = data as { notifications?: unknown[]; totalUnread?: number } | undefined;
+
   return {
-    notifications: data?.notifications || [],
-    unreadCount: data?.unreadCount || 0,
+    notifications: typedData?.notifications ?? [],
+    unreadCount: typedData?.totalUnread ?? 0,
     isLoading,
     error,
   };
