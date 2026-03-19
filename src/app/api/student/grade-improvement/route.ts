@@ -9,8 +9,6 @@ interface MarkData {
   Subject: { subjectName: string };
   uploadedAt: Date;
   Exam: { examTypeEnum: string };
-  scores?: Array<{ percentage: number }>;
-  attempts?: number;
 }
 
 interface SubjectAnalysis {
@@ -20,6 +18,43 @@ interface SubjectAnalysis {
   attempts: number;
   average: number;
   trend: string;
+}
+
+interface ImprovementPlan {
+  subjectId: string;
+  subject: string;
+  currentAverage: string;
+  targetAverage: number;
+  difficulty: string;
+  timeline: string;
+  actionItems: string[];
+}
+
+interface Recommendation {
+  priority: string;
+  type: string;
+  title: string;
+  description: string;
+  resources: string[];
+}
+
+interface TutoringPlan {
+  subjectId: string;
+  subject: string;
+  recommendedHours: string;
+  frequency: string;
+  duration: string;
+  expectedImprovement: string;
+  costRange: string;
+}
+
+interface StudyGroupSuggestion {
+  subjectId: string;
+  subject: string;
+  suggested: boolean;
+  benefit: string;
+  frequency: string;
+  focusAreas: string[];
 }
 
 export async function GET(request: NextRequest) {
@@ -34,10 +69,9 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Get marks and performance data
     const marks = await db.marks.findMany({
       where: { studentId },
-      include: { Subject: true, Exam: { include: { ExamType: true } } },
+      include: { Subject: true, Exam: true },
       orderBy: { uploadedAt: 'desc' },
       take: 50,
     });
@@ -47,22 +81,14 @@ export async function GET(request: NextRequest) {
         improvementPlans: [],
         recommendations: [],
         tutoringSuggestions: [],
+        studyGroups: []
       });
     }
 
-    // Analyze subject performance
     const subjectAnalysis = analyzeSubjectPerformance(marks);
-
-    // Generate improvement plans
     const improvementPlans = generateImprovementPlans(subjectAnalysis);
-
-    // Generate study recommendations
-    const recommendations = generateStudyRecommendations(subjectAnalysis, marks);
-
-    // Suggest tutoring
+    const recommendations = generateStudyRecommendations(subjectAnalysis);
     const tutoringSuggestions = generateTutoringPlans(subjectAnalysis);
-
-    // Suggest peer study groups
     const studyGroups = generateStudyGroupSuggestions(subjectAnalysis);
 
     return NextResponse.json({
@@ -85,18 +111,16 @@ function analyzeSubjectPerformance(marks: MarkData[]): SubjectAnalysis[] {
   const analysis: Record<string, SubjectAnalysis> = {};
 
   marks.forEach((mark) => {
-    const percentage = (mark.obtainedMarks / mark.totalMarks) * 100;
+    const percentage = mark.totalMarks > 0 ? (mark.obtainedMarks / mark.totalMarks) * 100 : 0;
 
-    if (!analysis[mark.subjectId]) {
-      analysis[mark.subjectId] = {
-        subjectId: mark.subjectId,
-        subjectName: mark.Subject.subjectName,
-        scores: [],
-        attempts: 0,
-        average: 0,
-        trend: 'stable',
-      };
-    }
+    analysis[mark.subjectId] ??= {
+      subjectId: mark.subjectId,
+      subjectName: mark.Subject.subjectName,
+      scores: [],
+      attempts: 0,
+      average: 0,
+      trend: 'stable',
+    };
 
     analysis[mark.subjectId]!.scores.push({
       percentage,
@@ -106,19 +130,16 @@ function analyzeSubjectPerformance(marks: MarkData[]): SubjectAnalysis[] {
     analysis[mark.subjectId]!.attempts += 1;
   });
 
-  // Calculate averages and trends
-  Object.keys(analysis).forEach((key) => {
-    const subject = analysis[key];
-    const scores = subject.scores.map((s: { percentage: number }) => s.percentage);
-    subject.average =
-      scores.reduce((a: number, b: number) => a + b, 0) / scores.length;
+  Object.values(analysis).forEach((subject) => {
+    const scores = subject.scores.map((s) => s.percentage);
+    if (scores.length > 0) {
+      subject.average = scores.reduce((a, b) => a + b, 0) / scores.length;
+    }
 
-    // Calculate trend
     if (scores.length >= 2) {
       const recent = scores.slice(-3);
       const older = scores.slice(0, 3);
-      const recentAvg =
-        recent.reduce((a, b) => a + b, 0) / recent.length;
+      const recentAvg = recent.reduce((a, b) => a + b, 0) / recent.length;
       const olderAvg = older.reduce((a, b) => a + b, 0) / older.length;
 
       if (recentAvg > olderAvg + 5) subject.trend = 'improving';
@@ -129,7 +150,7 @@ function analyzeSubjectPerformance(marks: MarkData[]): SubjectAnalysis[] {
   return Object.values(analysis);
 }
 
-function generateImprovementPlans(subjects: SubjectAnalysis[]): any[] {
+function generateImprovementPlans(subjects: SubjectAnalysis[]): ImprovementPlan[] {
   return subjects
     .filter((s) => s.average < 75)
     .map((subject) => ({
@@ -139,50 +160,37 @@ function generateImprovementPlans(subjects: SubjectAnalysis[]): any[] {
       targetAverage: 85,
       difficulty: subject.average < 50 ? 'hard' : 'medium',
       timeline: subject.average < 50 ? '3 months' : '6 weeks',
-      actionItems: generateActionItems(subject),
+      actionItems: generateActionItems(subject.average),
     }));
 }
 
-function generateActionItems(subject: SubjectAnalysis): string[] {
+function generateActionItems(average: number): string[] {
   const items = [];
-
-  if (subject.average < 50) {
-    items.push('Attend remedial classes');
-    items.push('Get personal tutoring');
-    items.push('Focus on fundamental concepts');
-  } else if (subject.average < 75) {
-    items.push('Practice more problems');
-    items.push('Review previous exam papers');
-    items.push('Join study group');
+  if (average < 50) {
+    items.push('Attend remedial classes', 'Get personal tutoring', 'Focus on fundamental concepts');
+  } else if (average < 75) {
+    items.push('Practice more problems', 'Review previous exam papers', 'Join study group');
   }
-
-  items.push('Daily revision for 1 hour');
-  items.push('Weekly mock tests');
-
+  items.push('Daily revision for 1 hour', 'Weekly mock tests');
   return items;
 }
 
-function generateStudyRecommendations(subjects: SubjectAnalysis[], marks: MarkData[]): any[] {
-  const recommendations: any[] = [];
-
+function generateStudyRecommendations(subjects: SubjectAnalysis[]): Recommendation[] {
+  const recommendations: Recommendation[] = [];
   const weakSubjects = subjects.filter((s) => s.average < 75);
   const strongSubjects = subjects.filter((s) => s.average >= 85);
 
-  if (weakSubjects.length > 0) {
+  if (weakSubjects[0]) {
     recommendations.push({
       priority: 'high',
       type: 'focus_area',
       title: `Focus on ${weakSubjects[0].subjectName}`,
       description: `Your average in ${weakSubjects[0].subjectName} is ${weakSubjects[0].average.toFixed(1)}%. Dedicate 2 hours daily to improve.`,
-      resources: [
-        'NCERT textbook and solutions',
-        'YouTube educational channels',
-        'Practice question banks',
-      ],
+      resources: ['NCERT textbook and solutions', 'YouTube educational channels', 'Practice question banks'],
     });
   }
 
-  if (strongSubjects.length > 0) {
+  if (strongSubjects[0]) {
     recommendations.push({
       priority: 'medium',
       type: 'maintain_strength',
@@ -192,49 +200,47 @@ function generateStudyRecommendations(subjects: SubjectAnalysis[], marks: MarkDa
     });
   }
 
-  recommendations.push({
-    priority: 'high',
-    type: 'time_management',
-    title: 'Optimize Study Schedule',
-    description: 'Study weak subjects in the morning when you are fresh, and stronger subjects in the evening.',
-    resources: ['Study planner', 'Timetable builder'],
-  });
-
-  recommendations.push({
-    priority: 'medium',
-    type: 'revision',
-    title: 'Regular Revision Strategy',
-    description:
-      'Review concepts every week and practice previous papers monthly.',
-    resources: ['Revision notes', 'Exam papers from last 5 years'],
-  });
+  recommendations.push(
+    {
+      priority: 'high',
+      type: 'time_management',
+      title: 'Optimize Study Schedule',
+      description: 'Study weak subjects in the morning when you are fresh, and stronger subjects in the evening.',
+      resources: ['Study planner', 'Timetable builder'],
+    },
+    {
+      priority: 'medium',
+      type: 'revision',
+      title: 'Regular Revision Strategy',
+      description: 'Review concepts every week and practice previous papers monthly.',
+      resources: ['Revision notes', 'Exam papers from last 5 years'],
+    }
+  );
 
   return recommendations;
 }
 
-function generateTutoringPlans(subjects: SubjectAnalysis[]): any[] {
-  const weakSubjects = subjects.filter((s) => s.average < 60);
-
-  return weakSubjects.map((subject) => ({
-    subjectId: subject.subjectId,
-    subject: subject.subjectName,
-    recommendedHours: subject.average < 40 ? '8-10' : '4-6',
-    frequency: subject.average < 40 ? '5 days/week' : '3 days/week',
-    duration: '90 minutes per session',
-    expectedImprovement: '15-25% in 3 months',
-    costRange: subject.average < 40 ? 'Rs. 5000-8000/month' : 'Rs. 3000-5000/month',
-  }));
+function generateTutoringPlans(subjects: SubjectAnalysis[]): TutoringPlan[] {
+  return subjects
+    .filter((s) => s.average < 60)
+    .map((subject) => ({
+      subjectId: subject.subjectId,
+      subject: subject.subjectName,
+      recommendedHours: subject.average < 40 ? '8-10' : '4-6',
+      frequency: subject.average < 40 ? '5 days/week' : '3 days/week',
+      duration: '90 minutes per session',
+      expectedImprovement: '15-25% in 3 months',
+      costRange: subject.average < 40 ? 'Rs. 5000-8000/month' : 'Rs. 3000-5000/month',
+    }));
 }
 
-function generateStudyGroupSuggestions(subjects: SubjectAnalysis[]): any[] {
+function generateStudyGroupSuggestions(subjects: SubjectAnalysis[]): StudyGroupSuggestion[] {
   return subjects.map((subject) => ({
     subjectId: subject.subjectId,
     subject: subject.subjectName,
     suggested: subject.average < 80,
     benefit: 'Peer learning and doubt clarification',
     frequency: '2-3 hours per week',
-    focusAreas: subject.scores
-      .filter((s) => s.percentage < 70)
-      .map((s) => `Exam: ${s.examType}`),
+    focusAreas: subject.scores.filter((s) => s.percentage < 70).map((s) => `Exam: ${s.examType}`),
   }));
 }
