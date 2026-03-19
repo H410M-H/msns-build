@@ -2,12 +2,23 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { ClipboardList, Star, Settings, BarChart3 } from "lucide-react";
+import { 
+  ClipboardList, 
+  Star, 
+  Settings, 
+  BarChart3, 
+  DollarSign, 
+  Users, 
+  Receipt, 
+  CheckSquare, 
+  AlertCircle 
+} from "lucide-react";
 
 import { PageHeader } from "~/components/blocks/nav/PageHeader";
 import { WelcomeSection } from "~/components/blocks/dashboard/welcome";
 import { StatsCards } from "~/components/cards/StatCard";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
+import { Alert, AlertTitle, AlertDescription } from "~/components/ui/alert";
 
 // Shared dashboard widgets
 import { TodayAtAGlance } from "~/components/dashboard/TodayAtAGlance";
@@ -23,7 +34,6 @@ import {
   CardTitle,
 } from "~/components/ui/card";
 import { Badge } from "~/components/ui/badge";
-import { DollarSign, Users, Receipt, CheckSquare } from "lucide-react";
 import { Skeleton } from "~/components/ui/skeleton";
 
 function ClerkTaskPanel() {
@@ -128,7 +138,8 @@ export default function ClerkDashboard() {
         </Alert>
       </motion.div>
 
-      {/* Top Section */}      <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
+      {/* Top Section */}      
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
