@@ -1,5 +1,26 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 import { db } from '~/server/db';
+
+interface MarkData {
+  obtainedMarks: number;
+  totalMarks: number;
+  subjectId: string;
+  Subject: { subjectName: string };
+  uploadedAt: Date;
+  Exam: { examTypeEnum: string };
+  scores?: Array<{ percentage: number }>;
+  attempts?: number;
+}
+
+interface SubjectAnalysis {
+  subjectId: string;
+  subjectName: string;
+  scores: Array<{ percentage: number; date: Date; examType: string }>;
+  attempts: number;
+  average: number;
+  trend: string;
+}
 
 export async function GET(request: NextRequest) {
   try {
@@ -60,8 +81,8 @@ export async function GET(request: NextRequest) {
   }
 }
 
-function analyzeSubjectPerformance(marks: any[]) {
-  const analysis: Record<string, any> = {};
+function analyzeSubjectPerformance(marks: MarkData[]): SubjectAnalysis[] {
+  const analysis: Record<string, SubjectAnalysis> = {};
 
   marks.forEach((mark) => {
     const percentage = (mark.obtainedMarks / mark.totalMarks) * 100;
@@ -77,18 +98,18 @@ function analyzeSubjectPerformance(marks: any[]) {
       };
     }
 
-    analysis[mark.subjectId].scores.push({
+    analysis[mark.subjectId]!.scores.push({
       percentage,
       date: mark.uploadedAt,
       examType: mark.Exam.examTypeEnum,
     });
-    analysis[mark.subjectId].attempts += 1;
+    analysis[mark.subjectId]!.attempts += 1;
   });
 
   // Calculate averages and trends
   Object.keys(analysis).forEach((key) => {
     const subject = analysis[key];
-    const scores = subject.scores.map((s: any) => s.percentage);
+    const scores = subject.scores.map((s: { percentage: number }) => s.percentage);
     subject.average =
       scores.reduce((a: number, b: number) => a + b, 0) / scores.length;
 
@@ -108,7 +129,7 @@ function analyzeSubjectPerformance(marks: any[]) {
   return Object.values(analysis);
 }
 
-function generateImprovementPlans(subjects: any[]) {
+function generateImprovementPlans(subjects: SubjectAnalysis[]): any[] {
   return subjects
     .filter((s) => s.average < 75)
     .map((subject) => ({
@@ -122,7 +143,7 @@ function generateImprovementPlans(subjects: any[]) {
     }));
 }
 
-function generateActionItems(subject: any) {
+function generateActionItems(subject: SubjectAnalysis): string[] {
   const items = [];
 
   if (subject.average < 50) {
@@ -141,8 +162,8 @@ function generateActionItems(subject: any) {
   return items;
 }
 
-function generateStudyRecommendations(subjects: any[], marks: any[]) {
-  const recommendations = [];
+function generateStudyRecommendations(subjects: SubjectAnalysis[], marks: MarkData[]): any[] {
+  const recommendations: any[] = [];
 
   const weakSubjects = subjects.filter((s) => s.average < 75);
   const strongSubjects = subjects.filter((s) => s.average >= 85);
@@ -191,7 +212,7 @@ function generateStudyRecommendations(subjects: any[], marks: any[]) {
   return recommendations;
 }
 
-function generateTutoringPlans(subjects: any[]) {
+function generateTutoringPlans(subjects: SubjectAnalysis[]): any[] {
   const weakSubjects = subjects.filter((s) => s.average < 60);
 
   return weakSubjects.map((subject) => ({
@@ -205,7 +226,7 @@ function generateTutoringPlans(subjects: any[]) {
   }));
 }
 
-function generateStudyGroupSuggestions(subjects: any[]) {
+function generateStudyGroupSuggestions(subjects: SubjectAnalysis[]): any[] {
   return subjects.map((subject) => ({
     subjectId: subject.subjectId,
     subject: subject.subjectName,

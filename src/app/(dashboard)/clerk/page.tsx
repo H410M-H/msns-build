@@ -11,7 +11,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 
 // Shared dashboard widgets
 import { TodayAtAGlance } from "~/components/dashboard/TodayAtAGlance";
-import { ActionRequired } from "~/components/dashboard/ActionRequired";
 import { ActivityFeed } from "~/components/dashboard/ActivityFeed";
 import { QuickActionToolbar } from "~/components/dashboard/QuickActionToolbar";
 import { PinnedNotices } from "~/components/dashboard/PinnedNotices";

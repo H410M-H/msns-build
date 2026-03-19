@@ -51,7 +51,8 @@ export async function GET(request: NextRequest) {
           };
         }
 
-        subjectStats[detail.subjectId]?.scores.push(detail.percentage);
+        subjectStats[detail.subjectId]!.scores.push(detail.percentage);
+        subjectStats[detail.subjectId]!.totalAttempts ??= 0;
         subjectStats[detail.subjectId]!.totalAttempts += 1;
       });
     });

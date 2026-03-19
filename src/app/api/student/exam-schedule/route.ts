@@ -1,5 +1,30 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 import { db } from '~/server/db';
+
+interface ExamData {
+  examId: string;
+  startDate: Date;
+  endDate: Date;
+  examTypeEnum: string;
+  ExamType: { name: string };
+  ExamDatesheet: Array<{ Subject: { subjectName: string }; date: Date; startTime: string; endTime: string }>;
+  totalMarks: number;
+  passingMarks: number;
+}
+
+interface ExamInfo {
+  examId: string;
+  name: string;
+  type: string;
+  startDate: Date;
+  endDate: Date;
+  duration: string;
+  subjects: Array<{ subject: string; date: Date; startTime: string; endTime: string }>;
+  totalMarks: number;
+  passingMarks: number;
+  daysUntilStart: number;
+}
 
 export async function GET(request: NextRequest) {
   try {
@@ -31,7 +56,7 @@ export async function GET(request: NextRequest) {
     });
 
     // Get past exams for study materials
-    const pastExams = await prisma.exam.findMany({
+    const pastExams = await db.exam.findMany({
       where: {
         classId,
         endDate: { lt: new Date() },
@@ -46,7 +71,7 @@ export async function GET(request: NextRequest) {
       take: 5,
     });
 
-    const upcomingExams = exams.map((exam) => ({
+    const upcomingExams: ExamInfo[] = exams.map((exam) => ({
       examId: exam.examId,
       name: exam.ExamType.name,
       type: exam.examTypeEnum,
@@ -100,7 +125,7 @@ function getDuration(start: Date, end: Date): string {
   return `${days} days`;
 }
 
-function generateStudyTimeline(exams: any[]) {
+function generateStudyTimeline(exams: ExamInfo[]): any[] {
   if (exams.length === 0) return [];
 
   return exams.map((exam) => {

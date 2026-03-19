@@ -1,5 +1,17 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 import { db } from '~/server/db';
+
+interface Notification {
+  id: string;
+  type: string;
+  title: string;
+  message: string;
+  data: Record<string, any>;
+  timestamp: Date;
+  read: boolean;
+  actionUrl: string;
+}
 
 export async function GET(request: NextRequest) {
   try {
@@ -14,12 +26,12 @@ export async function GET(request: NextRequest) {
     }
 
     // Get student info and recent activity
-    const student = await db.students.findUnique({
+    const student = await db.student.findUnique({
       where: { studentId },
     });
 
     // Get latest report cards to determine notifications
-    const recentReports = await prisma.reportCard.findMany({
+    const recentReports = await db.reportCard.findMany({
       where: { studentId },
       orderBy: { generatedAt: 'desc' },
       take: 3,
@@ -29,12 +41,12 @@ export async function GET(request: NextRequest) {
     });
 
     // Get upcoming exams
-    const student_classes = await prisma.studentClass.findFirst({
+    const student_classes = await db.studentClass.findFirst({
       where: { studentId },
     });
 
     const upcomingExams = student_classes
-      ? await prisma.exam.findMany({
+      ? await db.exam.findMany({
           where: {
             classId: student_classes.classId,
             startDate: { gte: new Date() },
@@ -65,8 +77,8 @@ export async function GET(request: NextRequest) {
   }
 }
 
-function generateNotifications(student: any, reports: any[], exams: any[]) {
-  const notifications = [];
+function generateNotifications(student: any, reports: any[], exams: any[]): Notification[] {
+  const notifications: Notification[] = [];
 
   // Grade release notification
   if (reports.length > 0) {

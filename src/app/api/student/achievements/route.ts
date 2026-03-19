@@ -80,12 +80,14 @@ interface Certificate {
   downloadable: boolean;
 }
 
-interface SubjectAverage {
-  subject: string;
+interface ReportCardRecord {
+  status: string;
   percentage: number;
+  generatedAt: Date;
+  ReportCardDetail: Array<{ percentage: number; Subject: { subjectName: string } }>;
 }
 
-function generateBadges(reportCards: any[]): Badge[] {
+function generateBadges(reportCards: ReportCardRecord[]): Badge[] {
   const badges = [];
 
   // Consistency Badge
@@ -165,7 +167,7 @@ function generateBadges(reportCards: any[]): Badge[] {
   return badges;
 }
 
-function generateMilestones(reportCards: any[]): Milestone[] {
+function generateMilestones(reportCards: ReportCardRecord[]): Milestone[] {
   const milestones = [];
 
   if (reportCards.length >= 1) {
@@ -213,7 +215,7 @@ function generateMilestones(reportCards: any[]): Milestone[] {
   return milestones;
 }
 
-function generateCertificates(reportCards: any[]): Certificate[] {
+function generateCertificates(reportCards: ReportCardRecord[]): Certificate[] {
   const certificates = [];
 
   // Merit Certificate

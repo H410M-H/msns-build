@@ -87,10 +87,6 @@ export async function GET(request: NextRequest) {
     });
 
     // Difficulty analysis
-    const avgSubjectPerformance =
-      subjectComparison.reduce((sum, sc) => sum + sc.classAverage, 0) /
-      subjectComparison.length;
-
     const subjectDifficulty = subjectComparison.map((sc) => ({
       subject: sc.subject,
       difficulty:

@@ -114,6 +114,7 @@ export default function Home() {
               fill
               className="object-contain drop-shadow-2xl"
               priority
+              sizes="(max-width: 640px) 160px, 224px"
             />
           </motion.div>
         </TiltCard>
