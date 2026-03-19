@@ -18,19 +18,13 @@ interface ReportData {
   reportCardId: string;
   percentage: number;
   generatedAt: Date;
-  Exam: {
-    ExamType: {
-      name: string;
-    };
-  };
+  Exam: { ExamType: { name: string } };
 }
 
 interface ExamData {
   examId: string;
   startDate: Date;
-  ExamType: {
-    name: string;
-  };
+  ExamType: { name: string };
 }
 
 export async function GET(request: NextRequest) {
@@ -39,35 +33,24 @@ export async function GET(request: NextRequest) {
     const studentId = searchParams.get('studentId');
 
     if (!studentId) {
-      return NextResponse.json(
-        { error: 'studentId is required' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'studentId is required' }, { status: 400 });
     }
 
-    // Notice we use db.students here based on your Prisma schema
-    const studentExists = await db.students.findUnique({
-      where: { studentId },
-    });
-
+    const studentExists = await db.students.findUnique({ where: { studentId } });
     if (!studentExists) {
       return NextResponse.json({ error: 'Student not found' }, { status: 404 });
     }
 
-    const recentReports = await db.reportCard.findMany({
+    const recentReportsRaw = await db.reportCard.findMany({
       where: { studentId },
       orderBy: { generatedAt: 'desc' },
       take: 3,
-      include: {
-        Exam: { include: { ExamType: true } },
-      },
+      include: { Exam: { include: { ExamType: true } } },
     });
 
-    const student_classes = await db.studentClass.findFirst({
-      where: { studentId },
-    });
+    const student_classes = await db.studentClass.findFirst({ where: { studentId } });
 
-    const upcomingExams = student_classes
+    const upcomingExamsRaw = student_classes
       ? await db.exam.findMany({
           where: {
             classId: student_classes.classId,
@@ -80,10 +63,10 @@ export async function GET(request: NextRequest) {
         })
       : [];
 
-    const notifications = generateNotifications(
-      recentReports as ReportData[],
-      upcomingExams as ExamData[]
-    );
+    const typedReports = recentReportsRaw as unknown as ReportData[];
+    const typedExams = upcomingExamsRaw as unknown as ExamData[];
+
+    const notifications = generateNotifications(typedReports, typedExams);
 
     return NextResponse.json({
       notifications,
@@ -91,10 +74,7 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     console.error('Notifications API error:', error);
-    return NextResponse.json(
-      { error: 'Failed to fetch notifications' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Failed to fetch notifications' }, { status: 500 });
   }
 }
 
@@ -146,9 +126,7 @@ function generateNotifications(reports: ReportData[], exams: ExamData[]): Notifi
   }
 
   exams.forEach((exam) => {
-    const daysUntil = Math.max(0, Math.ceil(
-      (new Date(exam.startDate).getTime() - Date.now()) / (1000 * 60 * 60 * 24)
-    ));
+    const daysUntil = Math.max(0, Math.ceil((new Date(exam.startDate).getTime() - Date.now()) / (1000 * 60 * 60 * 24)));
 
     if (daysUntil <= 7 && daysUntil > 0) {
       notifications.push({
@@ -164,7 +142,5 @@ function generateNotifications(reports: ReportData[], exams: ExamData[]): Notifi
     }
   });
 
-  return notifications.sort(
-    (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
-  );
+  return notifications.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
 }
