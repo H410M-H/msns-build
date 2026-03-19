@@ -2,10 +2,32 @@
 
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
-import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Alert, AlertDescription } from "~/components/ui/alert";
 import { Bell, Mail, MessageSquare, TrendingDown, TrendingUp, AlertCircle } from "lucide-react";
+
+interface SubjectPerformance {
+  subjectId: string;
+  subjectName: string;
+  average: number;
+}
+
+interface AnalyticsData {
+  overallAverage: number;
+  totalExams: number;
+  passingRate: number;
+  subjectWisePerformance: SubjectPerformance[];
+}
+
+interface PortalNotification {
+  id: string;
+  type: string;
+  title: string;
+  message: string;
+  icon: React.ReactNode;
+  date: Date;
+  actionable: boolean;
+}
 
 interface ParentPortalProps {
   studentId: string;
@@ -13,8 +35,8 @@ interface ParentPortalProps {
 }
 
 export function ParentPortal({ studentId, studentName = "Your Child" }: ParentPortalProps) {
-  const [notifications, setNotifications] = useState<any[]>([]);
-  const [analytics, setAnalytics] = useState<any>(null);
+  const [notifications, setNotifications] = useState<PortalNotification[]>([]);
+  const [analytics, setAnalytics] = useState<AnalyticsData | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -24,7 +46,7 @@ export function ParentPortal({ studentId, studentName = "Your Child" }: ParentPo
           fetch(`/api/student/analytics?studentId=${studentId}`),
         ]);
 
-        const analyticsData = await analyticsRes.json();
+        const analyticsData = (await analyticsRes.json()) as AnalyticsData;
         setAnalytics(analyticsData);
 
         // Generate notifications based on analytics
@@ -39,15 +61,15 @@ export function ParentPortal({ studentId, studentName = "Your Child" }: ParentPo
     fetchData();
   }, [studentId]);
 
-  const generateNotifications = (data: any) => {
-    const notifs = [];
+  const generateNotifications = (data: AnalyticsData) => {
+    const notifs: PortalNotification[] = [];
 
     if (data.overallAverage < 60) {
       notifs.push({
         id: "low-performance",
         type: "warning",
         title: "Performance Alert",
-        message: `${studentName}'s average performance (${data.overallAverage.toFixed(1)}%) is below 60%. Consider arranging extra tuition.`,
+        message: `${studentName}&apos;s average performance (${data.overallAverage.toFixed(1)}%) is below 60%. Consider arranging extra tuition.`,
         icon: <AlertCircle className="h-4 w-4" />,
         date: new Date(),
         actionable: true,
@@ -59,7 +81,7 @@ export function ParentPortal({ studentId, studentName = "Your Child" }: ParentPo
         id: "low-passing-rate",
         type: "warning",
         title: "Passing Rate Below Target",
-        message: `${studentName}'s passing rate is ${data.passingRate.toFixed(1)}%. Intervention may be needed.`,
+        message: `${studentName}&apos;s passing rate is ${data.passingRate.toFixed(1)}%. Intervention may be needed.`,
         icon: <TrendingDown className="h-4 w-4" />,
         date: new Date(),
         actionable: true,
@@ -104,13 +126,13 @@ export function ParentPortal({ studentId, studentName = "Your Child" }: ParentPo
           <CardContent>
             <div
               className={`text-3xl font-bold ${
-                analytics?.passingRate >= 75 ? "text-green-600" : "text-amber-600"
+                (analytics?.passingRate ?? 0) >= 75 ? "text-green-600" : "text-amber-600"
               }`}
             >
               {analytics?.passingRate.toFixed(1)}%
             </div>
             <p className="text-xs text-gray-600 mt-1">
-              {Math.round((analytics?.passingRate / 100) * analytics?.totalExams)} out of{" "}
+              {Math.round(((analytics?.passingRate ?? 0) / 100) * (analytics?.totalExams ?? 0))} out of{" "}
               {analytics?.totalExams} exams passed
             </p>
           </CardContent>
@@ -182,7 +204,7 @@ export function ParentPortal({ studentId, studentName = "Your Child" }: ParentPo
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              {analytics.subjectWisePerformance.map((subject: any) => (
+              {analytics.subjectWisePerformance.map((subject) => (
                 <div key={subject.subjectId} className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
                   <div className="flex-1">
                     <p className="font-medium">{subject.subjectName}</p>
@@ -239,13 +261,13 @@ export function ParentPortal({ studentId, studentName = "Your Child" }: ParentPo
       <Card>
         <CardHeader>
           <CardTitle>School Recommendations</CardTitle>
-          <CardDescription>Suggestions to improve your child's performance</CardDescription>
+          <CardDescription>Suggestions to improve your child&apos;s performance</CardDescription>
         </CardHeader>
         <CardContent className="space-y-3">
           <Alert>
             <AlertDescription>
               <p className="font-semibold">Regular Communication</p>
-              <p className="text-sm mt-1">Stay updated with your child's progress through regular parent-teacher meetings and updates.</p>
+              <p className="text-sm mt-1">Stay updated with your child&apos;s progress through regular parent-teacher meetings and updates.</p>
             </AlertDescription>
           </Alert>
           <Alert>
