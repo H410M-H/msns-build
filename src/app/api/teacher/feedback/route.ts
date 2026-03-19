@@ -2,6 +2,20 @@ import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { db } from '~/server/db';
 
+interface SubjectPerformance {
+  subjectId: string;
+  subjectName: string;
+  scores: number[];
+  average: number;
+}
+
+interface Recommendation {
+  type: string;
+  title: string;
+  description: string;
+  priority: string;
+}
+
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
@@ -30,38 +44,44 @@ export async function GET(request: NextRequest) {
     });
 
     // Get marks history for strength/weakness analysis
-    const marks = await db.marks.findMany({
-      where: { studentId },
-      include: {
-        Subject: true,
-        Exam: { include: { ExamType: true } },
-      },
-      orderBy: { uploadedAt: 'desc' },
-    });
+    // Only fetch if studentId exists, otherwise pass an empty array
+    const marks = studentId 
+      ? await db.marks.findMany({
+          where: { studentId },
+          include: {
+            Subject: true,
+            Exam: { include: { ExamType: true } },
+          },
+          orderBy: { uploadedAt: 'desc' },
+        })
+      : [];
 
-    // Analyze strengths and weaknesses
-    const subjectAnalysis = marks.reduce((acc: any, mark) => {
-      const existing = acc.find((s: any) => s.subjectId === mark.subjectId);
-      const percentage = (mark.obtainedMarks / mark.totalMarks) * 100;
+    // Analyze strengths and weaknesses using a Map for type safety and performance
+    const subjectAnalysisMap = new Map<string, SubjectPerformance>();
 
+    marks.forEach((mark) => {
+      const percentage = mark.totalMarks > 0 ? (mark.obtainedMarks / mark.totalMarks) * 100 : 0;
+      
+      const existing = subjectAnalysisMap.get(mark.subjectId);
       if (existing) {
         existing.scores.push(percentage);
       } else {
-        acc.push({
+        subjectAnalysisMap.set(mark.subjectId, {
           subjectId: mark.subjectId,
           subjectName: mark.Subject.subjectName,
           scores: [percentage],
-          average: percentage,
+          average: 0,
         });
       }
-      return acc;
-    }, []);
+    });
 
-    // Calculate averages and identify strengths/weaknesses
-    subjectAnalysis.forEach((subject: any) => {
-      subject.average =
-        subject.scores.reduce((a: number, b: number) => a + b, 0) /
-        subject.scores.length;
+    // Calculate averages and convert Map back to an array
+    const subjectAnalysis = Array.from(subjectAnalysisMap.values());
+    subjectAnalysis.forEach((subject) => {
+      if (subject.scores.length > 0) {
+        subject.average =
+          subject.scores.reduce((a, b) => a + b, 0) / subject.scores.length;
+      }
     });
 
     const sortedByPerformance = [...subjectAnalysis].sort(
@@ -93,10 +113,13 @@ export async function GET(request: NextRequest) {
   }
 }
 
-function generateRecommendations(weaknesses: any[], strengths: any[]) {
-  const recommendations = [];
+function generateRecommendations(
+  weaknesses: SubjectPerformance[],
+  strengths: SubjectPerformance[]
+): Recommendation[] {
+  const recommendations: Recommendation[] = [];
 
-  if (weaknesses.length > 0) {
+  if (weaknesses[0]) {
     recommendations.push({
       type: 'focus',
       title: `Focus on ${weaknesses[0].subjectName}`,
@@ -105,7 +128,7 @@ function generateRecommendations(weaknesses: any[], strengths: any[]) {
     });
   }
 
-  if (strengths.length > 0) {
+  if (strengths[0]) {
     recommendations.push({
       type: 'leverage',
       title: `Leverage strength in ${strengths[0].subjectName}`,
