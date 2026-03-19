@@ -8,8 +8,8 @@ import RegistrationCards from "~/components/cards/RegistrationCard";
 
 export default function RegistrationPage() {
   const breadcrumbs = [
-    { href: "/admin", label: "Dashboard" },
-    { href: "/admin/users", label: "User Management", current: true },
+    { href: "/clerk", label: "Dashboard" },
+    { href: "/clerk/users", label: "User Management", current: true },
   ];
 
   const [isMobile, setIsMobile] = useState(false);

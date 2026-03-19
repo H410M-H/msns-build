@@ -2,6 +2,14 @@ import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { db } from '~/server/db';
 
+interface TrendData {
+  examId: string;
+  percentage: number;
+  date: string;
+  status: string;
+  totalMarks: number;
+}
+
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
@@ -57,7 +65,7 @@ export async function GET(request: NextRequest) {
   }
 }
 
-function predictFuturePerformance(data: any[]) {
+function predictFuturePerformance(data: TrendData[]): number | null {
   if (data.length < 3) return null;
 
   const percentages = data.map((d) => d.percentage);

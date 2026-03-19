@@ -30,6 +30,16 @@ export async function GET(request: NextRequest) {
       orderBy: { generatedAt: 'desc' },
     });
 
+    // Get student's marks across exams
+    await db.marks.findMany({
+      where: { studentId },
+      include: {
+        Exam: { include: { ExamType: true } },
+        Subject: true,
+      },
+      orderBy: { uploadedAt: 'desc' },
+    });
+
     // Calculate analytics
     const performanceData = reportCards.map((rc) => ({
       date: rc.generatedAt,
@@ -49,7 +59,7 @@ export async function GET(request: NextRequest) {
     const subjectWisePerformance = reportCards
       .flatMap((rc) => rc.ReportCardDetail)
       .reduce((acc: SubjectPerformance[], detail) => {
-        const existing = acc.find((s) => s.subjectId === detail.subjectId);
+        const existing = acc.find((s: SubjectPerformance) => s.subjectId === detail.subjectId);
         if (existing) {
           existing.marks.push(detail.obtainedMarks);
           existing.percentages.push(detail.percentage);
@@ -66,7 +76,7 @@ export async function GET(request: NextRequest) {
       }, []);
 
     // Recalculate averages
-    subjectWisePerformance.forEach((subject) => {
+    subjectWisePerformance.forEach((subject: SubjectPerformance) => {
       subject.average =
         subject.percentages.reduce((a: number, b: number) => a + b, 0) /
         subject.percentages.length;

@@ -5,7 +5,7 @@ import { Separator } from "~/components/ui/separator";
 export default function StudentsTablePage() {
   const breadcrumbs = [
     { href: "/dashboard", label: "Dashboard" },
-    { href: "/admin/users/student", label: "Student Directory", current: true },
+    { href: "/clerk/users/student", label: "Student Directory", current: true },
   ];
 
   return (

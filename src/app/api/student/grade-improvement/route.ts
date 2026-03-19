@@ -2,6 +2,26 @@ import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { db } from '~/server/db';
 
+interface MarkData {
+  obtainedMarks: number;
+  totalMarks: number;
+  subjectId: string;
+  Subject: { subjectName: string };
+  uploadedAt: Date;
+  Exam: { examTypeEnum: string };
+  scores?: Array<{ percentage: number }>;
+  attempts?: number;
+}
+
+interface SubjectAnalysis {
+  subjectId: string;
+  subjectName: string;
+  scores: Array<{ percentage: number; date: Date; examType: string }>;
+  attempts: number;
+  average: number;
+  trend: string;
+}
+
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
@@ -61,25 +81,7 @@ export async function GET(request: NextRequest) {
   }
 }
 
-interface Mark {
-  obtainedMarks: number;
-  totalMarks: number;
-  subjectId: string;
-  Subject: { subjectName: string };
-  uploadedAt: Date;
-  Exam: { examTypeEnum: string };
-}
-
-interface SubjectAnalysis {
-  subjectId: string;
-  subjectName: string;
-  scores: Array<{ percentage: number; date: Date; examType: string }>;
-  attempts: number;
-  average: number;
-  trend: string;
-}
-
-function analyzeSubjectPerformance(marks: Mark[]): Record<string, SubjectAnalysis> {
+function analyzeSubjectPerformance(marks: MarkData[]): SubjectAnalysis[] {
   const analysis: Record<string, SubjectAnalysis> = {};
 
   marks.forEach((mark) => {
@@ -96,19 +98,18 @@ function analyzeSubjectPerformance(marks: Mark[]): Record<string, SubjectAnalysi
       };
     }
 
-    analysis[mark.subjectId].scores.push({
+    analysis[mark.subjectId]!.scores.push({
       percentage,
       date: mark.uploadedAt,
       examType: mark.Exam.examTypeEnum,
     });
-    analysis[mark.subjectId].attempts ??= 0;
-    analysis[mark.subjectId].attempts += 1;
+    analysis[mark.subjectId]!.attempts += 1;
   });
 
   // Calculate averages and trends
   Object.keys(analysis).forEach((key) => {
     const subject = analysis[key];
-    const scores = subject.scores.map((s) => s.percentage);
+    const scores = subject.scores.map((s: { percentage: number }) => s.percentage);
     subject.average =
       scores.reduce((a: number, b: number) => a + b, 0) / scores.length;
 
@@ -128,7 +129,7 @@ function analyzeSubjectPerformance(marks: Mark[]): Record<string, SubjectAnalysi
   return Object.values(analysis);
 }
 
-function generateImprovementPlans(subjects: SubjectAnalysis[]) {
+function generateImprovementPlans(subjects: SubjectAnalysis[]): any[] {
   return subjects
     .filter((s) => s.average < 75)
     .map((subject) => ({
@@ -143,7 +144,7 @@ function generateImprovementPlans(subjects: SubjectAnalysis[]) {
 }
 
 function generateActionItems(subject: SubjectAnalysis): string[] {
-  const items: string[] = [];
+  const items = [];
 
   if (subject.average < 50) {
     items.push('Attend remedial classes');
@@ -161,8 +162,8 @@ function generateActionItems(subject: SubjectAnalysis): string[] {
   return items;
 }
 
-function generateStudyRecommendations(subjects: SubjectAnalysis[], marks: Mark[]) {
-  const recommendations = [];
+function generateStudyRecommendations(subjects: SubjectAnalysis[], marks: MarkData[]): any[] {
+  const recommendations: any[] = [];
 
   const weakSubjects = subjects.filter((s) => s.average < 75);
   const strongSubjects = subjects.filter((s) => s.average >= 85);
@@ -211,7 +212,7 @@ function generateStudyRecommendations(subjects: SubjectAnalysis[], marks: Mark[]
   return recommendations;
 }
 
-function generateTutoringPlans(subjects: SubjectAnalysis[]) {
+function generateTutoringPlans(subjects: SubjectAnalysis[]): any[] {
   const weakSubjects = subjects.filter((s) => s.average < 60);
 
   return weakSubjects.map((subject) => ({
@@ -225,7 +226,7 @@ function generateTutoringPlans(subjects: SubjectAnalysis[]) {
   }));
 }
 
-function generateStudyGroupSuggestions(subjects: SubjectAnalysis[]) {
+function generateStudyGroupSuggestions(subjects: SubjectAnalysis[]): any[] {
   return subjects.map((subject) => ({
     subjectId: subject.subjectId,
     subject: subject.subjectName,

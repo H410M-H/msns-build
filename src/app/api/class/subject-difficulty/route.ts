@@ -49,16 +49,14 @@ export async function GET(request: NextRequest) {
             scores: [],
             totalAttempts: 0,
           };
-        }
-
-        subjectStats[detail.subjectId].scores.push(detail.percentage);
-        subjectStats[detail.subjectId].totalAttempts ??= 0;
-        subjectStats[detail.subjectId].totalAttempts += 1;
+               subjectStats[detail.subjectId]!.scores.push(detail.percentage);
+        subjectStats[detail.subjectId]!.totalAttempts ??= 0;
+        subjectStats[detail.subjectId]!.totalAttempts += 1;
       });
     });
 
     // Calculate difficulty levels
-    const subjectDifficulty = Object.values(subjectStats).map((subject) => {
+    const subjectDifficulty = Object.values(subjectStats).map((subject: SubjectStat) => {
       const avgScore =
         subject.scores.reduce((a: number, b: number) => a + b, 0) /
         subject.scores.length;

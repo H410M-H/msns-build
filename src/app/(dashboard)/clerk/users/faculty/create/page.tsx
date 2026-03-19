@@ -9,7 +9,7 @@ export default function EmployeeRegistration() {
   const breadcrumbs = [
     { href: "/dashboard", label: "Dashboard" },
     {
-      href: "/admin/users/faculty/create",
+      href: "/clerk/users/faculty/create",
       label: "Employee Registration",
       current: true,
     },

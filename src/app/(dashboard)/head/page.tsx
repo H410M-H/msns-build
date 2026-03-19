@@ -1,111 +1,257 @@
+// File: src/app/(dashboard)/head/page.tsx
 "use client";
 
 import { lazy, Suspense } from "react";
 import { motion } from "framer-motion";
 import {
   BarChart3,
-  Settings,
   Calendar,
-  Users,
+  Settings,
+  ListChecks,
   BookOpen,
-  Plus,
-  ArrowUpRight,
   GraduationCap,
+  Users,
+  Target,
 } from "lucide-react";
 
 import { PageHeader } from "~/components/blocks/nav/PageHeader";
 import { WelcomeSection } from "~/components/blocks/dashboard/welcome";
-import { ProfileSection } from "~/components/blocks/dashboard/profile"; // Kept Head specific
-import { ClerkSection } from "~/components/blocks/dashboard/clerk"; // Kept Head specific
 import { StatsCards } from "~/components/cards/StatCard";
 import { Skeleton } from "~/components/ui/skeleton";
 
-import { Card, CardHeader, CardTitle, CardContent } from "~/components/ui/card";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+} from "~/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
-import { Button } from "~/components/ui/button";
+import { Badge } from "~/components/ui/badge";
 
-// --- Lazy Load ---
+// Shared dashboard widgets
+import { TodayAtAGlance } from "~/components/dashboard/TodayAtAGlance";
+import { ActionRequired } from "~/components/dashboard/ActionRequired";
+import { ActivityFeed } from "~/components/dashboard/ActivityFeed";
+import { QuickActionToolbar } from "~/components/dashboard/QuickActionToolbar";
+import { PinnedNotices } from "~/components/dashboard/PinnedNotices";
+import AdminCards from "~/components/cards/AdminCard";
+import { api } from "~/trpc/react";
+
 const EventsTable = lazy(() => import("~/components/tables/EventsTable"));
 
-// --- Analytics Configuration (Head Specific) ---
-const HEAD_ANALYTICS_CARDS = [
-  {
-    title: "Student Performance",
-    description: "Average grade across departments",
-    value: "B+",
-    trend: "up",
-    icon: GraduationCap,
-    color: "blue",
-    gradient: "from-blue-500/10 to-blue-500/5",
-    border: "border-blue-500/20",
-    text: "text-blue-400",
-  },
-  {
-    title: "Course Enrollment",
-    description: "Total active enrollments",
-    value: "1,240",
-    trend: "up",
-    icon: BookOpen,
-    color: "amber",
-    gradient: "from-amber-500/10 to-amber-500/5",
-    border: "border-amber-500/20",
-    text: "text-amber-400",
-  },
-  {
-    title: "Staff Activity",
-    description: "Daily active staff members",
-    value: "92%",
-    trend: "neutral",
-    icon: Users,
-    color: "pink",
-    gradient: "from-pink-500/10 to-pink-500/5",
-    border: "border-pink-500/20",
-    text: "text-pink-400",
-  },
-];
+function DepartmentOverview() {
+  const { data: classes, isLoading: clsLoading } =
+    api.class.getClasses.useQuery();
+  const { data: employees, isLoading: empLoading } =
+    api.employee.getEmployees.useQuery();
+  const { data: exams } = api.exam.getAllExams.useQuery();
+
+  const teachers =
+    employees?.filter(
+      (e) => e.designation === "TEACHER" || e.designation === "FACULTY",
+    ) ?? [];
+
+  const ongoingExams = exams?.filter((e) => e.status === "ONGOING").length ?? 0;
+  const scheduledExams = exams?.filter((e) => e.status === "SCHEDULED").length ?? 0;
+
+  const overview = [
+    {
+      label: "Classes",
+      value: classes?.length ?? 0,
+      icon: GraduationCap,
+      color: "text-emerald-400",
+      bg: "bg-emerald-500/10",
+      loading: clsLoading,
+    },
+    {
+      label: "Teachers",
+      value: teachers.length,
+      icon: Users,
+      color: "text-blue-400",
+      bg: "bg-blue-500/10",
+      loading: empLoading,
+    },
+    {
+      label: "Ongoing Exams",
+      value: ongoingExams,
+      icon: Target,
+      color: "text-amber-400",
+      bg: "bg-amber-500/10",
+      loading: false,
+    },
+    {
+      label: "Scheduled Exams",
+      value: scheduledExams,
+      icon: ListChecks,
+      color: "text-purple-400",
+      bg: "bg-purple-500/10",
+      loading: false,
+    },
+  ];
+
+  return (
+    <Card className="border-border bg-card">
+      <CardHeader className="pb-3">
+        <CardTitle className="flex items-center gap-2 text-base font-semibold">
+          <div className="rounded-lg bg-amber-500/10 p-1.5">
+            <BookOpen className="h-4 w-4 text-amber-400" />
+          </div>
+          Department Overview
+        </CardTitle>
+        <CardDescription>
+          Grade and section oversight metrics
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="grid grid-cols-2 gap-3">
+        {overview.map((item, idx) => {
+          const Icon = item.icon;
+          return (
+            <div
+              key={idx}
+              className={`flex items-center gap-3 rounded-lg border border-border p-3 ${item.bg}`}
+            >
+              <Icon className={`h-5 w-5 ${item.color}`} />
+              <div>
+                {item.loading ? (
+                  <Skeleton className="h-5 w-12 bg-muted" />
+                ) : (
+                  <p className={`text-lg font-bold ${item.color}`}>
+                    {item.value}
+                  </p>
+                )}
+                <p className="text-xs text-muted-foreground">{item.label}</p>
+              </div>
+            </div>
+          );
+        })}
+      </CardContent>
+    </Card>
+  );
+}
+
+function TeacherWorkloadSummary() {
+  const { data: employees } = api.employee.getEmployees.useQuery();
+  const { data: timetable } = api.timetable.getTimetable.useQuery();
+
+  const teachers =
+    employees?.filter(
+      (e) => e.designation === "TEACHER" || e.designation === "FACULTY",
+    ) ?? [];
+
+  // Calculate weekly periods per teacher from timetable
+  const teacherLoad = teachers.slice(0, 5).map((teacher) => {
+    const entries =
+      timetable?.filter((t) => t.employeeId === teacher.employeeId) ?? [];
+    const weeklyPeriods = entries.length;
+    return {
+      name: teacher.employeeName,
+      designation: teacher.designation,
+      periods: weeklyPeriods,
+      classes: new Set(entries.map((e) => e.classId)).size,
+    };
+  });
+
+  return (
+    <Card className="border-border bg-card">
+      <CardHeader className="pb-3">
+        <CardTitle className="flex items-center gap-2 text-base font-semibold">
+          <div className="rounded-lg bg-blue-500/10 p-1.5">
+            <Users className="h-4 w-4 text-blue-400" />
+          </div>
+          Teacher Workload
+        </CardTitle>
+        <CardDescription>Weekly periods and class assignments</CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-2">
+        {teacherLoad.length === 0 ? (
+          <p className="text-sm text-muted-foreground text-center py-4">
+            No teacher assignments recorded
+          </p>
+        ) : (
+          teacherLoad.map((t, idx) => (
+            <div
+              key={idx}
+              className="flex items-center justify-between rounded-lg border border-border bg-black/10 px-3 py-2"
+            >
+              <div>
+                <p className="text-sm font-medium text-foreground">{t.name}</p>
+                <p className="text-xs text-muted-foreground">{t.classes} classes</p>
+              </div>
+              <Badge
+                variant="outline"
+                className={`border-blue-500/30 bg-blue-500/10 text-blue-400 text-xs`}
+              >
+                {t.periods} periods/wk
+              </Badge>
+            </div>
+          ))
+        )}
+      </CardContent>
+    </Card>
+  );
+}
 
 export default function HeadDashboard() {
   const breadcrumbs = [{ href: "/head", label: "Dashboard", current: true }];
 
   return (
-    <div className="w-full space-y-8 px-4 sm:px-6">
+    <div className="w-full space-y-6">
       <PageHeader breadcrumbs={breadcrumbs} />
 
-      {/* Top Section: Grid Layout */}
+      {/* Top Section */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
-        {/* Welcome Section (Main Focus) */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="lg:col-span-8"
+          className="space-y-4 lg:col-span-8"
         >
           <WelcomeSection />
+          <PinnedNotices />
         </motion.div>
 
-        {/* Profile/Quick Info (Side Panel) */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="lg:col-span-4"
+          className="space-y-4 lg:col-span-4"
         >
-          {/* Wrapping ProfileSection to match the card aesthetic if it isn't already styled */}
-          <div className="h-full">
-            <ProfileSection />
-          </div>
+          <TodayAtAGlance />
+          <ActionRequired role="HEAD" basePrefix="/head" />
         </motion.div>
       </div>
 
-      {/* Full Width Stats */}
+      {/* Quick Actions */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.15 }}
+        className="rounded-xl border border-border bg-card px-4 py-3"
+      >
+        <QuickActionToolbar basePrefix="/head" />
+      </motion.div>
+
+      {/* Department Cards */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.2 }}
+        className="grid grid-cols-1 gap-6 md:grid-cols-2"
+      >
+        <DepartmentOverview />
+        <TeacherWorkloadSummary />
+      </motion.div>
+
+      {/* Stats */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.25 }}
       >
         <StatsCards />
       </motion.div>
 
-      {/* Main Content Tabs */}
+      {/* Main Tabs */}
       <motion.section
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -114,162 +260,52 @@ export default function HeadDashboard() {
       >
         <Tabs defaultValue="management" className="w-full">
           <div className="flex flex-col items-center justify-between gap-4 border-b border-border bg-black/20 px-6 py-4 sm:flex-row">
-            <h2 className="text-xl font-semibold tracking-tight text-foreground">
-              Institutional Overview
-            </h2>
+            <div className="flex items-center gap-3">
+              <div className="rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 p-2.5 shadow-lg shadow-amber-500/20">
+                <GraduationCap className="h-4 w-4 text-white" />
+              </div>
+              <div>
+                <h2 className="text-lg font-bold text-foreground">Head Control Center</h2>
+                <Badge variant="outline" className="border-amber-500/30 bg-amber-500/10 text-amber-400 text-[10px]">
+                  Head Access
+                </Badge>
+              </div>
+            </div>
             <TabsList className="border border-border bg-card p-1">
-              <TabsTrigger
-                value="management"
-                className="gap-2 transition-all data-[state=active]:bg-emerald-600 data-[state=active]:text-foreground"
-              >
-                <Settings className="h-4 w-4" />{" "}
+              <TabsTrigger value="management" className="gap-2 transition-all data-[state=active]:bg-emerald-600 data-[state=active]:text-foreground">
+                <Settings className="h-4 w-4" />
                 <span className="hidden sm:inline">Management</span>
               </TabsTrigger>
-              <TabsTrigger
-                value="events"
-                className="gap-2 transition-all data-[state=active]:bg-emerald-600 data-[state=active]:text-foreground"
-              >
-                <Calendar className="h-4 w-4" />{" "}
-                <span className="hidden sm:inline">Events</span>
+              <TabsTrigger value="calendar" className="gap-2 transition-all data-[state=active]:bg-emerald-600 data-[state=active]:text-foreground">
+                <Calendar className="h-4 w-4" />
+                <span className="hidden sm:inline">Calendar</span>
               </TabsTrigger>
-              <TabsTrigger
-                value="analytics"
-                className="gap-2 transition-all data-[state=active]:bg-emerald-600 data-[state=active]:text-foreground"
-              >
-                <BarChart3 className="h-4 w-4" />{" "}
-                <span className="hidden sm:inline">Analytics</span>
+              <TabsTrigger value="activity" className="gap-2 transition-all data-[state=active]:bg-emerald-600 data-[state=active]:text-foreground">
+                <BarChart3 className="h-4 w-4" />
+                <span className="hidden sm:inline">Activity</span>
               </TabsTrigger>
             </TabsList>
           </div>
 
           <div className="p-4 sm:p-6">
-            {/* Tab 1: Clerk/Management */}
-            <TabsContent
-              value="management"
-              className="mt-0 focus-visible:outline-none"
-            >
-              <ClerkSection />
+            <TabsContent value="management" className="mt-0 focus-visible:outline-none">
+              <AdminCards basePrefix="/head" />
             </TabsContent>
 
-            {/* Tab 2: Events */}
-            <TabsContent
-              value="events"
-              className="mt-0 focus-visible:outline-none"
-            >
-              <Card className="border-0 bg-transparent shadow-none">
-                <div className="mb-6 flex items-center justify-between">
-                  <div>
-                    <h3 className="text-lg font-medium text-foreground">
-                      Academic Calendar
-                    </h3>
-                    <p className="text-sm text-muted-foreground">
-                      Manage upcoming departmental events
-                    </p>
-                  </div>
-                  <Button className="gap-2 bg-emerald-600 text-foreground shadow-lg shadow-emerald-900/20 transition-all hover:bg-emerald-500 active:scale-95">
-                    <Plus className="h-4 w-4" /> Add Event
-                  </Button>
-                </div>
-                <Suspense
-                  fallback={
-                    <Skeleton className="h-[300px] w-full rounded-xl bg-muted" />
-                  }
-                >
-                  <div className="overflow-hidden rounded-xl border border-border bg-black/20">
-                    <EventsTable />
-                  </div>
-                </Suspense>
-              </Card>
-            </TabsContent>
-
-            {/* Tab 3: Analytics */}
-            <TabsContent
-              value="analytics"
-              className="mt-0 space-y-6 focus-visible:outline-none"
-            >
-              <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-                {HEAD_ANALYTICS_CARDS.map((card, idx) => {
-                  const Icon = card.icon;
-                  return (
-                    <Card
-                      key={idx}
-                      className={`group bg-gradient-to-br ${card.gradient} ${card.border} border bg-opacity-50 transition-all duration-300 hover:-translate-y-1 hover:bg-opacity-100`}
-                    >
-                      <CardHeader className="pb-2">
-                        <CardTitle
-                          className={`flex items-center gap-2 text-base font-medium ${card.text}`}
-                        >
-                          <Icon className="h-5 w-5" />
-                          {card.title}
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="flex items-baseline justify-between">
-                          <span className="text-3xl font-bold text-foreground">
-                            {card.value}
-                          </span>
-                          <div
-                            className={`flex items-center text-xs font-medium ${card.text} rounded-full border border-border bg-white/5 px-2 py-1`}
-                          >
-                            <ArrowUpRight className="mr-1 h-3 w-3" />
-                            {card.trend === "up" ? "Trending Up" : "Stable"}
-                          </div>
-                        </div>
-                        <p className="mt-2 text-sm text-muted-foreground">
-                          {card.description}
-                        </p>
-                      </CardContent>
-                    </Card>
-                  );
-                })}
+            <TabsContent value="calendar" className="mt-0">
+              <div className="mb-4">
+                <h3 className="text-lg font-medium text-foreground">Academic Calendar</h3>
+                <p className="text-sm text-muted-foreground">Manage departmental events</p>
               </div>
+              <Suspense fallback={<Skeleton className="h-[300px] w-full rounded-xl bg-muted" />}>
+                <div className="overflow-hidden rounded-xl border border-border bg-black/20">
+                  <EventsTable />
+                </div>
+              </Suspense>
+            </TabsContent>
 
-              {/* Department Performance */}
-              <Card className="border-border bg-card">
-                <CardHeader>
-                  <CardTitle>Department Performance Summary</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="space-y-3">
-                    <div className="rounded-lg border border-border bg-white/5 p-4">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <h4 className="font-semibold text-foreground">Mathematics Department</h4>
-                          <p className="text-sm text-muted-foreground">4 teachers, 120 students</p>
-                        </div>
-                        <div className="text-right">
-                          <p className="text-2xl font-bold text-emerald-400">A</p>
-                          <p className="text-xs text-muted-foreground">Avg Grade</p>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="rounded-lg border border-border bg-white/5 p-4">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <h4 className="font-semibold text-foreground">Science Department</h4>
-                          <p className="text-sm text-muted-foreground">3 teachers, 95 students</p>
-                        </div>
-                        <div className="text-right">
-                          <p className="text-2xl font-bold text-blue-400">A-</p>
-                          <p className="text-xs text-muted-foreground">Avg Grade</p>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="rounded-lg border border-border bg-white/5 p-4">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <h4 className="font-semibold text-foreground">Languages Department</h4>
-                          <p className="text-sm text-muted-foreground">5 teachers, 140 students</p>
-                        </div>
-                        <div className="text-right">
-                          <p className="text-2xl font-bold text-purple-400">B+</p>
-                          <p className="text-xs text-muted-foreground">Avg Grade</p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+            <TabsContent value="activity" className="mt-0">
+              <ActivityFeed basePrefix="/head" />
             </TabsContent>
           </div>
         </Tabs>
