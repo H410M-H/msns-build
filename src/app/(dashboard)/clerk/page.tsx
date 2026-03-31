@@ -1,133 +1,107 @@
-import { PageHeader } from '~/components/blocks/nav/PageHeader'
-import { StatsCards } from '~/components/cards/StatCard'
-import { Button } from '~/components/ui/button' // Changed import source
-import EventsTable from '~/components/tables/EventsTable'
-import { ProfileSection } from '~/components/blocks/dashboard/profile'
-import { WelcomeSection } from '~/components/blocks/dashboard/welcome'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '~/components/ui/tabs'
-import { Settings, Calendar, BarChart3, Users, BookOpen, Activity } from 'lucide-react'
-import { ClerkSection } from '~/components/blocks/dashboard/clerk'
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '~/components/ui/card'
+"use client";
 
-export default async function ClerkDashboard() {
-  const breadcrumbs = [
-    { href: "/clerk", label: "Dashboard", current: true },
-  ]
 
-return (
-       <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50/30">
+import { motion } from "framer-motion";
+import {
+  Users,
+  BookOpen,
+  Wallet,
+} from "lucide-react";
+
+import { PageHeader } from "~/components/blocks/nav/PageHeader";
+import { WelcomeSection } from "~/components/blocks/dashboard/welcome";
+import { StatsCards } from "~/components/cards/StatCard";
+import { RevenueAnalyticsChart } from "~/components/blocks/dashboard/AnalyticsCharts";
+import { ActivityFeed } from "~/components/blocks/dashboard/ActivityFeed";
+import { BroadcastBoard } from "~/components/blocks/dashboard/BroadcastBoard";
+import RegistrationCards from "~/components/cards/RegistrationCard";
+import { RevenueCards } from "~/components/cards/RevenueCard";
+import SessionCards from "~/components/cards/SessionCard";
+
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
+
+
+export default function ClerkDashboard() {
+  const breadcrumbs = [{ href: "/clerk", label: "Dashboard", current: true }];
+
+  return (
+    <div className="w-full space-y-6">
       <PageHeader breadcrumbs={breadcrumbs} />
-      
-      {/* Welcome and Profile Sections with improved spacing */}
-      <div className="px-4 sm:px-6 lg:px-8 mb-8">
+
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0, duration: 0.4, ease: "easeOut" }}>
         <WelcomeSection />
-        <ProfileSection />
-      </div>
+      </motion.div>
 
-      {/* Stats Overview */}
-      <section className="mb-10 px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between mb-6 pb-2 border-b border-slate-200/60">
-          <h2 className="text-2xl font-bold text-slate-800 flex items-center gap-2">
-            <Activity className="h-6 w-6 text-blue-600" />
-            Institutional Overview
-          </h2>
-          <span className="text-sm text-slate-500 bg-slate-100 px-3 py-1 rounded-full">
-            Updated recently
-          </span>
-        </div>
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.08, duration: 0.4, ease: "easeOut" }}>
         <StatsCards />
-      </section>
+      </motion.div>
 
-      {/* Main Content Tabs */}
-      <div className="px-4 sm:px-6 lg:px-8 mb-10">
-        <Tabs defaultValue="management" className="mb-10">
-          <TabsList className="mb-8 bg-slate-100 p-1.5 w-full max-w-md grid grid-cols-3">
-            <TabsTrigger 
-              value="management" 
-              className="flex items-center gap-2 data-[state=active]:bg-white data-[state=active]:shadow-sm data-[state=active]:text-blue-700 transition-all"
-            >
-              <Settings className="h-4 w-4" />
-              Management
-            </TabsTrigger>
-            <TabsTrigger 
-              value="events" 
-              className="flex items-center gap-2 data-[state=active]:bg-white data-[state=active]:shadow-sm data-[state=active]:text-blue-700 transition-all"
-            >
-              <Calendar className="h-4 w-4" />
-              Events
-            </TabsTrigger>
-            <TabsTrigger 
-              value="analytics" 
-              className="flex items-center gap-2 data-[state=active]:bg-white data-[state=active]:shadow-sm data-[state=active]:text-blue-700 transition-all"
-            >
-              <BarChart3 className="h-4 w-4" />
-              Analytics
-            </TabsTrigger>
-          </TabsList>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.16, duration: 0.4, ease: "easeOut" }}
+        className="grid grid-cols-1 gap-6 lg:grid-cols-3"
+      >
+        <div className="lg:col-span-2">
+          <RevenueAnalyticsChart />
+        </div>
+        <div className="lg:col-span-1">
+          <BroadcastBoard />
+        </div>
+      </motion.div>
 
-          <TabsContent value="management">
-            <ClerkSection />
-          </TabsContent>
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.24, duration: 0.4, ease: "easeOut" }}>
+        <ActivityFeed />
+      </motion.div>
 
-        <TabsContent value="events">
-          <div className="mb-8">
-            <div className="mb-6 flex items-center justify-between border-b border-slate-200 pb-2">
-              <h2 className="text-2xl font-bold text-slate-800">
-                Upcoming Events
-              </h2>
-              <Button variant="outline" className="flex items-center gap-2">
-                <Calendar className="h-4 w-4" />
-                Add Event
-              </Button>
-            </div>
-            <EventsTable />
+      <motion.section
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.32, duration: 0.4, ease: "easeOut" }}
+        className="overflow-hidden rounded-2xl border border-slate-200 bg-white/50 shadow-sm backdrop-blur-xl dark:border-border dark:bg-card"
+      >
+        <Tabs defaultValue="registration" className="w-full">
+          <div className="flex flex-col items-center justify-between gap-4 border-b border-slate-200 bg-slate-50/60 px-4 py-4 dark:border-border dark:bg-black/20 sm:flex-row sm:px-6">
+            <h2 className="text-lg font-bold tracking-tight text-slate-800 dark:text-foreground">
+              Clerk Operations
+            </h2>
+            <TabsList className="border border-slate-200 bg-white/70 p-1 shadow-sm dark:border-border dark:bg-card">
+              <TabsTrigger
+                value="registration"
+                className="gap-2 text-xs transition-all data-[state=active]:bg-emerald-600 data-[state=active]:text-white dark:data-[state=active]:text-foreground sm:text-sm"
+              >
+                <Users className="h-4 w-4" />
+                <span className="hidden sm:inline">Registration</span>
+              </TabsTrigger>
+              <TabsTrigger
+                value="revenue"
+                className="gap-2 text-xs transition-all data-[state=active]:bg-emerald-600 data-[state=active]:text-white dark:data-[state=active]:text-foreground sm:text-sm"
+              >
+                <Wallet className="h-4 w-4" />
+                <span className="hidden sm:inline">Revenue</span>
+              </TabsTrigger>
+              <TabsTrigger
+                value="session"
+                className="gap-2 text-xs transition-all data-[state=active]:bg-emerald-600 data-[state=active]:text-white dark:data-[state=active]:text-foreground sm:text-sm"
+              >
+                <BookOpen className="h-4 w-4" />
+                <span className="hidden sm:inline">Sessions</span>
+              </TabsTrigger>
+            </TabsList>
           </div>
-        </TabsContent>
-
-        <TabsContent value="analytics">
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Users className="h-5 w-5" />
-                  User Analytics
-                </CardTitle>
-                <CardDescription>
-                  Overview of user activity and engagement
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="flex h-40 items-center justify-center rounded-lg bg-slate-100">
-                  <p className="text-slate-500">
-                    User engagement chart will be displayed here
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <BookOpen className="h-5 w-5" />
-                  Course Analytics
-                </CardTitle>
-                <CardDescription>
-                  Overview of course performance and enrollment
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="flex h-40 items-center justify-center rounded-lg bg-slate-100">
-                  <p className="text-slate-500">
-                    Course performance chart will be displayed here
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
+          <div className="p-4 sm:p-6">
+            <TabsContent value="registration" className="mt-0">
+              <RegistrationCards />
+            </TabsContent>
+            <TabsContent value="revenue" className="mt-0">
+              <RevenueCards />
+            </TabsContent>
+            <TabsContent value="session" className="mt-0">
+              <SessionCards />
+            </TabsContent>
           </div>
-        </TabsContent>
-      </Tabs>
-
-      </div>
+        </Tabs>
+      </motion.section>
     </div>
-      );
+  );
 }

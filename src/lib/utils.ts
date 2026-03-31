@@ -67,7 +67,7 @@ export const getRoleTheme = (accountType: string) => {
   };
 };
 
-export const getStatTheme = (accountType: string)=> {
+export const getStatTheme = (accountType: string) => {
   if (
     accountType === "ADMIN" ||
     accountType === "PRINCIPAL" ||
@@ -91,4 +91,4 @@ export const getStatTheme = (accountType: string)=> {
     gradient: "from-green-500 to-emerald-600",
     bg: "from-green-50 to-emerald-100",
   };
-}
+};

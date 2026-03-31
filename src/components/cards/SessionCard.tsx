@@ -1,91 +1,157 @@
-'use client'
+// File: src/components/cards/SessionCard.tsx
+"use client";
 
-import { Boxes,  FileStackIcon, UserPlusIcon, type LucideIcon } from "lucide-react"
-import Link from "next/link"
+import {
+  Boxes,
+  FileStack,
+  UserPlus,
+  type LucideIcon,
+  ArrowUpRight,
+} from "lucide-react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "~/components/ui/card";
+import Link from "next/link";
+import { cn } from "~/lib/utils";
 
 interface Service {
-  title: string
-  description: string
-  icon: LucideIcon
-  href: string
-  iconColor: string
-  gradientFrom: string
-  gradientTo: string
+  title: string;
+  description: string;
+  icon: LucideIcon;
+  href: string;
+  baseColor: "emerald" | "cyan" | "purple"; // Simplified to drive dynamic styles
 }
 
 const services: Service[] = [
   {
-    title: "Classes Allottment",
-    description: "Easily enroll new Employees and manage their financial records.",
-    icon: UserPlusIcon,
+    title: "Classes Allotment",
+    description: "Enroll employees and manage class assignments efficiently.",
+    icon: UserPlus,
     href: "/academics/classDetail",
-    iconColor: "text-blue-500",
-    gradientFrom: "from-blue-400",
-    gradientTo: "to-blue-700",
+    baseColor: "emerald",
   },
   {
-    title: "Section & Class Management",
-    description: "Easily enroll new students and manage their financial records.",
+    title: "Section Management",
+    description: "Organize class sections and streamline student grouping.",
     icon: Boxes,
     href: "/academics/classwiseDetail",
-    iconColor: "text-purple-500",
-    gradientFrom: "from-purple-400",
-    gradientTo: "to-purple-700",
+    baseColor: "cyan",
   },
   {
     title: "Sessional Reports",
-    description: "Easily enroll new students and manage their financial records.",
-    icon: FileStackIcon,
-    href: "",
-    iconColor: "text-orange-500",
-    gradientFrom: "from-orange-400",
-    gradientTo: "to-orange-700",
+    description: "Generate, view, and export comprehensive academic reports.",
+    icon: FileStack,
+    href: "/reports/sessional",
+    baseColor: "purple",
   },
-]
+];
 
 export default function SessionCards() {
   return (
-    <div className="relative min-h-screen flex items-center justify-center px-4 py-6 rounded-md">
-      {/* Cards Grid */}
-      <div className="relative z-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-16 lg:gap-8 max-w-7xl w-full animate-slide-in-up">
-        {services.map((service, index) => {
-          const Icon = service.icon
+    <div className="w-full">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {services.map((service) => {
+          const Icon = service.icon;
+
+          // Dynamic Style Logic based on baseColor
+          const styles = {
+            emerald: {
+              icon: "text-emerald-600 dark:text-emerald-400",
+              iconBg:
+                "bg-emerald-100 dark:bg-emerald-500/10 border-emerald-200 dark:border-emerald-500/20",
+              borderHover:
+                "group-hover:border-emerald-300 dark:group-hover:border-emerald-500/40",
+              gradient:
+                "from-emerald-50/50 via-transparent to-transparent dark:from-emerald-500/10",
+              ring: "focus-visible:ring-emerald-500",
+            },
+            cyan: {
+              icon: "text-cyan-600 dark:text-cyan-400",
+              iconBg:
+                "bg-cyan-100 dark:bg-cyan-500/10 border-cyan-200 dark:border-cyan-500/20",
+              borderHover:
+                "group-hover:border-cyan-300 dark:group-hover:border-cyan-500/40",
+              gradient:
+                "from-cyan-50/50 via-transparent to-transparent dark:from-cyan-500/10",
+              ring: "focus-visible:ring-cyan-500",
+            },
+            purple: {
+              icon: "text-purple-600 dark:text-purple-400",
+              iconBg:
+                "bg-purple-100 dark:bg-purple-500/10 border-purple-200 dark:border-purple-500/20",
+              borderHover:
+                "group-hover:border-purple-300 dark:group-hover:border-purple-500/40",
+              gradient:
+                "from-purple-50/50 via-transparent to-transparent dark:from-purple-500/10",
+              ring: "focus-visible:ring-purple-500",
+            },
+          }[service.baseColor];
+
           return (
             <Link
               href={service.href}
-              key={index}
-              className="relative group gap-6 p-4 transform transition-all duration-500 
-                ease-in-out hover:scale-105 hover:z-20"
-              style={{ transitionDelay: `${index * 100}ms` }}
+              key={service.title}
+              className={cn(
+                "group block h-full rounded-xl outline-none transition-transform active:scale-[0.98]",
+                "focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-slate-950",
+                styles.ring,
+              )}
             >
-              {/* Background Card Decoration */}
-              <div
-                className={`absolute inset-0 bg-gradient-to-r ${service.gradientFrom} ${service.gradientTo} 
-                  shadow-lg transform -skew-y-6 sm:skew-y-0 sm:-rotate-6 sm:rounded-3xl opacity-80 
-                  transition-transform duration-700 ease-in-out group-hover:rotate-0 
-                  group-hover:skew-y-0 group-hover:scale-105`}
-              />
-  
-              {/* Card Content */}
-              <div className="relative z-10 px-10 py-10 bg-yellow-100 backdrop-blur-lg shadow-xl 
-                rounded-3xl transition-transform duration-500 ease-in-out 
-                group-hover:scale-105 group-hover:rotate-1">
-                <div className="flex flex-col items-center text-center">
-                  <Icon className={`h-12 w-12 ${service.iconColor}`} />
-                  <h3 className="text-2xl font-semibold text-gray-900 
-                    group-hover:text-green-700 transition-colors duration-300">
+              <Card
+                className={cn(
+                  "relative h-full overflow-hidden rounded-xl border transition-all duration-300",
+                  // Light Mode: White bg, Slate border
+                  "border-slate-200 bg-white hover:-translate-y-1 hover:shadow-lg",
+                  // Dark Mode: Glass bg, White/5 border
+                  "dark:border-border dark:bg-card dark:backdrop-blur-sm dark:hover:bg-card dark:hover:shadow-none",
+                  styles.borderHover,
+                )}
+              >
+                {/* Background Gradient Effect */}
+                <div
+                  className={cn(
+                    "absolute inset-0 bg-gradient-to-br opacity-0 transition-opacity duration-500 group-hover:opacity-100",
+                    styles.gradient,
+                  )}
+                />
+
+                <CardHeader className="relative z-10 px-4 py-3">
+                  <div className="mb-3 flex items-start justify-between">
+                    {/* Icon Container */}
+                    <div
+                      className={cn(
+                        "flex h-10 w-10 items-center justify-center rounded-lg border shadow-sm transition-transform duration-300 group-hover:rotate-3 group-hover:scale-110 dark:shadow-inner",
+                        styles.iconBg,
+                      )}
+                    >
+                      <Icon className={cn("h-5 w-5", styles.icon)} />
+                    </div>
+
+                    {/* Action Arrow */}
+                    <div className="flex h-7 w-7 items-center justify-center rounded-full bg-slate-100 text-muted-foreground transition-all duration-300 group-hover:bg-slate-200 group-hover:text-slate-600 dark:bg-white/5 dark:text-muted-foreground dark:group-hover:bg-white/10 dark:group-hover:text-foreground">
+                      <ArrowUpRight className="h-3.5 w-3.5 transition-transform duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
+                    </div>
+                  </div>
+
+                  <CardTitle className="text-base font-bold tracking-tight text-slate-900 transition-colors dark:text-foreground">
                     {service.title}
-                  </h3>
-                  <p className="mt-6 text-gray-700 group-hover:text-green-600 
-                    transition-colors duration-300">
+                  </CardTitle>
+                </CardHeader>
+
+                <CardContent className="relative z-10 px-4 pb-4 pt-0">
+                  <CardDescription className="line-clamp-2 text-xs leading-relaxed text-muted-foreground group-hover:text-slate-700 dark:text-muted-foreground dark:group-hover:text-foreground">
                     {service.description}
-                  </p>
-                </div>
-              </div>
+                  </CardDescription>
+                </CardContent>
+              </Card>
             </Link>
-          )
+          );
         })}
       </div>
     </div>
-  )
+  );
 }

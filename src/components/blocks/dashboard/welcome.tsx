@@ -1,59 +1,156 @@
-import { Sparkles, Star } from "lucide-react";
+// File: src/components/blocks/dashboard/welcome.tsx
+"use client";
+
+import { Sparkles, Mail, User, CalendarDays, Shield } from "lucide-react";
 import { CalendarDialog } from "~/components/blocks/dashboard/calendar-dialog";
 import { getRoleTheme } from "~/lib/utils";
-import { auth } from "~/server/auth";
+import { useSession } from "next-auth/react";
+import { api } from "~/trpc/react";
+import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
+import { Badge } from "~/components/ui/badge";
+import { Skeleton } from "~/components/ui/skeleton";
 
-export const WelcomeSection = async () => {
-  const session = await auth();
+export const WelcomeSection = () => {
+  const { data: session } = useSession();
+  const { data: userProfile, isLoading } = api.profile.getProfile.useQuery();
 
   const roleTheme = getRoleTheme(session?.user.accountType ?? "");
-  const RoleIcon = roleTheme.icon;
+
+  const today = new Date();
+  const dateOptions: Intl.DateTimeFormatOptions = {
+    weekday: "long",
+    month: "long",
+    day: "numeric",
+  };
+  const formattedDate = today.toLocaleDateString("en-US", dateOptions);
+
+  if (isLoading) {
+    return (
+      <div className="w-full rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-border dark:bg-white/5 dark:shadow-2xl sm:p-6">
+        <div className="flex flex-col items-center gap-4 sm:flex-row">
+          <Skeleton className="h-16 w-16 rounded-full bg-slate-100 dark:bg-white/10" />
+          <div className="w-full flex-1 space-y-2">
+            <Skeleton className="h-6 w-3/4 bg-slate-100 dark:bg-white/10" />
+            <Skeleton className="h-4 w-1/2 bg-slate-100 dark:bg-white/10" />
+            <div className="mt-3 flex gap-2">
+              <Skeleton className="h-7 w-24 bg-slate-100 dark:bg-white/10" />
+              <Skeleton className="h-7 w-32 bg-slate-100 dark:bg-white/10" />
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Fallback to session data if profile fetch fails or is empty
+  const user = userProfile ?? {
+    username: session?.user.username ?? "User",
+    email: session?.user.email ?? "",
+    accountId: session?.user.accountId ?? "",
+    accountType: session?.user.accountType ?? "NONE",
+    createdAt: new Date(),
+  };
+
+  const formatDate = (date: Date) => {
+    return new Intl.DateTimeFormat("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    }).format(new Date(date));
+  };
 
   return (
-    <div className="mb-12">
-      <div className="relative overflow-hidden rounded-3xl border border-white/40 bg-white/70 p-8 shadow-2xl backdrop-blur-sm lg:p-12">
-        <div className="absolute right-0 top-0 h-32 w-32 rounded-full bg-gradient-to-br from-yellow-400/20 to-orange-400/20 blur-2xl"></div>
+    <div className="w-full max-w-full">
+      <div className="relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-4 shadow-md shadow-slate-200/60 backdrop-blur-xl transition-all duration-300 dark:border-border dark:bg-card dark:shadow-none sm:p-6">
+        {/* Background decorative elements */}
+        {/* Light Mode: Very subtle pastel blobs */}
+        <div className="pointer-events-none absolute right-0 top-0 h-64 w-64 -translate-y-1/2 translate-x-1/4 rounded-full bg-emerald-50/80 blur-3xl dark:bg-emerald-500/10"></div>
+        <div className="pointer-events-none absolute bottom-0 left-0 h-48 w-48 -translate-x-1/4 translate-y-1/4 rounded-full bg-cyan-50/80 blur-3xl dark:bg-purple-500/5"></div>
 
-        <div className="flex flex-col items-start justify-between gap-6 lg:flex-row lg:items-center">
-          <div className="flex items-center gap-6">
-            <div className="relative">
+        <div className="relative z-10 flex flex-col items-start justify-between gap-8 lg:flex-row lg:items-center">
+          {/* Identity Block */}
+          <div className="flex w-full flex-col items-center gap-6 sm:flex-row sm:items-start lg:w-auto">
+            {/* Avatar with Role Glow */}
+            <div className="group relative shrink-0">
               <div
-                className={`bg-gradient-to-br p-4 ${roleTheme.gradient} -rotate-3 transform rounded-2xl shadow-xl transition-transform duration-300 hover:rotate-0`}
+                className={`absolute inset-0 rounded-full bg-gradient-to-br ${roleTheme.gradient} opacity-0 blur-xl transition-opacity duration-500 group-hover:opacity-20 dark:opacity-30 dark:group-hover:opacity-50`}
+              ></div>
+              <div
+                className={`relative rounded-full border border-slate-100 bg-white p-1 shadow-lg dark:border-border dark:bg-black/40`}
               >
-                <RoleIcon className="h-8 w-8 text-white" />
+                <Avatar className="h-14 w-14 sm:h-16 sm:w-16">
+                  <AvatarImage
+                    src={`/placeholder-422db.png?height=112&width=112&query=profile picture for ${user.username}`}
+                    className="object-cover"
+                  />
+                  <AvatarFallback className="bg-slate-50 text-3xl font-bold text-slate-700 dark:bg-black dark:text-emerald-400">
+                    {user.username?.charAt(0).toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
               </div>
-              <div className="absolute -right-2 -top-2 rounded-full bg-yellow-400 px-2 py-1 text-xs font-bold text-yellow-900">
-                {roleTheme.badge}
+              <div className="absolute -bottom-3 left-1/2 z-20 -translate-x-1/2">
+                <Badge
+                  className={`border border-slate-200 bg-white px-3 py-0.5 text-[10px] uppercase tracking-wider text-slate-700 shadow-sm backdrop-blur-md hover:bg-slate-50 dark:border-border dark:bg-black/80 dark:text-foreground dark:hover:bg-black/90 sm:text-xs`}
+                >
+                  <Shield className="mr-1 inline-block h-3 w-3 text-emerald-600 dark:text-emerald-400" />
+                  {user.accountType}
+                </Badge>
               </div>
             </div>
 
-            <div className="space-y-2">
-              <div className="flex items-center gap-3">
-                <h1 className="bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-3xl font-black text-transparent lg:text-4xl">
-                  Welcome back,
-                </h1>
-                <div className="flex items-center gap-1">
-                  <Sparkles className="h-6 w-6 animate-pulse text-yellow-500" />
-                  <Star className="h-4 w-4 text-yellow-400" />
+            {/* Text Info & Stats */}
+            <div className="flex-1 space-y-3 pt-2 text-center sm:text-left">
+              <div>
+                <div className="mb-1 flex flex-col items-center gap-2 sm:flex-row sm:items-end sm:gap-3">
+                  <h1 className="text-xl font-black leading-tight tracking-tight text-slate-800 drop-shadow-sm dark:text-foreground sm:text-2xl">
+                    Welcome back,
+                  </h1>
+                  <div className="flex items-center gap-1">
+                    <Sparkles className="h-4 w-4 animate-pulse text-emerald-500 dark:text-emerald-400" />
+                  </div>
+                </div>
+
+                <h2
+                  className={`bg-gradient-to-r text-xl font-bold sm:text-2xl ${roleTheme.gradient} mx-auto max-w-[300px] truncate bg-clip-text text-transparent sm:mx-0 sm:max-w-md`}
+                >
+                  {user.username}!
+                </h2>
+
+                <div className="mt-2 flex items-center justify-center gap-2 text-xs font-medium text-muted-foreground dark:text-emerald-100/60 sm:justify-start sm:text-sm">
+                  <span className="relative flex h-2 w-2">
+                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-500 opacity-75"></span>
+                    <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500"></span>
+                  </span>
+                  <span>Active Session • {formattedDate}</span>
                 </div>
               </div>
 
-              <h2
-                className={`bg-gradient-to-r text-2xl font-bold lg:text-3xl ${roleTheme.gradient} bg-clip-text text-transparent`}
-              >
-                {session?.user.username}!
-              </h2>
-
-              {/* <div className="flex items-center gap-2 text-sm text-gray-600">
-                <div className="h-2 w-2 animate-pulse rounded-full bg-green-400"></div>
-                <span>Active Session • {new Date().toLocaleDateString()}</span>
-              </div> */}
+              {/* Merged Profile Details Grid */}
+              <div className="mt-4 flex flex-wrap justify-center gap-3 sm:justify-start">
+                <div className="group flex cursor-default items-center gap-2 rounded-lg border border-slate-200 bg-slate-100 px-3 py-1.5 text-xs font-medium text-slate-600 shadow-sm transition-all hover:bg-slate-50 dark:border-border dark:bg-white/5 dark:text-emerald-100/80 dark:shadow-none dark:hover:bg-white/10">
+                  <Mail className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
+                  {user.email}
+                </div>
+                <div className="group flex cursor-default items-center gap-2 rounded-lg border border-slate-200 bg-slate-100 px-3 py-1.5 text-xs font-medium text-slate-600 shadow-sm transition-all hover:bg-slate-50 dark:border-border dark:bg-white/5 dark:text-emerald-100/80 dark:shadow-none dark:hover:bg-white/10">
+                  <User className="h-3.5 w-3.5 text-cyan-600 dark:text-cyan-400" />
+                  ID: {user.accountId}
+                </div>
+                <div className="group flex cursor-default items-center gap-2 rounded-lg border border-slate-200 bg-slate-100 px-3 py-1.5 text-xs font-medium text-slate-600 shadow-sm transition-all hover:bg-slate-50 dark:border-border dark:bg-white/5 dark:text-emerald-100/80 dark:shadow-none dark:hover:bg-white/10">
+                  <CalendarDays className="h-3.5 w-3.5 text-purple-600 dark:text-purple-400" />
+                  Since {formatDate(new Date(user.createdAt))}
+                </div>
+              </div>
             </div>
           </div>
-      </div>
 
-          <CalendarDialog />
+          {/* Action Button */}
+          <div className="mt-4 flex w-full justify-center lg:mt-0 lg:w-auto lg:justify-end">
+            <div className="w-full rounded-lg shadow-xl shadow-slate-200/50 dark:shadow-emerald-900/20 sm:w-auto">
+              <CalendarDialog />
+            </div>
+          </div>
         </div>
+      </div>
     </div>
   );
 };

@@ -1,8 +1,6 @@
 import { createCallerFactory, createTRPCRouter } from "~/server/api/trpc";
 import { StudentRouter } from "./routers/student";
 import { EmployeeRouter } from "./routers/employee";
-import { ReportRouter } from "./routers/report";
-import { SalaryRouter } from "./routers/salary";
 import { SessionRouter } from "./routers/session";
 import { subjectRouter } from "./routers/subject";
 import { ClassRouter } from "./routers/class";
@@ -15,6 +13,13 @@ import { expensesRouter } from "./routers/expense";
 import { fingerRouter } from "./routers/finger";
 import { attendanceRouter } from "./routers/attendance";
 import { timetableRouter } from "./routers/timetable";
+import { reportRouter } from "./routers/report";
+import { salaryRouter } from "./routers/salary";
+import { examRouter } from "./routers/exam";
+import { marksRouter } from "./routers/marks";
+import { promotionRouter } from "./routers/promotion";
+import { reportCardRouter } from "./routers/reportcard";
+import { subjectDiaryRouter } from "./routers/subjectDiary";
 
 export const appRouter = createTRPCRouter({
   user: UserRouter,
@@ -22,10 +27,10 @@ export const appRouter = createTRPCRouter({
   allotment: AllotmentRouter,
   student: StudentRouter,
   employee: EmployeeRouter,
-  report: ReportRouter,
   fee: feeRouter,
   expense: expensesRouter,
-  salary: SalaryRouter,
+  salary: salaryRouter,
+  report: reportRouter,
   session: SessionRouter,
   event: EventRouter,
   subject: subjectRouter,
@@ -33,6 +38,11 @@ export const appRouter = createTRPCRouter({
   finger: fingerRouter,
   attendance: attendanceRouter,
   timetable: timetableRouter,
+  exam: examRouter,
+  marks: marksRouter,
+  reportCard: reportCardRouter,
+  promotion: promotionRouter,
+  subjectDiary: subjectDiaryRouter,
 });
 
 export type AppRouter = typeof appRouter;

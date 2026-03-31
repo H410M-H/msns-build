@@ -12,7 +12,7 @@ export const fingerRouter = createTRPCRouter({
     )
     .mutation(async ({ ctx, input }) => {
       try {
-        console.log(input)
+        console.log(input);
         const data = await ctx.db.bioMetric.upsert({
           where: { employeeId: input.employeeId },
           create: {

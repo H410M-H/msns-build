@@ -102,7 +102,7 @@ export const AttendanceModal = () => {
           });
 
           if (matchResponse.data?.ErrorCode === 0) {
-            console.log(matchResponse.data)
+            console.log(matchResponse.data);
             if (matchResponse.data.MatchingScore > highestScore) {
               highestScore = matchResponse.data.MatchingScore;
             }

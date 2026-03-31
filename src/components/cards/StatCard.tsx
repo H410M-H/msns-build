@@ -1,83 +1,107 @@
-"use client"
+"use client";
 
-import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card"
-import { Users, Briefcase, GraduationCap, Wallet } from 'lucide-react'
-import { api } from "~/trpc/react"
-import { Skeleton } from "~/components/ui/skeleton"
+import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
+import { Users, Briefcase, GraduationCap, Wallet } from "lucide-react";
+import { api } from "~/trpc/react";
+import { Skeleton } from "~/components/ui/skeleton";
 
 export function StatsCards() {
-  const { data: students, isLoading: studentsLoading } = api.student.getStudents.useQuery()
-  const { data: employees, isLoading: employeesLoading } = api.employee.getEmployees.useQuery()
-  const { data: classes, isLoading: classesLoading } = api.class.getClasses.useQuery()
-  const { data: fees, isLoading: feesLoading } = api.fee.getAllFees.useQuery()
+  const { data: students, isLoading: studentsLoading } =
+    api.student.getStudents.useQuery();
+  const { data: employees, isLoading: employeesLoading } =
+    api.employee.getEmployees.useQuery();
+  const { data: classes, isLoading: classesLoading } =
+    api.class.getClasses.useQuery();
+  const { data: fees, isLoading: feesLoading } = api.fee.getAllFees.useQuery();
 
   const stats = [
     {
       title: "Total Students",
       value: students?.length ?? 0,
       icon: Users,
-      description: "Currently enrolled students",
-      color: "text-blue-600",
+      description: "Active enrollments",
+      // Light: Pastel Emerald | Dark: Glass Emerald
+      className:
+        "bg-emerald-50 border-emerald-100 dark:bg-emerald-500/10 dark:border-emerald-500/30",
+      textColor: "text-emerald-900 dark:text-foreground",
+      iconBox:
+        "bg-emerald-100 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400",
       loading: studentsLoading,
     },
     {
       title: "Faculty & Staff",
       value: employees?.length ?? 0,
       icon: Briefcase,
-      description: "Teaching and administrative staff",
-      color: "text-green-600",
+      description: "Teaching staff",
+      // Light: Pastel Blue | Dark: Glass Cyan
+      className:
+        "bg-blue-50 border-blue-100 dark:bg-cyan-500/10 dark:border-cyan-500/30",
+      textColor: "text-blue-900 dark:text-foreground",
+      iconBox:
+        "bg-blue-100 text-blue-600 dark:bg-cyan-500/20 dark:text-cyan-400",
       loading: employeesLoading,
     },
     {
       title: "Active Classes",
       value: classes?.length ?? 0,
       icon: GraduationCap,
-      description: "Ongoing academic classes",
-      color: "text-purple-600",
+      description: "Academic sessions",
+      // Light: Pastel Violet | Dark: Glass Teal
+      className:
+        "bg-violet-50 border-violet-100 dark:bg-teal-500/10 dark:border-teal-500/30",
+      textColor: "text-violet-900 dark:text-foreground",
+      iconBox:
+        "bg-violet-100 text-violet-600 dark:bg-teal-500/20 dark:text-teal-400",
       loading: classesLoading,
     },
     {
       title: "Fee Structures",
       value: fees?.length ?? 0,
       icon: Wallet,
-      description: "Defined fee configurations",
-      color: "text-yellow-600",
+      description: "Revenue streams",
+      // Light: Pastel Amber | Dark: Glass Lime
+      className:
+        "bg-amber-50 border-amber-100 dark:bg-lime-500/10 dark:border-lime-500/30",
+      textColor: "text-amber-900 dark:text-foreground",
+      iconBox:
+        "bg-amber-100 text-amber-600 dark:bg-lime-500/20 dark:text-lime-400",
       loading: feesLoading,
     },
-  ]
+  ];
 
   return (
-          <div className="relative  ">
-      <div className="relative overflow-hidden rounded-3xl border border-white/40 bg-white/70 p-4 shadow-2xl backdrop-blur-sm lg:p-6">
-        <div className="absolute right-0 top-0 h-32 w-32 rounded-full bg-gradient-to-br from-yellow-400/20 to-orange-400/40 blur-2xl"></div>
- 
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-        {stats.map((stat) => (
-          <Card
-            key={stat.title}
-            className="relative overflow-hidden bg-gradient-to-br from-white to-slate-50 hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
-          >
-            <div className="absolute inset-0 bg-gradient-to-br from-yellow-400/20 to-green-400/40 blur-2xl" />
-            <CardHeader className="relative z-10 flex flex-row items-center justify-between space-y-0 pb-6">
-              <CardTitle className="text-sm font-semibold text-slate-600">
-                {stat.title}
+    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      {stats.map((stat) => (
+        <Card
+          key={stat.title}
+          className={`relative overflow-hidden border transition-all duration-300 hover:-translate-y-1 hover:shadow-lg ${stat.className}`}
+        >
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1.5 pt-3 px-4">
+            <CardTitle
+              className={`text-xs font-semibold opacity-70 ${stat.textColor}`}
+            >
+              {stat.title}
             </CardTitle>
-            <div className={`p-2 rounded-lg ${stat.color.replace('text', 'bg')}/20`}>
-              <stat.icon className={`h-5 w-5 ${stat.color}`} />
+            <div className={`rounded-lg p-1.5 ${stat.iconBox}`}>
+              <stat.icon className="h-3.5 w-3.5" />
             </div>
           </CardHeader>
-          <CardContent className="relative z-10">
+          <CardContent className="px-4 pb-3">
             {stat.loading ? (
               <div className="space-y-2">
-                <Skeleton className="h-8 w-1/2" />
-                <Skeleton className="h-4 w-3/4" />
+                <Skeleton className="h-8 w-1/2 bg-black/5 dark:bg-white/10" />
+                <Skeleton className="h-4 w-3/4 bg-black/5 dark:bg-white/10" />
               </div>
             ) : (
               <>
-                <div className="text-3xl font-bold text-slate-900">
+                <div
+                  className={`text-xl font-bold tracking-tight ${stat.textColor}`}
+                >
                   {stat.value.toLocaleString()}
                 </div>
-                <p className="text-sm text-slate-500 mt-2">
+                <p
+                  className={`mt-0.5 text-xs font-medium opacity-60 ${stat.textColor}`}
+                >
                   {stat.description}
                 </p>
               </>
@@ -85,8 +109,6 @@ export function StatsCards() {
           </CardContent>
         </Card>
       ))}
-      </div>
     </div>
-  </div>
-  )
+  );
 }

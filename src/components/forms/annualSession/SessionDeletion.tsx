@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState } from "react";
 import { api } from "~/trpc/react";
 import { Trash2Icon } from "lucide-react";
 import {
@@ -19,9 +19,9 @@ interface SessionDeletionDialogProps {
   onSuccess?: () => void;
 }
 
-export default function SessionDeletionDialog({ 
-  sessionIds, 
-  onSuccess 
+export default function SessionDeletionDialog({
+  sessionIds,
+  onSuccess,
 }: SessionDeletionDialogProps) {
   const [isOpen, setIsOpen] = useState(false);
 
@@ -39,8 +39,8 @@ export default function SessionDeletionDialog({
   return (
     <AlertDialog open={isOpen} onOpenChange={setIsOpen}>
       <AlertDialogTrigger asChild>
-        <Button 
-          variant="destructive" 
+        <Button
+          variant="destructive"
           disabled={sessionIds.length === 0}
           className="gap-2"
         >
@@ -52,16 +52,15 @@ export default function SessionDeletionDialog({
         <AlertDialogHeader>
           <AlertDialogTitle>Confirm Deletion</AlertDialogTitle>
           <AlertDialogDescription>
-            {sessionIds.length === 1 
+            {sessionIds.length === 1
               ? "Are you sure you want to delete this session? This action cannot be undone."
-              : `Are you sure you want to delete ${sessionIds.length} sessions? This action cannot be undone.`
-            }
+              : `Are you sure you want to delete ${sessionIds.length} sessions? This action cannot be undone.`}
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel>Cancel</AlertDialogCancel>
           <AlertDialogAction asChild>
-            <Button 
+            <Button
               variant="destructive"
               onClick={handleDelete}
               disabled={deleteSessions.isPending}

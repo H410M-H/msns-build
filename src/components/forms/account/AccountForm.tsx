@@ -1,11 +1,11 @@
-"use client"
+"use client";
 
-import { zodResolver } from "@hookform/resolvers/zod"
-import { useForm } from "react-hook-form"
-import * as z from "zod"
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import * as z from "zod";
 
-import { Button } from "~/components/ui/button"
-import { Input } from "~/components/ui/input"
+import { Button } from "~/components/ui/button";
+import { Input } from "~/components/ui/input";
 import {
   Form,
   FormControl,
@@ -13,14 +13,14 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "~/components/ui/form"
-import { toast } from "~/hooks/use-toast"
+} from "~/components/ui/form";
+import { toast } from "~/hooks/use-toast";
 
 const FormSchema = z.object({
   username: z.string().min(2, {
     message: "Username must be at least 2 characters.",
   }),
-})
+});
 
 export function AccountForm() {
   const form = useForm<z.infer<typeof FormSchema>>({
@@ -28,19 +28,19 @@ export function AccountForm() {
     defaultValues: {
       username: "",
     },
-  })
+  });
 
   function onSubmit(data: z.infer<typeof FormSchema>) {
     toast({
       title: "Form Submitted",
       description: (
-        <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
-          <code className="text-white">
+        <pre className="mt-2 w-[340px] rounded-md bg-card p-4">
+          <code className="text-foreground">
             {JSON.stringify(data, null, 2)}
           </code>
         </pre>
       ),
-    })
+    });
   }
 
   return (
@@ -62,5 +62,5 @@ export function AccountForm() {
         <Button type="submit">Submit</Button>
       </form>
     </Form>
-  )
+  );
 }

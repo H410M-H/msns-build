@@ -1,0 +1,42 @@
+
+> msns-lms@1.1.0 lint
+> next lint
+
+`next lint` is deprecated and will be removed in Next.js 16.
+For new projects, use create-next-app to choose your preferred linter.
+For existing projects, migrate to the ESLint CLI:
+npx @next/codemod@canary next-lint-to-eslint-cli .
+
+
+./src/app/(dashboard)/admin/sessions/class/page.tsx
+10:3  Warning: 'CalendarDays' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/components/blocks/class/ClassAttendanceTab.tsx
+3:10  Warning: 'useMemo' is defined but never used.  @typescript-eslint/no-unused-vars
+84:9  Warning: The 'students' logical expression could make the dependencies of useEffect Hook (at line 108) change on every render. To fix this, wrap the initialization of 'students' in its own useMemo() Hook.  react-hooks/exhaustive-deps
+
+./src/components/blocks/class/ClassDiariesTab.tsx
+76:34  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+78:22  Error: Unsafe assignment of an `any` value.  @typescript-eslint/no-unsafe-assignment
+78:28  Error: Unsafe member access .subjectDiaryId on an `any` value.  @typescript-eslint/no-unsafe-member-access
+87:30  Error: Unsafe member access .ClassSubject on an `any` value.  @typescript-eslint/no-unsafe-member-access
+91:40  Error: Unsafe argument of type `any` assigned to a parameter of type `string | number | Date`.  @typescript-eslint/no-unsafe-argument
+91:46  Error: Unsafe member access .date on an `any` value.  @typescript-eslint/no-unsafe-member-access
+96:28  Error: Unsafe member access .Teacher on an `any` value.  @typescript-eslint/no-unsafe-member-access
+101:28  Error: Unsafe member access .content on an `any` value.  @typescript-eslint/no-unsafe-member-access
+
+./src/components/blocks/class/ClassTimetableTab.tsx
+21:3  Warning: 'sessionId' is defined but never used. Allowed unused args must match /^_/u.  @typescript-eslint/no-unused-vars
+
+./src/server/api/routers/class.ts
+72:16  Warning: 'error' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/server/api/routers/subjectDiary.ts
+78:28  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+87:23  Error: Unsafe member access .date on an `any` value.  @typescript-eslint/no-unsafe-member-access
+94:11  Error: Unsafe assignment of an `any` value.  @typescript-eslint/no-unsafe-assignment
+121:28  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+134:23  Error: Unsafe member access .date on an `any` value.  @typescript-eslint/no-unsafe-member-access
+141:11  Error: Unsafe assignment of an `any` value.  @typescript-eslint/no-unsafe-assignment
+
+info  - Need to disable some ESLint rules? Learn more here: https://nextjs.org/docs/app/api-reference/config/eslint#disabling-rules

@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import * as React from "react";
 import {
@@ -12,7 +12,10 @@ import { Button } from "~/components/ui/button";
 import { useRouter } from "next/navigation";
 import { api } from "~/trpc/react";
 import { useToast } from "~/hooks/use-toast";
-import { ExpenseForm, type ExpenseFormData } from "~/components/forms/fee/ExpenseForm";
+import {
+  ExpenseForm,
+  type ExpenseFormData,
+} from "~/components/forms/fee/ExpenseForm";
 
 export function ExpenseCreationDialog() {
   const router = useRouter();
@@ -21,9 +24,11 @@ export function ExpenseCreationDialog() {
   // If your trpc client is typed correctly, this should not be an error type.
   // If it is, check your trpc client import and types.
 
-  const createExpense = (api.expense.createExpense as {
-    useMutation: typeof api.expense.createExpense.useMutation
-  }).useMutation({
+  const createExpense = (
+    api.expense.createExpense as {
+      useMutation: typeof api.expense.createExpense.useMutation;
+    }
+  ).useMutation({
     onSuccess: () => {
       toast({
         title: "Success",

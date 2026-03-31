@@ -1,5 +1,11 @@
-import { type Prisma, type Event, type Tag, type Reminder, type User } from '@prisma/client';
-import { CreateEventSchema } from './event-schemas';
+import {
+  type Prisma,
+  type Event,
+  type Tag,
+  type Reminder,
+  type User,
+} from "@prisma/client";
+import { CreateEventSchema } from "./event-schemas";
 
 export type EventWithRelations = Event & {
   User: User[];
@@ -35,31 +41,37 @@ export interface FrontendEventData {
 export function splitDateTime(dateTime: Date): { date: string; time: string } {
   if (!dateTime || !(dateTime instanceof Date) || isNaN(dateTime.getTime())) {
     return {
-      date: new Date().toISOString().split('T')[0]!,
-      time: '00:00',
+      date: new Date().toISOString().split("T")[0]!,
+      time: "00:00",
     };
   }
 
   return {
-    date: dateTime.toISOString().split('T')[0]!,
-    time: dateTime.toTimeString().split(' ')[0]!.slice(0, 5),
+    date: dateTime.toISOString().split("T")[0]!,
+    time: dateTime.toTimeString().split(" ")[0]!.slice(0, 5),
   };
 }
 
-export function safeTransformEventForDatabase(input: unknown): Prisma.EventCreateInput {
+export function safeTransformEventForDatabase(
+  input: unknown,
+): Prisma.EventCreateInput {
   const parsed = CreateEventSchema.safeParse(input);
   if (!parsed.success) {
-    throw new Error(`Invalid event data: ${JSON.stringify(parsed.error.issues)}`);
+    throw new Error(
+      `Invalid event data: ${JSON.stringify(parsed.error.issues)}`,
+    );
   }
 
   const data = parsed.data;
 
   const startDateTime = new Date(data.startDateTime);
   const endDateTime = new Date(data.endDateTime);
-  const recurrenceEnd = data.recurrenceEnd ? new Date(data.recurrenceEnd) : undefined;
+  const recurrenceEnd = data.recurrenceEnd
+    ? new Date(data.recurrenceEnd)
+    : undefined;
 
   if (isNaN(startDateTime.getTime()) || isNaN(endDateTime.getTime())) {
-    throw new Error('Invalid date format');
+    throw new Error("Invalid date format");
   }
 
   return {
@@ -80,19 +92,37 @@ export function safeTransformEventForDatabase(input: unknown): Prisma.EventCreat
     recurrenceEnd,
     User: { connect: { id: data.creatorId } },
     tags: data.tagIds
-      ? { create: data.tagIds.map((tagId: string) => ({ tag: { connect: { id: tagId } } })) }
+      ? {
+          create: data.tagIds.map((tagId: string) => ({
+            tag: { connect: { id: tagId } },
+          })),
+        }
       : undefined,
     reminders: data.reminders
-      ? { create: data.reminders.map((reminder) => ({ type: reminder.type, minutesBefore: reminder.value })) }
+      ? {
+          create: data.reminders.map((reminder) => ({
+            type: reminder.type,
+            minutesBefore: reminder.value,
+          })),
+        }
       : undefined,
     attendees: data.attendees
-      ? { create: data.attendees.map((attendee) => ({ user: { connect: { id: attendee.userId } }, status: attendee.status })) }
+      ? {
+          create: data.attendees.map((attendee) => ({
+            user: { connect: { id: attendee.userId } },
+            status: attendee.status,
+          })),
+        }
       : undefined,
   };
 }
 
-export function safeTransformEventForFrontend(event: EventWithRelations): FrontendEventData {
-  const recurrenceEnd = event.recurrenceEnd ? event.recurrenceEnd.toISOString() : undefined;
+export function safeTransformEventForFrontend(
+  event: EventWithRelations,
+): FrontendEventData {
+  const recurrenceEnd = event.recurrenceEnd
+    ? event.recurrenceEnd.toISOString()
+    : undefined;
 
   return {
     organizer: event.User[0] ?? null,
@@ -111,7 +141,7 @@ export function safeTransformEventForFrontend(event: EventWithRelations): Fronte
     notes: event.notes ?? undefined,
     maxAttendees: event.maxAttendees ?? undefined,
     isPublic: event.isPublic,
-    creatorId: event.User[0]?.id ?? '',
+    creatorId: event.User[0]?.id ?? "",
     tagIds: event.tags.map((t) => t.tag.id),
     reminders: event.reminders.map((r) => ({
       type: r.type,

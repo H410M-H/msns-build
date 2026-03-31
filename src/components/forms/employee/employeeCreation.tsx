@@ -6,30 +6,70 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "~/components/ui/form";
-import { Card, CardContent, CardFooter, CardHeader } from "~/components/ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "~/components/ui/select";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "~/components/ui/form";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+} from "~/components/ui/card";
 import { motion } from "framer-motion";
-import { Loader2, Upload, ImagePlus } from "lucide-react";
-import { api } from "~/trpc/react"; 
+import {
+  Loader2,
+  Upload,
+  ImagePlus,
+  FileText,
+  CheckCircle,
+} from "lucide-react";
+import { api } from "~/trpc/react";
 import { toast } from "~/hooks/use-toast";
 import Image from "next/image";
 import { Separator } from "~/components/ui/separator";
 
-// Zod schema for employee data validation
 const employeeSchema = z.object({
-  employeeName: z.string().min(2, "Name must be at least 2 characters").max(100, "Name must not exceed 100 characters"),
-  fatherName: z.string().min(2, "Father's name must be at least 2 characters").max(100, "Father's name must not exceed 100 characters"),
+  employeeName: z
+    .string()
+    .min(2, "Name must be at least 2 characters")
+    .max(100),
+  fatherName: z
+    .string()
+    .min(2, "Father's name must be at least 2 characters")
+    .max(100),
   gender: z.enum(["MALE", "FEMALE", "CUSTOM"]),
   dob: z.string().min(1, "Date of Birth is required"),
-  cnic: z.string().regex(/^\d{5}-\d{7}-\d$/, "Invalid CNIC format"),
+  cnic: z
+    .string()
+    .regex(/^\d{5}-\d{7}-\d$/, "Invalid CNIC format (e.g., 12345-1234567-1)"),
   maritalStatus: z.enum(["Married", "Unmarried", "Widow", "Divorced"]),
-  doj: z.string({ message: "Date of Joining is required" }),
-  designation: z.enum(["PRINCIPAL", "ADMIN", "HEAD", "CLERK", "TEACHER", "WORKER"]),
-  residentialAddress: z.string().min(5, "Residential Address must be at least 5 characters"),
-  mobileNo: z.string().regex(/^(\+92|0)?3\d{9}$/, "Invalid Pakistani mobile number format"),
-  additionalContact: z.string().regex(/^(\+92|0)?3\d{9}$/, "Invalid Pakistani mobile number format").optional(),
-  education: z.string().min(2, "Education must be at least 2 characters").max(100, "Education must not exceed 100 characters"),
+  doj: z.string().min(1, "Date of Joining is required"),
+  designation: z.enum([
+    "PRINCIPAL",
+    "ADMIN",
+    "HEAD",
+    "CLERK",
+    "TEACHER",
+    "WORKER",
+  ]),
+  residentialAddress: z.string().min(5, "Address too short"),
+  mobileNo: z
+    .string()
+    .regex(/^(\+92|0)?3\d{9}$/, "Invalid Pakistani mobile number format"),
+  additionalContact: z.string().optional(),
+  education: z.string().min(2, "Required"),
   profilePic: z.string().optional(),
   cv: z.string().optional(),
 });
@@ -39,7 +79,8 @@ type EmployeeSchema = z.infer<typeof employeeSchema>;
 export default function EmployeeCreationDialog() {
   const [uploadedImageUrl, setUploadedImageUrl] = useState<string>("");
   const [uploadedCvUrl, setUploadedCvUrl] = useState<string>("");
-  const [isUploading] = useState(false);
+  const [isPicUploading, setIsPicUploading] = useState(false);
+  const [isCvUploading, setIsCvUploading] = useState(false);
 
   const form = useForm<EmployeeSchema>({
     resolver: zodResolver(employeeSchema),
@@ -61,7 +102,8 @@ export default function EmployeeCreationDialog() {
       setUploadedCvUrl("");
     },
     onError: (error: unknown) => {
-      const errorMessage = error instanceof Error ? error.message : "An error occurred";
+      const errorMessage =
+        error instanceof Error ? error.message : "An error occurred";
       toast({
         title: "Error",
         description: errorMessage,
@@ -69,78 +111,65 @@ export default function EmployeeCreationDialog() {
     },
   });
 
+  const handleProfilePicUpload = async (
+    e: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
 
-  // const handleFileUpload = async (
-  //   file: File,
-  //   setUrl: (url: string) => void,
-  //   fieldName: "profilePic" | "cv"
-  // ) => {
-  //   if (!file) return;
-  //   try {
-  //     setIsUploading(true);
-  //     if (file.size > 5 * 1024 * 1024) {
-  //       throw new Error("File size exceeds 5MB limit");
-  //     }
+    const formData = new FormData();
+    formData.append("file", file);
 
-  //     const { url, publicUrl } = await getUploadUrl.mutateAsync({
-  //       filename: file.name,
-  //       contentType: file.type,
-  //     });
+    setIsPicUploading(true);
+    try {
+      const response = await fetch("/api/v1/upload", {
+        method: "POST",
+        body: formData,
+      });
 
-  //     const uploadRes = await fetch(url, {
-  //       method: "PUT",
-  //       headers: { "Content-Type": file.type },
-  //       body: file,
-  //     });
+      if (!response.ok) throw new Error("Upload failed");
 
-  //     if (!uploadRes.ok) throw new Error("Upload failed");
-
-  //     setUrl(publicUrl);
-  //     form.setValue(fieldName, publicUrl);
-  //   } catch (err) {
-  //     const errorMessage = err instanceof Error ? err.message : "Upload failed";
-  //     toast({
-  //       title: "Upload Error",
-  //       description: errorMessage,
-  //     });
-  //   } finally {
-  //     setIsUploading(false);
-  //   }
-  // };
-
-  const handleProfilePicUpload = async () => {
-    // const file = e.target.files?.[0];
-    // if (!file) return;
-
-    // const formData = new FormData();
-    // formData.append('file', file);
-
-     try {
-    //   const response = await fetch('/api/v1/upload', {
-    //     method: 'POST',
-    //     body: formData,
-    //   });
-
-    //   if (!response.ok) throw new Error('Upload failed');
-      
-    //   const { url } = await response.json() as { url: string };
-    //   setUploadedImageUrl(url);
-    //   form.setValue("profilePic", url);
-    console.log("handleProfilePicUpload called");
+      const { url } = (await response.json()) as { url: string };
+      setUploadedImageUrl(url);
+      form.setValue("profilePic", url);
+      toast({ title: "Success", description: "Profile picture uploaded" });
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Upload failed";
-      toast({
-        title: "Upload Error",
-        description: errorMessage,
-      });
+      toast({ title: "Upload Error", description: errorMessage });
+    } finally {
+      setIsPicUploading(false);
     }
   };
 
-  const handleCvUpload = async () => {
-    // const file = e.target.files?.[0];
-    // if (!file) return;
-    // await handleFileUpload(file, setUploadedCvUrl, "cv");
-    console.log("handleCvUpload called");
+  const handleCvUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append("file", file);
+
+    setIsCvUploading(true);
+    try {
+      const response = await fetch("/api/v1/upload", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!response.ok) throw new Error("CV Upload failed");
+
+      const { url } = (await response.json()) as { url: string };
+      setUploadedCvUrl(url);
+      form.setValue("cv", url);
+      toast({
+        title: "Success",
+        description: "CV/Resume uploaded successfully",
+      });
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : "Upload failed";
+      toast({ title: "Upload Error", description: errorMessage });
+    } finally {
+      setIsCvUploading(false);
+    }
   };
 
   const onSubmit = async (data: EmployeeSchema) => {
@@ -155,63 +184,111 @@ export default function EmployeeCreationDialog() {
     }
   };
 
-  // Helper function to render form fields
-  const renderFormField = (name: keyof EmployeeSchema, label: string, type = "text", placeholder = "") => (
+  const formatCNIC = (value: string) => {
+    const numbers = value.replace(/\D/g, "");
+    if (numbers.length <= 5) {
+      return numbers;
+    } else if (numbers.length <= 12) {
+      return `${numbers.slice(0, 5)}-${numbers.slice(5)}`;
+    } else {
+      return `${numbers.slice(0, 5)}-${numbers.slice(5, 12)}-${numbers.slice(12, 13)}`;
+    }
+  };
+
+  const renderFormField = (
+    name: keyof EmployeeSchema,
+    label: string,
+    type = "text",
+    placeholder = "",
+    isCNIC = false,
+  ) => (
     <FormField
       control={form.control}
       name={name}
       render={({ field }) => (
         <FormItem className="w-full">
-          <FormLabel className="text-sm font-medium text-gray-700">{label}</FormLabel>
+          <FormLabel className="text-md font-medium text-emerald-900">
+            {label}
+          </FormLabel>
           <FormControl>
             <Input
               type={type}
               placeholder={placeholder || label}
-              className="rounded-lg border-gray-200 focus:ring-2 focus:ring-blue-500 transition-all duration-200"
+              // Added "uppercase" class for visual feedback
+              className="rounded-lg border-green-600 bg-emerald-100/90 text-slate-900 transition-all duration-200 focus:ring-2 focus:ring-blue-500"
               {...field}
               value={field.value ?? ""}
+              onChange={(e) => {
+                if (isCNIC) {
+                  const formatted = formatCNIC(e.target.value);
+                  field.onChange(formatted);
+                } else {
+                  // Forcing Uppercase on the logic level
+                  field.onChange(e.target.value.toUpperCase());
+                }
+              }}
+              maxLength={isCNIC ? 15 : undefined}
             />
           </FormControl>
-          <FormMessage className="text-xs" />
+          <FormMessage className="text-xs font-medium text-red-500" />
         </FormItem>
       )}
     />
   );
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 p-4 sm:p-6 lg:p-8">
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className="max-w-8xl mx-auto">
-        <Card className="backdrop-blur-sm bg-white/90 shadow-xl rounded-2xl overflow-hidden border-0">
+    <div className="min-h-screen rounded-lg bg-gradient-to-br from-green-500 via-yellow-600 to-emerald-700 p-4 shadow-lg sm:p-6 lg:p-8">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="max-w-8xl mx-auto"
+      >
+        <Card className="overflow-hidden rounded-2xl border-0 bg-gray-400/70 shadow-xl backdrop-blur-sm">
           <CardHeader className="relative min-h-[100px] items-center">
             <Image
               src="https://res.cloudinary.com/dvvbxrs55/image/upload/v1737374740/hex-one_cihfwh.jpg"
               alt="School building"
               fill
               style={{ objectFit: "cover" }}
-              className="relative inset-0 w-full h-full object-fill filter brightness-75"
+              className="relative inset-0 h-full w-full object-fill brightness-75 filter"
             />
-            <div className="absolute inset-0" />
-            <h2 className="text-4xl font-extrabold relative z-10 text-white">Employee Registration Form</h2>
+            <div className="absolute inset-0 bg-black/40" />
+            <h2 className="relative z-10 text-4xl font-extrabold text-foreground drop-shadow-md">
+              Employee Registration Form
+            </h2>
           </CardHeader>
 
           <CardContent className="p-8">
             <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-                {/* Profile Picture */}
+              <form
+                onSubmit={form.handleSubmit(onSubmit)}
+                className="space-y-8"
+              >
+                {/* --- Profile Picture Section --- */}
                 <div className="flex justify-center">
                   <FormField
                     control={form.control}
                     name="profilePic"
                     render={() => (
                       <FormItem>
-                        <FormLabel className="sr-only">Profile Picture</FormLabel>
+                        <FormLabel className="sr-only">
+                          Profile Picture
+                        </FormLabel>
                         <FormControl>
                           <div className="flex flex-col items-center space-y-4">
                             {uploadedImageUrl ? (
-                              <Image src={uploadedImageUrl} alt="Profile" width={100} height={100} className="rounded-full object-cover" />
+                              <div className="relative h-28 w-28">
+                                <Image
+                                  src={uploadedImageUrl}
+                                  alt="Profile"
+                                  fill
+                                  className="rounded-full border-4 border-white object-cover shadow-md"
+                                />
+                              </div>
                             ) : (
-                              <div className="w-28 h-28 rounded-full bg-green-100 flex items-center justify-center">
-                                <ImagePlus className="w-12 h-12 text-gray-400" />
+                              <div className="flex h-28 w-28 items-center justify-center rounded-full border-4 border-white bg-white/80 shadow-md">
+                                <ImagePlus className="h-12 w-12 text-gray-400" />
                               </div>
                             )}
                             <Input
@@ -219,25 +296,27 @@ export default function EmployeeCreationDialog() {
                               accept="image/*"
                               className="hidden"
                               onChange={handleProfilePicUpload}
-                              aria-label="Upload profile picture"
-                              disabled
+                              id="pic-upload"
                             />
                             <Button
                               type="button"
-                              variant="outline"
+                              variant="secondary"
                               onClick={() =>
-                                document.querySelector<HTMLInputElement>('input[type="file"][accept="image/*"]')!.click()
+                                document.getElementById("pic-upload")?.click()
                               }
-                              className="flex items-center space-x-2"
-                             // disabled={isUploading}
-                             disabled
+                              className="flex items-center space-x-2 bg-white text-gray-800 hover:bg-gray-100"
+                              disabled={isPicUploading}
                             >
-                              {isUploading ? (
-                                <Loader2 className="w-4 h-4 animate-spin" />
+                              {isPicUploading ? (
+                                <Loader2 className="h-4 w-4 animate-spin" />
                               ) : (
-                                <Upload className="w-4 h-4" />
+                                <Upload className="h-4 w-4" />
                               )}
-                              <span>{isUploading ? "Uploading..." : "Upload Photo"}</span>
+                              <span>
+                                {isPicUploading
+                                  ? "Uploading..."
+                                  : "Upload Photo"}
+                              </span>
                             </Button>
                           </div>
                         </FormControl>
@@ -246,25 +325,41 @@ export default function EmployeeCreationDialog() {
                   />
                 </div>
 
-                <Separator />
+                <Separator className="bg-white/40" />
 
-                {/* Basic Fields */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  {renderFormField("employeeName", "Employee Name", "text", "Enter full name")}
-                  {renderFormField("fatherName", "Father's Name", "text", "Enter full name")}
-                  {renderFormField("cnic", "CNIC", "text", "xxxxx-xxxxxxx-x")}
+                {/* --- Personal Information --- */}
+                <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+                  {renderFormField("employeeName", "Full Name")}
+                  {renderFormField("fatherName", "Father's Name")}
+                  {renderFormField(
+                    "cnic",
+                    "CNIC",
+                    "text",
+                    "xxxxx-xxxxxxx-x",
+                    true,
+                  )}
                   {renderFormField("dob", "Date of Birth", "date")}
-                  {renderFormField("doj", "Date of Joining", "date")}
-                  {renderFormField("mobileNo", "Mobile Number", "tel", "Enter 11-digit number")}
+                  {renderFormField(
+                    "mobileNo",
+                    "Mobile Number",
+                    "tel",
+                    "03xxxxxxxxx",
+                  )}
+
                   <FormField
                     control={form.control}
                     name="gender"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Gender</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormLabel className="text-md font-medium text-emerald-900">
+                          Gender
+                        </FormLabel>
+                        <Select
+                          onValueChange={field.onChange}
+                          defaultValue={field.value}
+                        >
                           <FormControl>
-                            <SelectTrigger>
+                            <SelectTrigger className="border-green-600 bg-emerald-100/40 text-slate-900">
                               <SelectValue placeholder="Select gender" />
                             </SelectTrigger>
                           </FormControl>
@@ -274,116 +369,149 @@ export default function EmployeeCreationDialog() {
                             <SelectItem value="CUSTOM">Other</SelectItem>
                           </SelectContent>
                         </Select>
-                        <FormMessage />
+                        <FormMessage className="text-xs font-medium text-red-500" />
                       </FormItem>
                     )}
                   />
+
                   <FormField
                     control={form.control}
                     name="maritalStatus"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Marital Status</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormLabel className="text-md font-medium text-emerald-900">
+                          Marital Status
+                        </FormLabel>
+                        <Select
+                          onValueChange={field.onChange}
+                          defaultValue={field.value}
+                        >
                           <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select marital status" />
+                            <SelectTrigger className="border-green-600 bg-emerald-100/40 text-slate-900">
+                              <SelectValue placeholder="Select status" />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            <SelectItem value="Married">Married</SelectItem>
                             <SelectItem value="Unmarried">Unmarried</SelectItem>
+                            <SelectItem value="Married">Married</SelectItem>
                             <SelectItem value="Widow">Widow</SelectItem>
                             <SelectItem value="Divorced">Divorced</SelectItem>
                           </SelectContent>
                         </Select>
-                        <FormMessage />
+                        <FormMessage className="text-xs font-medium text-red-500" />
                       </FormItem>
                     )}
                   />
+                </div>
+
+                <Separator className="bg-emerald-900/40" />
+
+                {/* --- Job & Education --- */}
+                <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+                  {renderFormField("doj", "Date of Joining", "date")}
+
                   <FormField
                     control={form.control}
                     name="designation"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Designation</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormLabel className="text-md font-medium text-emerald-900">
+                          Designation
+                        </FormLabel>
+                        <Select
+                          onValueChange={field.onChange}
+                          defaultValue={field.value}
+                        >
                           <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select designation" />
+                            <SelectTrigger className="border-green-600 bg-emerald-100/40 text-slate-900">
+                              <SelectValue placeholder="Select role" />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
                             <SelectItem value="PRINCIPAL">Principal</SelectItem>
                             <SelectItem value="ADMIN">Admin</SelectItem>
                             <SelectItem value="HEAD">Head</SelectItem>
-                            <SelectItem value="CLERK">Clerk</SelectItem>
                             <SelectItem value="TEACHER">Teacher</SelectItem>
+                            <SelectItem value="CLERK">Clerk</SelectItem>
                             <SelectItem value="WORKER">Worker</SelectItem>
                           </SelectContent>
                         </Select>
-                        <FormMessage />
+                        <FormMessage className="text-xs font-medium text-red-500" />
                       </FormItem>
                     )}
                   />
+
+                  {renderFormField("education", "Qualification")}
                 </div>
 
-                <Separator />
+                <Separator className="bg-emerald-900/40" />
 
-                {/* Addresses */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {renderFormField("residentialAddress", "Residential Address", "text", "Enter current residence")}
-                  {renderFormField("additionalContact", "Additional Contact", "tel", "Enter additional contact number")}
-                </div>
+                {/* --- Address & CV --- */}
+                <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                  {renderFormField("residentialAddress", "Residential Address")}
+                  {renderFormField(
+                    "additionalContact",
+                    "Additional Contact (Optional)",
+                  )}
 
-                <Separator />
-
-                {/* Education & CV */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {renderFormField("education", "Education", "text", "Enter highest education")}
-                  <FormField
-                    control={form.control}
-                    name="cv"
-                    render={() => (
-                      <FormItem>
-                        <FormLabel>Curriculum Vitae (CV)</FormLabel>
-                        <FormControl>
-                          <div className="flex flex-col gap-2">
-                            <input
-                              id="cvInput"
-                              type="file"
-                              accept=".pdf,.doc,.docx"
-                              className="hidden"
-                              onChange={handleCvUpload}
-                              aria-label="Upload CV"
-                              disabled
-                            />
-                            <Button
-                              type="button"
-                              variant="outline"
-                              onClick={() => document.getElementById("cvInput")!.click()}
-                              className="flex items-center space-x-2"
-                              //disabled={isUploading}
-                              disabled
-                              
-                            >
-                              {isUploading ? (
-                                <Loader2 className="w-4 h-4 animate-spin" />
-                              ) : (
-                                <Upload className="w-4 h-4" />
-                              )}
-                              <span>{isUploading ? "Uploading..." : "Upload CV"}</span>
-                            </Button>
-                            {uploadedCvUrl && <p className="text-sm text-gray-600 italic">CV Selected!</p>}
+                  {/* CV Upload Section */}
+                  <div className="col-span-1 rounded-xl border border-border bg-white/40 p-4 md:col-span-2">
+                    <FormField
+                      control={form.control}
+                      name="cv"
+                      render={() => (
+                        <FormItem className="flex items-center justify-between">
+                          <div className="flex flex-col">
+                            <FormLabel className="text-md flex items-center gap-2 font-bold text-emerald-900">
+                              <FileText className="h-5 w-5" />
+                              Curriculum Vitae (CV)
+                            </FormLabel>
+                            <span className="text-xs text-emerald-900/70">
+                              Upload PDF or DOCX format
+                            </span>
+                            {uploadedCvUrl && (
+                              <span className="mt-1 flex items-center gap-1 text-xs font-bold text-green-700">
+                                <CheckCircle className="h-3 w-3" /> Uploaded
+                                Successfully
+                              </span>
+                            )}
                           </div>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+
+                          <FormControl>
+                            <div className="flex items-center gap-3">
+                              <Input
+                                type="file"
+                                accept=".pdf,.doc,.docx"
+                                className="hidden"
+                                onChange={handleCvUpload}
+                                id="cv-upload"
+                              />
+                              <Button
+                                type="button"
+                                variant="outline"
+                                onClick={() =>
+                                  document.getElementById("cv-upload")?.click()
+                                }
+                                disabled={isCvUploading}
+                                className="border-green-600 bg-white/80 text-emerald-800 hover:bg-white"
+                              >
+                                {isCvUploading ? (
+                                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                ) : (
+                                  <Upload className="mr-2 h-4 w-4" />
+                                )}
+                                {uploadedCvUrl ? "Replace CV" : "Upload CV"}
+                              </Button>
+                            </div>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
                 </div>
 
-                <CardFooter className="p-6 bg-gray-50 flex justify-end gap-4">
+                <CardFooter className="flex justify-end gap-4 p-0 pt-6">
                   <Button
                     type="button"
                     variant="outline"
@@ -392,19 +520,22 @@ export default function EmployeeCreationDialog() {
                       setUploadedImageUrl("");
                       setUploadedCvUrl("");
                     }}
-                    className="rounded-lg"
+                    className="rounded-lg border-0 bg-white/50 hover:bg-white/80"
                   >
                     Reset Form
                   </Button>
                   <Button
                     type="submit"
-                    onClick={form.handleSubmit(onSubmit)}
-                    disabled={createEmployee.isPending}
-                    className="rounded-lg bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700 transition-all duration-300"
+                    disabled={
+                      createEmployee.isPending ||
+                      isPicUploading ||
+                      isCvUploading
+                    }
+                    className="rounded-lg bg-gradient-to-r from-blue-600 to-purple-600 px-8 text-foreground shadow-lg transition-all duration-300 hover:from-blue-700 hover:to-purple-700"
                   >
                     {createEmployee.isPending ? (
                       <div className="flex items-center gap-2">
-                        <Loader2 className="w-4 h-4 animate-spin" />
+                        <Loader2 className="h-4 w-4 animate-spin" />
                         Registering...
                       </div>
                     ) : (

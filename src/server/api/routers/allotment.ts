@@ -17,7 +17,7 @@ export const AllotmentRouter = createTRPCRouter({
         classId: z.string().cuid(),
         studentId: z.string().cuid(),
         sessionId: z.string().cuid(),
-      })
+      }),
     )
     .mutation<StudentClassWithRelations>(async ({ ctx, input }) => {
       try {
@@ -99,23 +99,27 @@ export const AllotmentRouter = createTRPCRouter({
         sessionId: z.string().cuid().optional(), // Made optional to handle undefined/null from client
         page: z.number().min(1).default(1),
         pageSize: z.number().min(1).max(100).default(20),
-      })
+      }),
     )
     .query<{
-      [x: string]: unknown; data: StudentClassWithRelations[]; meta: PaginationMeta 
-}>(async ({ ctx, input }) => {
+      [x: string]: unknown;
+      data: StudentClassWithRelations[];
+      meta: PaginationMeta;
+    }>(async ({ ctx, input }) => {
       try {
         // Explicitly check if classId and sessionId are provided, as they are required for the query
         if (!input.classId) {
           throw new TRPCError({
             code: "BAD_REQUEST",
-            message: "classId is required to fetch students by class and session.",
+            message:
+              "classId is required to fetch students by class and session.",
           });
         }
         if (!input.sessionId) {
           throw new TRPCError({
             code: "BAD_REQUEST",
-            message: "sessionId is required to fetch students by class and session.",
+            message:
+              "sessionId is required to fetch students by class and session.",
           });
         }
 
@@ -166,7 +170,7 @@ export const AllotmentRouter = createTRPCRouter({
         studentIds: z.array(z.string().cuid()),
         classId: z.string().cuid(),
         sessionId: z.string().cuid(),
-      })
+      }),
     )
     .mutation<{ success: boolean; message: string }>(async ({ ctx, input }) => {
       try {
@@ -189,7 +193,9 @@ export const AllotmentRouter = createTRPCRouter({
           }
 
           const studentClassIds = studentClasses.map((sc) => sc.scId);
-          const uniqueStudentIds = [...new Set(studentClasses.map((sc) => sc.studentId))];
+          const uniqueStudentIds = [
+            ...new Set(studentClasses.map((sc) => sc.studentId)),
+          ];
 
           // Delete dependent fee records
           await tx.feeStudentClass.deleteMany({

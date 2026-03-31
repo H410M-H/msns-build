@@ -1,18 +1,34 @@
-"use client"
+// File: src/components/cards/AdminCard.tsx
+"use client";
 
-import { ArrowRight, CalendarIcon as CalendarCog, type LucideIcon, NotebookPenIcon, Wallet } from 'lucide-react'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card"
-import Link from "next/link"
+import {
+  ArrowRight,
+  CalendarIcon as CalendarCog,
+  type LucideIcon,
+  NotebookPenIcon,
+  Wallet,
+} from "lucide-react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "~/components/ui/card";
+import Link from "next/link";
 
-type IconType = LucideIcon
+type IconType = LucideIcon;
 
 interface Services {
-  title: string
-  description: string
-  icon: IconType
-  href: string
-  iconColor: string
-  bgColor: string
+  title: string;
+  description: string;
+  icon: IconType;
+  href: string;
+  // Color configuration
+  baseColor: string; // Base color for borders/text (e.g., "emerald")
+  lightBg: string; // Background for light mode
+  darkBg: string; // Background for dark mode
+  iconColor: string; // Icon text color
 }
 
 const services: Services[] = [
@@ -21,61 +37,100 @@ const services: Services[] = [
     description: "Manage academic sessions, terms, and schedules",
     icon: CalendarCog,
     href: "/admin/sessions",
-    iconColor: "text-yellow-600",
-    bgColor: "bg-yellow-50",
+    baseColor: "emerald",
+    lightBg: "hover:bg-emerald-50/60",
+    darkBg: "hover:bg-emerald-950/30",
+    iconColor: "text-emerald-600 dark:text-emerald-400",
   },
   {
     title: "User Management",
     description: "Manage students, teachers, and staff accounts",
     icon: NotebookPenIcon,
-    iconColor: "text-blue-600",
-    bgColor: "bg-blue-50",
     href: "/admin/users",
+    baseColor: "cyan",
+    lightBg: "hover:bg-cyan-50/60",
+    darkBg: "hover:bg-cyan-950/30",
+    iconColor: "text-cyan-600 dark:text-cyan-400",
   },
   {
     title: "Revenue Management",
     description: "Track and manage student fees and payments",
     icon: Wallet,
-    iconColor: "text-green-600",
-    bgColor: "bg-green-50",
     href: "/admin/revenue",
+    baseColor: "amber",
+    lightBg: "hover:bg-amber-50/60",
+    darkBg: "hover:bg-amber-950/30",
+    iconColor: "text-amber-600 dark:text-amber-400",
   },
-]
+];
 
 export default function AdminCards() {
   return (
-    <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
       {services.map((service) => {
-        const Icon = service.icon
+        const Icon = service.icon;
+
+        // Dynamic class generation based on the base color
+        const borderColor = {
+          emerald:
+            "border-emerald-200 dark:border-emerald-500/20 group-hover:border-emerald-300 dark:group-hover:border-emerald-500/50",
+          cyan: "border-cyan-200 dark:border-cyan-500/20 group-hover:border-cyan-300 dark:group-hover:border-cyan-500/50",
+          amber:
+            "border-amber-200 dark:border-amber-500/20 group-hover:border-amber-300 dark:group-hover:border-amber-500/50",
+        }[service.baseColor];
+
+        const iconBoxStyles = {
+          emerald:
+            "bg-emerald-100 dark:bg-emerald-500/10 border-emerald-200 dark:border-emerald-500/20",
+          cyan: "bg-cyan-100 dark:bg-cyan-500/10 border-cyan-200 dark:border-cyan-500/20",
+          amber:
+            "bg-amber-100 dark:bg-amber-500/10 border-amber-200 dark:border-amber-500/20",
+        }[service.baseColor];
+
         return (
-          <Link href={service.href} key={service.title} className="group">
-            <Card className={`relative overflow-hidden transition-all duration-300 hover:-translate-y-1.5 shadow-sm hover:shadow-lg ${service.bgColor} hover:bg-opacity-90`}>
-              <div className="absolute inset-0 bg-gradient-to-br from-white/30 to-transparent" />
-              <CardHeader className="relative z-10">
-                <div className="flex items-center gap-4">
-                  <div className={`p-3 rounded-xl ${service.bgColor} bg-opacity-20`}>
-                    <Icon className={`h-8 w-8 ${service.iconColor}`} />
+          <Link
+            href={service.href}
+            key={service.title}
+            className="group block h-full"
+          >
+            <Card
+              className={`relative h-full overflow-hidden border bg-white backdrop-blur-sm transition-all duration-300 dark:bg-card ${borderColor} ${service.lightBg} ${service.darkBg} hover:-translate-y-1 hover:shadow-lg dark:hover:shadow-none`}
+            >
+              {/* Subtle Gradient Overlay */}
+              <div className="absolute inset-0 bg-gradient-to-br from-white/50 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100 dark:from-white/5" />
+
+              <CardHeader className="relative z-10 p-5 pb-3">
+                <div className="flex items-start justify-between gap-4">
+                  <div className="space-y-1.5">
+                    <CardTitle className="text-base font-bold leading-tight tracking-tight text-slate-900 dark:text-foreground">
+                      {service.title}
+                    </CardTitle>
+                    <CardDescription className="line-clamp-2 text-xs font-medium leading-relaxed text-muted-foreground dark:text-muted-foreground">
+                      {service.description}
+                    </CardDescription>
                   </div>
-                  <CardTitle className="text-xl font-semibold text-slate-800">
-                    {service.title}
-                  </CardTitle>
+
+                  {/* Icon Box */}
+                  <div
+                    className={`shrink-0 rounded-xl border p-2.5 ${iconBoxStyles} transition-transform duration-300 group-hover:rotate-3 group-hover:scale-110`}
+                  >
+                    <Icon className={`h-5 w-5 ${service.iconColor}`} />
+                  </div>
                 </div>
-                <CardDescription className="text-slate-600 mt-2">
-                  {service.description}
-                </CardDescription>
               </CardHeader>
-              <CardContent className="relative z-10 pt-4">
-                <div className="flex items-center text-sm font-medium text-blue-600 group-hover:text-blue-700 transition-colors">
+
+              <CardContent className="relative z-10 mt-auto p-5 pt-0">
+                <div
+                  className={`flex items-center text-xs font-bold ${service.iconColor} opacity-80 transition-all group-hover:opacity-100`}
+                >
                   Access Panel
-                  <ArrowRight className="h-4 w-4 ml-2 transition-transform group-hover:translate-x-1" />
+                  <ArrowRight className="ml-1.5 h-3.5 w-3.5 transition-transform duration-300 group-hover:translate-x-1" />
                 </div>
               </CardContent>
             </Card>
           </Link>
-        )
+        );
       })}
     </div>
-  )
+  );
 }
-
-

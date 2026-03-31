@@ -1,11 +1,11 @@
 import { TRPCError } from "@trpc/server";
-import { createTRPCRouter, publicProcedure } from "../trpc";
+import { createTRPCRouter, publicProcedure, protectedProcedure } from "../trpc";
 import { z } from "zod";
 import { generatePdf } from "~/lib/pdf-reports";
 import { type Prisma } from "@prisma/client";
 import { userReg } from "~/lib/utils";
-import { hash } from "bcrypt";
-
+import { hash } from "bcryptjs";
+import { studentSchema, studentCSVSchema } from "~/lib/schemas/student";
 
 type StudentReportData = {
   studentId: string;
@@ -22,40 +22,11 @@ type StudentReportData = {
   session: string;
 };
 
-const cnicRegex = /^\d{5}-\d{7}-\d{1}$/;
-const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
-
-export const studentSchema = z.object({
-  studentMobile: z.string().min(11, "Invalid mobile number").max(15),
-  fatherMobile: z.string().min(11, "Invalid mobile number").max(15),
-  studentName: z.string().min(3, "Name too short").max(100),
-  gender: z.enum(["MALE", "FEMALE", "CUSTOM"]),
-  dateOfBirth: z.string().regex(dateRegex, "Invalid date format (YYYY-MM-DD)"),
-  fatherName: z.string().min(3, "Name too short").max(100),
-  studentCNIC: z.string().regex(cnicRegex, "Invalid CNIC format"),
-  fatherCNIC: z.string().regex(cnicRegex, "Invalid CNIC format"),
-  fatherProfession: z.string().max(100).optional(),
-  bloodGroup: z.string().max(3).optional(),
-  guardianName: z.string().max(100).optional(),
-  caste: z.string().max(50),
-  currentAddress: z.string().min(5, "Address too short").max(200),
-  permanentAddress: z.string().min(5, "Address too short").max(500),
-  medicalProblem: z.string().max(500).optional(),
-  isAssign: z.boolean().default(false),
-  createdAt: z.date().optional(),
-  updatedAt: z.date().optional(),
-  studentId: z.string().cuid().optional(),
-  registrationNumber: z.string().optional(),
-  admissionNumber: z.string().optional(),
-  studentClassId: z.string().cuid().optional(),
-  sessionId: z.string().cuid().optional(),
-  profilePic: z.string().optional(),
-});
-
 export const StudentRouter = createTRPCRouter({
   getStudents: publicProcedure.query(async ({ ctx }) => {
     try {
       const students = await ctx.db.students.findMany({
+        orderBy: { createdAt: "desc" },
         select: {
           studentId: true,
           registrationNumber: true,
@@ -81,7 +52,7 @@ export const StudentRouter = createTRPCRouter({
           profilePic: true,
         },
       });
-  
+
       return students;
     } catch (error) {
       console.error("Error fetching students:", error);
@@ -106,25 +77,25 @@ export const StudentRouter = createTRPCRouter({
           isAssign: false,
           OR: input.searchTerm
             ? [
-                {
-                  studentName: {
-                    contains: input.searchTerm,
-                    mode: "insensitive",
-                  },
+              {
+                studentName: {
+                  contains: input.searchTerm,
+                  mode: "insensitive",
                 },
-                {
-                  fatherName: {
-                    contains: input.searchTerm,
-                    mode: "insensitive",
-                  },
+              },
+              {
+                fatherName: {
+                  contains: input.searchTerm,
+                  mode: "insensitive",
                 },
-                {
-                  admissionNumber: {
-                    contains: input.searchTerm,
-                    mode: "insensitive",
-                  },
+              },
+              {
+                admissionNumber: {
+                  contains: input.searchTerm,
+                  mode: "insensitive",
                 },
-              ]
+              },
+            ]
             : undefined,
         };
 
@@ -164,36 +135,94 @@ export const StudentRouter = createTRPCRouter({
       }
     }),
 
+  // Get student profile by User ID (via accountId matching registrationNumber)
+  getProfileByUserId: protectedProcedure.query(async ({ ctx }) => {
+    try {
+      const user = ctx.session.user;
+      if (!user.accountId) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "User account ID not found",
+        });
+      }
+
+      const student = await ctx.db.students.findUnique({
+        where: { registrationNumber: user.accountId },
+        include: {
+          StudentClass: {
+            include: {
+              Grades: true,
+              Sessions: true,
+              FeeStudentClass: {
+                include: {
+                  fees: true,
+                },
+                orderBy: { month: "desc" },
+                take: 1,
+              },
+            },
+            orderBy: {
+              Sessions: { sessionName: "desc" },
+            },
+            take: 1,
+          },
+          ReportCard: {
+            where: { status: "PASSED" },
+            orderBy: { generatedAt: "desc" },
+            take: 5,
+          },
+        },
+      });
+
+      if (!student) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Student profile not found",
+        });
+      }
+
+      return student;
+    } catch (error) {
+      console.error(error);
+      if (error instanceof TRPCError) throw error;
+      throw new TRPCError({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "Failed to fetch student profile",
+      });
+    }
+  }),
+
   createStudent: publicProcedure
     .input(studentSchema)
     .mutation(async ({ ctx, input }) => {
-try {
-      const usersCount = await ctx.db.user.count({
-        where: {
-          accountType: "STUDENT"
-        }
-      })
-      const userInfo = userReg(usersCount, "STUDENT")
-      const newStudent = await ctx.db.students.create({
-        data: {
-          ...input,
-          registrationNumber: userInfo.accountId,
-          admissionNumber: userInfo.admissionNumber,
-        },
-      })
-      const password = await hash(userInfo.admissionNumber, 10)
-      await ctx.db.user.create({
-        data: {
-          accountId: userInfo.accountId,
-          username: userInfo.username,
-          email: userInfo.email.toLowerCase(),
-          password,
-          accountType: "STUDENT",
-        },
-      })
+      try {
+        const usersCount = await ctx.db.user.count({
+          where: { accountType: "STUDENT" },
+        });
+        const userInfo = userReg(usersCount, "STUDENT");
 
-      return newStudent;
-    } catch (error) {
+        const newStudent = await ctx.db.students.create({
+          data: {
+            ...input,
+            studentId: undefined, // Let DB generate ID
+            registrationNumber: userInfo.accountId,
+            admissionNumber: userInfo.admissionNumber,
+          },
+        });
+
+        const password = await hash(userInfo.admissionNumber, 10);
+        await ctx.db.user.create({
+          data: {
+            accountId: userInfo.accountId,
+            username: userInfo.username,
+            email: userInfo.email.toLowerCase(),
+            password,
+            accountType: "STUDENT",
+          },
+        });
+
+        return newStudent;
+      } catch (error) {
         console.error("Error creating student:", error);
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
@@ -202,67 +231,180 @@ try {
       }
     }),
 
-  // In StudentRouter (trpc/router/student.ts)
-getStudentById: publicProcedure
-.input(z.object({ studentId: z.string().cuid() }))
-.query(async ({ ctx, input }) => {
-  try {
-    const student = await ctx.db.students.findUnique({
-      where: { studentId: input.studentId },
-      select: {
-        studentId: true,
-        studentName: true,
-        fatherName: true,
-        gender: true,
-        dateOfBirth: true,
-        studentCNIC: true,
-        fatherCNIC: true,
-        studentMobile: true,
-        fatherMobile: true,
-        caste: true,
-        currentAddress: true,
-        permanentAddress: true,
-        medicalProblem: true,
-        profilePic: true,
-        isAssign: true,
-      },
-    });
-    if (!student) throw new TRPCError({ code: "NOT_FOUND" });
-    return student;
-  } catch (error) {
-    console.error("Error fetching student:", error);
-    throw new TRPCError({
-      code: "INTERNAL_SERVER_ERROR",
-      message: "Failed to fetch student",
-    });
-  }
-}),
+  getStudentById: publicProcedure
+    .input(z.object({ studentId: z.string().cuid() }))
+    .query(async ({ ctx, input }) => {
+      try {
+        const student = await ctx.db.students.findUnique({
+          where: { studentId: input.studentId },
+          select: {
+            studentId: true,
+            studentName: true,
+            fatherName: true,
+            gender: true,
+            dateOfBirth: true,
+            studentCNIC: true,
+            fatherCNIC: true,
+            studentMobile: true,
+            fatherMobile: true,
+            admissionNumber: true,
+            registrationNumber: true,
+            caste: true,
+            currentAddress: true,
+            permanentAddress: true,
+            medicalProblem: true,
+            profilePic: true,
+            isAssign: true,
+            createdAt: true,
+            // Added missing fields to match Prisma Model type
+            updatedAt: true,
+            fatherProfession: true,
+            bloodGroup: true,
+            guardianName: true,
 
-updateStudent: publicProcedure
-.input(
-  studentSchema
-    .omit({ registrationNumber: true, admissionNumber: true })
-    .extend({ studentId: z.string().cuid() })
-)
-.mutation(async ({ ctx, input }) => {
-  try {
-    const { studentId, ...data } = input;
-    const updatedStudent = await ctx.db.students.update({
-      where: { studentId },
-      data: {
-        ...data,
-        updatedAt: new Date(),
-      },
-    });
-    return updatedStudent;
-  } catch (error) {
-    console.error("Error updating student:", error);
-    throw new TRPCError({
-      code: "INTERNAL_SERVER_ERROR",
-      message: "Failed to update student",
-    });
-  }
-}),
+            // Include Class Details
+            StudentClass: {
+              include: {
+                Grades: true,
+                Sessions: true,
+              },
+              orderBy: {
+                Sessions: {
+                  sessionName: "desc",
+                },
+              },
+              take: 1,
+            },
+          },
+        });
+        if (!student) throw new TRPCError({ code: "NOT_FOUND" });
+        return student;
+      } catch (error) {
+        console.error("Error fetching student:", error);
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to fetch student",
+        });
+      }
+    }),
+
+  updateStudent: publicProcedure
+    .input(
+      studentSchema
+        .omit({
+          registrationNumber: true,
+          admissionNumber: true,
+          studentId: true,
+        })
+        .extend({ studentId: z.string().cuid() }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      try {
+        const { studentId, ...data } = input;
+
+        const updatedStudent = await ctx.db.students.update({
+          where: { studentId },
+          data: {
+            ...data,
+            updatedAt: new Date(),
+          },
+        });
+        return updatedStudent;
+      } catch (error) {
+        console.error("Error updating student:", error);
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to update student",
+        });
+      }
+    }),
+
+  bulkCreate: publicProcedure
+    .input(z.array(studentCSVSchema))
+    .mutation(async ({ ctx, input }) => {
+      try {
+        let usersCount = await ctx.db.user.count({
+          where: { accountType: "STUDENT" },
+        });
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const studentsData: any[] = [];
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const usersData: any[] = [];
+
+        const parseDate = (dateStr?: string) => {
+          if (!dateStr) return null;
+          const d = new Date(dateStr);
+          if (!isNaN(d.getTime())) return d;
+
+          const parts = dateStr.split("/");
+          if (parts.length === 3) {
+            const [day, month, year] = parts;
+            const d2 = new Date(`${year}-${month}-${day}`);
+            if (!isNaN(d2.getTime())) return d2;
+          }
+          return null;
+        };
+
+        for (const student of input) {
+          const userInfo = userReg(usersCount, "STUDENT");
+          const password = await hash(userInfo.admissionNumber, 10);
+          const dob = parseDate(student.dateOfBirth);
+          const admissionDate =
+            parseDate(student.dateOfAdmission) ?? new Date();
+          studentsData.push({
+            studentName: student.studentName,
+            fatherName: student.fatherName ?? "",
+            dateOfBirth: dob
+              ? dob.toLocaleDateString()
+              : (student.dateOfBirth ?? ""),
+            currentAddress: student.address ?? "",
+            studentMobile: student.contactNumber ?? "",
+            fatherProfession: student.fatherOccupation ?? "",
+            caste: student.caste ?? "none",
+            registrationNumber: userInfo.accountId,
+            admissionNumber: userInfo.admissionNumber,
+            gender: "MALE",
+            profilePic: "",
+            studentCNIC: "0000-0000000-0",
+            fatherCNIC: "0000-0000000-0",
+            fatherMobile: "none",
+            permanentAddress: "none",
+            createdAt: admissionDate,
+            updatedAt: new Date(),
+          });
+
+          usersData.push({
+            accountId: userInfo.accountId,
+            username: userInfo.username,
+            email: userInfo.email.toLowerCase(),
+            password: password,
+            accountType: "STUDENT",
+          });
+
+          usersCount++;
+        }
+
+        const result = await ctx.db.$transaction([
+          ctx.db.students.createMany({
+            data: studentsData,
+            skipDuplicates: true,
+          }),
+          ctx.db.user.createMany({
+            data: usersData,
+            skipDuplicates: true,
+          }),
+        ]);
+
+        return { count: result[0].count };
+      } catch (error) {
+        console.error("Bulk create error:", error);
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to import students",
+        });
+      }
+    }),
 
   deleteStudentsByIds: publicProcedure
     .input(z.object({ studentIds: z.array(z.string().cuid()) }))

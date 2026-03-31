@@ -1,4 +1,4 @@
- export const RedirectMap: Record<string, string> = {
+export const RedirectMap: Record<string, string> = {
   PRINCIPAL: "/principal",
   ADMIN: "/admin",
   HEAD: "/head",
@@ -8,5 +8,4 @@
   ALL: "/sign-in",
   STUDENT: "/student",
   NONE: "/sign-in",
-
 };

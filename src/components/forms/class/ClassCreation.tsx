@@ -22,7 +22,13 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "~/components/ui/dialog";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "~/components/ui/select";
 import { PlusCircle } from "lucide-react";
 import { useState } from "react";
 
@@ -60,11 +66,11 @@ export const ClassCreationDialog = () => {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button 
-          size="sm" 
-          className="h-11 px-4 rounded-xl gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:shadow-md"
+        <Button
+          size="sm"
+          className="h-11 gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 px-4 text-foreground hover:shadow-md"
         >
-          <PlusCircle className="w-4 h-4" />
+          <PlusCircle className="h-4 w-4" />
           Create Class
         </Button>
       </DialogTrigger>
@@ -83,16 +89,25 @@ export const ClassCreationDialog = () => {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Category</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select
+                    onValueChange={field.onChange}
+                    defaultValue={field.value}
+                  >
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Select a category" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="Montessori">MONTESSORI (Nursery and Prep)</SelectItem>
-                      <SelectItem value="Primary">PRIMARY (One to Five)</SelectItem>
-                      <SelectItem value="Middle">MIDDLE (Six and Seven)</SelectItem>
+                      <SelectItem value="Montessori">
+                        MONTESSORI (Nursery and Prep)
+                      </SelectItem>
+                      <SelectItem value="Primary">
+                        PRIMARY (One to Five)
+                      </SelectItem>
+                      <SelectItem value="Middle">
+                        MIDDLE (Six and Seven)
+                      </SelectItem>
                       <SelectItem value="SSC_I">SSC-I</SelectItem>
                       <SelectItem value="SSC_II">SSC-II</SelectItem>
                     </SelectContent>
@@ -124,7 +139,10 @@ export const ClassCreationDialog = () => {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Section</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select
+                    onValueChange={field.onChange}
+                    defaultValue={field.value}
+                  >
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Select a section" />
@@ -139,7 +157,7 @@ export const ClassCreationDialog = () => {
                 </FormItem>
               )}
             />
-            
+
             <FormField
               control={form.control}
               name="fee"
@@ -151,7 +169,9 @@ export const ClassCreationDialog = () => {
                       type="number"
                       placeholder="Enter fee amount"
                       {...field}
-                      onChange={(e) => field.onChange(parseFloat(e.target.value))}
+                      onChange={(e) =>
+                        field.onChange(parseFloat(e.target.value))
+                      }
                     />
                   </FormControl>
                   <FormMessage />
