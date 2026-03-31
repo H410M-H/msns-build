@@ -286,12 +286,8 @@ export const examRouter = createTRPCRouter({
     .input(z.object({ examId: z.string().cuid() }))
     .mutation(async ({ ctx, input }) => {
       try {
-        // Delete marks first
-        await ctx.db.marks.deleteMany({
-          where: { examId: input.examId },
-        });
+        await ctx.db.marks.deleteMany({ where: { examId: input.examId } });
 
-        // Delete report card details
         const reportCards = await ctx.db.reportCard.findMany({
           where: { examId: input.examId },
           select: { reportCardId: true },
@@ -303,26 +299,77 @@ export const examRouter = createTRPCRouter({
           });
         }
 
-        // Delete report cards
-        await ctx.db.reportCard.deleteMany({
-          where: { examId: input.examId },
-        });
+        await ctx.db.reportCard.deleteMany({ where: { examId: input.examId } });
+        await ctx.db.exam.delete({ where: { examId: input.examId } });
 
-        // Delete exam
-        await ctx.db.exam.delete({
-          where: { examId: input.examId },
-        });
-
-        return {
-          success: true,
-          message: "Exam deleted successfully",
-        };
+        return { success: true, message: "Exam deleted successfully" };
       } catch (error) {
         console.error("Error deleting exam:", error);
-        throw new TRPCError({
-          code: "INTERNAL_SERVER_ERROR",
-          message: "Failed to delete exam",
+        throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Failed to delete exam" });
+      }
+    }),
+
+  getExamWithSubjects: publicProcedure
+    .input(z.object({ examId: z.string().cuid(), classId: z.string().cuid(), sessionId: z.string().cuid() }))
+    .query(async ({ ctx, input }) => {
+      try {
+        // Fetch the exam
+        const exam = await ctx.db.exam.findUnique({
+          where: { examId: input.examId },
+          include: {
+            ExamType: true,
+            ExamDatesheet: {
+              include: { Subject: { select: { subjectId: true, subjectName: true } } },
+            },
+          },
         });
+
+        if (!exam) throw new TRPCError({ code: "NOT_FOUND", message: "Exam not found" });
+
+        // Fetch all subjects assigned to this class/session
+        const classSubjects = await ctx.db.classSubject.findMany({
+          where: { classId: input.classId, sessionId: input.sessionId },
+          include: {
+            Subject: { select: { subjectId: true, subjectName: true } },
+            Employees: { select: { employeeName: true } },
+          },
+          orderBy: { Subject: { subjectName: "asc" } },
+        });
+
+        // Fetch all marks for this exam
+        const marks = await ctx.db.marks.findMany({
+          where: { examId: input.examId },
+          select: { subjectId: true, obtainedMarks: true, studentId: true, totalMarks: true },
+        });
+
+        // Build per-subject summary
+        const subjectSummary = classSubjects.map((cs) => {
+          const subjectMarks = marks.filter((m) => m.subjectId === cs.Subject.subjectId);
+          const studentsEvaluated = new Set(subjectMarks.map((m) => m.studentId)).size;
+          const totalObtained = subjectMarks.reduce((sum, m) => sum + m.obtainedMarks, 0);
+          const datesheetEntry = exam.ExamDatesheet.find(
+            (d) => d.subjectId === cs.Subject.subjectId,
+          );
+          return {
+            csId: cs.csId,
+            subjectId: cs.Subject.subjectId,
+            subjectName: cs.Subject.subjectName,
+            teacherName: cs.Employees.employeeName,
+            totalMarks: exam.totalMarks,
+            studentsEvaluated,
+            totalObtained,
+            averageObtained: studentsEvaluated > 0 ? Math.round(totalObtained / studentsEvaluated) : null,
+            examDate: datesheetEntry?.date ?? null,
+            startTime: datesheetEntry?.startTime ?? null,
+            endTime: datesheetEntry?.endTime ?? null,
+          };
+        });
+
+        return { exam, subjectSummary };
+      } catch (error) {
+        if (error instanceof TRPCError) throw error;
+        throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Failed to fetch exam subjects" });
       }
     }),
 });
+
