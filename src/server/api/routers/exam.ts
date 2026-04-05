@@ -104,15 +104,15 @@ export const examRouter = createTRPCRouter({
             status: "SCHEDULED",
             ...(input.datesheet &&
               input.datesheet.length > 0 && {
-                ExamDatesheet: {
-                  create: input.datesheet.map((ds) => ({
-                    subjectId: ds.subjectId,
-                    date: ds.date,
-                    startTime: ds.startTime,
-                    endTime: ds.endTime,
-                  })),
-                },
-              }),
+              ExamDatesheet: {
+                create: input.datesheet.map((ds) => ({
+                  subjectId: ds.subjectId,
+                  date: ds.date,
+                  startTime: ds.startTime,
+                  endTime: ds.endTime,
+                })),
+              },
+            }),
           },
           include: {
             ExamDatesheet: true,

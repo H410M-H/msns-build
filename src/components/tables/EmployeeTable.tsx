@@ -176,9 +176,9 @@ export function EmployeeTable() {
               className="cursor-pointer hover:bg-slate-100 focus:bg-slate-100 dark:hover:bg-emerald-500/20 dark:focus:bg-emerald-500/20"
             >
               <Link
-                href={`/dashboard/employee/view/${row.original.employeeId}`}
+                href={`/admin/users/faculty/${row.original.employeeId}/profile`}
               >
-                <Eye className="mr-2 h-3.5 w-3.5" /> View Details
+                <Eye className="mr-2 h-3.5 w-3.5" /> View Profile
               </Link>
             </DropdownMenuItem>
             {row.original.cv && (

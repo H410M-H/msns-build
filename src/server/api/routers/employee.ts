@@ -131,6 +131,31 @@ export const EmployeeRouter = createTRPCRouter({
       return employee;
     }),
 
+  // Get employee profile with linked User account details
+  getEmployeeWithUser: publicProcedure
+    .input(z.object({ employeeId: z.string().cuid() }))
+    .query(async ({ ctx, input }) => {
+      const employee = await ctx.db.employees.findUnique({
+        where: { employeeId: input.employeeId },
+      });
+      if (!employee) throw new TRPCError({ code: "NOT_FOUND", message: "Employee not found" });
+
+      // Find linked user via registrationNumber === accountId
+      const user = await ctx.db.user.findFirst({
+        where: { accountId: employee.registrationNumber },
+        select: {
+          id: true,
+          username: true,
+          email: true,
+          accountType: true,
+          accountId: true,
+          createdAt: true,
+        },
+      });
+
+      return { ...employee, user: user ?? null };
+    }),
+
   getUnAllocateEmployees: publicProcedure.query(async ({ ctx }) => {
     try {
       const employees = await ctx.db.employees.findMany({
@@ -203,6 +228,61 @@ export const EmployeeRouter = createTRPCRouter({
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
           message: "Failed to update employee",
+        });
+      }
+    }),
+
+  // Update both employee record and linked User account (username + email + designation)
+  updateEmployeeAndUser: publicProcedure
+    .input(
+      employeeSchema.extend({
+        employeeId: z.string().cuid(),
+        username: z.string().min(2).max(100).optional(),
+        email: z.string().email().optional(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      try {
+        const { employeeId, username, email, ...employeeData } = input;
+
+        // Find the employee first to get their registrationNumber
+        const existing = await ctx.db.employees.findUnique({
+          where: { employeeId },
+          select: { registrationNumber: true },
+        });
+
+        if (!existing) {
+          throw new TRPCError({ code: "NOT_FOUND", message: "Employee not found" });
+        }
+
+        // Run both updates in a transaction
+        const [updatedEmployee] = await ctx.db.$transaction([
+          ctx.db.employees.update({
+            where: { employeeId },
+            data: employeeData,
+          }),
+          ...(username ?? email
+            ? [
+              ctx.db.user.updateMany({
+                where: { accountId: existing.registrationNumber },
+                data: {
+                  ...(username ? { username } : {}),
+                  ...(email ? { email: email.toLowerCase() } : {}),
+                  // Sync accountType if designation changed
+                  accountType: employeeData.designation as AccountTypeEnum,
+                },
+              }),
+            ]
+            : []),
+        ]);
+
+        return updatedEmployee;
+      } catch (error) {
+        console.error(error);
+        if (error instanceof TRPCError) throw error;
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to update employee and user account",
         });
       }
     }),
