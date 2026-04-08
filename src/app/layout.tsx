@@ -5,15 +5,15 @@ import { Geist_Mono, Inter } from "next/font/google";
 import { type Metadata } from "next";
 import Script from "next/script";
 import { Analytics } from "@vercel/analytics/next";
-import { SpeedInsights } from "@vercel/speed-insights/next";
 import { ThemeProvider } from "next-themes";
 
 import { Provider } from "~/app/provider";
 import { TRPCReactProvider } from "~/trpc/react";
 import { Toaster } from "~/components/ui/sonner";
 import { Header } from "~/components/blocks/nav/Header";
-import { Footer } from "~/components/blocks/nav/footer/footer";
-import { SchoolSchema } from "~/components/SEOSchema";
+import { Footer } from "~/components/blocks/footer/footer";
+import { SchoolSchema } from "~/components/blocks/SEOSchema";
+import { GoogleTagManager } from "~/components/analytics/GoogleTagManager";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -69,19 +69,26 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning className="h-full">
       <head>
-        {/* Google Tag (gtag.js) - G-K3FXJTBQKM */}
-        <Script
-          src="https://www.googletagmanager.com/gtag/js?id=G-K3FXJTBQKM"
-          strategy="afterInteractive"
-        />
-        <Script id="google-analytics" strategy="afterInteractive">
-          {`
-            window.dataLayer = window.dataLayer || [];
-            function gtag(){dataLayer.push(arguments);}
-            gtag('js', new Date());
-            gtag('config', 'G-K3FXJTBQKM');
-          `}
-        </Script>
+        {/* Google Tag Manager - If GTM_CONTAINER_ID is set, use it; otherwise fall back to GA4 */}
+        {process.env.GTM_CONTAINER_ID ? (
+          <GoogleTagManager containerID={process.env.GTM_CONTAINER_ID} />
+        ) : (
+          <>
+            {/* Direct GA4 tracking (fallback if GTM not configured) */}
+            <Script
+              src="https://www.googletagmanager.com/gtag/js?id=G-K3FXJTBQKM"
+              strategy="afterInteractive"
+            />
+            <Script id="google-analytics" strategy="afterInteractive">
+              {`
+                window.dataLayer = window.dataLayer || [];
+                function gtag(){dataLayer.push(arguments);}
+                gtag('js', new Date());
+                gtag('config', 'G-K3FXJTBQKM');
+              `}
+            </Script>
+          </>
+        )}
         <SchoolSchema />
       </head>
       <body
@@ -94,7 +101,6 @@ export default function RootLayout({
               <main className="flex-1">
                 {children}
                 <Analytics />
-                <SpeedInsights />
               </main>
               <Footer />
               <Toaster />
