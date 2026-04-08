@@ -69,9 +69,6 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning className="h-full">
       <head>
-        {/* Sitemap reference for search engines */}
-        <link rel="sitemap" type="application/xml" title="Sitemap" href="/sitemap.xml" />
-
         {/* Google Tag (gtag.js) - G-K3FXJTBQKM */}
         <Script
           src="https://www.googletagmanager.com/gtag/js?id=G-K3FXJTBQKM"

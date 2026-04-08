@@ -1,9 +1,0 @@
-User-agent: *
-Allow: /
-Disallow: /api/
-Disallow: /admin/
-Disallow: /private/
-Disallow: /dashboard/
-Disallow: /*.json$
-
-Sitemap: https://msns.edu.pk/sitemap.xml
