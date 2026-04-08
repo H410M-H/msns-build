@@ -4,16 +4,9 @@ import "~/styles/globals.css";
 import { Geist_Mono, Inter } from "next/font/google";
 import { type Metadata } from "next";
 import Script from "next/script";
-import { Analytics } from "@vercel/analytics/next";
-import { SpeedInsights } from "@vercel/speed-insights/next";
-import { ThemeProvider } from "next-themes";
 
-import { Provider } from "~/app/provider";
-import { TRPCReactProvider } from "~/trpc/react";
-import { Toaster } from "~/components/ui/sonner";
-import { Header } from "~/components/blocks/nav/Header";
-import { Footer } from "~/components/blocks/nav/footer/footer";
-import { SchoolSchema } from "~/components/SEOSchema";
+// SEO component – uncomment and fix path if needed
+// import { SchoolSchema } from "~/components/SEOSchema";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -82,25 +75,13 @@ export default function RootLayout({
             gtag('config', 'G-K3FXJTBQKM');
           `}
         </Script>
-        <SchoolSchema />
+        {/* Uncomment after fixing the import path */}
+        {/* <SchoolSchema /> */}
       </head>
       <body
-        className={`${inter.variable} ${geistMono.variable} h-full font-sans antialiased flex min-h-screen flex-col`}
+        className={`${inter.variable} ${geistMono.variable} h-full font-sans antialiased`}
       >
-        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-          <TRPCReactProvider>
-            <Provider>
-              <Header />
-              <main className="flex-1">
-                {children}
-                <Analytics />
-                <SpeedInsights />
-              </main>
-              <Footer />
-              <Toaster />
-            </Provider>
-          </TRPCReactProvider>
-        </ThemeProvider>
+        {children}
       </body>
     </html>
   );
