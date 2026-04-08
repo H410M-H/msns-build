@@ -1,14 +1,19 @@
+// src/app/layout.tsx
 import "~/styles/globals.css";
 
 import { Geist_Mono, Inter } from "next/font/google";
 import { type Metadata } from "next";
 import Script from "next/script";
-import { Provider } from "~/app/provider";
-import { Toaster } from "~/components/ui/sonner";
 import { Analytics } from "@vercel/analytics/next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import { ThemeProvider } from "next-themes";
-import { GoogleTagManager } from "~/components/GoogleTagManager";
-import { SchoolSchema } from "~/schemas/SchoolSchema";
+
+import { Provider } from "~/app/provider";
+import { TRPCReactProvider } from "~/trpc/react";
+import { Toaster } from "~/components/ui/sonner";
+import { Header } from "~/components/blocks/nav/Header";
+import { Footer } from "~/components/blocks/nav/footer/footer";
+import { SchoolSchema } from "~/components/SEOSchema";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -23,77 +28,81 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "MSNS-LMS | Portal Login",
-  description: "M.S. Naz High School Learning Management System.",
-  keywords: "LMS, school management, learning platform, MSNS",
+  title: "M. S. NAZ HIGH SCHOOL® | Portal",
+  description: "M.S. Naz High School Learning Management System. Since - 2004 | Developed by MSNS-DEV™",
   verification: {
-    // Replace with your actual verification code if needed
-    google: "your-google-site-verification-code",
+    google: "UEssQjRtMsHt_ioT8H5RUA2Rnl0_9QEl0d8tL6JBi1E",
   },
-  icons: [{ rel: "icon", url: "/favicon.ico" }],
-  manifest: "/manifest.json",
+  keywords: [
+    "msns", "m s naz", "m s naz high school", "msnaz", "lms", "portal", 
+    "ghakkhar", "wazirabad", "gujranwala", "msns-dev"
+  ].join(", "),
   openGraph: {
-    title: "MSNS-LMS | Portal Login",
-    description: "M.S. Naz High School Learning Management System.",
-    url: "https://msns-lms.vercel.app", // Replace with your actual domain
-    siteName: "MSNS-LMS",
+    title: "M.S. Naz High School®",
+    description: "Explore the premier educational experience at M.S. Naz High School® focused on excellence and student development.",
+    url: "https://msns.edu.pk/",
+    siteName: "M.S. Naz High School®",
     images: [
       {
-        url: "https://your-image-url.com/og-image.png", // Replace with actual OG image
+        url: "https://res.cloudinary.com/dvvbxrs55/image/upload/v1729267533/Official_LOGO_grn_ic9ldd.png",
         width: 1200,
         height: 630,
-        alt: "MSNS-LMS Platform",
-      },
+        alt: "M.S. Naz High School® Logo"
+      }
     ],
     type: "website",
   },
   robots: {
     index: true,
     follow: true,
-    googleBot: {
-      index: true,
-      follow: true,
-    },
   },
   alternates: {
-    canonical: "https://msns-lms.vercel.app", // Replace with your actual domain
+    canonical: "https://msns.edu.pk",
   },
+  manifest: "/manifest.json",
+  icons: [{ rel: "icon", url: "/favicon.ico" }],
 };
 
 export default function RootLayout({
   children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
-  const gtmScript = GoogleTagManager(); // returns string of script content
-  const schoolSchemaJson = JSON.stringify(SchoolSchema);
-
+}: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" suppressHydrationWarning className="h-full">
       <head>
-        {/* Google Tag Manager - inline script */}
+        {/* Sitemap reference for search engines */}
+        <link rel="sitemap" type="application/xml" title="Sitemap" href="/sitemap.xml" />
+
+        {/* Google Tag (gtag.js) - G-K3FXJTBQKM */}
         <Script
-          id="gtm-script"
+          src="https://www.googletagmanager.com/gtag/js?id=G-K3FXJTBQKM"
           strategy="afterInteractive"
-          dangerouslySetInnerHTML={{ __html: gtmScript }}
         />
-        {/* JSON-LD Schema for school */}
-        <Script
-          id="school-schema"
-          type="application/ld+json"
-          strategy="afterInteractive"
-          dangerouslySetInnerHTML={{ __html: schoolSchemaJson }}
-        />
+        <Script id="google-analytics" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'G-K3FXJTBQKM');
+          `}
+        </Script>
+        <SchoolSchema />
       </head>
       <body
-        className={`${inter.variable} ${geistMono.variable} h-full font-sans antialiased`}
+        className={`${inter.variable} ${geistMono.variable} h-full font-sans antialiased flex min-h-screen flex-col`}
       >
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-          <Provider>
-            {children}
-            <Toaster />
-          </Provider>
-          <Analytics />
+          <TRPCReactProvider>
+            <Provider>
+              <Header />
+              <main className="flex-1">
+                {children}
+                <Analytics />
+                <SpeedInsights />
+              </main>
+              <Footer />
+              <Toaster />
+            </Provider>
+          </TRPCReactProvider>
         </ThemeProvider>
       </body>
     </html>
