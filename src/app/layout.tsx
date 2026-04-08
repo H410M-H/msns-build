@@ -21,6 +21,9 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "MSNS-LMS | Portal Login",
+verification: {
+    google: "UEssQjRtMsHt_ioT8H5RUA2Rnl0_9QEl0d8tL6JBi1E",
+  },
   description: "M.S. Naz High School Learning Management System.",
   icons: [{ rel: "icon", url: "/favicon.ico" }],
 };
