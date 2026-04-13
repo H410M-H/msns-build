@@ -1,6 +1,8 @@
 import { SidebarInset, SidebarProvider } from "~/components/ui/sidebar";
 import { AppSidebar } from "~/components/blocks/sidebar/app-sidebar";
 
+export const dynamic = "force-dynamic";
+
 export default function StudentDashboardLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {

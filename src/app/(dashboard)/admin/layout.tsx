@@ -6,6 +6,8 @@ import {
 } from "~/components/ui/sidebar";
 import { Separator } from "~/components/ui/separator";
 
+export const dynamic = "force-dynamic";
+
 export default async function DashboardLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
