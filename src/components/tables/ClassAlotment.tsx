@@ -284,15 +284,15 @@ export const ClassAllotmentTable = ({
             {Array(4)
               .fill(0)
               .map((_, i) => (
-                <Skeleton key={i} className="h-32 rounded-xl bg-white/5" />
+                <Skeleton key={i} className="h-32 shrink-0 rounded-xl bg-white/5 w-[280px] sm:w-[320px]" />
               ))}
           </div>
         ) : subjects?.length ? (
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          <div className="flex gap-4 overflow-x-auto pb-4 custom-scrollbar">
             {subjects.map((subject) => (
               <div
                 key={subject.csId}
-                className="group relative flex flex-col justify-between rounded-xl border border-border bg-card p-5 transition-all hover:-translate-y-1 hover:border-blue-500/30 hover:shadow-lg hover:shadow-blue-900/10"
+                className="group relative shrink-0 rounded-xl border border-border bg-card p-5 transition-all hover:-translate-y-1 hover:border-blue-500/30 hover:shadow-lg hover:shadow-blue-900/10 flex flex-col justify-between w-[280px] sm:w-[320px]"
               >
                 <div>
                   <div className="mb-3 flex items-start justify-between">
@@ -386,7 +386,6 @@ export const ClassAllotmentTable = ({
             )}
           </div>
 
-          {/* Toolbar: Search + Select All */}
           <div className="flex flex-col items-start justify-between gap-4 rounded-lg border border-border bg-white/5 p-3 sm:flex-row sm:items-center">
             <div className="flex w-full items-center gap-3 sm:w-auto">
               <div className="flex items-center space-x-2 pl-1">
@@ -419,12 +418,12 @@ export const ClassAllotmentTable = ({
           </div>
         </div>
 
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        <div className="flex gap-4 overflow-x-auto pb-4 custom-scrollbar">
           {studentsLoading ? (
             Array(4)
               .fill(0)
               .map((_, i) => (
-                <Skeleton key={i} className="h-40 rounded-xl bg-white/5" />
+                <Skeleton key={i} className="h-40 shrink-0 w-[280px] sm:w-[320px] rounded-xl bg-white/5" />
               ))
           ) : table.getRowModel().rows?.length ? (
             table.getRowModel().rows.map((row) => (
@@ -432,7 +431,7 @@ export const ClassAllotmentTable = ({
                 key={row.id}
                 onClick={() => row.toggleSelected()}
                 className={cn(
-                  "group relative cursor-pointer select-none overflow-hidden rounded-xl border p-4 transition-all",
+                  "group relative shrink-0 w-[280px] sm:w-[320px] cursor-pointer flex flex-col gap-4 select-none rounded-xl border p-4 transition-all",
                   row.getIsSelected()
                     ? "border-emerald-500 bg-emerald-900/20 shadow-lg ring-1 ring-emerald-500/50"
                     : "border-border bg-card hover:border-emerald-500/30 hover:bg-card hover:shadow-md",
@@ -472,7 +471,7 @@ export const ClassAllotmentTable = ({
                         className={cn(
                           "border-border text-xs",
                           classColors[row.original.Grades.grade] ??
-                            classColors.default,
+                          classColors.default,
                         )}
                       >
                         Grade {row.original.Grades.grade}
@@ -487,31 +486,33 @@ export const ClassAllotmentTable = ({
                     </div>
                   </div>
 
-                  <Button
-                    asChild
-                    variant="ghost"
-                    size="sm"
-                    className="mt-1 w-full border border-border bg-white/5 text-muted-foreground hover:bg-white/10 hover:text-foreground"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    <Link
-                      href={`/admin/users/student/${row.original.Students.studentId}`}
+                  <div className="flex flex-col gap-1">
+                    <Button
+                      asChild
+                      variant="ghost"
+                      size="sm"
+                      className="mt-1 w-full border border-border bg-white/5 text-muted-foreground hover:bg-white/10 hover:text-foreground"
+                      onClick={(e) => e.stopPropagation()}
                     >
-                      View Profile
-                    </Link>
-                  </Button>
-                  <div onClick={(e) => e.stopPropagation()}>
-                    <StudentReportCardsDialog
-                      studentId={row.original.Students.studentId}
-                      studentName={row.original.Students.studentName}
-                      sessionId={sessionId}
-                    />
+                      <Link
+                        href={`/admin/users/student/${row.original.Students.studentId}`}
+                      >
+                        View Profile
+                      </Link>
+                    </Button>
+                    <div onClick={(e) => e.stopPropagation()}>
+                      <StudentReportCardsDialog
+                        studentId={row.original.Students.studentId}
+                        studentName={row.original.Students.studentName}
+                        sessionId={sessionId}
+                      />
+                    </div>
                   </div>
                 </div>
               </div>
             ))
           ) : (
-            <div className="col-span-full flex flex-col items-center justify-center space-y-4 rounded-xl border-2 border-dashed border-border bg-white/5 p-12">
+            <div className="col-span-full flex flex-col items-center justify-center space-y-4 rounded-xl border-2 border-dashed border-border bg-white/5 p-12 w-full">
               <div className="rounded-full border border-border bg-card p-4 text-slate-600">
                 <Search className="h-8 w-8" />
               </div>

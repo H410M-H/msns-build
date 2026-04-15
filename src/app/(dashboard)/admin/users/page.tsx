@@ -1,7 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { motion, useReducedMotion } from "framer-motion";
+import { motion } from "framer-motion";
 import { GraduationCap, ArrowRight, Sparkles } from "lucide-react";
 import { PageHeader } from "~/components/blocks/nav/PageHeader";
 import RegistrationCards from "~/components/cards/RegistrationCard";
@@ -12,56 +11,12 @@ export default function RegistrationPage() {
     { href: "/admin/users", label: "User Management", current: true },
   ];
 
-  const [isMobile, setIsMobile] = useState(false);
-  const prefersReducedMotion = useReducedMotion();
-
-  // Detect mobile for optimization
-  useEffect(() => {
-    const checkMobile = () => setIsMobile(window.innerWidth < 1024);
-    checkMobile();
-    window.addEventListener("resize", checkMobile);
-    return () => window.removeEventListener("resize", checkMobile);
-  }, []);
-
   return (
-    <div className="relative min-h-screen w-full overflow-x-hidden bg-gradient-to-br from-[#344a3f] via-[#12251b] to-[#02131b]">
-      {/* 🎯 OPTIMIZED GRID BACKGROUND (Dark Theme) */}
-      <div className="pointer-events-none absolute inset-0 z-0">
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(45,255,196,0.05)_1px,transparent_1px),linear-gradient(to_bottom,rgba(45,255,196,0.05)_1px,transparent_1px)] bg-[size:3rem_3rem] sm:bg-[size:4rem_4rem]" />
-        <div className="absolute inset-0 bg-gradient-to-br from-emerald-900/40 via-black/20 to-black/60" />
-      </div>
-
-      {/* 🎯 AMBIENT GLOW EFFECTS */}
-      {!prefersReducedMotion && !isMobile && (
-        <>
-          <motion.div
-            className="absolute left-[20%] top-[20%] h-[25rem] w-[25rem] rounded-full bg-emerald-500/10 blur-[100px]"
-            animate={{
-              scale: [1, 1.2, 1],
-              opacity: [0.2, 0.3, 0.2],
-            }}
-            transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
-          />
-          <motion.div
-            className="absolute bottom-[10%] right-[10%] h-[20rem] w-[20rem] rounded-full bg-cyan-500/10 blur-[100px]"
-            animate={{
-              scale: [1, 1.1, 1],
-              opacity: [0.2, 0.3, 0.2],
-            }}
-            transition={{
-              duration: 12,
-              repeat: Infinity,
-              ease: "easeInOut",
-              delay: 2,
-            }}
-          />
-        </>
-      )}
-
-      <div className="relative z-10 max-w-[100vw] px-4 py-6 sm:px-6 lg:px-8">
+    <div className="relative w-full">
+      <div className="relative z-10 max-w-[100vw] px-4 py-4 sm:px-6 lg:px-8">
         <PageHeader breadcrumbs={breadcrumbs} />
 
-        <div className="flex flex-1 flex-col items-center justify-center py-12 sm:py-16 lg:py-20">
+        <div className="flex flex-1 flex-col items-center justify-center py-6 sm:py-8 lg:py-12">
           {/* Hero Header */}
           <div className="mx-auto mb-16 max-w-4xl space-y-6 text-center">
             <motion.div

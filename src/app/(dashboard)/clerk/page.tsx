@@ -32,32 +32,10 @@ export default function ClerkDashboard() {
         <WelcomeSection />
       </motion.div>
 
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.08, duration: 0.4, ease: "easeOut" }}>
-        <StatsCards />
-      </motion.div>
-
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.16, duration: 0.4, ease: "easeOut" }}
-        className="grid grid-cols-1 gap-6 lg:grid-cols-3"
-      >
-        <div className="lg:col-span-2">
-          <RevenueAnalyticsChart />
-        </div>
-        <div className="lg:col-span-1">
-          <BroadcastBoard />
-        </div>
-      </motion.div>
-
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.24, duration: 0.4, ease: "easeOut" }}>
-        <ActivityFeed />
-      </motion.div>
-
       <motion.section
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.32, duration: 0.4, ease: "easeOut" }}
+        transition={{ delay: 0.08, duration: 0.4, ease: "easeOut" }}
         className="overflow-hidden rounded-2xl border border-slate-200 bg-white/50 shadow-sm backdrop-blur-xl dark:border-border dark:bg-card"
       >
         <Tabs defaultValue="registration" className="w-full">
@@ -102,6 +80,28 @@ export default function ClerkDashboard() {
           </div>
         </Tabs>
       </motion.section>
+
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.16, duration: 0.4, ease: "easeOut" }}>
+        <StatsCards />
+      </motion.div>
+
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.24, duration: 0.4, ease: "easeOut" }}
+        className="grid grid-cols-1 gap-6 lg:grid-cols-3"
+      >
+        <div className="lg:col-span-2">
+          <RevenueAnalyticsChart />
+        </div>
+        <div className="lg:col-span-1">
+          <BroadcastBoard />
+        </div>
+      </motion.div>
+
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.32, duration: 0.4, ease: "easeOut" }}>
+        <ActivityFeed />
+      </motion.div>
     </div>
   );
 }

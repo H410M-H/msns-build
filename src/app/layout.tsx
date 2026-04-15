@@ -28,7 +28,7 @@ export const metadata: Metadata = {
     google: "UEssQjRtMsHt_ioT8H5RUA2Rnl0_9QEl0d8tL6JBi1E",
   },
   keywords: [
-    "msns", "m s naz", "m s naz high school", "msnaz", "lms", "portal", 
+    "msns", "m s naz", "m s naz high school", "msnaz", "lms", "portal",
     "ghakkhar", "wazirabad", "gujranwala", "msns-dev"
   ].join(", "),
   openGraph: {

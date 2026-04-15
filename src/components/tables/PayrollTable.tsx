@@ -113,6 +113,10 @@ export function PayrollTable({ month, year }: PayrollTableProps) {
   // Selection State
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
+  // Pagination State
+  const [page, setPage] = useState(1);
+  const pageSize = 10;
+
   const slipRef = useRef<HTMLDivElement>(null);
   const utils = api.useUtils();
 
@@ -323,6 +327,9 @@ export function PayrollTable({ month, year }: PayrollTableProps) {
     });
   }, [salaryData, missingEmployees]);
 
+  const totalPages = Math.ceil(combinedData.length / pageSize);
+  const paginatedData = combinedData.slice((page - 1) * pageSize, page * pageSize);
+
   // --- PDF Logic ---
   const handlePrint = () => {
     const content = slipRef.current;
@@ -418,246 +425,256 @@ export function PayrollTable({ month, year }: PayrollTableProps) {
 
       <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm backdrop-blur-sm transition-colors dark:border-emerald-500/20 dark:bg-card dark:shadow-xl">
         <div className="overflow-x-auto">
-        <Table>
-          <TableHeader className="border-b border-slate-200 bg-slate-50 dark:border-emerald-500/20 dark:bg-emerald-950/40">
-            <TableRow className="hover:bg-transparent">
-              <TableHead className="w-[50px] text-slate-600 dark:text-emerald-100/80">
-                <Checkbox
-                  checked={
-                    salaryData?.salaries.length &&
-                    selectedIds.length === salaryData?.salaries.length
-                      ? true
-                      : selectedIds.length > 0
-                        ? "indeterminate"
-                        : false
-                  }
-                  onCheckedChange={handleSelectAll}
-                  aria-label="Select all"
-                  className="border-slate-300 data-[state=checked]:bg-emerald-600 data-[state=checked]:text-foreground dark:border-emerald-500/50"
-                />
-              </TableHead>
-              <TableHead className="font-semibold text-slate-600 dark:text-emerald-100/80">
-                Employee
-              </TableHead>
-              <TableHead className="font-semibold text-slate-600 dark:text-emerald-100/80">
-                Designation
-              </TableHead>
-              <TableHead className="font-semibold text-slate-600 dark:text-emerald-100/80">
-                Base Salary
-              </TableHead>
-              <TableHead className="font-semibold text-slate-600 dark:text-emerald-100/80">
-                Allowances
-              </TableHead>
-              <TableHead className="font-semibold text-slate-600 dark:text-emerald-100/80">
-                Deductions
-              </TableHead>
-              <TableHead className="text-right font-semibold text-slate-600 dark:text-emerald-100/80">
-                Net Payable
-              </TableHead>
-              <TableHead className="font-semibold text-slate-600 dark:text-emerald-100/80">
-                Status
-              </TableHead>
-              <TableHead className="text-right font-semibold text-slate-600 dark:text-emerald-100/80">
-                Actions
-              </TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {combinedData.length === 0 ? (
-              <TableRow>
-                <TableCell
-                  colSpan={9}
-                  className="h-32 text-center text-muted-foreground"
-                >
-                  No employees found for this period.
-                </TableCell>
+          <Table>
+            <TableHeader className="border-b border-slate-200 bg-slate-50 dark:border-emerald-500/20 dark:bg-emerald-950/40">
+              <TableRow className="hover:bg-transparent">
+                <TableHead className="w-[50px] text-slate-600 dark:text-emerald-100/80">
+                  <Checkbox
+                    checked={
+                      salaryData?.salaries.length &&
+                        selectedIds.length === salaryData?.salaries.length
+                        ? true
+                        : selectedIds.length > 0
+                          ? "indeterminate"
+                          : false
+                    }
+                    onCheckedChange={handleSelectAll}
+                    aria-label="Select all"
+                    className="border-slate-300 data-[state=checked]:bg-emerald-600 data-[state=checked]:text-foreground dark:border-emerald-500/50"
+                  />
+                </TableHead>
+                <TableHead className="font-semibold text-slate-600 dark:text-emerald-100/80">
+                  Employee
+                </TableHead>
+                <TableHead className="font-semibold text-slate-600 dark:text-emerald-100/80">
+                  Designation
+                </TableHead>
+                <TableHead className="font-semibold text-slate-600 dark:text-emerald-100/80">
+                  Base Salary
+                </TableHead>
+                <TableHead className="font-semibold text-slate-600 dark:text-emerald-100/80">
+                  Allowances
+                </TableHead>
+                <TableHead className="font-semibold text-slate-600 dark:text-emerald-100/80">
+                  Deductions
+                </TableHead>
+                <TableHead className="text-right font-semibold text-slate-600 dark:text-emerald-100/80">
+                  Net Payable
+                </TableHead>
+                <TableHead className="font-semibold text-slate-600 dark:text-emerald-100/80">
+                  Status
+                </TableHead>
+                <TableHead className="text-right font-semibold text-slate-600 dark:text-emerald-100/80">
+                  Actions
+                </TableHead>
               </TableRow>
-            ) : (
-              combinedData.map((row) => {
-                if (row.type === "missing") {
-                  const emp = row.data;
-                  return (
-                    <TableRow
-                      key={`missing-${emp.employeeId}`}
-                      className="border-slate-200 bg-slate-50 transition-colors hover:bg-slate-100 dark:border-emerald-500/10 dark:bg-card dark:hover:bg-emerald-900/10"
-                    >
-                      <TableCell>
-                        <Checkbox
-                          disabled
-                          aria-label="Cannot select missing record"
-                          className="opacity-50"
-                        />
-                      </TableCell>
-                      <TableCell className="font-medium text-slate-700 dark:text-foreground">
-                        {emp.employeeName}
-                      </TableCell>
-                      <TableCell className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                        {emp.designation}
-                      </TableCell>
-                      <TableCell
-                        colSpan={4}
-                        className="text-center text-xs italic text-muted-foreground dark:text-muted-foreground"
+            </TableHeader>
+            <TableBody>
+              {paginatedData.length === 0 ? (
+                <TableRow>
+                  <TableCell
+                    colSpan={9}
+                    className="h-32 text-center text-muted-foreground"
+                  >
+                    No employees found for this period.
+                  </TableCell>
+                </TableRow>
+              ) : (
+                paginatedData.map((row) => {
+                  if (row.type === "missing") {
+                    const emp = row.data;
+                    return (
+                      <TableRow
+                        key={`missing-${emp.employeeId}`}
+                        className="border-slate-200 bg-slate-50 transition-colors hover:bg-slate-100 dark:border-emerald-500/10 dark:bg-card dark:hover:bg-emerald-900/10"
                       >
-                        Payroll not generated yet
-                      </TableCell>
-                      <TableCell>
-                        <Badge
-                          variant="outline"
-                          className="border-slate-300 bg-slate-100 text-muted-foreground dark:border-slate-700 dark:bg-muted dark:text-muted-foreground"
+                        <TableCell>
+                          <Checkbox
+                            disabled
+                            aria-label="Cannot select missing record"
+                            className="opacity-50"
+                          />
+                        </TableCell>
+                        <TableCell className="font-medium text-slate-700 dark:text-foreground">
+                          {emp.employeeName}
+                        </TableCell>
+                        <TableCell className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                          {emp.designation}
+                        </TableCell>
+                        <TableCell
+                          colSpan={4}
+                          className="text-center text-xs italic text-muted-foreground dark:text-muted-foreground"
                         >
-                          <AlertCircle className="mr-1 h-3 w-3" /> Not Generated
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => handleGeneratePayroll(emp.employeeId)}
-                          disabled={generatingId === emp.employeeId}
-                          className="h-7 gap-2 border-emerald-200 bg-emerald-50 text-emerald-600 hover:bg-emerald-100 hover:text-emerald-700 dark:border-emerald-500/30 dark:bg-emerald-500/5 dark:text-emerald-400 dark:hover:bg-emerald-500/10 dark:hover:text-emerald-300"
-                        >
-                          {generatingId === emp.employeeId ? (
-                            <Loader2 className="h-3 w-3 animate-spin" />
-                          ) : (
-                            <PlusCircle className="h-3 w-3" />
-                          )}
-                          Generate
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  );
-                } else {
-                  const salary = row.data;
-                  const netPay =
-                    salary.amount +
-                    (salary.allowances ?? 0) +
-                    (salary.bonus ?? 0) -
-                    (salary.deductions ?? 0);
-                  const isSelected = selectedIds.includes(salary.id);
+                          Payroll not generated yet
+                        </TableCell>
+                        <TableCell>
+                          <Badge
+                            variant="outline"
+                            className="border-slate-300 bg-slate-100 text-muted-foreground dark:border-slate-700 dark:bg-muted dark:text-muted-foreground"
+                          >
+                            <AlertCircle className="mr-1 h-3 w-3" /> Not Generated
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleGeneratePayroll(emp.employeeId)}
+                            disabled={generatingId === emp.employeeId}
+                            className="h-7 gap-2 border-emerald-200 bg-emerald-50 text-emerald-600 hover:bg-emerald-100 hover:text-emerald-700 dark:border-emerald-500/30 dark:bg-emerald-500/5 dark:text-emerald-400 dark:hover:bg-emerald-500/10 dark:hover:text-emerald-300"
+                          >
+                            {generatingId === emp.employeeId ? (
+                              <Loader2 className="h-3 w-3 animate-spin" />
+                            ) : (
+                              <PlusCircle className="h-3 w-3" />
+                            )}
+                            Generate
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  } else {
+                    const salary = row.data;
+                    const netPay =
+                      salary.amount +
+                      (salary.allowances ?? 0) +
+                      (salary.bonus ?? 0) -
+                      (salary.deductions ?? 0);
+                    const isSelected = selectedIds.includes(salary.id);
 
-                  return (
-                    <TableRow
-                      key={salary.id}
-                      data-state={isSelected ? "selected" : undefined}
-                      className="border-slate-100 transition-colors hover:bg-slate-50 data-[state=selected]:bg-emerald-50 dark:border-emerald-500/10 dark:hover:bg-emerald-900/10 dark:data-[state=selected]:bg-emerald-900/20"
-                    >
-                      <TableCell>
-                        <Checkbox
-                          checked={isSelected}
-                          onCheckedChange={(checked) =>
-                            handleSelectOne(salary.id, checked as boolean)
-                          }
-                          aria-label="Select row"
-                          className="border-slate-300 data-[state=checked]:bg-emerald-600 data-[state=checked]:text-foreground dark:border-emerald-500/50"
-                        />
-                      </TableCell>
-                      <TableCell className="font-bold text-slate-900 dark:text-foreground">
-                        {salary.Employees.employeeName}
-                      </TableCell>
-                      <TableCell className="text-xs font-medium uppercase text-muted-foreground dark:text-muted-foreground">
-                        {salary.Employees.designation}
-                      </TableCell>
-                      <TableCell className="font-mono text-xs text-slate-700 dark:text-foreground">
-                        {salary.amount.toLocaleString()}
-                      </TableCell>
-                      <TableCell className="font-mono text-xs text-emerald-600 dark:text-emerald-400">
-                        +{salary.allowances?.toLocaleString() ?? 0}
-                      </TableCell>
-                      <TableCell className="font-mono text-xs text-rose-600 dark:text-rose-400">
-                        -{salary.deductions?.toLocaleString() ?? 0}
-                      </TableCell>
-                      <TableCell className="text-right font-mono font-bold text-slate-900 dark:text-foreground">
-                        Rs. {netPay.toLocaleString()}
-                      </TableCell>
-                      <TableCell>
-                        <Badge
-                          variant={
-                            salary.status === "PAID" ? "default" : "outline"
-                          }
-                          className={
-                            salary.status === "PAID"
-                              ? "border-0 bg-emerald-600 text-foreground hover:bg-emerald-700"
-                              : "border-amber-200 bg-amber-50 text-amber-600 dark:border-amber-500/50 dark:bg-amber-500/10 dark:text-amber-400"
-                          }
-                        >
-                          {salary.status === "PAID" ? (
-                            <CheckCircle className="mr-1 h-3 w-3" />
-                          ) : (
-                            <Clock className="mr-1 h-3 w-3" />
-                          )}
-                          {salary.status}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex items-center justify-end gap-2">
-                          {salary.status !== "PAID" && (
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              className="h-7 gap-1.5 border-emerald-200 bg-white text-xs text-emerald-600 hover:bg-emerald-50 hover:text-emerald-700 dark:border-emerald-500/30 dark:bg-transparent dark:text-emerald-400 dark:hover:bg-emerald-500/10 dark:hover:text-emerald-300"
-                              onClick={() => handlePay(salary.id)}
-                            >
-                              <Banknote className="h-3.5 w-3.5" />
-                              Pay
-                            </Button>
-                          )}
-
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
+                    return (
+                      <TableRow
+                        key={salary.id}
+                        data-state={isSelected ? "selected" : undefined}
+                        className="border-slate-100 transition-colors hover:bg-slate-50 data-[state=selected]:bg-emerald-50 dark:border-emerald-500/10 dark:hover:bg-emerald-900/10 dark:data-[state=selected]:bg-emerald-900/20"
+                      >
+                        <TableCell>
+                          <Checkbox
+                            checked={isSelected}
+                            onCheckedChange={(checked) =>
+                              handleSelectOne(salary.id, checked as boolean)
+                            }
+                            aria-label="Select row"
+                            className="border-slate-300 data-[state=checked]:bg-emerald-600 data-[state=checked]:text-foreground dark:border-emerald-500/50"
+                          />
+                        </TableCell>
+                        <TableCell className="font-bold text-slate-900 dark:text-foreground">
+                          {salary.Employees.employeeName}
+                        </TableCell>
+                        <TableCell className="text-xs font-medium uppercase text-muted-foreground dark:text-muted-foreground">
+                          {salary.Employees.designation}
+                        </TableCell>
+                        <TableCell className="font-mono text-xs text-slate-700 dark:text-foreground">
+                          {salary.amount.toLocaleString()}
+                        </TableCell>
+                        <TableCell className="font-mono text-xs text-emerald-600 dark:text-emerald-400">
+                          +{salary.allowances?.toLocaleString() ?? 0}
+                        </TableCell>
+                        <TableCell className="font-mono text-xs text-rose-600 dark:text-rose-400">
+                          -{salary.deductions?.toLocaleString() ?? 0}
+                        </TableCell>
+                        <TableCell className="text-right font-mono font-bold text-slate-900 dark:text-foreground">
+                          Rs. {netPay.toLocaleString()}
+                        </TableCell>
+                        <TableCell>
+                          <Badge
+                            variant={
+                              salary.status === "PAID" ? "default" : "outline"
+                            }
+                            className={
+                              salary.status === "PAID"
+                                ? "border-0 bg-emerald-600 text-foreground hover:bg-emerald-700"
+                                : "border-amber-200 bg-amber-50 text-amber-600 dark:border-amber-500/50 dark:bg-amber-500/10 dark:text-amber-400"
+                            }
+                          >
+                            {salary.status === "PAID" ? (
+                              <CheckCircle className="mr-1 h-3 w-3" />
+                            ) : (
+                              <Clock className="mr-1 h-3 w-3" />
+                            )}
+                            {salary.status}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex items-center justify-end gap-2">
+                            {salary.status !== "PAID" && (
                               <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-7 w-7 text-muted-foreground hover:bg-slate-100 hover:text-slate-900 dark:text-muted-foreground dark:hover:bg-emerald-500/20 dark:hover:text-foreground"
+                                size="sm"
+                                variant="outline"
+                                className="h-7 gap-1.5 border-emerald-200 bg-white text-xs text-emerald-600 hover:bg-emerald-50 hover:text-emerald-700 dark:border-emerald-500/30 dark:bg-transparent dark:text-emerald-400 dark:hover:bg-emerald-500/10 dark:hover:text-emerald-300"
+                                onClick={() => handlePay(salary.id)}
                               >
-                                <MoreHorizontal className="h-4 w-4" />
+                                <Banknote className="h-3.5 w-3.5" />
+                                Pay
                               </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent
-                              align="end"
-                              className="border-slate-200 bg-white text-slate-700 dark:border-emerald-500/20 dark:bg-card dark:text-foreground"
-                            >
-                              <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                              <DropdownMenuItem
-                                onClick={() => setPreviewRecord(salary)}
-                                className="cursor-pointer hover:bg-slate-100 focus:bg-slate-100 dark:hover:bg-emerald-500/20 dark:focus:bg-emerald-500/20"
+                            )}
+
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-7 w-7 text-muted-foreground hover:bg-slate-100 hover:text-slate-900 dark:text-muted-foreground dark:hover:bg-emerald-500/20 dark:hover:text-foreground"
+                                >
+                                  <MoreHorizontal className="h-4 w-4" />
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent
+                                align="end"
+                                className="border-slate-200 bg-white text-slate-700 dark:border-emerald-500/20 dark:bg-card dark:text-foreground"
                               >
-                                <Eye className="mr-2 h-4 w-4" /> View Slip
-                              </DropdownMenuItem>
-                              <DropdownMenuItem
-                                onClick={() =>
-                                  setAnnualEmployee({
-                                    id: salary.Employees.employeeId,
-                                    name: salary.Employees.employeeName,
-                                    designation: salary.Employees.designation,
-                                    registrationNumber:
-                                      salary.Employees.registrationNumber,
-                                  })
-                                }
-                                className="cursor-pointer hover:bg-slate-100 focus:bg-slate-100 dark:hover:bg-emerald-500/20 dark:focus:bg-emerald-500/20"
-                              >
-                                <FileText className="mr-2 h-4 w-4" /> Annual
-                                Statement
-                              </DropdownMenuItem>
-                              <DropdownMenuSeparator className="bg-slate-200 dark:bg-emerald-500/20" />
-                              <DropdownMenuItem
-                                onClick={() => handleDelete(salary.id)}
-                                className="cursor-pointer text-red-600 focus:bg-red-50 focus:text-red-700 dark:text-red-400 dark:focus:bg-red-900/20 dark:focus:text-red-300"
-                              >
-                                <Trash2 className="mr-2 h-4 w-4" /> Delete
-                                Record
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  );
-                }
-              })
-            )}
-          </TableBody>
-        </Table>
-                      </div>
+                                <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                                <DropdownMenuItem
+                                  onClick={() => setPreviewRecord(salary)}
+                                  className="cursor-pointer hover:bg-slate-100 focus:bg-slate-100 dark:hover:bg-emerald-500/20 dark:focus:bg-emerald-500/20"
+                                >
+                                  <Eye className="mr-2 h-4 w-4" /> View Slip
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
+                                  onClick={() =>
+                                    setAnnualEmployee({
+                                      id: salary.Employees.employeeId,
+                                      name: salary.Employees.employeeName,
+                                      designation: salary.Employees.designation,
+                                      registrationNumber:
+                                        salary.Employees.registrationNumber,
+                                    })
+                                  }
+                                  className="cursor-pointer hover:bg-slate-100 focus:bg-slate-100 dark:hover:bg-emerald-500/20 dark:focus:bg-emerald-500/20"
+                                >
+                                  <FileText className="mr-2 h-4 w-4" /> Annual
+                                  Statement
+                                </DropdownMenuItem>
+                                <DropdownMenuSeparator className="bg-slate-200 dark:bg-emerald-500/20" />
+                                <DropdownMenuItem
+                                  onClick={() => handleDelete(salary.id)}
+                                  className="cursor-pointer text-red-600 focus:bg-red-50 focus:text-red-700 dark:text-red-400 dark:focus:bg-red-900/20 dark:focus:text-red-300"
+                                >
+                                  <Trash2 className="mr-2 h-4 w-4" /> Delete
+                                  Record
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  }
+                })
+              )}
+            </TableBody>
+          </Table>
+        </div>
+        <div className="flex flex-col items-center justify-between gap-4 border-t border-slate-200 bg-slate-50/50 px-4 py-3 dark:border-emerald-500/20 dark:bg-emerald-950/20 sm:flex-row">
+          <div className="text-sm text-slate-500 dark:text-muted-foreground">
+            Showing <span className="font-medium text-slate-900 dark:text-foreground">{(page - 1) * pageSize + 1}</span> to <span className="font-medium text-slate-900 dark:text-foreground">{Math.min(page * pageSize, combinedData.length)}</span> of <span className="font-medium text-slate-900 dark:text-foreground">{combinedData.length}</span> results
+          </div>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" size="sm" onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1} className="dark:border-emerald-500/30 dark:hover:bg-emerald-500/10 dark:hover:text-emerald-400">Previous</Button>
+            <span className="text-xs font-semibold px-2 text-slate-600 dark:text-emerald-400">Page {page} / {totalPages || 1}</span>
+            <Button variant="outline" size="sm" onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page >= totalPages} className="dark:border-emerald-500/30 dark:hover:bg-emerald-500/10 dark:hover:text-emerald-400">Next</Button>
+          </div>
+        </div>
       </div>
 
       {/* Slip Preview Dialog */}
@@ -713,8 +730,8 @@ export function PayrollTable({ month, year }: PayrollTableProps) {
                       <span>
                         {previewRecord.paymentDate
                           ? new Date(
-                              previewRecord.paymentDate,
-                            ).toLocaleDateString()
+                            previewRecord.paymentDate,
+                          ).toLocaleDateString()
                           : "Pending"}
                       </span>
                     </div>

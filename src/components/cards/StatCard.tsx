@@ -70,11 +70,11 @@ export function StatsCards() {
   ];
 
   return (
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
       {stats.map((stat) => (
         <Card
           key={stat.title}
-          className={`relative overflow-hidden border transition-all duration-300 hover:-translate-y-1 hover:shadow-lg ${stat.className}`}
+          className={`relative overflow-hidden border transition-all duration-500 hover:-translate-y-1 hover:shadow-xl dark:hover:shadow-[0_8px_30px_rgb(0,0,0,0.3)] ${stat.className}`}
         >
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1.5 pt-3 px-4">
             <CardTitle

@@ -16,20 +16,11 @@ export default function EmployeesDashboard() {
   ];
 
   return (
-    <section className="relative min-h-screen w-full overflow-x-hidden bg-card selection:bg-emerald-500/30">
-      {/* === GLOBAL GRID BACKGROUND === */}
-      <div className="pointer-events-none fixed inset-0 z-0">
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(45,255,196,0.05)_1px,transparent_1px),linear-gradient(to_bottom,rgba(45,255,196,0.05)_1px,transparent_1px)] bg-[size:3rem_3rem] sm:bg-[size:4rem_4rem]" />
-        <div className="absolute inset-0 bg-gradient-to-br from-emerald-900/20 via-slate-950/80 to-slate-950" />
-        {/* Ambient Glows */}
-        <div className="absolute right-0 top-0 h-[500px] w-[500px] rounded-full bg-emerald-500/10 opacity-30 blur-[100px]" />
-        <div className="absolute bottom-0 left-0 h-[500px] w-[500px] rounded-full bg-teal-500/10 opacity-30 blur-[100px]" />
-      </div>
-
-      <div className="relative z-10 flex min-h-screen flex-col">
+    <section className="relative w-full">
+      <div className="relative z-10 flex min-h-screen w-full flex-col">
         <PageHeader breadcrumbs={breadcrumbs} />
 
-        <div className="container mx-auto flex-1 px-4 py-8 pt-20 sm:px-6 lg:px-8">
+        <div className="container mx-auto flex-1 px-4 py-6 sm:px-6 lg:px-8">
           {/* Header Section */}
           <div className="relative mb-10 space-y-4 text-center">
             <div className="mb-2 inline-flex items-center justify-center rounded-2xl border border-emerald-500/20 bg-card p-3 shadow-lg backdrop-blur-sm">

@@ -47,7 +47,7 @@ export function SharedAdminDashboard({ role, ManagementSection }: Props) {
   const breadcrumbs = [{ href: base, label: "Dashboard", current: true }];
 
   return (
-    <div className="w-full space-y-4">
+    <div className="w-full mx-auto max-w-[1600px] space-y-4">
       <PageHeader breadcrumbs={breadcrumbs} />
 
       {/* Welcome – compact on lg */}
@@ -55,26 +55,8 @@ export function SharedAdminDashboard({ role, ManagementSection }: Props) {
         <WelcomeSection />
       </Fade>
 
-      {/* Stats – 4 cols on xl, 2 on sm */}
-      <Fade delay={0.07}>
-        <StatsCards />
-      </Fade>
-
-      {/* Chart + Activity + Broadcasts in a 3-col grid on lg */}
-      <Fade delay={0.14} className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-        {/* Revenue chart takes 2 cols */}
-        <div className="lg:col-span-2">
-          <RevenueAnalyticsChart />
-        </div>
-        {/* Right column: activity + broadcasts stacked */}
-        <div className="flex flex-col gap-4 lg:col-span-1">
-          <ActivityFeed />
-          <BroadcastBoard />
-        </div>
-      </Fade>
-
       {/* Management / Events / Analytics tabs */}
-      <Fade delay={0.21}>
+      <Fade delay={0.07}>
         <section className="overflow-hidden rounded-xl border border-slate-200 bg-white/50 shadow-sm backdrop-blur-xl dark:border-border dark:bg-card">
           <Tabs defaultValue="management" className="w-full">
             <div className="flex flex-col items-center justify-between gap-3 border-b border-slate-200 bg-slate-50/60 px-4 py-3 dark:border-border dark:bg-black/20 sm:flex-row sm:px-5">
@@ -141,6 +123,26 @@ export function SharedAdminDashboard({ role, ManagementSection }: Props) {
             </div>
           </Tabs>
         </section>
+      </Fade>
+
+      {/* Stats – 4 cols on xl, 2 on sm */}
+      <Fade delay={0.14}>
+        <StatsCards />
+      </Fade>
+
+      {/* Chart, Activity, and Broadcasts layered grid */}
+      <Fade delay={0.21} className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+        {/* Revenue chart takes full width on tablet, half on ultra-wide */}
+        <div className="md:col-span-2 xl:col-span-2">
+          <RevenueAnalyticsChart />
+        </div>
+        {/* Activity and Broadcasts fill the remaining spaces side-by-side on tablet, or single row on 4k */}
+        <div className="md:col-span-1 xl:col-span-1">
+          <ActivityFeed />
+        </div>
+        <div className="md:col-span-1 xl:col-span-1">
+          <BroadcastBoard />
+        </div>
       </Fade>
     </div>
   );

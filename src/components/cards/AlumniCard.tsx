@@ -56,7 +56,7 @@ const services: Services[] = [
 export default function AlumniCard() {
   return (
     // COMPACT GRID: gap-3
-    <div className="grid h-full grid-cols-1 gap-3 sm:gap-4 md:grid-cols-2 lg:grid-cols-3">
+    <div className="grid h-full grid-cols-1 gap-3 sm:gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
       {services.map((service, index) => {
         const Icon = service.icon;
         return (

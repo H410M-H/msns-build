@@ -9,18 +9,11 @@ export default function StudentsTablePage() {
   ];
 
   return (
-    <section className="min-h-screen w-full overflow-x-hidden bg-card selection:bg-emerald-500/30">
-      {/* BACKGROUND START - Consistent across your app */}
-      <div className="pointer-events-none fixed inset-0 z-0">
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(45,255,196,0.05)_1px,transparent_1px),linear-gradient(to_bottom,rgba(45,255,196,0.05)_1px,transparent_1px)] bg-[size:3rem_3rem] sm:bg-[size:4rem_4rem]" />
-        <div className="absolute inset-0 bg-gradient-to-br from-emerald-900/20 via-slate-950/80 to-slate-950" />
-      </div>
-      {/* BACKGROUND END */}
-
+    <section className="relative w-full">
       <div className="relative z-10 flex min-h-screen w-full flex-col">
         <PageHeader breadcrumbs={breadcrumbs} />
 
-        <div className="container mx-auto flex-1 px-4 py-8 pt-20 sm:px-6 lg:px-8">
+        <div className="container mx-auto flex-1 px-4 py-6 sm:px-6 lg:px-8">
           <div className="mx-auto flex max-w-[1600px] flex-col gap-8 duration-700 animate-in fade-in slide-in-from-bottom-4">
             {/* Header Section */}
             <div className="space-y-2">

@@ -84,11 +84,7 @@ export const ClassesCard = () => {
         <Card
           key={classItem.classId}
           className={cn(
-            "group relative flex flex-col justify-between overflow-hidden rounded-xl transition-all duration-300",
-            // Light Mode
-            "border-slate-200 bg-white shadow-sm hover:-translate-y-1 hover:border-emerald-300 hover:shadow-lg",
-            // Dark Mode
-            "dark:border-border dark:bg-card dark:backdrop-blur-sm dark:hover:border-emerald-500/30 dark:hover:shadow-emerald-900/10",
+            "card-enhanced group flex flex-col justify-between",
           )}
         >
           {/* Decorative Gradient Line */}

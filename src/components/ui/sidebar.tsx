@@ -23,7 +23,7 @@ const SIDEBAR_COOKIE_NAME = "sidebar_state";
 const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7;
 const SIDEBAR_WIDTH = "16rem";
 const SIDEBAR_WIDTH_MOBILE = "18rem";
-const SIDEBAR_WIDTH_ICON = "3rem";
+const SIDEBAR_WIDTH_ICON = "4rem";
 const SIDEBAR_KEYBOARD_SHORTCUT = "b";
 
 type SidebarContext = {
@@ -56,7 +56,7 @@ const SidebarProvider = React.forwardRef<
 >(
   (
     {
-      defaultOpen = true,
+      defaultOpen = false,
       open: openProp,
       onOpenChange: setOpenProp,
       className,
@@ -414,7 +414,7 @@ const SidebarContent = React.forwardRef<
       ref={ref}
       data-sidebar="content"
       className={cn(
-        "scrollbar-thin scrollbar-thumb-emerald-500/20 scrollbar-track-transparent flex min-h-0 flex-1 flex-col gap-2 overflow-auto p-2 group-data-[collapsible=icon]:overflow-hidden",
+        "scrollbar-thin scrollbar-thumb-emerald-500/20 scrollbar-track-transparent flex min-h-0 flex-1 flex-col gap-3 overflow-auto p-4 group-data-[collapsible=icon]:overflow-hidden group-data-[collapsible=icon]:p-2.5",
         className,
       )}
       {...props}
@@ -521,12 +521,12 @@ const SidebarMenuItem = React.forwardRef<
 SidebarMenuItem.displayName = "SidebarMenuItem";
 
 const sidebarMenuButtonVariants = cva(
-  "peer/menu-button flex w-full items-center gap-2 overflow-hidden rounded-md p-2 text-left text-sm outline-none ring-emerald-500/50 transition-all hover:bg-emerald-500/10 hover:text-emerald-300 focus-visible:ring-2 active:bg-emerald-500/20 active:text-emerald-200 disabled:pointer-events-none disabled:opacity-50 group-has-[[data-sidebar=menu-action]]/menu-item:pr-8 aria-disabled:pointer-events-none aria-disabled:opacity-50 data-[active=true]:bg-emerald-600 data-[active=true]:font-medium data-[active=true]:text-white data-[active=true]:shadow-lg data-[active=true]:shadow-emerald-900/20 group-data-[collapsible=icon]:!size-8 group-data-[collapsible=icon]:!p-2 [&>span:last-child]:truncate [&>svg]:size-4 [&>svg]:shrink-0",
+  "peer/menu-button flex w-full items-center gap-3 overflow-hidden rounded-xl p-2.5 text-left text-sm outline-none ring-emerald-500/50 transition-all hover:bg-emerald-500/10 hover:text-emerald-300 focus-visible:ring-2 active:bg-emerald-500/20 active:text-emerald-200 disabled:pointer-events-none disabled:opacity-50 group-has-[[data-sidebar=menu-action]]/menu-item:pr-8 aria-disabled:pointer-events-none aria-disabled:opacity-50 data-[active=true]:bg-emerald-600 data-[active=true]:font-semibold data-[active=true]:text-white data-[active=true]:shadow-lg data-[active=true]:shadow-emerald-900/30 group-data-[collapsible=icon]:!size-11 group-data-[collapsible=icon]:!p-0 group-data-[collapsible=icon]:justify-center [&>span]:truncate group-data-[collapsible=icon]:[&>*:not(svg)]:hidden group-data-[collapsible=icon]:[&>svg:not(:first-child)]:hidden [&>svg]:size-[1.15rem] group-data-[collapsible=icon]:[&>svg]:size-6 [&>svg]:shrink-0",
   {
     variants: {
       variant: {
         default:
-          "hover:bg-emerald-500/10 hover:text-emerald-300 text-slate-300",
+          "hover:bg-emerald-500/10 hover:text-emerald-600 text-slate-700 dark:hover:text-emerald-300 dark:text-slate-300",
         outline:
           "bg-transparent shadow-[0_0_0_1px_rgba(16,185,129,0.2)] hover:bg-emerald-500/10 hover:text-emerald-300 hover:shadow-[0_0_0_1px_rgba(16,185,129,0.4)]",
       },
@@ -624,7 +624,7 @@ const SidebarMenuAction = React.forwardRef<
         "peer-data-[size=lg]/menu-button:top-2.5",
         "group-data-[collapsible=icon]:hidden",
         showOnHover &&
-          "group-focus-within/menu-item:opacity-100 group-hover/menu-item:opacity-100 data-[state=open]:opacity-100 peer-data-[active=true]/menu-button:text-emerald-300 md:opacity-0",
+        "group-focus-within/menu-item:opacity-100 group-hover/menu-item:opacity-100 data-[state=open]:opacity-100 peer-data-[active=true]/menu-button:text-emerald-300 md:opacity-0",
         className,
       )}
       {...props}

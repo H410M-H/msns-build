@@ -472,13 +472,12 @@ export const StudentTable = () => {
           const gender = row.original.gender;
           return (
             <span
-              className={`rounded-full border px-2 py-0.5 text-[10px] capitalize sm:text-xs ${
-                gender === "MALE"
+              className={`rounded-full border px-2 py-0.5 text-[10px] capitalize sm:text-xs ${gender === "MALE"
                   ? "border-blue-200 bg-blue-100 text-blue-700 dark:border-blue-500/30 dark:bg-blue-900/20 dark:text-blue-300"
                   : gender === "FEMALE"
                     ? "border-pink-200 bg-pink-100 text-pink-700 dark:border-pink-500/30 dark:bg-pink-900/20 dark:text-pink-300"
                     : "border-purple-200 bg-purple-100 text-purple-700 dark:border-purple-500/30 dark:bg-purple-900/20 dark:text-purple-300"
-              }`}
+                }`}
             >
               {gender ? gender.toLowerCase() : "N/A"}
             </span>
@@ -618,7 +617,7 @@ export const StudentTable = () => {
           </div>
 
           {/* Action Buttons Grid */}
-          <div className="grid grid-cols-2 gap-2 sm:flex sm:items-center">
+          <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:items-center">
             <Button
               variant="outline"
               size="sm"
@@ -699,9 +698,9 @@ export const StudentTable = () => {
                         {header.isPlaceholder
                           ? null
                           : flexRender(
-                              header.column.columnDef.header,
-                              header.getContext(),
-                            )}
+                            header.column.columnDef.header,
+                            header.getContext(),
+                          )}
                       </TableHead>
                     );
                   })}

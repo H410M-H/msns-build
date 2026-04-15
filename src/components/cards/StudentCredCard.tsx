@@ -250,8 +250,8 @@ export default function StudentCredDetails() {
                           <span className="truncate text-xs text-foreground sm:text-sm">
                             {student.dateOfBirth
                               ? new Date(
-                                  student.dateOfBirth,
-                                ).toLocaleDateString()
+                                student.dateOfBirth,
+                              ).toLocaleDateString()
                               : "N/A"}
                           </span>
                         </div>

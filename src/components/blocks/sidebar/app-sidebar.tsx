@@ -83,74 +83,24 @@ const data: NavigationConfig = {
         { title: "Employee Attendance", url: "/admin/sessions/attendance/employees/monthly" },
       ],
     },
-    {
-      title: "Faculty",
-      url: "/admin/users/faculty/view",
-      icon: Briefcase,
-      items: [
-        { title: "All Employees", url: "/admin/users/faculty/view" },
-        { title: "Create Employee", url: "/admin/users/faculty/create" },
-        { title: "Biometric", url: "/admin/users/faculty/bio-metric" },
-      ],
-    },
-    {
-      title: "Students",
-      url: "/admin/users/student/view",
-      icon: GraduationCap,
-      items: [
-        { title: "All Students", url: "/admin/users/student/view" },
-        { title: "Enroll Student", url: "/admin/users/student/create" },
-      ],
-    },
+    { title: "Faculty", url: "/admin/users/faculty/view", icon: Briefcase },
+    { title: "Students", url: "/admin/users/student/view", icon: GraduationCap },
     { title: "Profile", url: "/admin/users/profile", icon: User },
   ],
 
   HEAD: [
     { title: "Dashboard", url: "/head", icon: LayoutDashboard },
     { title: "Sessions", url: "/admin/sessions", icon: Calendar },
-    {
-      title: "Faculty",
-      url: "/admin/users/faculty/view",
-      icon: Briefcase,
-      items: [
-        { title: "All Employees", url: "/admin/users/faculty/view" },
-        { title: "Create Employee", url: "/admin/users/faculty/create" },
-      ],
-    },
-    {
-      title: "Students",
-      url: "/admin/users/student/view",
-      icon: GraduationCap,
-      items: [
-        { title: "All Students", url: "/admin/users/student/view" },
-        { title: "Enroll Student", url: "/admin/users/student/create" },
-      ],
-    },
+    { title: "Faculty", url: "/admin/users/faculty/view", icon: Briefcase },
+    { title: "Students", url: "/admin/users/student/view", icon: GraduationCap },
     { title: "Profile", url: "/admin/users/profile", icon: User },
   ],
 
   PRINCIPAL: [
     { title: "Dashboard", url: "/principal", icon: LayoutDashboard },
     { title: "Sessions", url: "/admin/sessions", icon: Calendar },
-    {
-      title: "Faculty",
-      url: "/admin/users/faculty/view",
-      icon: Briefcase,
-      items: [
-        { title: "All Employees", url: "/admin/users/faculty/view" },
-        { title: "Create Employee", url: "/admin/users/faculty/create" },
-        { title: "Attendance", url: "/admin/sessions/attendance/employees/monthly" },
-      ],
-    },
-    {
-      title: "Students",
-      url: "/admin/users/student/view",
-      icon: GraduationCap,
-      items: [
-        { title: "All Students", url: "/admin/users/student/view" },
-        { title: "Enroll Student", url: "/admin/users/student/create" },
-      ],
-    },
+    { title: "Faculty", url: "/admin/users/faculty/view", icon: Briefcase },
+    { title: "Students", url: "/admin/users/student/view", icon: GraduationCap },
     { title: "Profile", url: "/admin/users/profile", icon: User },
   ],
 
@@ -166,25 +116,8 @@ const data: NavigationConfig = {
         { title: "Fee Ledger", url: "/clerk/sessions/fee" },
       ],
     },
-    {
-      title: "Students",
-      url: "/clerk/users/student/view",
-      icon: GraduationCap,
-      items: [
-        { title: "All Students", url: "/clerk/users/student/view" },
-        { title: "Enroll Student", url: "/clerk/users/student/create" },
-      ],
-    },
-    {
-      title: "Faculty",
-      url: "/clerk/users/faculty/view",
-      icon: Briefcase,
-      items: [
-        { title: "All Employees", url: "/clerk/users/faculty/view" },
-        { title: "Create Employee", url: "/clerk/users/faculty/create" },
-        { title: "Biometric", url: "/clerk/users/faculty/bio-metric" },
-      ],
-    },
+    { title: "Students", url: "/clerk/users/student/view", icon: GraduationCap },
+    { title: "Faculty", url: "/clerk/users/faculty/view", icon: Briefcase },
     {
       title: "Attendance",
       url: "/clerk/attendance",
@@ -235,19 +168,21 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     <Sidebar
       collapsible="icon"
       {...props}
-      className="border-r border-emerald-500/20 bg-card text-foreground shadow-2xl transition-all duration-300"
+      className="border-r border-emerald-500/20 bg-white/70 text-slate-800 shadow-[4px_0_24px_rgba(16,185,129,0.05)] backdrop-blur-2xl transition-all duration-300 dark:bg-[#020806] dark:text-slate-100"
     >
-      {/* Background Texture for Sidebar */}
-      <div className="pointer-events-none absolute inset-0 z-0 opacity-50">
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(45,255,196,0.02)_1px,transparent_1px),linear-gradient(to_bottom,rgba(45,255,196,0.02)_1px,transparent_1px)] bg-[size:2rem_2rem]" />
+      {/* Premium Background Texture */}
+      <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden">
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(16,185,129,0.03)_1px,transparent_1px),linear-gradient(to_bottom,rgba(16,185,129,0.03)_1px,transparent_1px)] bg-[size:2rem_2rem]" />
+        <div className="absolute inset-0 bg-gradient-to-b from-emerald-50/50 via-slate-50/50 to-slate-100/50 transition-colors duration-300 dark:from-emerald-900/10 dark:via-black/50 dark:to-black" />
+        <div className="absolute -top-40 left-0 h-80 w-80 rounded-full bg-emerald-500/20 blur-[100px] dark:bg-emerald-500/10" />
       </div>
 
       {/* Sidebar Header */}
-      <SidebarHeader className="relative z-10 flex h-24 items-center justify-center border-b border-emerald-500/20 bg-card p-4 backdrop-blur-xl">
+      <SidebarHeader className="relative z-10 flex h-24 items-center justify-center border-b border-emerald-900/30 bg-transparent p-4 transition-all duration-300 group-data-[collapsible=icon]:p-2 group-data-[collapsible=icon]:h-20 backdrop-blur-xl">
         <div
           className={cn(
             "group relative flex items-center justify-center transition-all duration-300",
-            state === "collapsed" ? "h-10 w-10" : "h-16 w-full",
+            state === "collapsed" ? "h-12 w-12" : "h-16 w-full",
           )}
         >
           {/* Emerald Glow Effect */}
@@ -257,14 +192,17 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             href="https://msns.edu.pk"
             target="_blank"
             rel="noopener noreferrer"
-            className="relative z-10 h-full w-full"
+            className="relative z-10 flex h-full w-full items-center justify-center"
           >
             <Image
-              className="object-contain drop-shadow-lg transition-transform duration-300 group-hover:scale-105"
+              className={cn(
+                "object-contain drop-shadow-xl transition-all duration-500 group-hover:scale-110",
+                state === "collapsed" ? "p-0" : "p-1"
+              )}
               src="https://res.cloudinary.com/dvvbxrs55/image/upload/v1729267533/Official_LOGO_grn_ic9ldd.png"
               alt="Institution Logo"
               fill
-              sizes="(max-width: 768px) 50px, 150px"
+              sizes="(max-width: 768px) 64px, 180px"
               priority
             />
           </Link>
@@ -272,16 +210,16 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarHeader>
 
       {/* Sidebar Content */}
-      <SidebarContent className="scrollbar-thin scrollbar-thumb-emerald-500/20 scrollbar-track-transparent relative z-10 py-6">
+      <SidebarContent className="scrollbar-thin scrollbar-thumb-emerald-500/20 scrollbar-track-transparent relative z-10 py-6 transition-all duration-300 group-data-[collapsible=icon]:py-4">
         <NavMain items={items} />
       </SidebarContent>
 
       {/* Sidebar Footer */}
-      <SidebarFooter className="relative z-10 border-t border-emerald-500/20 bg-card p-4 backdrop-blur-xl">
+      <SidebarFooter className="relative z-10 border-t border-emerald-500/20 bg-transparent p-4 transition-all duration-300 group-data-[collapsible=icon]:p-2 backdrop-blur-xl">
         {/* System Status - Only show when expanded */}
         {state !== "collapsed" && (
-          <div className="mb-4 flex items-center justify-between rounded-lg border border-emerald-500/20 bg-emerald-950/30 px-2 py-1.5">
-            <span className="text-[10px] font-semibold uppercase tracking-wider text-emerald-400">
+          <div className="mb-4 flex items-center justify-between rounded-lg border border-emerald-500/20 bg-emerald-50/50 px-3 py-2 dark:bg-emerald-950/30">
+            <span className="text-[11px] font-bold uppercase tracking-widest text-emerald-700 dark:text-emerald-400">
               System Online
             </span>
             <div className="relative flex h-2 w-2">
