@@ -4,6 +4,7 @@ import "~/styles/globals.css";
 import { Geist_Mono, Inter } from "next/font/google";
 import { type Metadata } from "next";
 import Script from "next/script";
+import { Provider } from "./provider";
 
 // SEO component – uncomment and fix path if needed
 // import { SchoolSchema } from "~/components/SEOSchema";
@@ -81,7 +82,7 @@ export default function RootLayout({
       <body
         className={`${inter.variable} ${geistMono.variable} h-full font-sans antialiased`}
       >
-        {children}
+        <Provider>{children}</Provider>
       </body>
     </html>
   );
