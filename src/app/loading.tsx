@@ -91,7 +91,7 @@ export default function Loading() {
                 <div className="relative flex h-full w-full items-center justify-center overflow-hidden rounded-full bg-muted backdrop-blur-sm">
                   {/* Your original logo */}
                   <Image
-                    src="https://res.cloudinary.com/dvvbxrs55/image/upload/v1729267533/Official_LOGO_grn_ic9ldd.png"
+                    src="/api/images/logos/Official_LOGO_grn_ic9ldd.png"
                     alt="Pursuit of Excellence Logo"
                     className="relative z-10 h-3/4 w-3/4 object-contain drop-shadow-2xl"
                     width={200}

@@ -13,6 +13,7 @@ import {
   TrendingUp,
   Briefcase,
   Receipt,
+  Images,
 } from "lucide-react";
 import {
   Sidebar,
@@ -86,6 +87,7 @@ const data: NavigationConfig = {
     { title: "Faculty", url: "/admin/users/faculty/view", icon: Briefcase },
     { title: "Students", url: "/admin/users/student/view", icon: GraduationCap },
     { title: "Profile", url: "/admin/users/profile", icon: User },
+    { title: "Gallery", url: "/admin/gallery", icon: Images },
   ],
 
   HEAD: [
@@ -94,6 +96,7 @@ const data: NavigationConfig = {
     { title: "Faculty", url: "/admin/users/faculty/view", icon: Briefcase },
     { title: "Students", url: "/admin/users/student/view", icon: GraduationCap },
     { title: "Profile", url: "/admin/users/profile", icon: User },
+    { title: "Gallery", url: "/head/gallery", icon: Images },
   ],
 
   PRINCIPAL: [
@@ -102,10 +105,10 @@ const data: NavigationConfig = {
     { title: "Faculty", url: "/admin/users/faculty/view", icon: Briefcase },
     { title: "Students", url: "/admin/users/student/view", icon: GraduationCap },
     { title: "Profile", url: "/admin/users/profile", icon: User },
+    { title: "Gallery", url: "/principal/gallery", icon: Images },
   ],
 
   CLERK: [
-    { title: "Dashboard", url: "/clerk", icon: LayoutDashboard },
     {
       title: "Sessions & Classes",
       url: "/clerk/sessions",
@@ -129,6 +132,7 @@ const data: NavigationConfig = {
     },
     { title: "Transactions", url: "/clerk/sessions/fee", icon: Receipt },
     { title: "Profile", url: "/clerk/users/profile", icon: User },
+    { title: "Gallery", url: "/clerk/gallery", icon: Images },
   ],
 
   TEACHER: [
@@ -142,6 +146,7 @@ const data: NavigationConfig = {
       ],
     },
     { title: "Profile", url: "/admin/users/profile", icon: User },
+    { title: "Gallery", url: "/teacher/gallery", icon: Images },
   ],
 
   STUDENT: [
@@ -199,7 +204,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 "object-contain drop-shadow-xl transition-all duration-500 group-hover:scale-110",
                 state === "collapsed" ? "p-0" : "p-1"
               )}
-              src="https://res.cloudinary.com/dvvbxrs55/image/upload/v1729267533/Official_LOGO_grn_ic9ldd.png"
+              src="/api/images/logos/Official_LOGO_grn_ic9ldd.png"
               alt="Institution Logo"
               fill
               sizes="(max-width: 768px) 64px, 180px"

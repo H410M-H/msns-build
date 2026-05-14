@@ -56,7 +56,7 @@ export default function Header({ className, ...props }: HeaderProps) {
         {/* Logo Section */}
         <Link href="/sign-in" className="flex items-center">
           <Image
-            src="https://res.cloudinary.com/dvvbxrs55/image/upload/v1729267533/Official_LOGO_grn_ic9ldd.png"
+            src="/api/images/logos/Official_LOGO_grn_ic9ldd.png"
             alt="Logo"
             width={50}
             height={50}

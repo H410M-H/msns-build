@@ -215,7 +215,7 @@ export default function StudentCreationDialog() {
             <CardHeader className="relative h-32 items-center justify-center overflow-hidden border-b border-emerald-500/20 p-0 sm:h-48">
               <div className="absolute inset-0">
                 <Image
-                  src="https://res.cloudinary.com/dvvbxrs55/image/upload/v1737374740/hex-one_cihfwh.jpg"
+                  src="/api/images/placeholders/hex-one_cihfwh.jpg"
                   alt="School building"
                   fill
                   className="object-cover opacity-40 mix-blend-overlay"

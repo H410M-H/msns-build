@@ -508,7 +508,7 @@ export function SalaryHistoryDialog({
                   <div className="flex items-center gap-4">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
-                      src="https://res.cloudinary.com/dvvbxrs55/image/upload/v1729267533/Official_LOGO_grn_ic9ldd.png"
+                      src="/api/images/logos/Official_LOGO_grn_ic9ldd.png"
                       alt="School Logo"
                       className="h-20 w-20 object-contain drop-shadow-sm"
                     />

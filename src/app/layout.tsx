@@ -38,7 +38,7 @@ export const metadata: Metadata = {
     siteName: "M.S. Naz High School®",
     images: [
       {
-        url: "https://res.cloudinary.com/dvvbxrs55/image/upload/v1729267533/Official_LOGO_grn_ic9ldd.png",
+        url: "/api/images/logos/Official_LOGO_grn_ic9ldd.png",
         width: 1200,
         height: 630,
         alt: "M.S. Naz High School® Logo"

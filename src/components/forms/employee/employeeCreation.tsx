@@ -247,7 +247,7 @@ export default function EmployeeCreationDialog() {
         <Card className="overflow-hidden rounded-2xl border-0 bg-gray-400/70 shadow-xl backdrop-blur-sm">
           <CardHeader className="relative min-h-[100px] items-center">
             <Image
-              src="https://res.cloudinary.com/dvvbxrs55/image/upload/v1737374740/hex-one_cihfwh.jpg"
+              src="/api/images/placeholders/hex-one_cihfwh.jpg"
               alt="School building"
               fill
               style={{ objectFit: "cover" }}

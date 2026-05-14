@@ -12,11 +12,13 @@ interface BookUploaderProps {
   initialFile?: string;
 }
 
-interface CloudinaryUploadResponse {
-  secure_url: string;
-  error?: {
-    message?: string;
-  };
+interface UploadResponse {
+  key: string;
+  url: string;
+  filename: string;
+  size: number;
+  contentType: string;
+  error?: string;
 }
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024;
@@ -53,27 +55,28 @@ export const BookUploader = ({
 
         const formData = new FormData();
         formData.append("file", fileToUpload);
-        formData.append(
-          "upload_preset",
-          process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET!,
-        );
 
-        const response = await fetch(
-          `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/upload`,
-          {
-            method: "POST",
-            body: formData,
-          },
-        );
+        // Simulate progress since fetch doesn't support upload progress
+        const progressInterval = setInterval(() => {
+          setProgress((prev) => Math.min(prev + 10, 90));
+        }, 200);
 
-        const data = (await response.json()) as CloudinaryUploadResponse;
+        const response = await fetch("/api/gallery/upload", {
+          method: "POST",
+          body: formData,
+        });
+
+        clearInterval(progressInterval);
+
+        const data = (await response.json()) as UploadResponse;
 
         if (!response.ok) {
-          throw new Error(data.error?.message ?? "Upload failed");
+          throw new Error(data.error ?? "Upload failed");
         }
 
-        setPreviewUrl(data.secure_url);
-        onUploadSuccess(data.secure_url);
+        const fileUrl = data.url;
+        setPreviewUrl(fileUrl);
+        onUploadSuccess(fileUrl);
         setProgress(100);
       } catch (err) {
         console.error("Upload failed:", err);

@@ -109,7 +109,7 @@ export default function Home() {
             {/* Glow behind logo */}
             <div className="absolute inset-0 animate-pulse rounded-full bg-emerald-400/30 blur-3xl" />
             <Image
-              src="https://res.cloudinary.com/dvvbxrs55/image/upload/v1729267508/logo-w_wt5wq6.png"
+              src="/api/images/logos/logo-w_wt5wq6.png"
               alt="M.S. Naz High School Logo"
               fill
               className="object-contain drop-shadow-2xl"

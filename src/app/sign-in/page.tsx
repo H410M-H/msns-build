@@ -12,7 +12,7 @@ export default function SignInPage() {
       {/* --- LAYER 1: Background Image --- */}
       <div className="absolute inset-0 z-0">
         <Image
-          src="https://res.cloudinary.com/dvvbxrs55/image/upload/v1729267627/FrontView1_alaabu.jpg"
+          src="/api/images/gallery/FrontView1_alaabu.jpg"
           alt="School Campus Background"
           fill
           priority
@@ -66,7 +66,7 @@ export default function SignInPage() {
                 className="relative h-full w-full"
               >
                 <Image
-                  src="https://res.cloudinary.com/dvvbxrs55/image/upload/v1729267533/Official_LOGO_grn_ic9ldd.png"
+                  src="/api/images/logos/Official_LOGO_grn_ic9ldd.png"
                   alt="Logo"
                   fill
                   className="object-contain drop-shadow-2xl"

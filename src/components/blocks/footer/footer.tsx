@@ -62,7 +62,7 @@ export const Footer = ({ className, ...props }: FooterProps) => {
             <div className="flex flex-col items-center space-y-6 md:items-start">
               <div className="group relative">
                 <Image
-                  src="https://res.cloudinary.com/dvvbxrs55/image/upload/v1729267544/off_logo_ggu1ci.png"
+                  src="/api/images/logos/off_logo_ggu1ci.png"
                   alt="School Logo"
                   width={140}
                   height={140}
