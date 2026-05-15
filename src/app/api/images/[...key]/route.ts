@@ -1,5 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { getFromS3 } from "~/lib/s3";
+import { Readable } from "stream";
 
 export async function GET(
   _request: NextRequest,
@@ -19,7 +20,8 @@ export async function GET(
       return new NextResponse("Image not found", { status: 404 });
     }
 
-    const stream = response.Body.transformToWebStream();
+    // Use Node.js Readable.toWeb to avoid AWS SDK transformToWebStream uncaught exceptions
+    const stream = Readable.toWeb(response.Body as Readable) as ReadableStream;
 
     const headers = new Headers();
     if (response.ContentType) headers.set("Content-Type", response.ContentType);
@@ -28,13 +30,12 @@ export async function GET(
     headers.set("Cache-Control", "public, max-age=31536000, immutable");
 
     return new NextResponse(stream, { headers });
-  } catch (error: unknown) {
-    console.error("Error fetching image from S3:", error);
-
-    if (error instanceof Error && error.name === "NoSuchKey") {
+  } catch (error: any) {
+    if (error?.name === "NoSuchKey" || error?.Code === "NoSuchKey") {
       return new NextResponse("Image not found", { status: 404 });
     }
 
+    console.error("Error fetching image from S3:", error);
     return new NextResponse("Internal server error", { status: 500 });
   }
 }
