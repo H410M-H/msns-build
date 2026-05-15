@@ -22,6 +22,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://lms.msns.edu.pk"),
   title: "M. S. NAZ HIGH SCHOOL® | Portal",
   description: "M.S. Naz High School Learning Management System. Since - 2004 | Developed by MSNS-DEV™",
   verification: {
