@@ -30,9 +30,12 @@ export async function GET(
     headers.set("Cache-Control", "public, max-age=31536000, immutable");
 
     return new NextResponse(stream, { headers });
-  } catch (error: any) {
-    if (error?.name === "NoSuchKey" || error?.Code === "NoSuchKey") {
-      return new NextResponse("Image not found", { status: 404 });
+  } catch (error: unknown) {
+    if (typeof error === "object" && error !== null) {
+      const err = error as { name?: string; Code?: string };
+      if (err.name === "NoSuchKey" || err.Code === "NoSuchKey") {
+        return new NextResponse("Image not found", { status: 404 });
+      }
     }
 
     console.error("Error fetching image from S3:", error);
