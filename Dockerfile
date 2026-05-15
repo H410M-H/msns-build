@@ -1,5 +1,5 @@
 ##### DEPENDENCIES
-FROM --platform=linux/amd64 node:20-alpine AS deps
+FROM node:20-alpine AS deps
 RUN apk add --no-cache libc6-compat openssl
 WORKDIR /app
 COPY prisma ./
@@ -12,18 +12,12 @@ RUN \
     fi
 
 ##### BUILDER
-FROM --platform=linux/amd64 node:20-alpine AS builder
+FROM node:20-alpine AS builder
 WORKDIR /app
-
-# Add ARGs for build-time variables
-ARG DATABASE_URL
-ARG AUTH_SECRET
 
 # Set environment variables
 ENV NODE_ENV=production
 ENV PORT=3000
-ENV DATABASE_URL=$DATABASE_URL
-ENV AUTH_SECRET=$AUTH_SECRET
 ENV NEXT_TELEMETRY_DISABLED=1
 
 COPY --from=deps /app/node_modules ./node_modules
@@ -37,14 +31,12 @@ RUN \
     fi
 
 ##### RUNNER
-FROM --platform=linux/amd64 node:20-alpine AS runner
+FROM node:20-alpine AS runner
 WORKDIR /app
 
 # Set runtime environment variables
 ENV NODE_ENV=production
 ENV PORT=3000
-ENV DATABASE_URL=$DATABASE_URL
-ENV AUTH_SECRET=$AUTH_SECRET
 ENV NEXT_TELEMETRY_DISABLED=1
 
 COPY --from=builder /app/next.config.js ./
@@ -54,6 +46,5 @@ COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
 
 EXPOSE 3000
-ENV PORT 3000
 
 CMD ["server.js"]
