@@ -51,10 +51,20 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const folder = (formData.get("folder") as string | null) ?? "";
+    const customName = (formData.get("customName") as string | null) ?? file.name;
+
     const buffer = Buffer.from(await file.arrayBuffer());
     const timestamp = Date.now();
-    const sanitizedName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
-    const key = `gallery/${timestamp}_${sanitizedName}`;
+    const sanitizedName = customName.replace(/[^a-zA-Z0-9._-]/g, "_");
+    const sanitizedFolder = folder ? folder.replace(/[^a-zA-Z0-9_-]/g, "_") + "/" : "";
+    
+    // Preserve extension if customName doesn't have one but original file does
+    const originalExt = file.name.split('.').pop()?.toLowerCase();
+    const hasExt = sanitizedName.includes('.');
+    const finalName = !hasExt && originalExt ? `${sanitizedName}.${originalExt}` : sanitizedName;
+
+    const key = `gallery/${sanitizedFolder}${timestamp}_${finalName}`;
 
     await uploadToS3(key, buffer, file.type);
 
