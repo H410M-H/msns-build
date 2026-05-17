@@ -12,7 +12,9 @@ import {
   AlertCircle,
   Calendar,
   DollarSign,
+  ListPlus,
 } from "lucide-react";
+import Link from "next/link";
 
 import { Button } from "~/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
@@ -307,6 +309,12 @@ export default function SalaryPage() {
                 </CardDescription>
               </div>
               <div className="flex gap-2">
+                <Button asChild variant="outline" className="border-emerald-200 text-emerald-700 hover:bg-emerald-50 dark:border-emerald-500/30 dark:text-emerald-400 dark:hover:bg-emerald-500/10">
+                  <Link href="/admin/revenue/bulk-salary">
+                    <ListPlus className="mr-2 h-4 w-4" />
+                    Bulk Options
+                  </Link>
+                </Button>
                 <IncrementDialog />
                 <SalaryAssignmentForm />
               </div>
