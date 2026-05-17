@@ -20,6 +20,10 @@ import { marksRouter } from "./routers/marks";
 import { promotionRouter } from "./routers/promotion";
 import { reportCardRouter } from "./routers/reportcard";
 import { subjectDiaryRouter } from "./routers/subjectDiary";
+// v2.0 ERP Edition routers
+import { erpRouter } from "./routers/erp";
+import { markingCentreRouter } from "./routers/markingCentre";
+import { bulkSalaryRouter } from "./routers/bulkSalary";
 
 export const appRouter = createTRPCRouter({
   user: UserRouter,
@@ -43,6 +47,10 @@ export const appRouter = createTRPCRouter({
   reportCard: reportCardRouter,
   promotion: promotionRouter,
   subjectDiary: subjectDiaryRouter,
+  // v2.0 ERP Edition
+  erp: erpRouter,
+  markingCentre: markingCentreRouter,
+  bulkSalary: bulkSalaryRouter,
 });
 
 export type AppRouter = typeof appRouter;

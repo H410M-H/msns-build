@@ -14,6 +14,7 @@ import {
   Briefcase,
   Receipt,
   Images,
+  BarChart3,
 } from "lucide-react";
 import {
   Sidebar,
@@ -61,6 +62,7 @@ const data: NavigationConfig = {
       icon: FileText,
       items: [
         { title: "Exams Overview", url: "/admin/exams" },
+        { title: "Marking Centre", url: "/admin/exams/marking-centre" },
         { title: "Promotions", url: "/admin/exams/promotion" },
       ],
     },
@@ -72,6 +74,7 @@ const data: NavigationConfig = {
         { title: "Overview", url: "/admin/revenue" },
         { title: "Fee Management", url: "/admin/revenue/fee" },
         { title: "Salary", url: "/admin/revenue/salary" },
+        { title: "Bulk Salary", url: "/admin/revenue/bulk-salary" },
         { title: "Expenses", url: "/admin/revenue/expense" },
       ],
     },
@@ -88,6 +91,20 @@ const data: NavigationConfig = {
     { title: "Students", url: "/admin/users/student/view", icon: GraduationCap },
     { title: "Profile", url: "/admin/users/profile", icon: User },
     { title: "Gallery", url: "/admin/gallery", icon: Images },
+    {
+      title: "ERP",
+      url: "/admin/erp",
+      icon: BarChart3,
+      items: [
+        { title: "ERP Overview", url: "/admin/erp" },
+        { title: "Budget & Cost Centres", url: "/admin/erp/budget" },
+        { title: "Purchase Orders", url: "/admin/erp/purchase-orders" },
+        { title: "Inventory & Stock", url: "/admin/erp/stock" },
+        { title: "Asset Management", url: "/admin/erp/assets" },
+        { title: "Petty Cash", url: "/admin/erp/petty-cash" },
+        { title: "Financial Ledger", url: "/admin/erp/ledger" },
+      ],
+    },
   ],
 
   HEAD: [
@@ -143,6 +160,7 @@ const data: NavigationConfig = {
       icon: FileText,
       items: [
         { title: "Enter Marks", url: "/teacher/exams/marks" },
+        { title: "Marking Centre", url: "/teacher/exams/marking-centre" },
       ],
     },
     { title: "Profile", url: "/admin/users/profile", icon: User },

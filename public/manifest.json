@@ -1,0 +1,22 @@
+{
+  "name": "MSNS LMS Portal",
+  "short_name": "MSNS",
+  "description": "M.S. Naz High School Learning Management System",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#020806",
+  "theme_color": "#10b981",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "any",
+      "type": "image/x-icon"
+    },
+    {
+      "src": "/api/images/logos/Official_LOGO_grn_ic9ldd.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

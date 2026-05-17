@@ -63,34 +63,63 @@ model ClassSubject {
 }
 
 model Employees {
-  employeeId         String               @id @default(cuid())
-  registrationNumber String               @unique
-  employeeName       String               @db.VarChar(100)
-  fatherName         String               @db.VarChar(100)
-  admissionNumber    String               @unique
-  gender             Gender
-  dob                String               @default("none")
-  cnic               String               @default("0000-0000000-0")
-  maritalStatus      MaritalStatus
-  doj                String               @default("none")
-  designation        Designation
-  residentialAddress String
-  mobileNo           String               @default("none")
-  additionalContact  String?              @default("none")
-  education          String               @default("none")
-  isAssign           Boolean              @default(false)
-  profilePic         String?              @default("/user.jpg")
-  cv                 String?
-  BioMetric          BioMetric?
-  ClassSubject       ClassSubject[]
-  Timetable          Timetable[]
-  Salary             Salary[]
-  SalaryAssignment   SalaryAssignment[]
-  SalaryIncrement    SalaryIncrement[]
-  EmployeeAttendance EmployeeAttendance[]
-  Marks              Marks[]
-  PromotionHistory   PromotionHistory[]
-  SubjectDiary       SubjectDiary[]       @relation("SubjectDiaries")
+  employeeId                 String                    @id @default(cuid())
+  registrationNumber         String                    @unique
+  employeeName               String                    @db.VarChar(100)
+  fatherName                 String                    @db.VarChar(100)
+  admissionNumber            String                    @unique
+  gender                     Gender
+  dob                        String                    @default("none")
+  cnic                       String                    @default("0000-0000000-0")
+  maritalStatus              MaritalStatus
+  doj                        String                    @default("none")
+  designation                Designation
+  residentialAddress         String
+  mobileNo                   String                    @default("none")
+  additionalContact          String?                   @default("none")
+  education                  String                    @default("none")
+  isAssign                   Boolean                   @default(false)
+  profilePic                 String?                   @default("/user.jpg")
+  cv                         String?
+  // v1.6 relations
+  BioMetric                  BioMetric?
+  ClassSubject               ClassSubject[]
+  Timetable                  Timetable[]
+  Salary                     Salary[]
+  SalaryAssignment           SalaryAssignment[]
+  SalaryIncrement            SalaryIncrement[]
+  EmployeeAttendance         EmployeeAttendance[]
+  Marks                      Marks[]
+  PromotionHistory           PromotionHistory[]
+  SubjectDiary               SubjectDiary[]            @relation("SubjectDiaries")
+  // v2.0 ERP relations
+  ManagedCostCentres         CostCentre[]              @relation("CostCentreManager")
+  BudgetReauthorisations     BudgetReallocation[]      @relation("BudgetReallocationAuth")
+  POsCreated                 PurchaseOrder[]           @relation("POCreatedBy")
+  POsApprovedL1              PurchaseOrder[]           @relation("POApprovalL1")
+  POsApprovedL2              PurchaseOrder[]           @relation("POApprovalL2")
+  GRNsReceived               GoodsReceiptNote[]        @relation("GRNReceivedBy")
+  DirectExpensesCreated      DirectExpense[]           @relation("DirectExpenseCreatedBy")
+  DirectExpensesApproved     DirectExpense[]           @relation("DirectExpenseApprovedBy")
+  StockIssued                StockTransaction[]        @relation("StockRecipient")
+  StockReconciliations       StockReconciliation[]     @relation("ReconciliationPerformedBy")
+  AssetsOwned                Asset[]                   @relation("AssetAssignedTo")
+  AssetTransfersAuthorised   AssetTransfer[]           @relation("AssetTransferAuth")
+  PettyCashDisbursements     PettyCashDisbursement[]   @relation("PettyCashRecordedBy")
+  PettyCashReconciliations   PettyCashReconciliation[] @relation("PettyCashReconciliationBy")
+  LedgerEntriesCreated       FinancialLedgerEntry[]    @relation("LedgerCreatedBy")
+  ApprovalRecords            ApprovalRecord[]          @relation("ApprovalRecordApprover")
+  DelegationsGiven           ApprovalDelegation[]      @relation("DelegationDelegator")
+  DelegationsReceived        ApprovalDelegation[]      @relation("DelegationDelegate")
+  // v2.0 Promotion relations
+  BulkPromotionsBatched      BulkPromotionBatch[]      @relation("BulkPromotionInitiator")
+  // v2.0 Salary bulk relations
+  BulkSalaryBatchesInitiated BulkSalaryCreationBatch[] @relation("BulkSalaryBatchInitiator")
+  BulkSalaryItems            BulkSalaryCreationItem[]
+  // v2.0 Leave relations
+  LeaveApplications          LeaveApplication[]
+  LeaveApprovalsGiven        LeaveApproval[]           @relation("LeaveApprovalApprover")
+  LeaveBalances              LeaveBalance[]
 }
 
 model BioMetric {
@@ -171,19 +200,22 @@ model Expenses {
 }
 
 model Grades {
-  classId           String              @id @default(cuid())
-  grade             String              @default("none")
-  section           String              @default("ROSE")
-  category          ClassCategory       @default(Montessori)
-  fee               Float               @default(0)
-  ClassSubject      ClassSubject[]
-  StudentClass      StudentClass[]
-  Timetable         Timetable[]
-  Exam              Exam[]
-  ReportCard        ReportCard[]
-  PromotionFrom     PromotionHistory[]  @relation("PromotionFrom")
-  PromotionTo       PromotionHistory[]  @relation("PromotionTo")
-  StudentAttendance StudentAttendance[]
+  classId                String               @id @default(cuid())
+  grade                  String               @default("none")
+  section                String               @default("ROSE")
+  category               ClassCategory        @default(Montessori)
+  fee                    Float                @default(0)
+  ClassSubject           ClassSubject[]
+  StudentClass           StudentClass[]
+  Timetable              Timetable[]
+  Exam                   Exam[]
+  ReportCard             ReportCard[]
+  PromotionFrom          PromotionHistory[]   @relation("PromotionFrom")
+  PromotionTo            PromotionHistory[]   @relation("PromotionTo")
+  StudentAttendance      StudentAttendance[]
+  // v2.0 relations
+  BulkPromotionFromClass BulkPromotionBatch[] @relation("BulkPromotionFromClass")
+  BulkPromotionToClass   BulkPromotionBatch[] @relation("BulkPromotionToClass")
 }
 
 model Salary {
@@ -228,21 +260,29 @@ model SalaryIncrement {
 }
 
 model Sessions {
-  sessionId            String              @id @default(cuid())
-  sessionName          String              @default("none")
-  sessionFrom          String              @default("none")
-  sessionTo            String              @default("none")
-  isActive             Boolean             @default(false)
-  ClassSubject         ClassSubject[]
-  Timetable            Timetable[]
-  Salary               Salary[]
-  SalaryAssignment     SalaryAssignment[]
-  StudentClass         StudentClass[]
-  Exam                 Exam[]
-  ReportCard           ReportCard[]
-  PromotionFromSession PromotionHistory[]  @relation("PromotionFromSession")
-  PromotionToSession   PromotionHistory[]  @relation("PromotionToSession")
-  StudentAttendance    StudentAttendance[]
+  sessionId                String                    @id @default(cuid())
+  sessionName              String                    @default("none")
+  sessionFrom              String                    @default("none")
+  sessionTo                String                    @default("none")
+  isActive                 Boolean                   @default(false)
+  // v1.6 relations
+  ClassSubject             ClassSubject[]
+  Timetable                Timetable[]
+  Salary                   Salary[]
+  SalaryAssignment         SalaryAssignment[]
+  StudentClass             StudentClass[]
+  Exam                     Exam[]
+  ReportCard               ReportCard[]
+  PromotionFromSession     PromotionHistory[]        @relation("PromotionFromSession")
+  PromotionToSession       PromotionHistory[]        @relation("PromotionToSession")
+  StudentAttendance        StudentAttendance[]
+  // v2.0 relations
+  BudgetPlans              BudgetPlan[]
+  PettyCashRegister        PettyCashRegister?
+  BulkPromotionFromSession BulkPromotionBatch[]      @relation("BulkPromotionFromSession")
+  BulkPromotionToSession   BulkPromotionBatch[]      @relation("BulkPromotionToSession")
+  BulkSalaryBatches        BulkSalaryCreationBatch[] @relation("BulkSalaryToSession")
+  LeaveBalances            LeaveBalance[]
 }
 
 model Event {
@@ -316,33 +356,36 @@ model StudentClass {
 }
 
 model Students {
-  studentId          String              @id @default(cuid())
-  registrationNumber String              @unique
-  studentMobile      String              @default("none")
-  fatherMobile       String              @default("none")
-  admissionNumber    String              @unique
-  studentName        String              @default("none")
-  gender             Gender
-  dateOfBirth        String              @default("none")
-  fatherName         String              @default("none")
-  studentCNIC        String              @default("0000-0000000-0")
-  fatherCNIC         String              @default("0000-0000000-0")
-  fatherProfession   String              @default("none")
-  bloodGroup         String?             @default("none")
-  guardianName       String?             @default("none")
-  caste              String              @default("none")
-  currentAddress     String              @default("none")
-  permanentAddress   String              @default("none")
-  medicalProblem     String?
-  createdAt          DateTime            @default(now())
-  updatedAt          DateTime            @updatedAt
-  isAssign           Boolean             @default(false)
-  profilePic         String?             @default("/user.jpg")
-  StudentClass       StudentClass[]
-  Marks              Marks[]
-  ReportCard         ReportCard[]
-  PromotionHistory   PromotionHistory[]
-  StudentAttendance  StudentAttendance[]
+  studentId                   String                       @id @default(cuid())
+  registrationNumber          String                       @unique
+  studentMobile               String                       @default("none")
+  fatherMobile                String                       @default("none")
+  admissionNumber             String                       @unique
+  studentName                 String                       @default("none")
+  gender                      Gender
+  dateOfBirth                 String                       @default("none")
+  fatherName                  String                       @default("none")
+  studentCNIC                 String                       @default("0000-0000000-0")
+  fatherCNIC                  String                       @default("0000-0000000-0")
+  fatherProfession            String                       @default("none")
+  bloodGroup                  String?                      @default("none")
+  guardianName                String?                      @default("none")
+  caste                       String                       @default("none")
+  currentAddress              String                       @default("none")
+  permanentAddress            String                       @default("none")
+  medicalProblem              String?
+  createdAt                   DateTime                     @default(now())
+  updatedAt                   DateTime                     @updatedAt
+  isAssign                    Boolean                      @default(false)
+  profilePic                  String?                      @default("/user.jpg")
+  StudentClass                StudentClass[]
+  Marks                       Marks[]
+  ReportCard                  ReportCard[]
+  PromotionHistory            PromotionHistory[]
+  StudentAttendance           StudentAttendance[]
+  // v2.0 relations
+  PromotionEligibilityResults PromotionEligibilityResult[]
+  BulkPromotionBatchItems     BulkPromotionBatchItem[]
 }
 
 model Subject {
@@ -386,12 +429,15 @@ model Exam {
   updatedAt    DateTime     @updatedAt
 
   // Relations
-  ExamType      ExamType        @relation(fields: [examTypeId], references: [examTypeId])
-  Sessions      Sessions        @relation(fields: [sessionId], references: [sessionId])
-  Grades        Grades          @relation(fields: [classId], references: [classId])
-  Marks         Marks[]
-  ReportCard    ReportCard[]
-  ExamDatesheet ExamDatesheet[]
+  ExamType           ExamType                     @relation(fields: [examTypeId], references: [examTypeId])
+  Sessions           Sessions                     @relation(fields: [sessionId], references: [sessionId])
+  Grades             Grades                       @relation(fields: [classId], references: [classId])
+  Marks              Marks[]
+  ReportCard         ReportCard[]
+  ExamDatesheet      ExamDatesheet[]
+  // v2.0 relations
+  EligibilityResults PromotionEligibilityResult[]
+  MarkingSessions    ExaminationMarkingSession[]
 }
 
 model ExamDatesheet {
@@ -530,6 +576,593 @@ model StudentAttendance {
   @@unique([studentId, classId, sessionId, date])
   @@index([classId])
   @@index([sessionId])
+}
+
+// ============ ERP EXPENSE MANAGEMENT SYSTEM ============
+
+model CostCentre {
+  costCentreId String           @id @default(cuid())
+  code         String           @unique @db.VarChar(20)
+  name         String           @db.VarChar(100)
+  managerId    String?
+  status       CostCentreStatus @default(Active)
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+
+  Manager                Employees?              @relation("CostCentreManager", fields: [managerId], references: [employeeId])
+  BudgetAllocations      BudgetAllocation[]
+  PurchaseOrders         PurchaseOrder[]
+  DirectExpenses         DirectExpense[]
+  PettyCashDisbursements PettyCashDisbursement[]
+}
+
+model BudgetPlan {
+  budgetPlanId String   @id @default(cuid())
+  sessionId    String
+  name         String   @db.VarChar(200)
+  totalAmount  Float    @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  Session       Sessions             @relation(fields: [sessionId], references: [sessionId])
+  Allocations   BudgetAllocation[]
+  Reallocations BudgetReallocation[]
+}
+
+model BudgetAllocation {
+  allocationId     String   @id @default(cuid())
+  budgetPlanId     String
+  costCentreId     String
+  expenseCategory  String   @db.VarChar(50)
+  allocatedAmount  Float
+  alert75Triggered Boolean  @default(false)
+  alert90Triggered Boolean  @default(false)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  BudgetPlan BudgetPlan @relation(fields: [budgetPlanId], references: [budgetPlanId])
+  CostCentre CostCentre @relation(fields: [costCentreId], references: [costCentreId])
+}
+
+model BudgetReallocation {
+  reallocationId String   @id @default(cuid())
+  budgetPlanId   String
+  fromCategory   String
+  toCategory     String
+  amount         Float
+  justification  String   @db.Text
+  authorisedBy   String
+  createdAt      DateTime @default(now())
+
+  BudgetPlan   BudgetPlan @relation(fields: [budgetPlanId], references: [budgetPlanId])
+  AuthorisedBy Employees  @relation("BudgetReallocationAuth", fields: [authorisedBy], references: [employeeId])
+}
+
+model PurchaseOrder {
+  poId            String              @id @default(cuid())
+  poNumber        String              @unique
+  supplierName    String              @db.VarChar(200)
+  supplierContact String?
+  costCentreId    String
+  expenseCategory String              @db.VarChar(50)
+  requiredByDate  DateTime?
+  justification   String              @db.Text
+  attachmentUrls  String[]            @default([])
+  estimatedTotal  Float
+  status          PurchaseOrderStatus @default(Draft)
+  approvalL1By    String?
+  approvalL1At    DateTime?
+  approvalL2By    String?
+  approvalL2At    DateTime?
+  poDocumentUrl   String?
+  createdBy       String
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+
+  CostCentre CostCentre              @relation(fields: [costCentreId], references: [costCentreId])
+  CreatedBy  Employees               @relation("POCreatedBy", fields: [createdBy], references: [employeeId])
+  ApprovalL1 Employees?              @relation("POApprovalL1", fields: [approvalL1By], references: [employeeId])
+  ApprovalL2 Employees?              @relation("POApprovalL2", fields: [approvalL2By], references: [employeeId])
+  LineItems  PurchaseOrderLineItem[]
+  GRN        GoodsReceiptNote?
+}
+
+model PurchaseOrderLineItem {
+  lineItemId         String  @id @default(cuid())
+  poId               String
+  description        String  @db.VarChar(500)
+  quantity           Float
+  unit               String  @db.VarChar(50)
+  estimatedUnitPrice Float
+  totalEstimatedCost Float
+  inventoryItemId    String?
+
+  PurchaseOrder PurchaseOrder  @relation(fields: [poId], references: [poId], onDelete: Cascade)
+  InventoryItem InventoryItem? @relation(fields: [inventoryItemId], references: [inventoryItemId])
+  GRNLineItems  GRNLineItem[]
+}
+
+model GoodsReceiptNote {
+  grnId      String   @id @default(cuid())
+  poId       String   @unique
+  receivedBy String
+  receivedAt DateTime @default(now())
+  notes      String?  @db.Text
+  createdAt  DateTime @default(now())
+
+  PurchaseOrder PurchaseOrder @relation(fields: [poId], references: [poId])
+  ReceivedBy    Employees     @relation("GRNReceivedBy", fields: [receivedBy], references: [employeeId])
+  LineItems     GRNLineItem[]
+}
+
+model GRNLineItem {
+  grnLineItemId    String  @id @default(cuid())
+  grnId            String
+  poLineItemId     String
+  quantityOrdered  Float
+  quantityReceived Float
+  condition        String  @db.VarChar(50)
+  discrepancyNote  String?
+
+  GoodsReceiptNote GoodsReceiptNote      @relation(fields: [grnId], references: [grnId], onDelete: Cascade)
+  POLineItem       PurchaseOrderLineItem @relation(fields: [poLineItemId], references: [lineItemId])
+}
+
+model DirectExpense {
+  directExpenseId  String    @id @default(cuid())
+  expenseDate      DateTime
+  description      String    @db.VarChar(500)
+  amount           Float
+  costCentreId     String
+  expenseCategory  String    @db.VarChar(50)
+  paymentChannel   String    @db.VarChar(50)
+  paymentReference String?
+  receiptUrl       String?
+  isApproved       Boolean   @default(false)
+  approvedBy       String?
+  approvedAt       DateTime?
+  rejectionReason  String?
+  createdBy        String
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  CostCentre CostCentre @relation(fields: [costCentreId], references: [costCentreId])
+  CreatedBy  Employees  @relation("DirectExpenseCreatedBy", fields: [createdBy], references: [employeeId])
+  ApprovedBy Employees? @relation("DirectExpenseApprovedBy", fields: [approvedBy], references: [employeeId])
+}
+
+model RecurringExpenseTemplate {
+  templateId      String   @id @default(cuid())
+  name            String   @db.VarChar(200)
+  description     String?  @db.Text
+  amount          Float
+  expenseCategory String   @db.VarChar(50)
+  costCentreId    String?
+  scheduleType    String   @db.VarChar(20) // MONTHLY, QUARTERLY, YEARLY
+  nextDueDate     DateTime
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model InventoryItem {
+  inventoryItemId String   @id @default(cuid())
+  itemName        String   @db.VarChar(200)
+  category        String   @db.VarChar(100)
+  unit            String   @db.VarChar(50)
+  quantityOnHand  Float    @default(0)
+  reorderLevel    Float    @default(0)
+  supplierRef     String?
+  costPerUnit     Float    @default(0)
+  storageLocation String?
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  StockTransactions    StockTransaction[]
+  StockReconciliations StockReconciliation[]
+  POLineItems          PurchaseOrderLineItem[]
+}
+
+model StockTransaction {
+  transactionId   String               @id @default(cuid())
+  inventoryItemId String
+  transactionType StockTransactionType
+  quantity        Float
+  date            DateTime             @default(now())
+  reference       String?              @db.VarChar(200)
+  recipientId     String?
+  purpose         String?              @db.VarChar(500)
+  createdAt       DateTime             @default(now())
+
+  InventoryItem InventoryItem @relation(fields: [inventoryItemId], references: [inventoryItemId])
+  Recipient     Employees?    @relation("StockRecipient", fields: [recipientId], references: [employeeId])
+}
+
+model StockReconciliation {
+  reconciliationId String   @id @default(cuid())
+  inventoryItemId  String
+  systemQuantity   Float
+  physicalCount    Float
+  variance         Float
+  explanation      String   @db.Text
+  performedBy      String
+  performedAt      DateTime @default(now())
+  createdAt        DateTime @default(now())
+
+  InventoryItem InventoryItem @relation(fields: [inventoryItemId], references: [inventoryItemId])
+  PerformedBy   Employees     @relation("ReconciliationPerformedBy", fields: [performedBy], references: [employeeId])
+}
+
+model AssetCategory {
+  assetCategoryId String  @id @default(cuid())
+  name            String  @unique @db.VarChar(100)
+  description     String?
+  Assets          Asset[]
+}
+
+model Asset {
+  assetId            String             @id @default(cuid())
+  assetTag           String             @unique @db.VarChar(100)
+  serialNumber       String?
+  assetName          String             @db.VarChar(200)
+  assetCategoryId    String
+  purchaseDate       DateTime?
+  purchaseCost       Float              @default(0)
+  supplier           String?
+  condition          AssetCondition     @default(New)
+  location           String?
+  assignedToId       String?
+  warrantyExpiry     DateTime?
+  photoUrl           String?
+  depreciationMethod DepreciationMethod @default(StraightLine)
+  usefulLifeYears    Int                @default(5)
+  isDisposed         Boolean            @default(false)
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+
+  AssetCategory AssetCategory       @relation(fields: [assetCategoryId], references: [assetCategoryId])
+  AssignedTo    Employees?          @relation("AssetAssignedTo", fields: [assignedToId], references: [employeeId])
+  Depreciations AssetDepreciation[]
+  Maintenances  AssetMaintenance[]
+  Transfers     AssetTransfer[]
+  Disposal      AssetDisposal?
+}
+
+model AssetDepreciation {
+  depreciationId     String   @id @default(cuid())
+  assetId            String
+  period             String   @db.VarChar(20) // e.g. "2025-2026"
+  depreciationAmount Float
+  netBookValue       Float
+  computedAt         DateTime @default(now())
+
+  Asset Asset @relation(fields: [assetId], references: [assetId])
+}
+
+model AssetMaintenance {
+  maintenanceId   String          @id @default(cuid())
+  assetId         String
+  maintenanceType MaintenanceType
+  scheduledDate   DateTime
+  completedDate   DateTime?
+  vendorName      String?
+  cost            Float           @default(0)
+  outcome         String?         @db.VarChar(500)
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  Asset Asset @relation(fields: [assetId], references: [assetId])
+}
+
+model AssetTransfer {
+  transferId     String   @id @default(cuid())
+  assetId        String
+  fromLocation   String?
+  toLocation     String?
+  fromEmployeeId String?
+  toEmployeeId   String?
+  transferDate   DateTime @default(now())
+  authorisedBy   String
+  notes          String?
+
+  Asset        Asset     @relation(fields: [assetId], references: [assetId])
+  AuthorisedBy Employees @relation("AssetTransferAuth", fields: [authorisedBy], references: [employeeId])
+}
+
+model AssetDisposal {
+  disposalId       String         @id @default(cuid())
+  assetId          String         @unique
+  disposalDate     DateTime
+  disposalMethod   DisposalMethod
+  proceedsReceived Float          @default(0)
+  authorisationRef String?
+  notes            String?
+  createdAt        DateTime       @default(now())
+
+  Asset Asset @relation(fields: [assetId], references: [assetId])
+}
+
+model PettyCashRegister {
+  registerId     String   @id @default(cuid())
+  sessionId      String   @unique
+  openingBalance Float
+  currentBalance Float
+  minimumBalance Float    @default(5000)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  Session         Sessions                  @relation(fields: [sessionId], references: [sessionId])
+  Disbursements   PettyCashDisbursement[]
+  Reconciliations PettyCashReconciliation[]
+}
+
+model PettyCashDisbursement {
+  disbursementId  String   @id @default(cuid())
+  registerId      String
+  date            DateTime @default(now())
+  amount          Float
+  payee           String   @db.VarChar(200)
+  purpose         String   @db.VarChar(500)
+  expenseCategory String   @db.VarChar(50)
+  costCentreId    String?
+  voucherRef      String?
+  recordedBy      String
+  createdAt       DateTime @default(now())
+
+  Register   PettyCashRegister @relation(fields: [registerId], references: [registerId])
+  CostCentre CostCentre?       @relation(fields: [costCentreId], references: [costCentreId])
+  RecordedBy Employees         @relation("PettyCashRecordedBy", fields: [recordedBy], references: [employeeId])
+}
+
+model PettyCashReconciliation {
+  reconciliationId String   @id @default(cuid())
+  registerId       String
+  systemBalance    Float
+  physicalCount    Float
+  variance         Float
+  explanation      String?  @db.Text
+  performedBy      String
+  performedAt      DateTime @default(now())
+
+  Register    PettyCashRegister @relation(fields: [registerId], references: [registerId])
+  PerformedBy Employees         @relation("PettyCashReconciliationBy", fields: [performedBy], references: [employeeId])
+}
+
+model FinancialLedgerEntry {
+  ledgerEntryId   String   @id @default(cuid())
+  entryType       String   @db.VarChar(20) // DEBIT or CREDIT
+  accountType     String   @db.VarChar(50) // Income, Expenditure, Asset, Liability
+  accountCode     String   @db.VarChar(50)
+  amount          Float
+  description     String   @db.VarChar(500)
+  transactionDate DateTime @default(now())
+  // Polymorphic source reference — sourceType discriminates the entity type
+  sourceType      String   @db.VarChar(50) // FEE, SALARY, EXPENSE, PO, PETTY_CASH, ASSET_DEPRECIATION, ASSET_DISPOSAL
+  sourceId        String? // logical reference, not an FK (polymorphic)
+  counterEntryId  String? // References original entry for counter-entries
+  justification   String?  @db.Text
+  createdBy       String
+  createdAt       DateTime @default(now())
+
+  CreatedBy Employees @relation("LedgerCreatedBy", fields: [createdBy], references: [employeeId])
+}
+
+model ApprovalPolicy {
+  policyId           String   @id @default(cuid())
+  transactionType    String   @db.VarChar(50) // PO, DIRECT_EXPENSE, BUDGET_REALLOCATION, PETTY_CASH
+  approvalLevel      Int
+  authorityRole      String   @db.VarChar(50)
+  financialThreshold Float    @default(0)
+  isActive           Boolean  @default(true)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+}
+
+model ApprovalRecord {
+  approvalRecordId String           @id @default(cuid())
+  transactionType  String           @db.VarChar(50) // polymorphic: PO, EXPENSE, etc.
+  transactionId    String // logical reference, not an FK (polymorphic)
+  approvalLevel    Int
+  approverId       String
+  decision         ApprovalDecision
+  comments         String?          @db.Text
+  decidedAt        DateTime         @default(now())
+  createdAt        DateTime         @default(now())
+
+  Approver Employees @relation("ApprovalRecordApprover", fields: [approverId], references: [employeeId])
+}
+
+model ApprovalDelegation {
+  delegationId     String   @id @default(cuid())
+  delegatorId      String
+  delegateId       String
+  startDate        DateTime
+  endDate          DateTime
+  transactionTypes String[] @default([])
+  isActive         Boolean  @default(true)
+  createdAt        DateTime @default(now())
+
+  Delegator Employees @relation("DelegationDelegator", fields: [delegatorId], references: [employeeId])
+  Delegate  Employees @relation("DelegationDelegate", fields: [delegateId], references: [employeeId])
+}
+
+// ============ PROMOTION MANAGEMENT v2.0 ============
+
+model PromotionEligibilityRule {
+  ruleId              String   @id @default(cuid())
+  examTypeEnum        String   @db.VarChar(50)
+  triggersPromotion   Boolean  @default(false)
+  minAggregatePercent Float    @default(40)
+  mustPassAllSubjects Boolean  @default(false)
+  minSubjectsToPass   Int      @default(0)
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+}
+
+model PromotionEligibilityResult {
+  resultId          String                     @id @default(cuid())
+  studentId         String
+  examId            String
+  eligibilityStatus PromotionEligibilityStatus
+  aggregatePercent  Float
+  subjectBreakdown  String                     @db.Text // JSON string
+  computedAt        DateTime                   @default(now())
+
+  Students Students @relation(fields: [studentId], references: [studentId])
+  Exam     Exam     @relation(fields: [examId], references: [examId])
+
+  @@unique([studentId, examId])
+}
+
+model BulkPromotionBatch {
+  batchId        String   @id @default(cuid())
+  initiatedBy    String
+  fromClassId    String
+  toClassId      String
+  fromSessionId  String
+  toSessionId    String
+  totalProcessed Int      @default(0)
+  totalPromoted  Int      @default(0)
+  totalWithheld  Int      @default(0)
+  totalOverrides Int      @default(0)
+  executedAt     DateTime @default(now())
+  createdAt      DateTime @default(now())
+
+  InitiatedBy Employees                @relation("BulkPromotionInitiator", fields: [initiatedBy], references: [employeeId])
+  FromClass   Grades                   @relation("BulkPromotionFromClass", fields: [fromClassId], references: [classId])
+  ToClass     Grades                   @relation("BulkPromotionToClass", fields: [toClassId], references: [classId])
+  FromSession Sessions                 @relation("BulkPromotionFromSession", fields: [fromSessionId], references: [sessionId])
+  ToSession   Sessions                 @relation("BulkPromotionToSession", fields: [toSessionId], references: [sessionId])
+  Items       BulkPromotionBatchItem[]
+}
+
+model BulkPromotionBatchItem {
+  batchItemId           String                     @id @default(cuid())
+  batchId               String
+  studentId             String
+  eligibilityStatus     PromotionEligibilityStatus
+  isOverridden          Boolean                    @default(false)
+  overrideJustification String?                    @db.Text
+  outcome               BulkPromotionOutcome
+
+  Batch   BulkPromotionBatch @relation(fields: [batchId], references: [batchId])
+  Student Students           @relation(fields: [studentId], references: [studentId])
+}
+
+model ExaminationMarkingSession {
+  markingSessionId String   @id @default(cuid())
+  examId           String
+  userId           String
+  openedAt         DateTime @default(now())
+  lastActivityAt   DateTime @default(now())
+
+  Exam Exam @relation(fields: [examId], references: [examId])
+}
+
+// ============ BULK SALARY CREATION v2.0 ============
+
+model BulkSalaryCreationBatch {
+  batchId              String   @id @default(cuid())
+  initiatedBy          String
+  fromSessionId        String?
+  toSessionId          String
+  globalIncrementType  String?  @db.VarChar(20) // PERCENT or FIXED
+  globalIncrementValue Float    @default(0)
+  totalEmployees       Int      @default(0)
+  totalCreated         Int      @default(0)
+  executedAt           DateTime @default(now())
+  createdAt            DateTime @default(now())
+
+  InitiatedBy Employees                @relation("BulkSalaryBatchInitiator", fields: [initiatedBy], references: [employeeId])
+  ToSession   Sessions                 @relation("BulkSalaryToSession", fields: [toSessionId], references: [sessionId])
+  Items       BulkSalaryCreationItem[]
+}
+
+model BulkSalaryCreationItem {
+  batchItemId    String  @id @default(cuid())
+  batchId        String
+  employeeId     String
+  previousSalary Float   @default(0)
+  newSalary      Float
+  isOverridden   Boolean @default(false)
+
+  Batch    BulkSalaryCreationBatch @relation(fields: [batchId], references: [batchId])
+  Employee Employees               @relation(fields: [employeeId], references: [employeeId])
+}
+
+// ============ HR & LEAVE MANAGEMENT v2.0 (PROPOSED) ============
+
+model LeaveType {
+  leaveTypeId       String             @id @default(cuid())
+  name              String             @unique @db.VarChar(100)
+  typeEnum          LeaveTypeEnum
+  annualDays        Int                @default(0)
+  isPaid            Boolean            @default(true)
+  createdAt         DateTime           @default(now())
+  LeaveApplications LeaveApplication[]
+  LeaveBalances     LeaveBalance[]
+}
+
+model LeaveApplication {
+  applicationId String      @id @default(cuid())
+  employeeId    String
+  leaveTypeId   String
+  startDate     DateTime
+  endDate       DateTime
+  totalDays     Int
+  reason        String      @db.Text
+  documentUrl   String?
+  status        LeaveStatus @default(Draft)
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  Employee  Employees       @relation(fields: [employeeId], references: [employeeId])
+  LeaveType LeaveType       @relation(fields: [leaveTypeId], references: [leaveTypeId])
+  Approvals LeaveApproval[]
+}
+
+model LeaveApproval {
+  leaveApprovalId String           @id @default(cuid())
+  applicationId   String
+  approvalLevel   Int
+  approverId      String
+  decision        ApprovalDecision
+  comments        String?          @db.Text
+  decidedAt       DateTime         @default(now())
+
+  Application LeaveApplication @relation(fields: [applicationId], references: [applicationId])
+  Approver    Employees        @relation("LeaveApprovalApprover", fields: [approverId], references: [employeeId])
+}
+
+model LeaveBalance {
+  balanceId     String   @id @default(cuid())
+  employeeId    String
+  leaveTypeId   String
+  sessionId     String
+  entitlement   Int      @default(0)
+  daysTaken     Int      @default(0)
+  daysPending   Int      @default(0)
+  daysRemaining Int      @default(0)
+  updatedAt     DateTime @updatedAt
+
+  Employee  Employees @relation(fields: [employeeId], references: [employeeId])
+  LeaveType LeaveType @relation(fields: [leaveTypeId], references: [leaveTypeId])
+  Session   Sessions  @relation(fields: [sessionId], references: [sessionId])
+
+  @@unique([employeeId, leaveTypeId, sessionId])
+}
+
+model ParentGuardian {
+  guardentId        String   @id @default(cuid())
+  username          String   @unique
+  passwordHash      String
+  mobileNumber      String
+  linkedStudentIds  String[] @default([])
+  notificationPrefs String?  @db.Text // JSON
+  isActive          Boolean  @default(true)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
 }
 
 // Enums
@@ -690,4 +1323,101 @@ enum ReportCardStatus {
 enum PromotionReason {
   PASSED
   SPECIAL_CASE
+}
+
+// ============ v2.0 NEW ENUMERATIONS ============
+
+enum PurchaseOrderStatus {
+  Draft
+  PendingApprovalL1
+  PendingApprovalL2
+  Approved
+  Ordered
+  Received
+  Invoiced
+  Paid
+  Cancelled
+}
+
+enum StockTransactionType {
+  StockIn
+  StockOut
+  Adjustment
+  ReconciliationVariance
+}
+
+enum AssetCondition {
+  New
+  Good
+  Fair
+  Poor
+  UnderMaintenance
+  Disposed
+}
+
+enum DepreciationMethod {
+  StraightLine
+  DecliningBalance
+}
+
+enum MaintenanceType {
+  Preventive
+  Corrective
+  Emergency
+}
+
+enum DisposalMethod {
+  Sale
+  Scrap
+  Donation
+  Loss
+}
+
+enum PettyCashTransactionType {
+  Disbursement
+  Replenishment
+  ReconciliationAdjustment
+}
+
+enum ApprovalDecision {
+  Approved
+  Rejected
+  Delegated
+  PendingInfo
+}
+
+enum PromotionEligibilityStatus {
+  Eligible
+  Conditional
+  Ineligible
+}
+
+enum BulkPromotionOutcome {
+  Promoted
+  Withheld
+  Overridden
+}
+
+enum LeaveStatus {
+  Draft
+  PendingApprovalL1
+  PendingApprovalL2
+  Approved
+  Rejected
+  Withdrawn
+  Cancelled
+}
+
+enum LeaveTypeEnum {
+  Annual
+  Sick
+  Casual
+  MaternityPaternity
+  Unpaid
+  Compensatory
+}
+
+enum CostCentreStatus {
+  Active
+  Inactive
 }
