@@ -43,6 +43,14 @@ import {
 } from "~/components/ui/select";
 import { toast } from "sonner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "~/components/ui/dialog";
+import { Copy, MoveRight, CheckCircle2 } from "lucide-react";
 
 interface GalleryImage {
   key: string;
@@ -62,6 +70,7 @@ interface UploadResponse {
 
 interface GalleryListResponse {
   images: GalleryImage[];
+  folders?: string[];
   error?: string;
 }
 
@@ -89,6 +98,7 @@ export default function GalleryUploader({
   canDelete = true,
 }: GalleryUploaderProps) {
   const [images, setImages] = useState<GalleryImage[]>([]);
+  const [apiFolders, setApiFolders] = useState<string[]>([]);
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -99,6 +109,20 @@ export default function GalleryUploader({
   const [newFolderName, setNewFolderName] = useState("");
   const [isNewFolder, setIsNewFolder] = useState(false);
 
+  // New Selection & Action States
+  const [selectionMode, setSelectionMode] = useState(false);
+  const [selectedKeys, setSelectedKeys] = useState<string[]>([]);
+  const [actionLoading, setActionLoading] = useState(false);
+  
+  const [isFolderDialogOpen, setIsFolderDialogOpen] = useState(false);
+  const [newStandaloneFolder, setNewStandaloneFolder] = useState("");
+
+  const [isMoveDialogOpen, setIsMoveDialogOpen] = useState(false);
+  const [isCopyDialogOpen, setIsCopyDialogOpen] = useState(false);
+  const [actionTargetFolder, setActionTargetFolder] = useState("root");
+  const [isNewActionFolder, setIsNewActionFolder] = useState(false);
+  const [newActionFolderName, setNewActionFolderName] = useState("");
+
   const fetchImages = useCallback(async () => {
     try {
       setLoading(true);
@@ -106,6 +130,7 @@ export default function GalleryUploader({
       if (!res.ok) throw new Error("Failed to fetch");
       const data = (await res.json()) as GalleryListResponse;
       setImages(data.images ?? []);
+      setApiFolders(data.folders ?? []);
     } catch {
       toast.error("Failed to load gallery images");
     } finally {
@@ -126,7 +151,7 @@ export default function GalleryUploader({
   }, []);
 
   const existingFolders = useMemo(() => {
-    const folders = new Set<string>();
+    const folders = new Set<string>(apiFolders);
     images.forEach((img) => {
       // Key format: gallery/folderName/timestamp_filename.ext
       // OR gallery/timestamp_filename.ext
@@ -137,7 +162,7 @@ export default function GalleryUploader({
       }
     });
     return Array.from(folders).sort();
-  }, [images]);
+  }, [images, apiFolders]);
 
   // Group images by folder for display
   const imagesByFolder = useMemo(() => {
@@ -204,6 +229,78 @@ export default function GalleryUploader({
     setNewFolderName("");
     await fetchImages();
   }, [stagedFiles, isNewFolder, newFolderName, selectedFolder, fetchImages]);
+
+  const toggleSelection = (key: string) => {
+    setSelectedKeys(prev => 
+      prev.includes(key) ? prev.filter(k => k !== key) : [...prev, key]
+    );
+  };
+
+  const handleCreateFolder = async () => {
+    if (!newStandaloneFolder.trim()) return;
+    try {
+      setActionLoading(true);
+      const res = await fetch("/api/gallery/folder", {
+        method: "POST",
+        body: JSON.stringify({ folderName: newStandaloneFolder.trim() }),
+      });
+      if (!res.ok) throw new Error("Failed to create folder");
+      toast.success("Folder created");
+      setIsFolderDialogOpen(false);
+      setNewStandaloneFolder("");
+      await fetchImages();
+    } catch {
+      toast.error("Failed to create folder");
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleBulkAction = async (action: "move" | "copy") => {
+    if (selectedKeys.length === 0) return;
+    const target = isNewActionFolder ? newActionFolderName.trim() : (actionTargetFolder === "root" ? "" : actionTargetFolder);
+    
+    try {
+      setActionLoading(true);
+      const res = await fetch(`/api/gallery/${action}`, {
+        method: "POST",
+        body: JSON.stringify({ keys: selectedKeys, targetFolder: target }),
+      });
+      if (!res.ok) throw new Error(`Failed to ${action}`);
+      toast.success(`Items ${action === 'move' ? 'moved' : 'copied'} successfully`);
+      if (action === "move") setIsMoveDialogOpen(false);
+      else setIsCopyDialogOpen(false);
+      
+      setSelectionMode(false);
+      setSelectedKeys([]);
+      setNewActionFolderName("");
+      setIsNewActionFolder(false);
+      await fetchImages();
+    } catch {
+      toast.error(`Failed to ${action} items`);
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    if (selectedKeys.length === 0) return;
+    if (!confirm(`Are you sure you want to delete ${selectedKeys.length} items?`)) return;
+    try {
+      setActionLoading(true);
+      for (const key of selectedKeys) {
+        await fetch(`/api/gallery/${key}`, { method: "DELETE" });
+      }
+      toast.success("Items deleted");
+      setSelectionMode(false);
+      setSelectedKeys([]);
+      await fetchImages();
+    } catch {
+      toast.error("Error deleting some items");
+    } finally {
+      setActionLoading(false);
+    }
+  };
 
   const handleDelete = useCallback(
     async (key: string) => {
@@ -284,8 +381,20 @@ export default function GalleryUploader({
   const renderImageCard = (image: GalleryImage) => (
     <div
       key={image.key}
-      className="group relative aspect-square overflow-hidden rounded-xl border border-slate-800 bg-slate-900/50 transition-all duration-300 hover:border-emerald-500/30 hover:shadow-lg hover:shadow-emerald-500/5"
+      onClick={() => selectionMode && toggleSelection(image.key)}
+      className={`group relative aspect-square overflow-hidden rounded-xl border transition-all duration-300 ${
+        selectedKeys.includes(image.key) 
+          ? "border-emerald-500 ring-2 ring-emerald-500/50" 
+          : "border-slate-800 hover:border-emerald-500/30"
+      } bg-slate-900/50 ${selectionMode ? "cursor-pointer" : ""}`}
     >
+      {selectionMode && (
+        <div className="absolute top-2 left-2 z-10 transition-transform duration-200">
+          <div className={`rounded-full border-2 h-6 w-6 flex items-center justify-center ${selectedKeys.includes(image.key) ? 'bg-emerald-500 border-emerald-500' : 'bg-black/50 border-slate-400'}`}>
+            {selectedKeys.includes(image.key) && <CheckCircle2 className="h-4 w-4 text-white" />}
+          </div>
+        </div>
+      )}
       <Image
         src={image.url}
         alt={image.key.split("/").pop() ?? "Gallery image"}
@@ -310,7 +419,7 @@ export default function GalleryUploader({
       </div>
 
       {/* Delete button */}
-      {canDelete && (
+      {canDelete && !selectionMode && (
         <AlertDialog>
           <AlertDialogTrigger asChild>
             <Button
@@ -559,19 +668,42 @@ export default function GalleryUploader({
                 </CardDescription>
               </div>
             </div>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => void fetchImages()}
-              disabled={loading}
-              className="border-slate-700 text-slate-300 hover:bg-slate-800"
-            >
-              {loading ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                "Refresh"
-              )}
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setIsFolderDialogOpen(true)}
+                disabled={loading || selectionMode}
+                className="border-slate-700 text-slate-300 hover:bg-slate-800"
+              >
+                <FolderPlus className="h-4 w-4 mr-2" /> Create Folder
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  setSelectionMode(!selectionMode);
+                  if (selectionMode) setSelectedKeys([]);
+                }}
+                disabled={loading || images.length === 0}
+                className={selectionMode ? "bg-emerald-600 hover:bg-emerald-700 text-white border-emerald-600" : "border-slate-700 text-slate-300 hover:bg-slate-800"}
+              >
+                {selectionMode ? "Cancel Selection" : "Select Items"}
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => void fetchImages()}
+                disabled={loading || selectionMode}
+                className="border-slate-700 text-slate-300 hover:bg-slate-800"
+              >
+                {loading ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  "Refresh"
+                )}
+              </Button>
+            </div>
           </div>
         </CardHeader>
         <CardContent>
@@ -639,6 +771,92 @@ export default function GalleryUploader({
           )}
         </CardContent>
       </Card>
+      {/* Selection Action Bar */}
+      {selectionMode && selectedKeys.length > 0 && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 rounded-full border border-slate-700 bg-slate-900/90 backdrop-blur-md px-6 py-3 shadow-2xl animate-in slide-in-from-bottom-10">
+          <span className="text-white font-medium mr-4">{selectedKeys.length} selected</span>
+          <Button size="sm" variant="outline" className="border-slate-600 text-slate-200 hover:bg-slate-800 rounded-full" onClick={() => setIsMoveDialogOpen(true)}>
+            <MoveRight className="h-4 w-4 mr-2" /> Move
+          </Button>
+          <Button size="sm" variant="outline" className="border-slate-600 text-slate-200 hover:bg-slate-800 rounded-full" onClick={() => setIsCopyDialogOpen(true)}>
+            <Copy className="h-4 w-4 mr-2" /> Copy
+          </Button>
+          {canDelete && (
+            <Button size="sm" variant="destructive" className="rounded-full bg-red-600 hover:bg-red-700" onClick={() => void handleBulkDelete()} disabled={actionLoading}>
+              <Trash2 className="h-4 w-4 mr-2" /> Delete
+            </Button>
+          )}
+        </div>
+      )}
+
+      {/* Dialogs */}
+      <Dialog open={isFolderDialogOpen} onOpenChange={setIsFolderDialogOpen}>
+        <DialogContent className="bg-slate-900 border-slate-800 text-white sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Create New Folder</DialogTitle>
+          </DialogHeader>
+          <div className="py-4">
+            <Input 
+              value={newStandaloneFolder} 
+              onChange={e => setNewStandaloneFolder(e.target.value)} 
+              placeholder="Folder Name" 
+              className="bg-slate-950 border-slate-700 focus-visible:ring-emerald-500" 
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsFolderDialogOpen(false)} className="border-slate-700 hover:bg-slate-800 text-slate-300">Cancel</Button>
+            <Button onClick={() => void handleCreateFolder()} disabled={!newStandaloneFolder.trim() || actionLoading} className="bg-emerald-600 hover:bg-emerald-700">
+              {actionLoading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <FolderPlus className="h-4 w-4 mr-2" />} Create
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={isMoveDialogOpen} onOpenChange={setIsMoveDialogOpen}>
+        <DialogContent className="bg-slate-900 border-slate-800 text-white sm:max-w-md">
+          <DialogHeader><DialogTitle>Move {selectedKeys.length} items</DialogTitle></DialogHeader>
+          <div className="py-4 space-y-4">
+            <Select value={isNewActionFolder ? "new_folder" : actionTargetFolder} onValueChange={v => { if (v === "new_folder") setIsNewActionFolder(true); else { setIsNewActionFolder(false); setActionTargetFolder(v); } }}>
+              <SelectTrigger className="bg-slate-950 border-slate-700 text-white"><SelectValue placeholder="Select target folder" /></SelectTrigger>
+              <SelectContent className="bg-slate-900 border-slate-700 text-white">
+                <SelectItem value="root">No Folder (Root)</SelectItem>
+                {existingFolders.map(f => <SelectItem key={f} value={f}>{f}</SelectItem>)}
+                <SelectItem value="new_folder" className="text-emerald-400 font-medium">+ Create New Folder</SelectItem>
+              </SelectContent>
+            </Select>
+            {isNewActionFolder && <Input value={newActionFolderName} onChange={e => setNewActionFolderName(e.target.value)} placeholder="New Folder Name" className="bg-slate-950 border-slate-700" />}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsMoveDialogOpen(false)} className="border-slate-700 hover:bg-slate-800 text-slate-300">Cancel</Button>
+            <Button onClick={() => void handleBulkAction("move")} disabled={actionLoading || (isNewActionFolder && !newActionFolderName.trim())} className="bg-emerald-600 hover:bg-emerald-700">
+              {actionLoading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <MoveRight className="h-4 w-4 mr-2" />} Move
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={isCopyDialogOpen} onOpenChange={setIsCopyDialogOpen}>
+        <DialogContent className="bg-slate-900 border-slate-800 text-white sm:max-w-md">
+          <DialogHeader><DialogTitle>Copy {selectedKeys.length} items</DialogTitle></DialogHeader>
+          <div className="py-4 space-y-4">
+            <Select value={isNewActionFolder ? "new_folder" : actionTargetFolder} onValueChange={v => { if (v === "new_folder") setIsNewActionFolder(true); else { setIsNewActionFolder(false); setActionTargetFolder(v); } }}>
+              <SelectTrigger className="bg-slate-950 border-slate-700 text-white"><SelectValue placeholder="Select target folder" /></SelectTrigger>
+              <SelectContent className="bg-slate-900 border-slate-700 text-white">
+                <SelectItem value="root">No Folder (Root)</SelectItem>
+                {existingFolders.map(f => <SelectItem key={f} value={f}>{f}</SelectItem>)}
+                <SelectItem value="new_folder" className="text-emerald-400 font-medium">+ Create New Folder</SelectItem>
+              </SelectContent>
+            </Select>
+            {isNewActionFolder && <Input value={newActionFolderName} onChange={e => setNewActionFolderName(e.target.value)} placeholder="New Folder Name" className="bg-slate-950 border-slate-700" />}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsCopyDialogOpen(false)} className="border-slate-700 hover:bg-slate-800 text-slate-300">Cancel</Button>
+            <Button onClick={() => void handleBulkAction("copy")} disabled={actionLoading || (isNewActionFolder && !newActionFolderName.trim())} className="bg-emerald-600 hover:bg-emerald-700">
+              {actionLoading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Copy className="h-4 w-4 mr-2" />} Copy
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

@@ -1,4 +1,4 @@
-import { S3Client, ListObjectsV2Command, DeleteObjectCommand, PutObjectCommand, GetObjectCommand } from "@aws-sdk/client-s3";
+import { S3Client, ListObjectsV2Command, DeleteObjectCommand, PutObjectCommand, GetObjectCommand, CopyObjectCommand } from "@aws-sdk/client-s3";
 
 const getS3Client = () => {
   return new S3Client({
@@ -21,7 +21,7 @@ export interface GalleryImage {
   size?: number;
 }
 
-export async function listGalleryImages(): Promise<GalleryImage[]> {
+export async function listGalleryImages(): Promise<{images: GalleryImage[], folders: string[]}> {
   const s3 = getS3Client();
   const command = new ListObjectsV2Command({
     Bucket: getBucket(),
@@ -31,8 +31,21 @@ export async function listGalleryImages(): Promise<GalleryImage[]> {
   const response = await s3.send(command);
   const contents = response.Contents ?? [];
 
-  return contents
-    .filter((obj) => obj.Key && !obj.Key.endsWith("/"))
+  const folders = new Set<string>();
+
+  const images = contents
+    .filter((obj) => {
+      if (!obj.Key) return false;
+      // Track explicit folder objects
+      if (obj.Key.endsWith("/")) {
+        const parts = obj.Key.split("/");
+        if (parts.length > 1 && parts[1]) {
+          folders.add(parts[1]);
+        }
+        return false;
+      }
+      return true;
+    })
     .map((obj) => ({
       key: obj.Key!,
       url: `/api/images/${obj.Key!}`,
@@ -45,6 +58,8 @@ export async function listGalleryImages(): Promise<GalleryImage[]> {
       }
       return 0;
     });
+
+  return { images, folders: Array.from(folders) };
 }
 
 export async function uploadToS3(
@@ -81,4 +96,31 @@ export async function getFromS3(key: string) {
     Key: key,
   });
   return s3.send(command);
+}
+
+export async function copyS3Object(sourceKey: string, destinationKey: string): Promise<void> {
+  const s3 = getS3Client();
+  const command = new CopyObjectCommand({
+    Bucket: getBucket(),
+    CopySource: `${getBucket()}/${sourceKey}`,
+    Key: destinationKey,
+  });
+  await s3.send(command);
+}
+
+export async function moveS3Object(sourceKey: string, destinationKey: string): Promise<void> {
+  await copyS3Object(sourceKey, destinationKey);
+  await deleteFromS3(sourceKey);
+}
+
+export async function createS3Folder(folderName: string): Promise<void> {
+  const s3 = getS3Client();
+  // Ensure folder name ends with /
+  const key = `gallery/${folderName.endsWith('/') ? folderName : folderName + '/'}`;
+  const command = new PutObjectCommand({
+    Bucket: getBucket(),
+    Key: key,
+    Body: new Uint8Array(0), // Empty body
+  });
+  await s3.send(command);
 }
