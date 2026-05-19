@@ -2,7 +2,15 @@
     "workbench.colorCustomizations": {
         "activityBar.background": "#1A340F",
         "titleBar.activeBackground": "#244815",
-        "titleBar.activeForeground": "#F6FCF3"
+        "titleBar.activeForeground": "#F6FCF3",
+        "titleBar.inactiveBackground": "#1A330F",
+        "titleBar.inactiveForeground": "#F7FCF5",
+        "statusBar.background": "#1A330F",
+        "statusBar.foreground": "#F7FCF5",
+        "statusBar.debuggingBackground": "#1A330F",
+        "statusBar.debuggingForeground": "#F7FCF5",
+        "statusBar.noFolderBackground": "#1A330F",
+        "statusBar.noFolderForeground": "#F7FCF5"
     },
     "prisma.pinToPrisma6": true,
     "css.lint.unknownAtRules": "ignore"

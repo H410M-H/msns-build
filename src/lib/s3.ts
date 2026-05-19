@@ -1,4 +1,4 @@
-import { S3Client, ListObjectsV2Command, DeleteObjectCommand, PutObjectCommand, GetObjectCommand, CopyObjectCommand } from "@aws-sdk/client-s3";
+import { S3Client, ListObjectsV2Command, DeleteObjectCommand, PutObjectCommand, GetObjectCommand, CopyObjectCommand, DeleteObjectsCommand } from "@aws-sdk/client-s3";
 
 const getS3Client = () => {
   return new S3Client({
@@ -123,4 +123,36 @@ export async function createS3Folder(folderName: string): Promise<void> {
     Body: new Uint8Array(0), // Empty body
   });
   await s3.send(command);
+}
+
+export async function deleteS3Folder(folderName: string): Promise<void> {
+  const s3 = getS3Client();
+  const prefix = `gallery/${folderName.endsWith('/') ? folderName : folderName + '/'}`;
+
+  let isTruncated = true;
+  let continuationToken: string | undefined = undefined;
+
+  while (isTruncated) {
+    const listCommand = new ListObjectsV2Command({
+      Bucket: getBucket(),
+      Prefix: prefix,
+      ContinuationToken: continuationToken,
+    });
+
+    const listResponse = await s3.send(listCommand);
+    if (!listResponse.Contents || listResponse.Contents.length === 0) break;
+
+    const deleteCommand = new DeleteObjectsCommand({
+      Bucket: getBucket(),
+      Delete: {
+        Objects: listResponse.Contents.map((obj) => ({ Key: obj.Key! })),
+        Quiet: true,
+      },
+    });
+
+    await s3.send(deleteCommand);
+
+    isTruncated = listResponse.IsTruncated ?? false;
+    continuationToken = listResponse.NextContinuationToken;
+  }
 }
