@@ -12,7 +12,7 @@ export default function SignInPage() {
       {/* --- LAYER 1: Background Image --- */}
       <div className="absolute inset-0 z-0">
         <Image
-          src="/api/images/gallery/FrontView1_alaabu.jpg"
+          src="/api/images/resolve/FrontView1_alaabu.jpg"
           alt="School Campus Background"
           fill
           priority

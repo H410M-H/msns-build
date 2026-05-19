@@ -22,7 +22,7 @@ export interface GalleryImage {
   size?: number;
 }
 
-export async function listGalleryImages(): Promise<{images: GalleryImage[], folders: string[]}> {
+export async function listGalleryImages(): Promise<{ images: GalleryImage[], folders: string[] }> {
   const s3 = getS3Client();
   const command = new ListObjectsV2Command({
     Bucket: getBucket(),
@@ -61,6 +61,27 @@ export async function listGalleryImages(): Promise<{images: GalleryImage[], fold
     });
 
   return { images, folders: Array.from(folders) };
+}
+
+export async function findImageByFilename(filename: string): Promise<string | null> {
+  const s3 = getS3Client();
+  const command = new ListObjectsV2Command({
+    Bucket: getBucket(),
+    Prefix: "gallery/",
+  });
+
+  const response = await s3.send(command);
+  const contents = response.Contents ?? [];
+
+  for (const obj of contents) {
+    if (!obj.Key || obj.Key.endsWith("/")) continue;
+    const basename = obj.Key.split("/").pop();
+    if (basename === filename) {
+      return obj.Key;
+    }
+  }
+
+  return null;
 }
 
 export async function uploadToS3(
