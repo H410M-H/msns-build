@@ -116,6 +116,9 @@ export default function GalleryUploader({
   
   const [isFolderDialogOpen, setIsFolderDialogOpen] = useState(false);
   const [newStandaloneFolder, setNewStandaloneFolder] = useState("");
+  
+  const [isManageFoldersDialogOpen, setIsManageFoldersDialogOpen] = useState(false);
+  const [selectedFolders, setSelectedFolders] = useState<string[]>([]);
 
   const [isMoveDialogOpen, setIsMoveDialogOpen] = useState(false);
   const [isCopyDialogOpen, setIsCopyDialogOpen] = useState(false);
@@ -297,6 +300,27 @@ export default function GalleryUploader({
       await fetchImages();
     } catch {
       toast.error("Error deleting some items");
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleDeleteFolders = async () => {
+    if (selectedFolders.length === 0) return;
+    if (!confirm(`Are you sure you want to delete ${selectedFolders.length} folder(s) and all their contents? This cannot be undone.`)) return;
+    try {
+      setActionLoading(true);
+      const res = await fetch("/api/gallery/folder", {
+        method: "DELETE",
+        body: JSON.stringify({ folders: selectedFolders }),
+      });
+      if (!res.ok) throw new Error("Failed to delete folders");
+      toast.success("Folders deleted successfully");
+      setSelectedFolders([]);
+      setIsManageFoldersDialogOpen(false);
+      await fetchImages();
+    } catch {
+      toast.error("Failed to delete folders");
     } finally {
       setActionLoading(false);
     }
@@ -681,6 +705,15 @@ export default function GalleryUploader({
               <Button
                 variant="outline"
                 size="sm"
+                onClick={() => setIsManageFoldersDialogOpen(true)}
+                disabled={loading || selectionMode || existingFolders.length === 0}
+                className="border-slate-700 text-slate-300 hover:bg-slate-800"
+              >
+                <FolderOpen className="h-4 w-4 mr-2" /> Manage Folders
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
                 onClick={() => {
                   setSelectionMode(!selectionMode);
                   if (selectionMode) setSelectedKeys([]);
@@ -807,6 +840,41 @@ export default function GalleryUploader({
             <Button variant="outline" onClick={() => setIsFolderDialogOpen(false)} className="border-slate-700 hover:bg-slate-800 text-slate-300">Cancel</Button>
             <Button onClick={() => void handleCreateFolder()} disabled={!newStandaloneFolder.trim() || actionLoading} className="bg-emerald-600 hover:bg-emerald-700">
               {actionLoading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <FolderPlus className="h-4 w-4 mr-2" />} Create
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={isManageFoldersDialogOpen} onOpenChange={setIsManageFoldersDialogOpen}>
+        <DialogContent className="bg-slate-900 border-slate-800 text-white sm:max-w-md">
+          <DialogHeader><DialogTitle>Manage Folders</DialogTitle></DialogHeader>
+          <div className="py-4 max-h-[60vh] overflow-y-auto space-y-2">
+            {existingFolders.length === 0 ? (
+              <p className="text-slate-400 text-sm text-center py-4">No folders found.</p>
+            ) : (
+              existingFolders.map(folder => (
+                <div key={folder} className="flex items-center gap-3 p-3 rounded-xl border border-slate-800 bg-slate-950/50">
+                  <div 
+                    className={`h-5 w-5 rounded border flex items-center justify-center cursor-pointer transition-colors ${selectedFolders.includes(folder) ? 'bg-emerald-500 border-emerald-500' : 'border-slate-600 hover:border-emerald-400'}`}
+                    onClick={() => {
+                      setSelectedFolders(prev => 
+                        prev.includes(folder) ? prev.filter(f => f !== folder) : [...prev, folder]
+                      );
+                    }}
+                  >
+                    {selectedFolders.includes(folder) && <CheckCircle2 className="h-3.5 w-3.5 text-white" />}
+                  </div>
+                  <FolderOpen className="h-4 w-4 text-emerald-400" />
+                  <span className="text-sm font-medium flex-1">{folder}</span>
+                  <span className="text-xs text-slate-500">{imagesByFolder[folder]?.length ?? 0} items</span>
+                </div>
+              ))
+            )}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsManageFoldersDialogOpen(false)} className="border-slate-700 hover:bg-slate-800 text-slate-300">Cancel</Button>
+            <Button onClick={() => void handleDeleteFolders()} disabled={selectedFolders.length === 0 || actionLoading} variant="destructive" className="bg-red-600 hover:bg-red-700">
+              {actionLoading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Trash2 className="h-4 w-4 mr-2" />} Delete Selected
             </Button>
           </DialogFooter>
         </DialogContent>

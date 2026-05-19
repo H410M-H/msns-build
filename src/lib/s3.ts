@@ -1,5 +1,6 @@
 import { S3Client, ListObjectsV2Command, DeleteObjectCommand, PutObjectCommand, GetObjectCommand, CopyObjectCommand, DeleteObjectsCommand } from "@aws-sdk/client-s3";
 
+
 const getS3Client = () => {
   return new S3Client({
     region: process.env.AWS_DEFAULT_REGION ?? "auto",
@@ -133,26 +134,26 @@ export async function deleteS3Folder(folderName: string): Promise<void> {
   let continuationToken: string | undefined = undefined;
 
   while (isTruncated) {
-    const listCommand = new ListObjectsV2Command({
+    const cmd: ListObjectsV2Command = new ListObjectsV2Command({
       Bucket: getBucket(),
       Prefix: prefix,
       ContinuationToken: continuationToken,
     });
 
-    const listResponse = await s3.send(listCommand);
-    if (!listResponse.Contents || listResponse.Contents.length === 0) break;
+    const response = await s3.send(cmd);
+    if (!response.Contents || response.Contents.length === 0) break;
 
-    const deleteCommand = new DeleteObjectsCommand({
+    const delCmd = new DeleteObjectsCommand({
       Bucket: getBucket(),
       Delete: {
-        Objects: listResponse.Contents.map((obj) => ({ Key: obj.Key! })),
+        Objects: response.Contents.map((obj) => ({ Key: obj.Key! })),
         Quiet: true,
       },
     });
 
-    await s3.send(deleteCommand);
+    await s3.send(delCmd);
 
-    isTruncated = listResponse.IsTruncated ?? false;
-    continuationToken = listResponse.NextContinuationToken;
+    isTruncated = response.IsTruncated ?? false;
+    continuationToken = response.NextContinuationToken;
   }
 }
