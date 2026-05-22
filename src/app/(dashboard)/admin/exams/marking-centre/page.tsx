@@ -106,8 +106,8 @@ export default function MarkingCentrePage() {
   const handleSaveAll = async () => {
     if (!grid) return;
     setIsSaving(true);
-    const cells = grid.rows.flatMap(row =>
-      row.cells
+    const cells = (grid.rows ?? []).flatMap(row =>
+      (row.cells ?? [])
         .filter(cell => {
           const hasLocalVal = localEdits[row.studentId]?.[cell.subjectId] !== undefined;
           const hasDbVal = cell.obtainedMarks !== null && cell.obtainedMarks !== undefined;
@@ -149,8 +149,8 @@ export default function MarkingCentrePage() {
     await saveRow.mutateAsync({ examId: selectedExam, studentId, marks });
   };
 
-  const totalComplete = grid?.rows.filter(r => r.completionStatus === "Complete").length ?? 0;
-  const totalRows = grid?.rows.length ?? 0;
+  const totalComplete = grid?.rows?.filter(r => r.completionStatus === "Complete").length ?? 0;
+  const totalRows = grid?.rows?.length ?? 0;
   const overallPct = totalRows > 0 ? Math.round((totalComplete / totalRows) * 100) : 0;
 
   const hasLocalEdits = Object.keys(localEdits).length > 0;
@@ -261,7 +261,7 @@ export default function MarkingCentrePage() {
             <Card className="border-slate-200 bg-white/60 shadow-sm dark:border-border dark:bg-card">
               <CardContent className="p-3">
                 <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Total Students</p>
-                <p className="mt-0.5 text-xl font-bold text-slate-900 dark:text-foreground">{grid.totalStudents}</p>
+                <p className="mt-0.5 text-xl font-bold text-slate-900 dark:text-foreground">{grid?.totalStudents}</p>
               </CardContent>
             </Card>
             <Card className="border-emerald-200 bg-emerald-50/60 shadow-sm dark:border-emerald-500/20 dark:bg-emerald-500/5">
@@ -273,7 +273,7 @@ export default function MarkingCentrePage() {
             <Card className="border-amber-200 bg-amber-50/60 shadow-sm dark:border-amber-500/20 dark:bg-amber-500/5">
               <CardContent className="p-3">
                 <p className="text-xs font-semibold uppercase tracking-wider text-amber-700 dark:text-amber-400">Partial</p>
-                <p className="mt-0.5 text-xl font-bold text-amber-700 dark:text-amber-400">{grid.rows.filter(r => r.completionStatus === "Partial").length}</p>
+                <p className="mt-0.5 text-xl font-bold text-amber-700 dark:text-amber-400">{grid?.rows?.filter(r => r.completionStatus === "Partial").length ?? 0}</p>
               </CardContent>
             </Card>
             <Card className="border-slate-200 bg-white/60 shadow-sm dark:border-border dark:bg-card">
@@ -289,7 +289,7 @@ export default function MarkingCentrePage() {
 
           {/* Column Stats */}
           <div className="flex flex-wrap gap-2">
-            {grid.columnStats.map(cs => (
+            {(grid?.columnStats ?? []).map(cs => (
               <div key={cs.subjectId} className="rounded-lg border border-slate-200 bg-white/60 px-3 py-2 text-center shadow-sm dark:border-border dark:bg-card">
                 <p className="text-xs font-semibold text-slate-800 dark:text-foreground">{cs.subjectName}</p>
                 <p className="text-[10px] text-muted-foreground">{cs.markedStudents}/{cs.totalStudents} marked</p>
@@ -305,7 +305,7 @@ export default function MarkingCentrePage() {
             <CardHeader className="border-b border-slate-100 bg-slate-50/50 px-5 py-3 dark:border-border dark:bg-black/20">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-sm font-bold">
-                  {grid.exam.examTypeEnum} · {grid.totalStudents} students × {grid.totalSubjects} subjects
+                  {grid?.exam?.examTypeEnum} · {grid?.totalStudents} students × {grid?.totalSubjects} subjects
                 </CardTitle>
                 <div className="flex items-center gap-2">
                   {hasLocalEdits && (
@@ -314,7 +314,7 @@ export default function MarkingCentrePage() {
                     </Badge>
                   )}
                   <Badge variant="outline" className="border-emerald-500/20 bg-emerald-500/5 text-emerald-600 dark:text-emerald-400 text-xs">
-                    Max: {grid.exam.totalMarks} · Pass: {grid.exam.passingMarks}
+                    Max: {grid?.exam?.totalMarks} · Pass: {grid?.exam?.passingMarks}
                   </Badge>
                 </div>
               </div>
@@ -326,7 +326,7 @@ export default function MarkingCentrePage() {
                     <TableRow className="border-b border-slate-100 bg-slate-50/80 dark:border-border dark:bg-black/10">
                       <TableHead className="sticky left-0 z-10 min-w-[180px] bg-slate-50/90 text-xs font-bold uppercase tracking-wider text-muted-foreground backdrop-blur-sm dark:bg-black/50">Student</TableHead>
                       <TableHead className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Status</TableHead>
-                      {grid.columnStats.map(cs => (
+                      {grid?.columnStats?.map(cs => (
                         <TableHead key={cs.subjectId} className="min-w-[110px] text-xs font-bold uppercase tracking-wider text-muted-foreground">
                           <div className="text-center">
                             <p className="truncate max-w-[100px]">{cs.subjectName}</p>
@@ -337,7 +337,7 @@ export default function MarkingCentrePage() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {grid.rows.map(row => (
+                    {grid?.rows?.map(row => (
                       <TableRow key={row.studentId} className="border-b border-slate-100 hover:bg-slate-50/30 dark:border-border dark:hover:bg-white/5">
                         <TableCell className="sticky left-0 z-10 bg-white/90 backdrop-blur-sm dark:bg-card/90">
                           <div>
@@ -351,18 +351,18 @@ export default function MarkingCentrePage() {
                             {row.completionStatus}
                           </Badge>
                         </TableCell>
-                        {row.cells.map(cell => {
+                        {row.cells?.map(cell => {
                           const localVal = localEdits[row.studentId]?.[cell.subjectId];
                           const displayVal = localVal ?? cell.obtainedMarks ?? "";
                           const isEdited = localVal !== undefined;
-                          const isOver = (localVal ?? (cell.obtainedMarks ?? 0)) > grid.exam.totalMarks;
+                          const isOver = (localVal ?? (cell.obtainedMarks ?? 0)) > (grid?.exam?.totalMarks ?? 0);
 
                           return (
                             <TableCell key={cell.subjectId} className="p-1">
                               <Input
                                 type="number"
                                 min={0}
-                                max={grid.exam.totalMarks}
+                                max={grid?.exam?.totalMarks ?? 0}
                                 value={displayVal}
                                 onChange={e => handleCellChange(row.studentId, cell.subjectId, e.target.value)}
                                 className={`h-8 w-24 text-center font-mono text-sm transition-colors ${isEdited ? "border-amber-400 bg-amber-50/50 dark:border-amber-500/50 dark:bg-amber-500/10" : ""} ${isOver ? "border-red-500 bg-red-50 dark:border-red-500/50 dark:bg-red-500/10" : ""}`}
@@ -374,7 +374,7 @@ export default function MarkingCentrePage() {
                           <Button
                             size="sm"
                             variant="ghost"
-                            onClick={() => handleSaveRow(row.studentId, row.cells)}
+                            onClick={() => handleSaveRow(row.studentId, row.cells ?? [])}
                             disabled={saveRow.isPending}
                             className="h-7 px-2 text-xs text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-500/10"
                           >
@@ -383,8 +383,8 @@ export default function MarkingCentrePage() {
                         </TableCell>
                       </TableRow>
                     ))}
-                    {grid.rows.length === 0 && (
-                      <TableRow><TableCell colSpan={grid.columnStats.length + 3} className="py-10 text-center text-sm text-muted-foreground">No students found for the selected filters.</TableCell></TableRow>
+                    {(grid?.rows ?? []).length === 0 && (
+                      <TableRow><TableCell colSpan={(grid?.columnStats ?? []).length + 3} className="py-10 text-center text-sm text-muted-foreground">No students found for the selected filters.</TableCell></TableRow>
                     )}
                   </TableBody>
                 </Table>

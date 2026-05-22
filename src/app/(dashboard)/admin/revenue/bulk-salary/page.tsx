@@ -32,7 +32,7 @@ export default function BulkSalaryPage() {
   );
 
   // Compute increment preview from the rows data
-  const items = preview?.rows.map(r => ({
+  const items = preview?.rows?.map(r => ({
     employeeId: r.employeeId,
     currentSalary: r.suggestedNewSalary,
   })) ?? [];
@@ -61,7 +61,7 @@ export default function BulkSalaryPage() {
     onError: e => toast.error(e.message),
   });
 
-  const totalPayroll = preview?.rows.reduce((s, r) => s + r.suggestedNewSalary, 0) ?? 0;
+  const totalPayroll = preview?.rows?.reduce((s, r) => s + r.suggestedNewSalary, 0) ?? 0;
   const projectedTotal = incrementPreviewRaw?.reduce((s, r) => s + r.newSalary, 0) ?? 0;
 
   return (
@@ -130,8 +130,8 @@ export default function BulkSalaryPage() {
             <Card className="border-slate-200 bg-white/60 shadow-sm dark:border-border dark:bg-card">
               <CardContent className="p-4">
                 <div className="flex items-center gap-2 mb-1"><Users className="h-4 w-4 text-muted-foreground" /><p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Employees</p></div>
-                <p className="text-2xl font-bold text-slate-900 dark:text-foreground">{preview.totalEmployees}</p>
-                <p className="text-xs text-muted-foreground">{preview.needingManualEntry} need manual entry</p>
+                <p className="text-2xl font-bold text-slate-900 dark:text-foreground">{preview?.totalEmployees}</p>
+                <p className="text-xs text-muted-foreground">{preview?.needingManualEntry} need manual entry</p>
               </CardContent>
             </Card>
             <Card className="border-slate-200 bg-white/60 shadow-sm dark:border-border dark:bg-card">
@@ -175,7 +175,7 @@ export default function BulkSalaryPage() {
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {preview.rows.map(row => (
+                        {preview?.rows?.map(row => (
                           <TableRow key={row.employeeId} className="border-b border-slate-100 hover:bg-slate-50/50 dark:border-border dark:hover:bg-white/5">
                             <TableCell className="text-sm font-semibold text-slate-900 dark:text-foreground">{row.employeeName}</TableCell>
                             <TableCell className="text-xs text-muted-foreground">{row.designation}</TableCell>
@@ -200,19 +200,19 @@ export default function BulkSalaryPage() {
               <div className="flex items-center justify-between rounded-xl border border-slate-200 bg-white/60 p-4 dark:border-border dark:bg-card">
                 <div>
                   <p className="text-sm font-semibold text-slate-900 dark:text-foreground">Execute Bulk Salary Creation</p>
-                  <p className="text-xs text-muted-foreground">{preview.rows.filter(r => !r.hasExistingAssignment).length} salary records will be created atomically.</p>
+                  <p className="text-xs text-muted-foreground">{(preview?.rows ?? []).filter(r => !r.hasExistingAssignment).length} salary records will be created atomically.</p>
                 </div>
                 <Button
                   onClick={() => executeBulk.mutate({
                     toSessionId: selectedToSession,
                     fromSessionId: selectedFromSession || undefined,
-                    items: preview.rows.filter(r => !r.hasExistingAssignment && !r.needsManualEntry).map(r => ({
+                    items: (preview?.rows ?? []).filter(r => !r.hasExistingAssignment && !r.needsManualEntry).map(r => ({
                       employeeId: r.employeeId,
                       newSalary: r.suggestedNewSalary,
                       isOverridden: false,
                     })),
                   })}
-                  disabled={executeBulk.isPending || preview.rows.filter(r => !r.hasExistingAssignment && !r.needsManualEntry).length === 0}
+                  disabled={executeBulk.isPending || (preview?.rows ?? []).filter(r => !r.hasExistingAssignment && !r.needsManualEntry).length === 0}
                   className="bg-emerald-600 text-white hover:bg-emerald-700 shadow-md"
                 >
                   {executeBulk.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Play className="mr-2 h-4 w-4" />}
@@ -247,7 +247,7 @@ export default function BulkSalaryPage() {
                 </CardContent>
               </Card>
 
-              {incrementPreviewRaw && incrementValue > 0 && (
+              {incrementPreviewRaw && preview && incrementValue > 0 && (
                 <>
                   <Card className="border-slate-200 bg-white/50 shadow-sm dark:border-border dark:bg-card">
                     <CardHeader className="border-b border-slate-100 bg-slate-50/50 px-5 py-3 dark:border-border dark:bg-black/20">
@@ -264,7 +264,7 @@ export default function BulkSalaryPage() {
                         </TableHeader>
                         <TableBody>
                           {incrementPreviewRaw.map((r, i) => {
-                            const name = preview.rows.find(row => row.employeeId === r.employeeId)?.employeeName ?? r.employeeId;
+                            const name = preview?.rows?.find(row => row.employeeId === r.employeeId)?.employeeName ?? r.employeeId;
                             return (
                               <TableRow key={i} className="border-b border-slate-100 hover:bg-slate-50/50 dark:border-border dark:hover:bg-white/5">
                                 <TableCell className="text-sm font-semibold text-slate-900 dark:text-foreground">{name}</TableCell>
@@ -283,13 +283,13 @@ export default function BulkSalaryPage() {
                     <Button
                       onClick={() => batchIncrement.mutate({
                         sessionId: selectedToSession,
-                        employeeIds: preview.rows.filter(r => r.hasExistingAssignment).map(r => r.employeeId),
+                        employeeIds: (preview?.rows ?? []).filter(r => r.hasExistingAssignment).map(r => r.employeeId),
                         incrementType,
                         incrementValue,
                         effectiveDate: new Date(),
                         rationale: `Global ${incrementType === "PERCENT" ? `${incrementValue}%` : `PKR ${incrementValue}`} increment`,
                       })}
-                      disabled={batchIncrement.isPending || preview.rows.filter(r => r.hasExistingAssignment).length === 0 || incrementValue <= 0}
+                      disabled={batchIncrement.isPending || (preview?.rows ?? []).filter(r => r.hasExistingAssignment).length === 0 || incrementValue <= 0}
                       className="bg-emerald-600 text-white hover:bg-emerald-700"
                     >
                       {batchIncrement.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <TrendingUp className="mr-2 h-4 w-4" />}
@@ -317,14 +317,14 @@ export default function BulkSalaryPage() {
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {batchReport?.Items.map(item => (
+                        {(batchReport?.Items ?? []).map(item => (
                           <TableRow key={item.batchItemId} className="border-b border-slate-100 hover:bg-slate-50/50 dark:border-border dark:hover:bg-white/5">
-                            <TableCell className="text-sm font-semibold text-slate-900 dark:text-foreground">{item.Employee.employeeName}</TableCell>
+                            <TableCell className="text-sm font-semibold text-slate-900 dark:text-foreground">{item.Employee?.employeeName ?? "Unknown"}</TableCell>
                             <TableCell className="font-mono text-sm">PKR {item.previousSalary.toLocaleString()}</TableCell>
                             <TableCell className="font-mono text-sm font-bold text-emerald-600 dark:text-emerald-400">PKR {item.newSalary.toLocaleString()}</TableCell>
                           </TableRow>
                         ))}
-                        {!batchReport?.Items.length && (
+                        {(batchReport?.Items ?? []).length === 0 && (
                           <TableRow><TableCell colSpan={3} className="py-8 text-center text-sm text-muted-foreground">No items.</TableCell></TableRow>
                         )}
                       </TableBody>
