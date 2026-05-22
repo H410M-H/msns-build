@@ -7,10 +7,10 @@ export default function ClerkGalleryPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold text-white tracking-tight">
+        <h1 className="text-3xl font-bold text-foreground tracking-tight">
           School Gallery
         </h1>
-        <p className="text-slate-400 mt-1">
+        <p className="text-muted-foreground mt-1">
           Upload photos for the school&apos;s website gallery
         </p>
       </div>

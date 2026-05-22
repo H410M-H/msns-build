@@ -212,7 +212,7 @@ export default function BulkSalaryPage() {
                       isOverridden: false,
                     })),
                   })}
-                  disabled={executeBulk.isPending || preview.rows.every(r => r.hasExistingAssignment)}
+                  disabled={executeBulk.isPending || preview.rows.filter(r => !r.hasExistingAssignment && !r.needsManualEntry).length === 0}
                   className="bg-emerald-600 text-white hover:bg-emerald-700 shadow-md"
                 >
                   {executeBulk.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Play className="mr-2 h-4 w-4" />}
@@ -289,7 +289,7 @@ export default function BulkSalaryPage() {
                         effectiveDate: new Date(),
                         rationale: `Global ${incrementType === "PERCENT" ? `${incrementValue}%` : `PKR ${incrementValue}`} increment`,
                       })}
-                      disabled={batchIncrement.isPending}
+                      disabled={batchIncrement.isPending || preview.rows.filter(r => r.hasExistingAssignment).length === 0 || incrementValue <= 0}
                       className="bg-emerald-600 text-white hover:bg-emerald-700"
                     >
                       {batchIncrement.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <TrendingUp className="mr-2 h-4 w-4" />}

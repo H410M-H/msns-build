@@ -7,10 +7,10 @@ export default function AdminGalleryPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold text-white tracking-tight">
+        <h1 className="text-3xl font-bold text-foreground tracking-tight">
           School Gallery
         </h1>
-        <p className="text-slate-400 mt-1">
+        <p className="text-muted-foreground mt-1">
           Upload and manage photos for the school&apos;s website gallery. These images appear on{" "}
           <a
             href="https://msns.edu.pk"

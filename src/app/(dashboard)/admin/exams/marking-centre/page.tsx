@@ -81,35 +81,71 @@ export default function MarkingCentrePage() {
     onError: e => toast.error(e.message),
   });
 
-  const handleCellChange = useCallback((studentId: string, subjectId: string, value: number) => {
-    setLocalEdits(prev => ({
-      ...prev,
-      [studentId]: { ...(prev[studentId] ?? {}), [subjectId]: value },
-    }));
+  const handleCellChange = useCallback((studentId: string, subjectId: string, valueStr: string) => {
+    setLocalEdits(prev => {
+      const studentEdits = { ...(prev[studentId] ?? {}) };
+      if (valueStr === "") {
+        delete studentEdits[subjectId];
+      } else {
+        const parsed = parseFloat(valueStr);
+        if (!isNaN(parsed)) {
+          studentEdits[subjectId] = parsed;
+        }
+      }
+
+      const newEdits = { ...prev };
+      if (Object.keys(studentEdits).length === 0) {
+        delete newEdits[studentId];
+      } else {
+        newEdits[studentId] = studentEdits;
+      }
+      return newEdits;
+    });
   }, []);
 
   const handleSaveAll = async () => {
     if (!grid) return;
     setIsSaving(true);
     const cells = grid.rows.flatMap(row =>
-      row.cells.map(cell => ({
-        studentId: row.studentId,
-        subjectId: cell.subjectId,
-        classSubjectId: cell.classSubjectId,
-        obtainedMarks: localEdits[row.studentId]?.[cell.subjectId] ?? cell.obtainedMarks ?? 0,
-      }))
+      row.cells
+        .filter(cell => {
+          const hasLocalVal = localEdits[row.studentId]?.[cell.subjectId] !== undefined;
+          const hasDbVal = cell.obtainedMarks !== null && cell.obtainedMarks !== undefined;
+          return hasLocalVal || hasDbVal;
+        })
+        .map(cell => ({
+          studentId: row.studentId,
+          subjectId: cell.subjectId,
+          classSubjectId: cell.classSubjectId,
+          obtainedMarks: localEdits[row.studentId]?.[cell.subjectId] ?? cell.obtainedMarks ?? 0,
+        }))
     );
+    if (cells.length === 0) {
+      toast.info("No changes to save");
+      setIsSaving(false);
+      return;
+    }
     await saveAll.mutateAsync({ examId: selectedExam, cells });
     setIsSaving(false);
   };
 
   const handleSaveRow = async (studentId: string, cells: GridCell[]) => {
-    const marks = cells.map(cell => ({
-      studentId,
-      subjectId: cell.subjectId,
-      classSubjectId: cell.classSubjectId,
-      obtainedMarks: localEdits[studentId]?.[cell.subjectId] ?? cell.obtainedMarks ?? 0,
-    }));
+    const marks = cells
+      .filter(cell => {
+        const hasLocalVal = localEdits[studentId]?.[cell.subjectId] !== undefined;
+        const hasDbVal = cell.obtainedMarks !== null && cell.obtainedMarks !== undefined;
+        return hasLocalVal || hasDbVal;
+      })
+      .map(cell => ({
+        studentId,
+        subjectId: cell.subjectId,
+        classSubjectId: cell.classSubjectId,
+        obtainedMarks: localEdits[studentId]?.[cell.subjectId] ?? cell.obtainedMarks ?? 0,
+      }));
+    if (marks.length === 0) {
+      toast.info("No changes to save for this student");
+      return;
+    }
     await saveRow.mutateAsync({ examId: selectedExam, studentId, marks });
   };
 
@@ -328,7 +364,7 @@ export default function MarkingCentrePage() {
                                 min={0}
                                 max={grid.exam.totalMarks}
                                 value={displayVal}
-                                onChange={e => handleCellChange(row.studentId, cell.subjectId, parseFloat(e.target.value) || 0)}
+                                onChange={e => handleCellChange(row.studentId, cell.subjectId, e.target.value)}
                                 className={`h-8 w-24 text-center font-mono text-sm transition-colors ${isEdited ? "border-amber-400 bg-amber-50/50 dark:border-amber-500/50 dark:bg-amber-500/10" : ""} ${isOver ? "border-red-500 bg-red-50 dark:border-red-500/50 dark:bg-red-500/10" : ""}`}
                               />
                             </TableCell>

@@ -493,10 +493,10 @@ export default function GalleryUploader({
   const renderBreadcrumbs = () => {
     const parts = currentPath ? currentPath.split("/") : [];
     return (
-      <div className="flex flex-wrap items-center gap-1.5 text-sm text-slate-400 mb-6 bg-slate-900/10 p-3 rounded-xl border border-slate-900/60 backdrop-blur-xs">
+      <div className="flex flex-wrap items-center gap-1.5 text-sm text-muted-foreground mb-6 bg-muted/30 p-3 rounded-xl border border-border backdrop-blur-xs">
         <button
           onClick={() => setCurrentPath("")}
-          className="flex items-center gap-1 text-slate-400 hover:text-emerald-400 font-medium transition-colors cursor-pointer"
+          className="flex items-center gap-1 text-muted-foreground hover:text-emerald-500 font-medium transition-colors cursor-pointer"
         >
           <Home className="h-4 w-4" />
           <span>Root</span>
@@ -505,10 +505,10 @@ export default function GalleryUploader({
           const pathUpTo = parts.slice(0, index + 1).join("/");
           return (
             <div key={pathUpTo} className="flex items-center gap-1.5">
-              <ChevronRight className="h-3.5 w-3.5 text-slate-600 shrink-0" />
+              <ChevronRight className="h-3.5 w-3.5 text-muted-foreground/50 shrink-0" />
               <button
                 onClick={() => setCurrentPath(pathUpTo)}
-                className="text-slate-200 hover:text-emerald-400 font-medium transition-colors cursor-pointer max-w-[120px] truncate"
+                className="text-foreground hover:text-emerald-500 font-medium transition-colors cursor-pointer max-w-[120px] truncate"
               >
                 {part}
               </button>
@@ -529,19 +529,19 @@ export default function GalleryUploader({
         onClick={() => selectionMode && toggleSelection(image.key)}
         className={`group relative aspect-square overflow-hidden rounded-xl border transition-all duration-300 ${selectedKeys.includes(image.key)
           ? "border-emerald-500 ring-2 ring-emerald-500/50 shadow-lg shadow-emerald-500/10"
-          : "border-slate-800 hover:border-emerald-500/50 hover:shadow-md hover:shadow-emerald-500/5"
-          } bg-slate-950/40 backdrop-blur-xs ${selectionMode ? "cursor-pointer" : ""}`}
+          : "border-border hover:border-emerald-500/50 hover:shadow-md hover:shadow-emerald-500/5"
+          } bg-card backdrop-blur-xs ${selectionMode ? "cursor-pointer" : ""}`}
       >
         {selectionMode && (
           <div className="absolute top-2 left-2 z-10 transition-transform duration-200">
-            <div className={`rounded-full border-2 h-6 w-6 flex items-center justify-center ${selectedKeys.includes(image.key) ? 'bg-emerald-500 border-emerald-500' : 'bg-black/60 border-slate-500 hover:border-emerald-400'}`}>
+            <div className={`rounded-full border-2 h-6 w-6 flex items-center justify-center ${selectedKeys.includes(image.key) ? 'bg-emerald-500 border-emerald-500' : 'bg-background/60 border-muted-foreground hover:border-emerald-400'}`}>
               {selectedKeys.includes(image.key) && <CheckCircle2 className="h-4 w-4 text-white" />}
             </div>
           </div>
         )}
 
         {isVideo ? (
-          <div className="relative w-full h-full bg-slate-900 flex items-center justify-center">
+          <div className="relative w-full h-full bg-muted flex items-center justify-center">
             <video
               src={image.url}
               className="w-full h-full object-cover opacity-70 group-hover:opacity-85 transition-opacity"
@@ -566,7 +566,7 @@ export default function GalleryUploader({
         )}
 
         {/* Overlay on hover */}
-        <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-900/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
         {/* Media info */}
         <div className="absolute bottom-0 left-0 right-0 p-3 translate-y-2 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300">
@@ -587,7 +587,7 @@ export default function GalleryUploader({
               <Button
                 variant="destructive"
                 size="icon"
-                className="absolute top-2 right-2 h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-red-650/90 hover:bg-red-700 backdrop-blur-xs shadow-md"
+                className="absolute top-2 right-2 h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-destructive/90 hover:bg-destructive backdrop-blur-xs shadow-md"
                 disabled={deleting === image.key}
               >
                 {deleting === image.key ? (
@@ -597,23 +597,23 @@ export default function GalleryUploader({
                 )}
               </Button>
             </AlertDialogTrigger>
-            <AlertDialogContent className="bg-slate-955 border-slate-800 text-white backdrop-blur-md">
+            <AlertDialogContent className="bg-card border-border text-foreground backdrop-blur-md">
               <AlertDialogHeader>
-                <AlertDialogTitle className="text-white">
+                <AlertDialogTitle className="text-foreground">
                   Delete {isVideo ? "Video" : "Image"}?
                 </AlertDialogTitle>
-                <AlertDialogDescription className="text-slate-400">
+                <AlertDialogDescription className="text-muted-foreground">
                   This action cannot be undone. This {isVideo ? "video" : "image"} will be
                   permanently removed from the school gallery.
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
-                <AlertDialogCancel className="border-slate-800 text-slate-300 hover:bg-slate-900">
+                <AlertDialogCancel className="border-border text-muted-foreground hover:bg-accent">
                   Cancel
                 </AlertDialogCancel>
                 <AlertDialogAction
                   onClick={() => void handleDelete(image.key)}
-                  className="bg-red-650 hover:bg-red-700"
+                  className="bg-destructive hover:bg-destructive/90 text-destructive-foreground"
                 >
                   Delete
                 </AlertDialogAction>
@@ -624,7 +624,7 @@ export default function GalleryUploader({
 
         {/* Status indicator */}
         {deleting === image.key && (
-          <div className="absolute inset-0 flex items-center justify-center bg-black/60 backdrop-blur-xs">
+          <div className="absolute inset-0 flex items-center justify-center bg-background/60 backdrop-blur-xs">
             <Loader2 className="h-6 w-6 animate-spin text-emerald-400" />
           </div>
         )}
@@ -635,7 +635,7 @@ export default function GalleryUploader({
   return (
     <div className="space-y-8">
       {/* Upload Zone */}
-      <Card className="overflow-hidden border-dashed border-2 border-emerald-500/20 hover:border-emerald-500/40 bg-gradient-to-br from-emerald-950/10 via-slate-900/10 to-slate-950/20 shadow-lg hover:shadow-emerald-500/5 transition-all duration-300">
+      <Card className="overflow-hidden border-dashed border-2 border-emerald-500/20 hover:border-emerald-500/40 bg-gradient-to-br from-emerald-500/[0.02] dark:from-emerald-950/10 via-muted/10 to-card/20 shadow-lg hover:shadow-emerald-500/5 transition-all duration-300">
         <div
           {...getRootProps()}
           className={`cursor-pointer p-8 md:p-12 text-center transition-all duration-300 ${isDragActive
@@ -648,7 +648,7 @@ export default function GalleryUploader({
             <div
               className={`rounded-full p-4 transition-colors ${isDragActive
                 ? "bg-emerald-500/20 text-emerald-400"
-                : "bg-slate-900/80 text-slate-300 border border-slate-800 shadow-md"
+                : "bg-muted text-muted-foreground border border-border shadow-md"
                 }`}
             >
               {isDragActive ? (
@@ -659,12 +659,12 @@ export default function GalleryUploader({
             </div>
 
             <div className="space-y-2">
-              <h3 className="text-lg font-semibold text-white">
+              <h3 className="text-lg font-semibold text-foreground">
                 {isDragActive
                   ? "Drop files here"
                   : "Upload Gallery Media"}
               </h3>
-              <p className="text-sm text-slate-400 max-w-sm mx-auto">
+              <p className="text-sm text-muted-foreground max-w-sm mx-auto">
                 Drag & drop media here or click to browse. Images (max 10MB) & Videos (max 100MB).
               </p>
             </div>
@@ -674,15 +674,15 @@ export default function GalleryUploader({
 
       {/* Staged Files Configuration */}
       {stagedFiles.length > 0 && (
-        <Card className="border-slate-800/80 bg-slate-950/45 backdrop-blur-md shadow-xl">
-          <CardHeader className="border-b border-slate-800 pb-4">
+        <Card className="border-border bg-card/45 backdrop-blur-md shadow-xl">
+          <CardHeader className="border-b border-border pb-4">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
-                <CardTitle className="text-white text-lg flex items-center gap-2">
+                <CardTitle className="text-foreground text-lg flex items-center gap-2">
                   <ImagePlus className="h-5 w-5 text-emerald-400" />
                   Ready to Upload ({stagedFiles.length})
                 </CardTitle>
-                <CardDescription>
+                <CardDescription className="text-muted-foreground">
                   Configure names and categorize media before uploading.
                 </CardDescription>
               </div>
@@ -693,7 +693,7 @@ export default function GalleryUploader({
                   size="sm"
                   onClick={() => setStagedFiles([])}
                   disabled={uploading}
-                  className="border-slate-700 text-slate-300 hover:bg-slate-800"
+                  className="border-border text-muted-foreground hover:bg-accent"
                 >
                   Cancel All
                 </Button>
@@ -715,9 +715,9 @@ export default function GalleryUploader({
           <CardContent className="pt-6 space-y-6">
 
             {/* Folder Configuration */}
-            <div className="p-4 rounded-xl border border-slate-800 bg-slate-950/50 flex flex-col md:flex-row gap-4 md:items-end">
+            <div className="p-4 rounded-xl border border-border bg-muted/30 flex flex-col md:flex-row gap-4 md:items-end">
               <div className="space-y-2 flex-1 max-w-xs">
-                <label className="text-sm font-medium text-slate-300 flex items-center gap-2">
+                <label className="text-sm font-medium text-muted-foreground flex items-center gap-2">
                   <FolderOpen className="h-4 w-4 text-emerald-400" /> Target Album / Folder
                 </label>
                 <Select
@@ -731,13 +731,13 @@ export default function GalleryUploader({
                   }}
                   disabled={uploading}
                 >
-                  <SelectTrigger className="bg-slate-900 border-slate-700 text-white">
+                  <SelectTrigger className="bg-background border-border text-foreground">
                     <SelectValue placeholder="Select folder" />
                   </SelectTrigger>
-                  <SelectContent className="bg-slate-900 border-slate-700 text-white">
-                    <SelectItem value="root" className="text-slate-300">No Folder (Root)</SelectItem>
+                  <SelectContent className="bg-card border-border text-foreground">
+                    <SelectItem value="root" className="text-muted-foreground">No Folder (Root)</SelectItem>
                     {renderFolderOptions()}
-                    <SelectItem value="new_folder" className="text-emerald-400 font-medium">
+                    <SelectItem value="new_folder" className="text-emerald-500 font-semibold">
                       + Create New Folder
                     </SelectItem>
                   </SelectContent>
@@ -746,14 +746,14 @@ export default function GalleryUploader({
 
               {isNewFolder && (
                 <div className="space-y-2 flex-1 max-w-xs">
-                  <label className="text-sm font-medium text-slate-300 flex items-center gap-2">
+                  <label className="text-sm font-medium text-muted-foreground flex items-center gap-2">
                     <FolderPlus className="h-4 w-4 text-emerald-400" /> New Folder Name
                   </label>
                   <Input
                     placeholder="e.g. Sports/Football"
                     value={newFolderName}
                     onChange={(e) => setNewFolderName(e.target.value)}
-                    className="bg-slate-900 border-slate-700 text-white focus-visible:ring-emerald-500"
+                    className="bg-background border-border text-foreground focus-visible:ring-emerald-500"
                     disabled={uploading}
                   />
                 </div>
@@ -762,7 +762,7 @@ export default function GalleryUploader({
 
             {uploading && (
               <div className="w-full space-y-2 px-2">
-                <div className="flex justify-between text-sm text-slate-400">
+                <div className="flex justify-between text-sm text-muted-foreground">
                   <span>Uploading files...</span>
                   <span>{uploadProgress}%</span>
                 </div>
@@ -773,8 +773,8 @@ export default function GalleryUploader({
             {/* Staged Files List */}
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
               {stagedFiles.map((staged) => (
-                <div key={staged.id} className="flex gap-3 p-3 rounded-xl border border-slate-800 bg-slate-950/50">
-                  <div className="relative h-16 w-16 rounded-md overflow-hidden shrink-0 border border-slate-700 bg-slate-900 flex items-center justify-center">
+                <div key={staged.id} className="flex gap-3 p-3 rounded-xl border border-border bg-muted/30">
+                  <div className="relative h-16 w-16 rounded-md overflow-hidden shrink-0 border border-border bg-background flex items-center justify-center">
                     {staged.file.type.startsWith("video/") ? (
                       <video src={staged.previewUrl} className="w-full h-full object-cover" preload="metadata" muted playsInline />
                     ) : (
@@ -786,10 +786,10 @@ export default function GalleryUploader({
                       value={staged.customName}
                       onChange={(e) => updateStagedFileName(staged.id, e.target.value)}
                       placeholder="File name"
-                      className="h-8 bg-slate-900 border-slate-700 text-sm text-white focus-visible:ring-emerald-500"
+                      className="h-8 bg-background border-border text-sm text-foreground focus-visible:ring-emerald-500"
                       disabled={uploading}
                     />
-                    <p className="text-xs text-slate-500 truncate flex items-center gap-2">
+                    <p className="text-xs text-muted-foreground/80 truncate flex items-center gap-2">
                       <span>{formatFileSize(staged.file.size)}</span>
                       <span>·</span>
                       <span className="truncate">{staged.file.name.split('.').pop()?.toUpperCase()}</span>
@@ -800,7 +800,7 @@ export default function GalleryUploader({
                     size="icon"
                     onClick={() => removeStagedFile(staged.id)}
                     disabled={uploading}
-                    className="shrink-0 h-8 w-8 text-slate-500 hover:text-red-400 hover:bg-red-400/10"
+                    className="shrink-0 h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
                   >
                     <X className="h-4 w-4" />
                   </Button>
@@ -811,20 +811,19 @@ export default function GalleryUploader({
           </CardContent>
         </Card>
       )}
-
       {/* Gallery Grid */}
-      <Card className="border-slate-800/80 bg-slate-950/45 backdrop-blur-md shadow-xl">
-        <CardHeader className="border-b border-slate-800/60 pb-5">
+      <Card className="border-border bg-card/45 backdrop-blur-md shadow-xl">
+        <CardHeader className="border-b border-border pb-5">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div className="flex items-center gap-3">
               <div className="rounded-lg bg-emerald-500/10 p-2 border border-emerald-500/20 shadow-inner">
                 <Images className="h-5 w-5 text-emerald-400" />
               </div>
               <div>
-                <CardTitle className="text-white">
+                <CardTitle className="text-foreground">
                   Media Gallery
                 </CardTitle>
-                <CardDescription className="text-slate-400">
+                <CardDescription className="text-muted-foreground">
                   {loading
                     ? "Loading..."
                     : `${images.length} item${images.length !== 1 ? "s" : ""} in gallery`}
@@ -837,7 +836,7 @@ export default function GalleryUploader({
                 size="sm"
                 onClick={() => setIsFolderDialogOpen(true)}
                 disabled={loading || selectionMode}
-                className="border-slate-850 bg-slate-900/60 text-slate-200 hover:bg-slate-800 hover:text-white"
+                className="border-border bg-muted/60 text-foreground hover:bg-accent"
               >
                 <FolderPlus className="h-4 w-4 mr-2 text-emerald-400" /> Create Folder
               </Button>
@@ -846,7 +845,7 @@ export default function GalleryUploader({
                 size="sm"
                 onClick={() => setIsManageFoldersDialogOpen(true)}
                 disabled={loading || selectionMode || existingFolders.length === 0}
-                className="border-slate-850 bg-slate-900/60 text-slate-200 hover:bg-slate-800 hover:text-white"
+                className="border-border bg-muted/60 text-foreground hover:bg-accent"
               >
                 <FolderOpen className="h-4 w-4 mr-2 text-emerald-400" /> Manage Folders
               </Button>
@@ -858,7 +857,7 @@ export default function GalleryUploader({
                   if (selectionMode) setSelectedKeys([]);
                 }}
                 disabled={loading || images.length === 0}
-                className={selectionMode ? "bg-emerald-600 hover:bg-emerald-700 text-white border-emerald-600 shadow-md shadow-emerald-600/10" : "border-slate-855 bg-slate-900/60 text-slate-200 hover:bg-slate-800 hover:text-white"}
+                className={selectionMode ? "bg-emerald-600 hover:bg-emerald-700 text-white border-emerald-600 shadow-md shadow-emerald-600/10" : "border-border bg-muted/60 text-foreground hover:bg-accent"}
               >
                 {selectionMode ? "Cancel Selection" : "Select Items"}
               </Button>
@@ -867,7 +866,7 @@ export default function GalleryUploader({
                 size="sm"
                 onClick={() => void fetchImages()}
                 disabled={loading || selectionMode}
-                className="border-slate-850 bg-slate-900/60 text-slate-200 hover:bg-slate-800 hover:text-white"
+                className="border-border bg-muted/60 text-foreground hover:bg-accent"
               >
                 {loading ? (
                   <Loader2 className="h-4 w-4 animate-spin text-emerald-400" />
@@ -885,23 +884,23 @@ export default function GalleryUploader({
             </div>
           ) : images.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-16 text-center">
-              <div className="rounded-full bg-slate-900 border border-slate-800 p-4 mb-4 shadow-inner">
-                <ImagePlus className="h-8 w-8 text-slate-500" />
+              <div className="rounded-full bg-muted border border-border p-4 mb-4 shadow-inner">
+                <ImagePlus className="h-8 w-8 text-muted-foreground" />
               </div>
-              <h3 className="text-lg font-medium text-slate-300">
+              <h3 className="text-lg font-medium text-muted-foreground">
                 No items yet
               </h3>
-              <p className="text-sm text-slate-500 mt-1">
+              <p className="text-sm text-muted-foreground/80 mt-1">
                 Upload your first gallery item above
               </p>
             </div>
           ) : (
             <Tabs defaultValue="explorer" className="w-full">
-              <TabsList className="mb-6 bg-slate-900/80 border border-slate-800/80 p-1 rounded-xl">
-                <TabsTrigger value="explorer" className="data-[state=active]:bg-slate-950 data-[state=active]:text-emerald-400 rounded-lg">
+              <TabsList className="mb-6 bg-muted/80 border border-border p-1 rounded-xl">
+                <TabsTrigger value="explorer" className="data-[state=active]:bg-background data-[state=active]:text-emerald-500 rounded-lg">
                   <FolderOpen className="mr-2 h-4 w-4" /> Folder Explorer
                 </TabsTrigger>
-                <TabsTrigger value="all" className="data-[state=active]:bg-slate-950 data-[state=active]:text-emerald-400 rounded-lg">
+                <TabsTrigger value="all" className="data-[state=active]:bg-background data-[state=active]:text-emerald-500 rounded-lg">
                   <Images className="mr-2 h-4 w-4" /> All Items
                 </TabsTrigger>
               </TabsList>
@@ -912,7 +911,7 @@ export default function GalleryUploader({
                 {/* Subfolders list */}
                 {currentSubfolders.length > 0 && (
                   <div className="space-y-3 mb-8">
-                    <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider">Folders</h4>
+                    <h4 className="text-xs font-bold text-muted-foreground/80 uppercase tracking-wider">Folders</h4>
                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 animate-in fade-in duration-200">
                       {currentSubfolders.map((folderPath) => {
                         const folderName = folderPath.split("/").pop() ?? folderPath;
@@ -932,14 +931,14 @@ export default function GalleryUploader({
                           <div
                             key={folderPath}
                             onClick={() => setCurrentPath(folderPath)}
-                            className="flex items-center gap-3 p-4 rounded-xl border border-slate-800 bg-slate-900/10 hover:border-emerald-500/50 hover:bg-slate-900/30 cursor-pointer transition-all duration-200 group relative select-none"
+                            className="flex items-center gap-3 p-4 rounded-xl border border-border bg-muted/30 hover:border-emerald-500/50 hover:bg-muted/60 cursor-pointer transition-all duration-200 group relative select-none"
                           >
                             <Folder className="h-8 w-8 text-emerald-400 group-hover:scale-105 transition-transform duration-200 shrink-0" />
                             <div className="min-w-0 flex-1">
-                              <p className="text-sm font-semibold text-slate-200 truncate group-hover:text-white">
+                              <p className="text-sm font-semibold text-foreground truncate group-hover:text-foreground">
                                 {folderName}
                               </p>
-                              <p className="text-xs text-slate-500">
+                              <p className="text-xs text-muted-foreground/80">
                                 {itemsCount} item{itemsCount !== 1 ? "s" : ""}
                               </p>
                             </div>
@@ -952,10 +951,10 @@ export default function GalleryUploader({
 
                 {/* Files in this folder */}
                 <div className="space-y-3">
-                  <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider">Files</h4>
+                  <h4 className="text-xs font-bold text-muted-foreground/80 uppercase tracking-wider">Files</h4>
                   {currentFiles.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center py-16 text-center bg-slate-900/5 border border-dashed border-slate-800 rounded-xl">
-                      <p className="text-slate-500 text-sm">No files in this folder.</p>
+                    <div className="flex flex-col items-center justify-center py-16 text-center bg-muted/10 border border-dashed border-border rounded-xl">
+                      <p className="text-muted-foreground text-sm">No files in this folder.</p>
                     </div>
                   ) : (
                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
@@ -974,19 +973,18 @@ export default function GalleryUploader({
           )}
         </CardContent>
       </Card>
-
       {/* Selection Action Bar */}
       {selectionMode && selectedKeys.length > 0 && (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 rounded-full border border-slate-800/60 bg-slate-950/85 backdrop-blur-lg px-6 py-3 shadow-2xl shadow-emerald-950/20 border-emerald-500/10 animate-in slide-in-from-bottom-10">
-          <span className="text-white font-semibold mr-4 text-sm tracking-wide">{selectedKeys.length} selected</span>
-          <Button size="sm" variant="outline" className="border-slate-800 bg-slate-900/60 text-slate-200 hover:bg-slate-800 rounded-full text-xs" onClick={() => setIsMoveDialogOpen(true)}>
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 rounded-full border border-border bg-card/95 backdrop-blur-lg px-6 py-3 shadow-2xl animate-in slide-in-from-bottom-10">
+          <span className="text-foreground font-semibold mr-4 text-sm tracking-wide">{selectedKeys.length} selected</span>
+          <Button size="sm" variant="outline" className="border-border bg-muted/60 text-foreground hover:bg-accent rounded-full text-xs" onClick={() => setIsMoveDialogOpen(true)}>
             <MoveRight className="h-3.5 w-3.5 mr-1.5 text-emerald-400" /> Move
           </Button>
-          <Button size="sm" variant="outline" className="border-slate-800 bg-slate-900/60 text-slate-200 hover:bg-slate-800 rounded-full text-xs" onClick={() => setIsCopyDialogOpen(true)}>
+          <Button size="sm" variant="outline" className="border-border bg-muted/60 text-foreground hover:bg-accent rounded-full text-xs" onClick={() => setIsCopyDialogOpen(true)}>
             <Copy className="h-3.5 w-3.5 mr-1.5 text-emerald-400" /> Copy
           </Button>
           {canDelete && (
-            <Button size="sm" variant="destructive" className="rounded-full bg-red-650 hover:bg-red-700 text-xs shadow-md shadow-red-900/10" onClick={() => void handleBulkDelete()} disabled={actionLoading}>
+            <Button size="sm" variant="destructive" className="rounded-full bg-destructive hover:bg-destructive/90 text-destructive-foreground text-xs shadow-md shadow-red-900/10" onClick={() => void handleBulkDelete()} disabled={actionLoading}>
               <Trash2 className="h-3.5 w-3.5 mr-1.5" /> Delete
             </Button>
           )}
@@ -995,21 +993,21 @@ export default function GalleryUploader({
 
       {/* Dialogs */}
       <Dialog open={isFolderDialogOpen} onOpenChange={setIsFolderDialogOpen}>
-        <DialogContent className="bg-slate-955 border-slate-800/80 text-white backdrop-blur-xl sm:max-w-md shadow-2xl">
+        <DialogContent className="bg-card border-border text-foreground backdrop-blur-xl sm:max-w-md shadow-2xl">
           <DialogHeader>
-            <DialogTitle className="text-white font-semibold">Create New Folder</DialogTitle>
+            <DialogTitle className="text-foreground font-semibold">Create New Folder</DialogTitle>
           </DialogHeader>
           <div className="py-4">
             <Input
               value={newStandaloneFolder}
               onChange={e => setNewStandaloneFolder(e.target.value)}
               placeholder="e.g. Sports/Football or videos/Events"
-              className="bg-slate-900 border-slate-800 text-slate-100 placeholder-slate-500 focus-visible:ring-emerald-500/50 focus-visible:border-emerald-500/30"
+              className="bg-background border-border text-foreground placeholder-muted-foreground focus-visible:ring-emerald-500/50 focus-visible:border-emerald-500/30"
             />
           </div>
           <DialogFooter className="gap-2 sm:gap-0">
-            <Button variant="outline" onClick={() => setIsFolderDialogOpen(false)} className="border-slate-800 hover:bg-slate-900 text-slate-350 bg-transparent">Cancel</Button>
-            <Button onClick={() => void handleCreateFolder()} disabled={!newStandaloneFolder.trim() || actionLoading} className="bg-emerald-600 hover:bg-emerald-705 shadow-md shadow-emerald-950/20">
+            <Button variant="outline" onClick={() => setIsFolderDialogOpen(false)} className="border-border hover:bg-accent text-foreground bg-transparent">Cancel</Button>
+            <Button onClick={() => void handleCreateFolder()} disabled={!newStandaloneFolder.trim() || actionLoading} className="bg-emerald-600 hover:bg-emerald-700 text-white shadow-md">
               {actionLoading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <FolderPlus className="h-4 w-4 mr-2" />} Create
             </Button>
           </DialogFooter>
@@ -1017,16 +1015,16 @@ export default function GalleryUploader({
       </Dialog>
 
       <Dialog open={isManageFoldersDialogOpen} onOpenChange={setIsManageFoldersDialogOpen}>
-        <DialogContent className="bg-slate-955 border-slate-800/80 text-white backdrop-blur-xl sm:max-w-md shadow-2xl">
-          <DialogHeader><DialogTitle className="text-white font-semibold">Manage Folders</DialogTitle></DialogHeader>
+        <DialogContent className="bg-card border-border text-foreground backdrop-blur-xl sm:max-w-md shadow-2xl">
+          <DialogHeader><DialogTitle className="text-foreground font-semibold">Manage Folders</DialogTitle></DialogHeader>
           <div className="py-4 max-h-[60vh] overflow-y-auto space-y-2 pr-1">
             {existingFolders.length === 0 ? (
-              <p className="text-slate-500 text-sm text-center py-4">No folders found.</p>
+              <p className="text-muted-foreground text-sm text-center py-4">No folders found.</p>
             ) : (
               existingFolders.map(folder => (
-                <div key={folder} className="flex items-center gap-3 p-3 rounded-xl border border-slate-900 bg-slate-900/30">
+                <div key={folder} className="flex items-center gap-3 p-3 rounded-xl border border-border bg-muted/30">
                   <div
-                    className={`h-5 w-5 rounded border flex items-center justify-center cursor-pointer transition-colors ${selectedFolders.includes(folder) ? 'bg-emerald-500 border-emerald-500' : 'border-slate-700 hover:border-emerald-400'}`}
+                    className={`h-5 w-5 rounded border flex items-center justify-center cursor-pointer transition-colors ${selectedFolders.includes(folder) ? 'bg-emerald-500 border-emerald-500' : 'border-border hover:border-emerald-400'}`}
                     onClick={() => {
                       setSelectedFolders(prev =>
                         prev.includes(folder) ? prev.filter(f => f !== folder) : [...prev, folder]
@@ -1036,15 +1034,15 @@ export default function GalleryUploader({
                     {selectedFolders.includes(folder) && <CheckCircle2 className="h-3.5 w-3.5 text-white" />}
                   </div>
                   <FolderOpen className="h-4 w-4 text-emerald-400" />
-                  <span className="text-sm font-medium flex-1 text-slate-200">{folder}</span>
-                  <span className="text-xs text-slate-500">{imagesByFolder[folder]?.length ?? 0} items</span>
+                  <span className="text-sm font-medium flex-1 text-foreground">{folder}</span>
+                  <span className="text-xs text-muted-foreground">{imagesByFolder[folder]?.length ?? 0} items</span>
                 </div>
               ))
             )}
           </div>
           <DialogFooter className="gap-2 sm:gap-0">
-            <Button variant="outline" onClick={() => setIsManageFoldersDialogOpen(false)} className="border-slate-800 hover:bg-slate-900 text-slate-355 bg-transparent">Cancel</Button>
-            <Button onClick={() => void handleDeleteFolders()} disabled={selectedFolders.length === 0 || actionLoading} variant="destructive" className="bg-red-655 hover:bg-red-700">
+            <Button variant="outline" onClick={() => setIsManageFoldersDialogOpen(false)} className="border-border hover:bg-accent text-foreground bg-transparent">Cancel</Button>
+            <Button onClick={() => void handleDeleteFolders()} disabled={selectedFolders.length === 0 || actionLoading} variant="destructive" className="bg-destructive hover:bg-destructive/90 text-destructive-foreground">
               {actionLoading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Trash2 className="h-4 w-4 mr-2" />} Delete Selected
             </Button>
           </DialogFooter>
@@ -1052,15 +1050,15 @@ export default function GalleryUploader({
       </Dialog>
 
       <Dialog open={isMoveDialogOpen} onOpenChange={setIsMoveDialogOpen}>
-        <DialogContent className="bg-slate-955 border-slate-800/80 text-white backdrop-blur-xl sm:max-w-md shadow-2xl">
-          <DialogHeader><DialogTitle className="text-white font-semibold">Move {selectedKeys.length} items</DialogTitle></DialogHeader>
+        <DialogContent className="bg-card border-border text-foreground backdrop-blur-xl sm:max-w-md shadow-2xl">
+          <DialogHeader><DialogTitle className="text-foreground font-semibold">Move {selectedKeys.length} items</DialogTitle></DialogHeader>
           <div className="py-4 space-y-4">
             <Select value={isNewActionFolder ? "new_folder" : actionTargetFolder} onValueChange={v => { if (v === "new_folder") setIsNewActionFolder(true); else { setIsNewActionFolder(false); setActionTargetFolder(v); } }}>
-              <SelectTrigger className="bg-slate-900 border-slate-800 text-slate-100 focus-visible:ring-emerald-500/50">
+              <SelectTrigger className="bg-background border-border text-foreground focus-visible:ring-emerald-500/50">
                 <SelectValue placeholder="Select target folder" />
               </SelectTrigger>
-              <SelectContent className="bg-slate-955 border-slate-800 text-white">
-                <SelectItem value="root" className="text-slate-300">No Folder (Root)</SelectItem>
+              <SelectContent className="bg-card border-border text-foreground">
+                <SelectItem value="root" className="text-muted-foreground">No Folder (Root)</SelectItem>
                 {renderFolderOptions()}
                 <SelectItem value="new_folder" className="text-emerald-400 font-semibold">+ Create New Folder</SelectItem>
               </SelectContent>
@@ -1070,13 +1068,13 @@ export default function GalleryUploader({
                 value={newActionFolderName}
                 onChange={e => setNewActionFolderName(e.target.value)}
                 placeholder="e.g. Sports/Football or videos/Events"
-                className="bg-slate-900 border-slate-800 text-slate-100 placeholder-slate-500 focus-visible:ring-emerald-500/50 focus-visible:border-emerald-500/30"
+                className="bg-background border-border text-foreground placeholder-muted-foreground focus-visible:ring-emerald-500/50 focus-visible:border-emerald-500/30"
               />
             )}
           </div>
           <DialogFooter className="gap-2 sm:gap-0">
-            <Button variant="outline" onClick={() => setIsMoveDialogOpen(false)} className="border-slate-800 hover:bg-slate-900 text-slate-355 bg-transparent">Cancel</Button>
-            <Button onClick={() => void handleBulkAction("move")} disabled={actionLoading || (isNewActionFolder && !newActionFolderName.trim())} className="bg-emerald-600 hover:bg-emerald-705">
+            <Button variant="outline" onClick={() => setIsMoveDialogOpen(false)} className="border-border hover:bg-accent text-foreground bg-transparent">Cancel</Button>
+            <Button onClick={() => void handleBulkAction("move")} disabled={actionLoading || (isNewActionFolder && !newActionFolderName.trim())} className="bg-emerald-600 hover:bg-emerald-700 text-white">
               {actionLoading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <MoveRight className="h-4 w-4 mr-2" />} Move
             </Button>
           </DialogFooter>
@@ -1084,15 +1082,15 @@ export default function GalleryUploader({
       </Dialog>
 
       <Dialog open={isCopyDialogOpen} onOpenChange={setIsCopyDialogOpen}>
-        <DialogContent className="bg-slate-955 border-slate-800/80 text-white backdrop-blur-xl sm:max-w-md shadow-2xl">
-          <DialogHeader><DialogTitle className="text-white font-semibold">Copy {selectedKeys.length} items</DialogTitle></DialogHeader>
+        <DialogContent className="bg-card border-border text-foreground backdrop-blur-xl sm:max-w-md shadow-2xl">
+          <DialogHeader><DialogTitle className="text-foreground font-semibold">Copy {selectedKeys.length} items</DialogTitle></DialogHeader>
           <div className="py-4 space-y-4">
             <Select value={isNewActionFolder ? "new_folder" : actionTargetFolder} onValueChange={v => { if (v === "new_folder") setIsNewActionFolder(true); else { setIsNewActionFolder(false); setActionTargetFolder(v); } }}>
-              <SelectTrigger className="bg-slate-900 border-slate-800 text-slate-100 focus-visible:ring-emerald-500/50">
+              <SelectTrigger className="bg-background border-border text-foreground focus-visible:ring-emerald-500/50">
                 <SelectValue placeholder="Select target folder" />
               </SelectTrigger>
-              <SelectContent className="bg-slate-955 border-slate-800 text-white">
-                <SelectItem value="root" className="text-slate-300">No Folder (Root)</SelectItem>
+              <SelectContent className="bg-card border-border text-foreground">
+                <SelectItem value="root" className="text-muted-foreground">No Folder (Root)</SelectItem>
                 {renderFolderOptions()}
                 <SelectItem value="new_folder" className="text-emerald-400 font-semibold">+ Create New Folder</SelectItem>
               </SelectContent>
@@ -1102,13 +1100,13 @@ export default function GalleryUploader({
                 value={newActionFolderName}
                 onChange={e => setNewActionFolderName(e.target.value)}
                 placeholder="e.g. Sports/Football or videos/Events"
-                className="bg-slate-900 border-slate-800 text-slate-100 placeholder-slate-500 focus-visible:ring-emerald-500/50 focus-visible:border-emerald-500/30"
+                className="bg-background border-border text-foreground placeholder-muted-foreground focus-visible:ring-emerald-500/50 focus-visible:border-emerald-500/30"
               />
             )}
           </div>
           <DialogFooter className="gap-2 sm:gap-0">
-            <Button variant="outline" onClick={() => setIsCopyDialogOpen(false)} className="border-slate-800 hover:bg-slate-900 text-slate-355 bg-transparent">Cancel</Button>
-            <Button onClick={() => void handleBulkAction("copy")} disabled={actionLoading || (isNewActionFolder && !newActionFolderName.trim())} className="bg-emerald-600 hover:bg-emerald-705">
+            <Button variant="outline" onClick={() => setIsCopyDialogOpen(false)} className="border-border hover:bg-accent text-foreground bg-transparent">Cancel</Button>
+            <Button onClick={() => void handleBulkAction("copy")} disabled={actionLoading || (isNewActionFolder && !newActionFolderName.trim())} className="bg-emerald-600 hover:bg-emerald-700 text-white">
               {actionLoading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Copy className="h-4 w-4 mr-2" />} Copy
             </Button>
           </DialogFooter>
