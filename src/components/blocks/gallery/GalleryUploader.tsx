@@ -12,6 +12,13 @@ import {
   FolderOpen,
   FolderPlus,
   X,
+  Home,
+  ChevronRight,
+  Play,
+  Folder,
+  Copy,
+  MoveRight,
+  CheckCircle2,
 } from "lucide-react";
 import { Button } from "~/components/ui/button";
 import { Progress } from "~/components/ui/progress";
@@ -50,7 +57,6 @@ import {
   DialogTitle,
   DialogFooter,
 } from "~/components/ui/dialog";
-import { Copy, MoveRight, CheckCircle2 } from "lucide-react";
 
 interface GalleryImage {
   key: string;
@@ -81,13 +87,18 @@ interface StagedFile {
   previewUrl: string;
 }
 
-const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+const MAX_IMAGE_SIZE = 10 * 1024 * 1024; // 10MB
+const MAX_VIDEO_SIZE = 100 * 1024 * 1024; // 100MB
 const ACCEPTED_TYPES = {
   "image/jpeg": [".jpg", ".jpeg"],
   "image/png": [".png"],
   "image/webp": [".webp"],
   "image/gif": [".gif"],
   "image/avif": [".avif"],
+  "video/mp4": [".mp4"],
+  "video/webm": [".webm"],
+  "video/ogg": [".ogg"],
+  "video/quicktime": [".mov"],
 };
 
 interface GalleryUploaderProps {
@@ -126,6 +137,9 @@ export default function GalleryUploader({
   const [isNewActionFolder, setIsNewActionFolder] = useState(false);
   const [newActionFolderName, setNewActionFolderName] = useState("");
 
+  // Folder Explorer State
+  const [currentPath, setCurrentPath] = useState<string>("");
+
   const fetchImages = useCallback(async () => {
     try {
       setLoading(true);
@@ -135,7 +149,7 @@ export default function GalleryUploader({
       setImages(data.images ?? []);
       setApiFolders(data.folders ?? []);
     } catch {
-      toast.error("Failed to load gallery images");
+      toast.error("Failed to load gallery items");
     } finally {
       setLoading(false);
     }
@@ -156,34 +170,93 @@ export default function GalleryUploader({
   const existingFolders = useMemo(() => {
     const folders = new Set<string>(apiFolders);
     images.forEach((img) => {
-      // Key format: gallery/folderName/timestamp_filename.ext
-      // OR gallery/timestamp_filename.ext
-      const parts = img.key.split("/");
-      if (parts.length > 2) {
-        // "gallery" is index 0, folder is index 1
-        folders.add(parts[1]!);
+      if (img.key.startsWith("gallery/")) {
+        const parts = img.key.split("/");
+        if (parts.length > 2) {
+          folders.add(parts.slice(1, -1).join("/"));
+        }
+      } else if (img.key.startsWith("videos/")) {
+        const parts = img.key.split("/");
+        if (parts.length > 1) {
+          folders.add(parts.slice(0, -1).join("/"));
+        }
       }
     });
     return Array.from(folders).sort();
   }, [images, apiFolders]);
 
-  // Group images by folder for display
+  // Group images by folder for display/management
   const imagesByFolder = useMemo(() => {
     const grouped: Record<string, GalleryImage[]> = { root: [] };
 
     images.forEach((img) => {
-      const parts = img.key.split("/");
-      if (parts.length > 2) {
-        const folder = parts[1]!;
-        grouped[folder] ??= [];
-        grouped[folder].push(img);
+      let folderPath = "";
+      if (img.key.startsWith("gallery/")) {
+        const parts = img.key.split("/");
+        if (parts.length > 2) {
+          folderPath = parts.slice(1, -1).join("/");
+        }
+      } else if (img.key.startsWith("videos/")) {
+        const parts = img.key.split("/");
+        if (parts.length > 1) {
+          folderPath = parts.slice(0, -1).join("/");
+        }
+      }
+
+      if (folderPath) {
+        let arr = grouped[folderPath];
+        if (!arr) {
+          arr = [];
+          grouped[folderPath] = arr;
+        }
+        arr.push(img);
       } else {
-        grouped.root ??= [];
-        grouped.root.push(img);
+        let arr = grouped.root;
+        if (!arr) {
+          arr = [];
+          grouped.root = arr;
+        }
+        arr.push(img);
       }
     });
     return grouped;
   }, [images]);
+
+  // Folder Explorer Navigation Calculations
+  const currentSubfolders = useMemo(() => {
+    const subs = new Set<string>();
+    existingFolders.forEach((folder) => {
+      if (currentPath === "") {
+        const parts = folder.split("/");
+        subs.add(parts[0]!);
+      } else {
+        if (folder.startsWith(currentPath + "/")) {
+          const relative = folder.substring(currentPath.length + 1);
+          const segment = relative.split("/")[0]!;
+          subs.add(currentPath + "/" + segment);
+        }
+      }
+    });
+    return Array.from(subs).sort();
+  }, [existingFolders, currentPath]);
+
+  const currentFiles = useMemo(() => {
+    return images.filter((img) => {
+      let imgFolder = "";
+      if (img.key.startsWith("gallery/")) {
+        const parts = img.key.split("/");
+        if (parts.length > 2) {
+          imgFolder = parts.slice(1, -1).join("/");
+        }
+      } else if (img.key.startsWith("videos/")) {
+        const parts = img.key.split("/");
+        if (parts.length > 1) {
+          imgFolder = parts.slice(0, -1).join("/");
+        }
+      }
+      return imgFolder === currentPath;
+    });
+  }, [images, currentPath]);
 
   const handleUpload = useCallback(async () => {
     if (stagedFiles.length === 0) return;
@@ -336,14 +409,14 @@ export default function GalleryUploader({
 
         if (!res.ok) {
           const data = (await res.json()) as { error: string };
-          toast.error(data.error ?? "Failed to delete image");
+          toast.error(data.error ?? "Failed to delete item");
           return;
         }
 
-        toast.success("Image deleted successfully");
+        toast.success("Item deleted successfully");
         setImages((prev) => prev.filter((img) => img.key !== key));
       } catch {
-        toast.error("Failed to delete image");
+        toast.error("Failed to delete item");
       } finally {
         setDeleting(null);
       }
@@ -353,8 +426,10 @@ export default function GalleryUploader({
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
     const validFiles = acceptedFiles.filter((file) => {
-      if (file.size > MAX_FILE_SIZE) {
-        toast.error(`${file.name} exceeds 10MB limit`);
+      const isVideo = file.type.startsWith("video/");
+      const maxSize = isVideo ? MAX_VIDEO_SIZE : MAX_IMAGE_SIZE;
+      if (file.size > maxSize) {
+        toast.error(`${file.name} exceeds ${isVideo ? "100MB" : "10MB"} limit`);
         return false;
       }
       return true;
@@ -362,7 +437,6 @@ export default function GalleryUploader({
 
     if (validFiles.length > 0) {
       const newStaged = validFiles.map(file => {
-        // Remove extension for the default custom name, making it easier to edit
         const nameWithoutExt = file.name.substring(0, file.name.lastIndexOf('.')) || file.name;
         return {
           id: Math.random().toString(36).substring(7),
@@ -392,7 +466,7 @@ export default function GalleryUploader({
     onDrop,
     accept: ACCEPTED_TYPES,
     multiple: true,
-    maxSize: MAX_FILE_SIZE,
+    maxSize: MAX_VIDEO_SIZE,
     disabled: uploading,
   });
 
@@ -402,95 +476,161 @@ export default function GalleryUploader({
     return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
   };
 
-  const renderImageCard = (image: GalleryImage) => (
-    <div
-      key={image.key}
-      onClick={() => selectionMode && toggleSelection(image.key)}
-      className={`group relative aspect-square overflow-hidden rounded-xl border transition-all duration-300 ${selectedKeys.includes(image.key)
-        ? "border-emerald-500 ring-2 ring-emerald-500/50 shadow-lg shadow-emerald-500/10"
-        : "border-slate-800 hover:border-emerald-500/50 hover:shadow-md hover:shadow-emerald-500/5"
-        } bg-slate-950/40 backdrop-blur-xs ${selectionMode ? "cursor-pointer" : ""}`}
-    >
-      {selectionMode && (
-        <div className="absolute top-2 left-2 z-10 transition-transform duration-200">
-          <div className={`rounded-full border-2 h-6 w-6 flex items-center justify-center ${selectedKeys.includes(image.key) ? 'bg-emerald-500 border-emerald-500' : 'bg-black/60 border-slate-500 hover:border-emerald-400'}`}>
-            {selectedKeys.includes(image.key) && <CheckCircle2 className="h-4 w-4 text-white" />}
+  const renderFolderOptions = () => {
+    return existingFolders.map(f => {
+      const parts = f.split('/');
+      const depth = parts.length - 1;
+      const name = parts[parts.length - 1]!;
+      const label = "\u00A0\u00A0".repeat(depth) + name;
+      return (
+        <SelectItem key={f} value={f}>
+          {label}
+        </SelectItem>
+      );
+    });
+  };
+
+  const renderBreadcrumbs = () => {
+    const parts = currentPath ? currentPath.split("/") : [];
+    return (
+      <div className="flex flex-wrap items-center gap-1.5 text-sm text-slate-400 mb-6 bg-slate-900/10 p-3 rounded-xl border border-slate-900/60 backdrop-blur-xs">
+        <button
+          onClick={() => setCurrentPath("")}
+          className="flex items-center gap-1 text-slate-400 hover:text-emerald-400 font-medium transition-colors cursor-pointer"
+        >
+          <Home className="h-4 w-4" />
+          <span>Root</span>
+        </button>
+        {parts.map((part, index) => {
+          const pathUpTo = parts.slice(0, index + 1).join("/");
+          return (
+            <div key={pathUpTo} className="flex items-center gap-1.5">
+              <ChevronRight className="h-3.5 w-3.5 text-slate-600 shrink-0" />
+              <button
+                onClick={() => setCurrentPath(pathUpTo)}
+                className="text-slate-200 hover:text-emerald-400 font-medium transition-colors cursor-pointer max-w-[120px] truncate"
+              >
+                {part}
+              </button>
+            </div>
+          );
+        })}
+      </div>
+    );
+  };
+
+  const renderImageCard = (image: GalleryImage) => {
+    const filename = image.key.split("/").pop() ?? "file";
+    const isVideo = /\.(mp4|webm|ogg|mov)$/i.test(filename) || image.key.startsWith("videos/");
+
+    return (
+      <div
+        key={image.key}
+        onClick={() => selectionMode && toggleSelection(image.key)}
+        className={`group relative aspect-square overflow-hidden rounded-xl border transition-all duration-300 ${selectedKeys.includes(image.key)
+          ? "border-emerald-500 ring-2 ring-emerald-500/50 shadow-lg shadow-emerald-500/10"
+          : "border-slate-800 hover:border-emerald-500/50 hover:shadow-md hover:shadow-emerald-500/5"
+          } bg-slate-950/40 backdrop-blur-xs ${selectionMode ? "cursor-pointer" : ""}`}
+      >
+        {selectionMode && (
+          <div className="absolute top-2 left-2 z-10 transition-transform duration-200">
+            <div className={`rounded-full border-2 h-6 w-6 flex items-center justify-center ${selectedKeys.includes(image.key) ? 'bg-emerald-500 border-emerald-500' : 'bg-black/60 border-slate-500 hover:border-emerald-400'}`}>
+              {selectedKeys.includes(image.key) && <CheckCircle2 className="h-4 w-4 text-white" />}
+            </div>
           </div>
-        </div>
-      )}
-      <Image
-        src={image.url}
-        alt={image.key.split("/").pop() ?? "Gallery image"}
-        fill
-        className="object-cover transition-transform duration-500 group-hover:scale-105"
-        sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, 20vw"
-      />
+        )}
 
-      {/* Overlay on hover */}
-      <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-900/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+        {isVideo ? (
+          <div className="relative w-full h-full bg-slate-900 flex items-center justify-center">
+            <video
+              src={image.url}
+              className="w-full h-full object-cover opacity-70 group-hover:opacity-85 transition-opacity"
+              preload="metadata"
+              muted
+              playsInline
+            />
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 p-2.5 group-hover:scale-110 transition-transform duration-300">
+                <Play className="h-5 w-5 fill-current" />
+              </div>
+            </div>
+          </div>
+        ) : (
+          <Image
+            src={image.url}
+            alt={filename}
+            fill
+            className="object-cover transition-transform duration-500 group-hover:scale-105"
+            sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, 20vw"
+          />
+        )}
 
-      {/* Image info */}
-      <div className="absolute bottom-0 left-0 right-0 p-3 translate-y-2 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300">
-        <p className="text-xs text-white truncate font-semibold drop-shadow-sm">
-          {image.key.split("/").pop()}
-        </p>
-        {image.size && (
-          <p className="text-[10px] text-emerald-400 font-medium">
-            {formatFileSize(image.size)}
+        {/* Overlay on hover */}
+        <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-900/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+
+        {/* Media info */}
+        <div className="absolute bottom-0 left-0 right-0 p-3 translate-y-2 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300">
+          <p className="text-xs text-white truncate font-semibold drop-shadow-sm">
+            {filename}
           </p>
+          {image.size && (
+            <p className="text-[10px] text-emerald-400 font-medium">
+              {formatFileSize(image.size)}
+            </p>
+          )}
+        </div>
+
+        {/* Delete button */}
+        {canDelete && !selectionMode && (
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button
+                variant="destructive"
+                size="icon"
+                className="absolute top-2 right-2 h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-red-650/90 hover:bg-red-700 backdrop-blur-xs shadow-md"
+                disabled={deleting === image.key}
+              >
+                {deleting === image.key ? (
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                ) : (
+                  <Trash2 className="h-3.5 w-3.5" />
+                )}
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent className="bg-slate-955 border-slate-800 text-white backdrop-blur-md">
+              <AlertDialogHeader>
+                <AlertDialogTitle className="text-white">
+                  Delete {isVideo ? "Video" : "Image"}?
+                </AlertDialogTitle>
+                <AlertDialogDescription className="text-slate-400">
+                  This action cannot be undone. This {isVideo ? "video" : "image"} will be
+                  permanently removed from the school gallery.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel className="border-slate-800 text-slate-300 hover:bg-slate-900">
+                  Cancel
+                </AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={() => void handleDelete(image.key)}
+                  className="bg-red-650 hover:bg-red-700"
+                >
+                  Delete
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        )}
+
+        {/* Status indicator */}
+        {deleting === image.key && (
+          <div className="absolute inset-0 flex items-center justify-center bg-black/60 backdrop-blur-xs">
+            <Loader2 className="h-6 w-6 animate-spin text-emerald-400" />
+          </div>
         )}
       </div>
-
-      {/* Delete button */}
-      {canDelete && !selectionMode && (
-        <AlertDialog>
-          <AlertDialogTrigger asChild>
-            <Button
-              variant="destructive"
-              size="icon"
-              className="absolute top-2 right-2 h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-red-600/90 hover:bg-red-700 backdrop-blur-xs shadow-md"
-              disabled={deleting === image.key}
-            >
-              {deleting === image.key ? (
-                <Loader2 className="h-3.5 w-3.5 animate-spin" />
-              ) : (
-                <Trash2 className="h-3.5 w-3.5" />
-              )}
-            </Button>
-          </AlertDialogTrigger>
-          <AlertDialogContent className="bg-slate-950 border-slate-800 text-white backdrop-blur-md">
-            <AlertDialogHeader>
-              <AlertDialogTitle className="text-white">
-                Delete Image?
-              </AlertDialogTitle>
-              <AlertDialogDescription className="text-slate-400">
-                This action cannot be undone. This image will be
-                permanently removed from the school gallery.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel className="border-slate-800 text-slate-300 hover:bg-slate-900">
-                Cancel
-              </AlertDialogCancel>
-              <AlertDialogAction
-                onClick={() => void handleDelete(image.key)}
-                className="bg-red-600 hover:bg-red-700"
-              >
-                Delete
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
-      )}
-
-      {/* Status indicator */}
-      {deleting === image.key && (
-        <div className="absolute inset-0 flex items-center justify-center bg-black/60 backdrop-blur-xs">
-          <Loader2 className="h-6 w-6 animate-spin text-emerald-400" />
-        </div>
-      )}
-    </div>
-  );
+    );
+  };
 
   return (
     <div className="space-y-8">
@@ -521,11 +661,11 @@ export default function GalleryUploader({
             <div className="space-y-2">
               <h3 className="text-lg font-semibold text-white">
                 {isDragActive
-                  ? "Drop images here"
-                  : "Upload Gallery Images"}
+                  ? "Drop files here"
+                  : "Upload Gallery Media"}
               </h3>
               <p className="text-sm text-slate-400 max-w-sm mx-auto">
-                Drag & drop images here or click to browse. Supports JPG, PNG, WebP, GIF, AVIF (max 10MB each).
+                Drag & drop media here or click to browse. Images (max 10MB) & Videos (max 100MB).
               </p>
             </div>
           </div>
@@ -543,7 +683,7 @@ export default function GalleryUploader({
                   Ready to Upload ({stagedFiles.length})
                 </CardTitle>
                 <CardDescription>
-                  Configure names and categorize these images before uploading.
+                  Configure names and categorize media before uploading.
                 </CardDescription>
               </div>
 
@@ -596,9 +736,7 @@ export default function GalleryUploader({
                   </SelectTrigger>
                   <SelectContent className="bg-slate-900 border-slate-700 text-white">
                     <SelectItem value="root" className="text-slate-300">No Folder (Root)</SelectItem>
-                    {existingFolders.map(f => (
-                      <SelectItem key={f} value={f}>{f}</SelectItem>
-                    ))}
+                    {renderFolderOptions()}
                     <SelectItem value="new_folder" className="text-emerald-400 font-medium">
                       + Create New Folder
                     </SelectItem>
@@ -612,7 +750,7 @@ export default function GalleryUploader({
                     <FolderPlus className="h-4 w-4 text-emerald-400" /> New Folder Name
                   </label>
                   <Input
-                    placeholder="e.g. Sports Day 2026"
+                    placeholder="e.g. Sports/Football"
                     value={newFolderName}
                     onChange={(e) => setNewFolderName(e.target.value)}
                     className="bg-slate-900 border-slate-700 text-white focus-visible:ring-emerald-500"
@@ -636,8 +774,12 @@ export default function GalleryUploader({
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
               {stagedFiles.map((staged) => (
                 <div key={staged.id} className="flex gap-3 p-3 rounded-xl border border-slate-800 bg-slate-950/50">
-                  <div className="relative h-16 w-16 rounded-md overflow-hidden shrink-0 border border-slate-700">
-                    <Image src={staged.previewUrl} alt="Preview" fill className="object-cover" />
+                  <div className="relative h-16 w-16 rounded-md overflow-hidden shrink-0 border border-slate-700 bg-slate-900 flex items-center justify-center">
+                    {staged.file.type.startsWith("video/") ? (
+                      <video src={staged.previewUrl} className="w-full h-full object-cover" preload="metadata" muted playsInline />
+                    ) : (
+                      <Image src={staged.previewUrl} alt="Preview" fill className="object-cover" />
+                    )}
                   </div>
                   <div className="flex-1 min-w-0 flex flex-col justify-center space-y-1.5">
                     <Input
@@ -680,12 +822,12 @@ export default function GalleryUploader({
               </div>
               <div>
                 <CardTitle className="text-white">
-                  Gallery Images
+                  Media Gallery
                 </CardTitle>
                 <CardDescription className="text-slate-400">
                   {loading
                     ? "Loading..."
-                    : `${images.length} image${images.length !== 1 ? "s" : ""} in gallery`}
+                    : `${images.length} item${images.length !== 1 ? "s" : ""} in gallery`}
                 </CardDescription>
               </div>
             </div>
@@ -747,60 +889,93 @@ export default function GalleryUploader({
                 <ImagePlus className="h-8 w-8 text-slate-500" />
               </div>
               <h3 className="text-lg font-medium text-slate-300">
-                No images yet
+                No items yet
               </h3>
               <p className="text-sm text-slate-500 mt-1">
-                Upload your first gallery image above
+                Upload your first gallery item above
               </p>
             </div>
-          ) : existingFolders.length > 0 ? (
-            <Tabs defaultValue="all" className="w-full">
-              <TabsList className="mb-6 bg-slate-900/80 border border-slate-800/80 flex-wrap h-auto p-1 rounded-xl">
+          ) : (
+            <Tabs defaultValue="explorer" className="w-full">
+              <TabsList className="mb-6 bg-slate-900/80 border border-slate-800/80 p-1 rounded-xl">
+                <TabsTrigger value="explorer" className="data-[state=active]:bg-slate-950 data-[state=active]:text-emerald-400 rounded-lg">
+                  <FolderOpen className="mr-2 h-4 w-4" /> Folder Explorer
+                </TabsTrigger>
                 <TabsTrigger value="all" className="data-[state=active]:bg-slate-950 data-[state=active]:text-emerald-400 rounded-lg">
-                  All Images
+                  <Images className="mr-2 h-4 w-4" /> All Items
                 </TabsTrigger>
-                <TabsTrigger value="root" className="data-[state=active]:bg-slate-950 data-[state=active]:text-emerald-400 rounded-lg">
-                  Uncategorized
-                </TabsTrigger>
-                {existingFolders.map(folder => (
-                  <TabsTrigger key={folder} value={folder} className="data-[state=active]:bg-slate-950 data-[state=active]:text-emerald-400 rounded-lg">
-                    <FolderOpen className="mr-2 h-3.5 w-3.5" />
-                    {folder}
-                  </TabsTrigger>
-                ))}
               </TabsList>
 
-              <TabsContent value="all" className="mt-0 outline-none">
+              <TabsContent value="explorer" className="outline-none mt-0">
+                {renderBreadcrumbs()}
+
+                {/* Subfolders list */}
+                {currentSubfolders.length > 0 && (
+                  <div className="space-y-3 mb-8">
+                    <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider">Folders</h4>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 animate-in fade-in duration-200">
+                      {currentSubfolders.map((folderPath) => {
+                        const folderName = folderPath.split("/").pop() ?? folderPath;
+                        const itemsCount = images.filter(img => {
+                          let imgFolder = "";
+                          if (img.key.startsWith("gallery/")) {
+                            const parts = img.key.split("/");
+                            if (parts.length > 2) imgFolder = parts.slice(1, -1).join("/");
+                          } else if (img.key.startsWith("videos/")) {
+                            const parts = img.key.split("/");
+                            if (parts.length > 1) imgFolder = parts.slice(0, -1).join("/");
+                          }
+                          return imgFolder === folderPath || imgFolder.startsWith(folderPath + "/");
+                        }).length;
+
+                        return (
+                          <div
+                            key={folderPath}
+                            onClick={() => setCurrentPath(folderPath)}
+                            className="flex items-center gap-3 p-4 rounded-xl border border-slate-800 bg-slate-900/10 hover:border-emerald-500/50 hover:bg-slate-900/30 cursor-pointer transition-all duration-200 group relative select-none"
+                          >
+                            <Folder className="h-8 w-8 text-emerald-400 group-hover:scale-105 transition-transform duration-200 shrink-0" />
+                            <div className="min-w-0 flex-1">
+                              <p className="text-sm font-semibold text-slate-200 truncate group-hover:text-white">
+                                {folderName}
+                              </p>
+                              <p className="text-xs text-slate-500">
+                                {itemsCount} item{itemsCount !== 1 ? "s" : ""}
+                              </p>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {/* Files in this folder */}
+                <div className="space-y-3">
+                  <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider">Files</h4>
+                  {currentFiles.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center py-16 text-center bg-slate-900/5 border border-dashed border-slate-800 rounded-xl">
+                      <p className="text-slate-500 text-sm">No files in this folder.</p>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                      {currentFiles.map(renderImageCard)}
+                    </div>
+                  )}
+                </div>
+              </TabsContent>
+
+              <TabsContent value="all" className="outline-none mt-0">
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
                   {images.map(renderImageCard)}
                 </div>
               </TabsContent>
-
-              <TabsContent value="root" className="mt-0 outline-none">
-                {imagesByFolder.root?.length === 0 ? (
-                  <p className="text-slate-500 text-sm py-8 text-center bg-slate-900/30 rounded-xl border border-slate-900">No uncategorized images.</p>
-                ) : (
-                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-                    {imagesByFolder.root?.map(renderImageCard)}
-                  </div>
-                )}
-              </TabsContent>
-
-              {existingFolders.map(folder => (
-                <TabsContent key={folder} value={folder} className="mt-0 outline-none">
-                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-                    {imagesByFolder[folder]?.map(renderImageCard)}
-                  </div>
-                </TabsContent>
-              ))}
             </Tabs>
-          ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-              {images.map(renderImageCard)}
-            </div>
           )}
         </CardContent>
-      </Card>      {/* Selection Action Bar */}
+      </Card>
+
+      {/* Selection Action Bar */}
       {selectionMode && selectedKeys.length > 0 && (
         <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 rounded-full border border-slate-800/60 bg-slate-950/85 backdrop-blur-lg px-6 py-3 shadow-2xl shadow-emerald-950/20 border-emerald-500/10 animate-in slide-in-from-bottom-10">
           <span className="text-white font-semibold mr-4 text-sm tracking-wide">{selectedKeys.length} selected</span>
@@ -820,7 +995,7 @@ export default function GalleryUploader({
 
       {/* Dialogs */}
       <Dialog open={isFolderDialogOpen} onOpenChange={setIsFolderDialogOpen}>
-        <DialogContent className="bg-slate-950/95 border-slate-800/80 text-white backdrop-blur-xl sm:max-w-md shadow-2xl">
+        <DialogContent className="bg-slate-955 border-slate-800/80 text-white backdrop-blur-xl sm:max-w-md shadow-2xl">
           <DialogHeader>
             <DialogTitle className="text-white font-semibold">Create New Folder</DialogTitle>
           </DialogHeader>
@@ -828,7 +1003,7 @@ export default function GalleryUploader({
             <Input
               value={newStandaloneFolder}
               onChange={e => setNewStandaloneFolder(e.target.value)}
-              placeholder="Folder Name"
+              placeholder="e.g. Sports/Football or videos/Events"
               className="bg-slate-900 border-slate-800 text-slate-100 placeholder-slate-500 focus-visible:ring-emerald-500/50 focus-visible:border-emerald-500/30"
             />
           </div>
@@ -842,7 +1017,7 @@ export default function GalleryUploader({
       </Dialog>
 
       <Dialog open={isManageFoldersDialogOpen} onOpenChange={setIsManageFoldersDialogOpen}>
-        <DialogContent className="bg-slate-950/95 border-slate-800/80 text-white backdrop-blur-xl sm:max-w-md shadow-2xl">
+        <DialogContent className="bg-slate-955 border-slate-800/80 text-white backdrop-blur-xl sm:max-w-md shadow-2xl">
           <DialogHeader><DialogTitle className="text-white font-semibold">Manage Folders</DialogTitle></DialogHeader>
           <div className="py-4 max-h-[60vh] overflow-y-auto space-y-2 pr-1">
             {existingFolders.length === 0 ? (
@@ -868,8 +1043,8 @@ export default function GalleryUploader({
             )}
           </div>
           <DialogFooter className="gap-2 sm:gap-0">
-            <Button variant="outline" onClick={() => setIsManageFoldersDialogOpen(false)} className="border-slate-800 hover:bg-slate-900 text-slate-350 bg-transparent">Cancel</Button>
-            <Button onClick={() => void handleDeleteFolders()} disabled={selectedFolders.length === 0 || actionLoading} variant="destructive" className="bg-red-650 hover:bg-red-700">
+            <Button variant="outline" onClick={() => setIsManageFoldersDialogOpen(false)} className="border-slate-800 hover:bg-slate-900 text-slate-355 bg-transparent">Cancel</Button>
+            <Button onClick={() => void handleDeleteFolders()} disabled={selectedFolders.length === 0 || actionLoading} variant="destructive" className="bg-red-655 hover:bg-red-700">
               {actionLoading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Trash2 className="h-4 w-4 mr-2" />} Delete Selected
             </Button>
           </DialogFooter>
@@ -877,7 +1052,7 @@ export default function GalleryUploader({
       </Dialog>
 
       <Dialog open={isMoveDialogOpen} onOpenChange={setIsMoveDialogOpen}>
-        <DialogContent className="bg-slate-950/95 border-slate-800/80 text-white backdrop-blur-xl sm:max-w-md shadow-2xl">
+        <DialogContent className="bg-slate-955 border-slate-800/80 text-white backdrop-blur-xl sm:max-w-md shadow-2xl">
           <DialogHeader><DialogTitle className="text-white font-semibold">Move {selectedKeys.length} items</DialogTitle></DialogHeader>
           <div className="py-4 space-y-4">
             <Select value={isNewActionFolder ? "new_folder" : actionTargetFolder} onValueChange={v => { if (v === "new_folder") setIsNewActionFolder(true); else { setIsNewActionFolder(false); setActionTargetFolder(v); } }}>
@@ -886,7 +1061,7 @@ export default function GalleryUploader({
               </SelectTrigger>
               <SelectContent className="bg-slate-955 border-slate-800 text-white">
                 <SelectItem value="root" className="text-slate-300">No Folder (Root)</SelectItem>
-                {existingFolders.map(f => <SelectItem key={f} value={f}>{f}</SelectItem>)}
+                {renderFolderOptions()}
                 <SelectItem value="new_folder" className="text-emerald-400 font-semibold">+ Create New Folder</SelectItem>
               </SelectContent>
             </Select>
@@ -894,7 +1069,7 @@ export default function GalleryUploader({
               <Input
                 value={newActionFolderName}
                 onChange={e => setNewActionFolderName(e.target.value)}
-                placeholder="New Folder Name"
+                placeholder="e.g. Sports/Football or videos/Events"
                 className="bg-slate-900 border-slate-800 text-slate-100 placeholder-slate-500 focus-visible:ring-emerald-500/50 focus-visible:border-emerald-500/30"
               />
             )}
@@ -918,7 +1093,7 @@ export default function GalleryUploader({
               </SelectTrigger>
               <SelectContent className="bg-slate-955 border-slate-800 text-white">
                 <SelectItem value="root" className="text-slate-300">No Folder (Root)</SelectItem>
-                {existingFolders.map(f => <SelectItem key={f} value={f}>{f}</SelectItem>)}
+                {renderFolderOptions()}
                 <SelectItem value="new_folder" className="text-emerald-400 font-semibold">+ Create New Folder</SelectItem>
               </SelectContent>
             </Select>
@@ -926,7 +1101,7 @@ export default function GalleryUploader({
               <Input
                 value={newActionFolderName}
                 onChange={e => setNewActionFolderName(e.target.value)}
-                placeholder="New Folder Name"
+                placeholder="e.g. Sports/Football or videos/Events"
                 className="bg-slate-900 border-slate-800 text-slate-100 placeholder-slate-500 focus-visible:ring-emerald-500/50 focus-visible:border-emerald-500/30"
               />
             )}

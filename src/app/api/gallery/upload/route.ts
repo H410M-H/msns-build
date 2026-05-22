@@ -2,13 +2,18 @@ import { type NextRequest, NextResponse } from "next/server";
 import { uploadToS3 } from "~/lib/s3";
 import { auth } from "~/server/auth";
 
-const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+const MAX_IMAGE_SIZE = 10 * 1024 * 1024; // 10MB
+const MAX_VIDEO_SIZE = 100 * 1024 * 1024; // 100MB
 const ALLOWED_TYPES = [
   "image/jpeg",
   "image/png",
   "image/webp",
   "image/gif",
   "image/avif",
+  "video/mp4",
+  "video/webm",
+  "video/ogg",
+  "video/quicktime",
 ];
 
 const ALLOWED_ROLES = ["ADMIN", "PRINCIPAL", "HEAD", "CLERK", "TEACHER"];
@@ -25,7 +30,7 @@ export async function POST(request: NextRequest) {
     const userRole = session.user.accountType;
     if (!ALLOWED_ROLES.includes(userRole)) {
       return NextResponse.json(
-        { error: "You do not have permission to upload gallery images" },
+        { error: "You do not have permission to upload gallery media" },
         { status: 403 }
       );
     }
@@ -39,14 +44,16 @@ export async function POST(request: NextRequest) {
 
     if (!ALLOWED_TYPES.includes(file.type)) {
       return NextResponse.json(
-        { error: "Invalid file type. Allowed: JPEG, PNG, WebP, GIF, AVIF" },
+        { error: "Invalid file type. Allowed: JPEG, PNG, WebP, GIF, AVIF, MP4, WebM, OGG, MOV" },
         { status: 400 }
       );
     }
 
-    if (file.size > MAX_FILE_SIZE) {
+    const isVideo = file.type.startsWith("video/");
+    const maxSize = isVideo ? MAX_VIDEO_SIZE : MAX_IMAGE_SIZE;
+    if (file.size > maxSize) {
       return NextResponse.json(
-        { error: "File size exceeds 10MB limit" },
+        { error: `File size exceeds ${isVideo ? "100MB" : "10MB"} limit` },
         { status: 400 }
       );
     }
@@ -57,14 +64,33 @@ export async function POST(request: NextRequest) {
     const buffer = Buffer.from(await file.arrayBuffer());
     const timestamp = Date.now();
     const sanitizedName = customName.replace(/[^a-zA-Z0-9._-]/g, "_");
-    const sanitizedFolder = folder ? folder.replace(/[^a-zA-Z0-9_-]/g, "_") + "/" : "";
+    
+    // Support nested folders by splitting and sanitizing each folder segment
+    let targetFolder = folder;
+    if (isVideo && !targetFolder) {
+      targetFolder = "videos";
+    }
+
+    const sanitizedFolderParts = targetFolder
+      .split("/")
+      .map(part => part.replace(/[^a-zA-Z0-9_-]/g, "_"))
+      .filter(Boolean);
+
+    let prefix = "gallery/";
+    if (sanitizedFolderParts[0] === "videos") {
+      prefix = ""; // Key will start with videos/
+    }
+
+    const sanitizedFolder = sanitizedFolderParts.length > 0
+      ? sanitizedFolderParts.join("/") + "/"
+      : "";
     
     // Preserve extension if customName doesn't have one but original file does
     const originalExt = file.name.split('.').pop()?.toLowerCase();
     const hasExt = sanitizedName.includes('.');
     const finalName = !hasExt && originalExt ? `${sanitizedName}.${originalExt}` : sanitizedName;
 
-    const key = `gallery/${sanitizedFolder}${timestamp}_${finalName}`;
+    const key = `${prefix}${sanitizedFolder}${timestamp}_${finalName}`;
 
     await uploadToS3(key, buffer, file.type);
 

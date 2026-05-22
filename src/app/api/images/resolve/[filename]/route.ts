@@ -18,9 +18,9 @@ export async function GET(
       return new NextResponse("Image not found", { status: 404 });
     }
 
-    // Redirect to the actual image proxy path
+    // Rewrite to the actual image proxy path
     const url = new URL(`/api/images/${key}`, request.url);
-    return NextResponse.redirect(url);
+    return NextResponse.rewrite(url);
   } catch (error) {
     console.error(`Error resolving image ${filename}:`, error);
     return new NextResponse("Internal Server Error", { status: 500 });

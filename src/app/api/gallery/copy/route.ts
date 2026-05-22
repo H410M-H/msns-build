@@ -19,14 +19,23 @@ export async function POST(req: Request) {
         const filename = key.split('/').pop();
         if (!filename) throw new Error("Invalid key");
         
-        let destinationKey = `gallery/${normalizedFolder}${filename}`;
+        let destinationKey = "";
+        if (normalizedFolder === 'videos/' || normalizedFolder.startsWith('videos/')) {
+          destinationKey = `${normalizedFolder}${filename}`;
+        } else {
+          destinationKey = `gallery/${normalizedFolder}${filename}`;
+        }
         
         // Handle copy to same location by appending timestamp
         if (key === destinationKey) {
           const parts = filename.split('.');
           const ext = parts.length > 1 ? `.${parts.pop()}` : '';
           const name = parts.join('.');
-          destinationKey = `gallery/${normalizedFolder}${name}_copy_${Date.now()}${ext}`;
+          if (normalizedFolder === 'videos/' || normalizedFolder.startsWith('videos/')) {
+            destinationKey = `${normalizedFolder}${name}_copy_${Date.now()}${ext}`;
+          } else {
+            destinationKey = `gallery/${normalizedFolder}${name}_copy_${Date.now()}${ext}`;
+          }
         }
 
         await copyS3Object(key, destinationKey);

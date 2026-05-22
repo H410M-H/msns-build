@@ -19,7 +19,12 @@ export async function POST(req: Request) {
         const filename = key.split('/').pop();
         if (!filename) throw new Error("Invalid key");
         
-        const destinationKey = `gallery/${normalizedFolder}${filename}`;
+        let destinationKey = "";
+        if (normalizedFolder === 'videos/' || normalizedFolder.startsWith('videos/')) {
+          destinationKey = `${normalizedFolder}${filename}`;
+        } else {
+          destinationKey = `gallery/${normalizedFolder}${filename}`;
+        }
         
         // Don't move to same location
         if (key === destinationKey) return;
