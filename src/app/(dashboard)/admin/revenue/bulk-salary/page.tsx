@@ -100,10 +100,10 @@ export default function BulkSalaryPage() {
             </div>
             <div className="space-y-1.5 min-w-[200px]">
               <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Copy From Session (Optional)</Label>
-              <Select value={selectedFromSession} onValueChange={setSelectedFromSession}>
+              <Select value={selectedFromSession || "none"} onValueChange={v => setSelectedFromSession(v === "none" ? "" : v)}>
                 <SelectTrigger><SelectValue placeholder="Previous session" /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">— None —</SelectItem>
+                  <SelectItem value="none">— None —</SelectItem>
                   {sessions?.map(s => <SelectItem key={s.sessionId} value={s.sessionId}>{s.sessionName}</SelectItem>)}
                 </SelectContent>
               </Select>

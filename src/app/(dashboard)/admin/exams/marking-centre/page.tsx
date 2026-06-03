@@ -221,10 +221,10 @@ export default function MarkingCentrePage() {
             </div>
             <div className="space-y-1.5">
               <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Status Filter</Label>
-              <Select value={statusFilter} onValueChange={v => setStatusFilter(v as CompletionStatus | "")}>
+              <Select value={statusFilter || "all"} onValueChange={v => setStatusFilter(v === "all" ? "" : (v as CompletionStatus))}>
                 <SelectTrigger className="text-sm"><SelectValue placeholder="All statuses" /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All</SelectItem>
+                  <SelectItem value="all">All</SelectItem>
                   <SelectItem value="Pending">Pending</SelectItem>
                   <SelectItem value="Partial">Partial</SelectItem>
                   <SelectItem value="Complete">Complete</SelectItem>
