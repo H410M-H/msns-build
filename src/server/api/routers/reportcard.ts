@@ -8,6 +8,147 @@ const generateReportCardSchema = z.object({
 });
 
 export const reportCardRouter = createTRPCRouter({
+  generateClassReportCards: publicProcedure
+    .input(
+      z.object({
+        classId: z.string().cuid(),
+        examId: z.string().cuid(),
+        sessionId: z.string().cuid(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      try {
+        const exam = await ctx.db.exam.findUnique({
+          where: { examId: input.examId },
+        });
+        if (!exam) throw new TRPCError({ code: "NOT_FOUND", message: "Exam not found" });
+
+        // Get class subjects
+        const classSubjects = await ctx.db.classSubject.findMany({
+          where: { classId: input.classId },
+          select: { subjectId: true },
+        });
+
+        if (classSubjects.length === 0) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "No subjects assigned to this class",
+          });
+        }
+
+        // Get all students enrolled in this class and session
+        const students = await ctx.db.studentClass.findMany({
+          where: { classId: input.classId, sessionId: input.sessionId },
+          select: { studentId: true },
+        });
+
+        if (students.length === 0) {
+          return { success: true, message: "No students in this class", generatedCount: 0, skippedCount: 0 };
+        }
+
+        let generatedCount = 0;
+        let skippedCount = 0;
+
+        for (const student of students) {
+          const marks = await ctx.db.marks.findMany({
+            where: {
+              studentId: student.studentId,
+              examId: input.examId,
+            },
+          });
+
+          // Check if marks exist and if all subjects are uploaded
+          const uploadedSubjects = new Set(marks.map((m) => m.subjectId));
+          if (marks.length === 0 || uploadedSubjects.size !== classSubjects.length) {
+            skippedCount++;
+            continue;
+          }
+
+          // Calculate totals
+          let totalObtained = 0;
+          let totalMax = 0;
+          const reportDetails = marks.map((mark) => {
+            totalObtained += mark.obtainedMarks;
+            totalMax += mark.totalMarks;
+            const percentage = (mark.obtainedMarks / mark.totalMarks) * 100;
+            return {
+              subjectId: mark.subjectId,
+              totalMarks: mark.totalMarks,
+              obtainedMarks: mark.obtainedMarks,
+              percentage,
+              remarks: percentage >= exam.passingMarks ? "Passed" : "Failed",
+            };
+          });
+
+          const overallPercentage = (totalObtained / totalMax) * 100;
+          const status = overallPercentage >= exam.passingMarks ? "PASSED" : "FAILED";
+
+          // Upsert Report Card
+          const existingReport = await ctx.db.reportCard.findFirst({
+            where: { studentId: student.studentId, examId: input.examId },
+          });
+
+          if (existingReport) {
+            await ctx.db.reportCard.update({
+              where: { reportCardId: existingReport.reportCardId },
+              data: {
+                totalObtainedMarks: totalObtained,
+                totalMaxMarks: totalMax,
+                percentage: overallPercentage,
+                status: status as "PASSED" | "FAILED" | "PENDING",
+                ReportCardDetail: {
+                  deleteMany: {},
+                  create: reportDetails.map((detail) => ({
+                    subjectId: detail.subjectId,
+                    totalMarks: detail.totalMarks,
+                    obtainedMarks: detail.obtainedMarks,
+                    percentage: detail.percentage,
+                    remarks: detail.remarks,
+                  })),
+                },
+              },
+            });
+          } else {
+            await ctx.db.reportCard.create({
+              data: {
+                studentId: student.studentId,
+                examId: input.examId,
+                sessionId: input.sessionId,
+                classId: input.classId,
+                totalObtainedMarks: totalObtained,
+                totalMaxMarks: totalMax,
+                percentage: overallPercentage,
+                status: status as "PASSED" | "FAILED" | "PENDING",
+                ReportCardDetail: {
+                  create: reportDetails.map((detail) => ({
+                    subjectId: detail.subjectId,
+                    totalMarks: detail.totalMarks,
+                    obtainedMarks: detail.obtainedMarks,
+                    percentage: detail.percentage,
+                    remarks: detail.remarks,
+                  })),
+                },
+              },
+            });
+          }
+          generatedCount++;
+        }
+
+        return {
+          success: true,
+          message: `Generated ${generatedCount} report cards, skipped ${skippedCount} students due to incomplete marks.`,
+          generatedCount,
+          skippedCount,
+        };
+      } catch (error) {
+        console.error("Error batch generating report cards:", error);
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to generate report cards",
+        });
+      }
+    }),
+
   generateReportCard: publicProcedure
     .input(generateReportCardSchema)
     .mutation(async ({ ctx, input }) => {
@@ -344,14 +485,35 @@ export const reportCardRouter = createTRPCRouter({
             sessionId: input.sessionId,
           },
           include: {
+            Students: {
+              select: {
+                studentName: true,
+                registrationNumber: true,
+                admissionNumber: true,
+              },
+            },
             Exam: {
               select: {
                 examTypeEnum: true,
                 startDate: true,
                 totalMarks: true,
+                Grades: {
+                  select: {
+                    grade: true,
+                    section: true,
+                  },
+                },
               },
             },
-            ReportCardDetail: true,
+            ReportCardDetail: {
+              include: {
+                Subject: {
+                  select: {
+                    subjectName: true,
+                  },
+                },
+              },
+            },
           },
           orderBy: { createdAt: "desc" },
         });

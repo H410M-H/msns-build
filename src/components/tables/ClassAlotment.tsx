@@ -25,6 +25,7 @@ import { SubjectAssignmentDialog } from "../forms/class/SubjectAssignment";
 import { SubjectDeletionDialog } from "../forms/class/SubjectDeletion";
 import AllotmentDialog from "../forms/class/StudentAlotment";
 import { StudentReportCardsDialog } from "../forms/class/StudentReportCardsDialog";
+import { ClassReportCardsGenerationDialog } from "../forms/class/ClassReportCardsGenerationDialog";
 
 // --- Icons ---
 import { ReloadIcon } from "@radix-ui/react-icons";
@@ -237,6 +238,11 @@ export const ClassAllotmentTable = ({
                 <UserPlus className="mr-2 h-4 w-4" /> Allot Student
               </Button>
             </AllotmentDialog>
+
+            <ClassReportCardsGenerationDialog
+              classId={classId}
+              sessionId={sessionId}
+            />
 
             <Button
               size="sm"
