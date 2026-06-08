@@ -7,14 +7,14 @@ import { type Prisma } from "@prisma/client";
 
 const salaryAssignmentSchema = z.object({
   employeeId: z.string().min(1, "Employee ID is required"),
-  baseSalary: z.number().min(10000, "Base salary must be at least 10,000 PKR"),
+  baseSalary: z.number().min(1000, "Base salary must be at least 1000 PKR"),
   increment: z.number().min(0, "Increment cannot be negative"),
   sessionId: z.string().min(1, "Session ID is required"),
 });
 
 const salaryAssignmentUpdateSchema = z.object({
   id: z.string(),
-  baseSalary: z.number().min(10000).optional(),
+  baseSalary: z.number().min(1000).optional(),
   increment: z.number().min(0).optional(),
   sessionId: z.string().min(1).optional(),
 });
