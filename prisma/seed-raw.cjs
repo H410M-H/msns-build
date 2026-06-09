@@ -240,8 +240,8 @@ const dataset = [
     section: "ROSE",
     category: "SSC_I",
     incharge: "ESHA MUNIR",
-    examType: "PHASE_1",
-    examCategory: "PHASE_TEST",
+    examType: "FINAL",
+    examCategory: "STANDARD",
     subjects: ["ISLAMIAT", "TARJUMA TUL QURAN", "URDU", "ENGLISH", "PHYSICS", "CHEMISTRY", "MATH", "BIOLOGY", "COMPUTER"],
     students: [
       { name: "M. SAAD KHOKHAR", marks: [86, 45, 58, 50, 53, 46, 30, null, 41], gender: "MALE", attendance: 100, position: "2nd" },
@@ -255,8 +255,8 @@ const dataset = [
     section: "TULIP",
     category: "SSC_I",
     incharge: "SHAGUFTA TAWAKUL",
-    examType: "PHASE_1",
-    examCategory: "PHASE_TEST",
+    examType: "FINAL",
+    examCategory: "STANDARD",
     subjects: ["ENGLISH", "MATHEMATICS", "URDU", "PHYSICS", "CHEMISTRY", "ISLAMIYAT/اخلاقیات", "BIOLOGY", "TARJAMA-TUL-QURAN", "COMPUTER"],
     students: [
       { name: "ANISHA ZUBAIR", marks: [43, 50, 69, 44, 38, 95, null, 48, 44], gender: "FEMALE", attendance: 100, position: "5th" },
@@ -277,8 +277,8 @@ const dataset = [
     section: "ROSE",
     category: "SSC_II",
     incharge: "M. REHAN YOUNUS",
-    examType: "PHASE_1",
-    examCategory: "PHASE_TEST",
+    examType: "FINAL",
+    examCategory: "STANDARD",
     subjects: ["Pak. Studies", "TARJUMA TUL QURAN", "URDU", "ENGLISH", "PHYSICS/PHYSICAL EDUCATION", "CHEMISTRY/ G.SCIENCE", "MATH", "COMPUTER/ _x000D_ISL. ELECTIVE"],
     students: [
       { name: "FAIZAN ALI", marks: [68, 49, 46, 36, 37, 33, 56, 36], gender: "MALE", attendance: 100, position: "4th" },
@@ -297,8 +297,8 @@ const dataset = [
     section: "TULIP",
     category: "SSC_II",
     incharge: "FAIZA MUSHTAQ",
-    examType: "PHASE_1",
-    examCategory: "PHASE_TEST",
+    examType: "FINAL",
+    examCategory: "STANDARD",
     subjects: ["PAK-STUDIES", "TARJUMA TUL QURAN", "URDU", "ENGLISH", "PHYSICS", "CHEMISTRY", "BIOLOGY", "MATH", "COMPUTER"],
     students: [
       { name: "ATEEQA NOREEN", marks: [97, 49, 69, 59, 56, 58, 56, 62, null], gender: "FEMALE", attendance: 100, position: "2nd" },
