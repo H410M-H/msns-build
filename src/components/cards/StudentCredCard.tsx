@@ -17,6 +17,8 @@ import {
   Trash2,
   Search,
   Filter,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import { Input } from "~/components/ui/input";
 import { Button } from "~/components/ui/button";
@@ -25,14 +27,29 @@ import { StudentEditDialog } from "../forms/student/StudentEdit";
 import Link from "next/link";
 import Image from "next/image";
 import type { Students } from "@prisma/client";
+import { toast } from "sonner";
 
 export default function StudentCredDetails() {
   const [students, setStudents] = useState<Students[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
+  const [searchInputValue, setSearchInputValue] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
   const [editingStudent, setEditingStudent] = useState<Students | null>(null);
+
+  const itemsPerPage = 8;
 
   const { data, isLoading, isError, refetch } =
     api.student.getStudents.useQuery();
+
+  const deleteMutation = api.student.deleteStudentsByIds.useMutation({
+    onSuccess: () => {
+      toast.success("Student deleted successfully");
+      void refetch();
+    },
+    onError: (err) => {
+      toast.error(err.message || "Failed to delete student");
+    },
+  });
 
   useEffect(() => {
     if (data) {
@@ -40,10 +57,55 @@ export default function StudentCredDetails() {
     }
   }, [data]);
 
+  // Debounce search input to prevent layout recalculation lags on every keystroke
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setSearchQuery(searchInputValue);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [searchInputValue]);
+
+  // Reset pagination on search change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery]);
+
+  const handleDelete = (studentId: string, name: string) => {
+    if (
+      confirm(
+        `Are you sure you want to delete ${name}? This action cannot be undone.`
+      )
+    ) {
+      deleteMutation.mutate({ studentIds: [studentId] });
+    }
+  };
+
+  // Helper: Check valid image URL
+  const isValidImageSrc = (src: string | null | undefined): boolean => {
+    if (!src) return false;
+    return src.startsWith("http") || src.startsWith("/");
+  };
+
+  // Helper: Format Date safely to avoid "Invalid Date" (cater to default "none" value)
+  const formatDate = (dateStr: string | null | undefined): string => {
+    if (!dateStr || dateStr.toLowerCase() === "none" || dateStr.trim() === "") {
+      return "N/A";
+    }
+    const parsedDate = new Date(dateStr);
+    return isNaN(parsedDate.getTime()) ? dateStr : parsedDate.toLocaleDateString();
+  };
+
   const filteredStudents = students.filter(
     (student) =>
       student.studentName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      student.studentCNIC?.includes(searchQuery),
+      student.studentCNIC?.includes(searchQuery) ||
+      student.registrationNumber?.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const totalPages = Math.ceil(filteredStudents.length / itemsPerPage);
+  const paginatedStudents = filteredStudents.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
   );
 
   const containerVariants = {
@@ -52,12 +114,6 @@ export default function StudentCredDetails() {
       opacity: 1,
       transition: { staggerChildren: 0.05 },
     },
-  };
-
-  // Helper: Check valid image URL
-  const isValidImageSrc = (src: string | null | undefined): boolean => {
-    if (!src) return false;
-    return src.startsWith("http") || src.startsWith("/");
   };
 
   if (isLoading) {
@@ -103,8 +159,8 @@ export default function StudentCredDetails() {
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-emerald-500/50 transition-colors group-focus-within:text-emerald-400" />
             <Input
               placeholder="Search by Name, CNIC, or Reg #..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              value={searchInputValue}
+              onChange={(e) => setSearchInputValue(e.target.value)}
               className="h-11 w-full rounded-xl border-emerald-500/20 bg-card pl-10 text-foreground transition-all placeholder:text-muted-foreground hover:bg-card focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/50"
             />
           </div>
@@ -143,7 +199,12 @@ export default function StudentCredDetails() {
         <div className="flex items-center justify-between px-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">
           <span>
             Showing{" "}
-            <span className="text-emerald-400">{filteredStudents.length}</span>{" "}
+            <span className="text-emerald-400 font-semibold">
+              {filteredStudents.length === 0 ? 0 : (currentPage - 1) * itemsPerPage + 1}
+              {" - "}
+              {Math.min(currentPage * itemsPerPage, filteredStudents.length)}
+            </span>{" "}
+            of <span className="text-emerald-400 font-semibold">{filteredStudents.length}</span>{" "}
             Students
           </span>
           <div className="flex items-center gap-2">
@@ -160,7 +221,7 @@ export default function StudentCredDetails() {
             animate="visible"
             className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4"
           >
-            {filteredStudents.length === 0 ? (
+            {paginatedStudents.length === 0 ? (
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
@@ -175,7 +236,7 @@ export default function StudentCredDetails() {
                 </p>
               </motion.div>
             ) : (
-              filteredStudents.map((student) => (
+              paginatedStudents.map((student) => (
                 <motion.div
                   key={student.studentId}
                   layout
@@ -248,11 +309,7 @@ export default function StudentCredDetails() {
                         <div className="group/item col-span-1 flex items-center gap-2 rounded-lg border border-border bg-card p-2 transition-colors hover:border-emerald-500/20">
                           <Calendar className="h-3.5 w-3.5 text-emerald-500/70 group-hover/item:text-emerald-400" />
                           <span className="truncate text-xs text-foreground sm:text-sm">
-                            {student.dateOfBirth
-                              ? new Date(
-                                student.dateOfBirth,
-                              ).toLocaleDateString()
-                              : "N/A"}
+                            {formatDate(student.dateOfBirth)}
                           </span>
                         </div>
                         <div className="group/item col-span-2 flex items-center gap-2 rounded-lg border border-border bg-card p-2 transition-colors hover:border-emerald-500/20">
@@ -293,9 +350,15 @@ export default function StudentCredDetails() {
                           <Button
                             size="sm"
                             variant="ghost"
-                            className="h-8 w-8 rounded-lg border border-red-500/20 bg-red-900/10 p-0 text-red-400 transition-all hover:bg-red-600/20 hover:text-foreground"
+                            onClick={() => handleDelete(student.studentId, student.studentName)}
+                            disabled={deleteMutation.isPending}
+                            className="h-8 w-8 rounded-lg border border-red-500/20 bg-red-900/10 p-0 text-red-400 transition-all hover:bg-red-600/20 hover:text-foreground disabled:opacity-50"
                           >
-                            <Trash2 className="h-3.5 w-3.5" />
+                            {deleteMutation.isPending ? (
+                              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                            ) : (
+                              <Trash2 className="h-3.5 w-3.5" />
+                            )}
                           </Button>
                         </div>
                       </div>
@@ -306,6 +369,36 @@ export default function StudentCredDetails() {
             )}
           </motion.div>
         </AnimatePresence>
+
+        {/* === Pagination Controls === */}
+        {totalPages > 1 && (
+          <div className="flex items-center justify-center gap-4 pt-8">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+              disabled={currentPage === 1}
+              className="h-10 rounded-xl border-emerald-500/20 bg-muted px-4 text-emerald-400 transition-all hover:border-emerald-500/50 hover:bg-emerald-900/30 disabled:opacity-40"
+            >
+              <ChevronLeft className="mr-2 h-4 w-4" />
+              Previous
+            </Button>
+            <span className="text-sm text-muted-foreground">
+              Page <span className="font-semibold text-emerald-400">{currentPage}</span> of{" "}
+              <span className="font-semibold text-emerald-400">{totalPages}</span>
+            </span>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+              disabled={currentPage === totalPages}
+              className="h-10 rounded-xl border-emerald-500/20 bg-muted px-4 text-emerald-400 transition-all hover:border-emerald-500/50 hover:bg-emerald-900/30 disabled:opacity-40"
+            >
+              Next
+              <ChevronRight className="ml-2 h-4 w-4" />
+            </Button>
+          </div>
+        )}
       </div>
 
       {/* Edit Dialog */}
