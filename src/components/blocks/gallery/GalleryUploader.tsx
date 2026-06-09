@@ -182,6 +182,11 @@ export default function GalleryUploader({
   const [renameValue, setRenameValue] = useState("");
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
+  // Single-Folder Delete States
+  const [isFolderDeleteDialogOpen, setIsFolderDeleteDialogOpen] = useState(false);
+  const [folderToDelete, setFolderToDelete] = useState<string | null>(null);
+
+
   // Lightbox State
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
@@ -708,6 +713,54 @@ export default function GalleryUploader({
       toast.error("Failed to delete folders");
     } finally {
       setActionLoading(false);
+    }
+  };
+
+  const executeFolderDelete = async (folderPath: string) => {
+    try {
+      setActionLoading(true);
+      const res = await fetch("/api/gallery/folder", {
+        method: "DELETE",
+        body: JSON.stringify({ folders: [folderPath] }),
+      });
+      if (!res.ok) {
+        const data = (await res.json()) as { error?: string };
+        throw new Error(data.error ?? "Failed to delete folder");
+      }
+      toast.success("Folder deleted successfully");
+
+      // Close windows that belong to this folder or its subfolders
+      setWindows((prev) =>
+        prev.filter(
+          (w) => w.path !== folderPath && !w.path.startsWith(folderPath + "/")
+        )
+      );
+
+      await fetchImages();
+    } catch (err) {
+      toast.error((err as Error).message || "Failed to delete folder");
+    } finally {
+      setActionLoading(false);
+      setIsFolderDeleteDialogOpen(false);
+      setFolderToDelete(null);
+    }
+  };
+
+  const triggerDeleteFolder = async (folderPath: string) => {
+    const isNested = folderPath.includes("/");
+    const hasMediaFiles = getFilesCountForPath(folderPath) > 0;
+
+    if (isNested && hasMediaFiles) {
+      setFolderToDelete(folderPath);
+      setIsFolderDeleteDialogOpen(true);
+    } else {
+      if (
+        confirm(
+          `Are you sure you want to delete folder "${folderPath}"? This will delete all its contents.`
+        )
+      ) {
+        await executeFolderDelete(folderPath);
+      }
     }
   };
 
@@ -1315,18 +1368,34 @@ export default function GalleryUploader({
                     const depth = folder.split("/").length - 1;
                     const name = folder.split("/").pop()!;
                     return (
-                      <button
+                      <div
                         key={folder}
-                        onClick={() => {
-                          openFolderWindow(folder);
-                          if (isMobile) setSidebarOpen(false);
-                        }}
                         style={{ paddingLeft: `${12 + depth * 8}px` }}
-                        className="w-full flex items-center gap-2 px-2 py-1.5 rounded-lg text-left text-xs text-foreground/80 hover:text-foreground hover:bg-muted/40 transition-all truncate"
+                        className="w-full flex items-center justify-between group rounded-lg text-left text-xs text-foreground/80 hover:text-foreground hover:bg-muted/40 transition-all"
                       >
-                        <Folder className="h-3.5 w-3.5 text-emerald-400/80 shrink-0" />
-                        <span className="truncate">{name}</span>
-                      </button>
+                        <button
+                          onClick={() => {
+                            openFolderWindow(folder);
+                            if (isMobile) setSidebarOpen(false);
+                          }}
+                          className="flex-1 flex items-center gap-2 px-2 py-1.5 min-w-0 text-left"
+                        >
+                          <Folder className="h-3.5 w-3.5 text-emerald-400/80 shrink-0" />
+                          <span className="truncate">{name}</span>
+                        </button>
+                        {canDelete && (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              void triggerDeleteFolder(folder);
+                            }}
+                            className="opacity-0 group-hover:opacity-100 p-1 hover:bg-destructive/10 rounded text-muted-foreground hover:text-destructive transition-all shrink-0 mr-1.5"
+                            title="Delete folder"
+                          >
+                            <Trash2 className="h-3 w-3" />
+                          </button>
+                        )}
+                      </div>
                     );
                   })}
                 </div>
@@ -1653,16 +1722,30 @@ export default function GalleryUploader({
                                     </p>
                                   </div>
 
-                                  <button
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      openFolderWindow(subPath);
-                                    }}
-                                    className="opacity-0 group-hover:opacity-100 p-1 hover:bg-muted rounded text-muted-foreground hover:text-foreground transition-all shrink-0"
-                                    title="Open in new window"
-                                  >
-                                    <Maximize2 className="h-3 w-3" />
-                                  </button>
+                                  <div className="flex items-center gap-0.5 shrink-0">
+                                    <button
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        openFolderWindow(subPath);
+                                      }}
+                                      className="opacity-0 group-hover:opacity-100 p-1 hover:bg-muted rounded text-muted-foreground hover:text-foreground transition-all shrink-0"
+                                      title="Open in new window"
+                                    >
+                                      <Maximize2 className="h-3 w-3" />
+                                    </button>
+                                    {canDelete && (
+                                      <button
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          void triggerDeleteFolder(subPath);
+                                        }}
+                                        className="opacity-0 group-hover:opacity-100 p-1 hover:bg-destructive/10 rounded text-muted-foreground hover:text-destructive transition-all shrink-0"
+                                        title="Delete folder"
+                                      >
+                                        <Trash2 className="h-3 w-3" />
+                                      </button>
+                                    )}
+                                  </div>
                                 </div>
                               );
                             })}
@@ -2068,6 +2151,46 @@ export default function GalleryUploader({
                 <Loader2 className="h-4 w-4 animate-spin mr-2" />
               ) : null}
               Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Folder Delete Confirmation Dialog */}
+      <AlertDialog
+        open={isFolderDeleteDialogOpen}
+        onOpenChange={(open) => {
+          setIsFolderDeleteDialogOpen(open);
+          if (!open) setFolderToDelete(null);
+        }}
+      >
+        <AlertDialogContent className="bg-card border-border text-foreground backdrop-blur-md select-none">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-foreground">
+              Delete Nested Folder &quot;{folderToDelete}&quot;?
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-muted-foreground space-y-2">
+              <p>
+                Warning: The folder is nested and contains media files. Deleting it will permanently remove all subfolders and media files.
+              </p>
+              <p className="font-semibold text-destructive">
+                This action cannot be undone.
+              </p>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="border-border text-muted-foreground hover:bg-accent">
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => folderToDelete && void executeFolderDelete(folderToDelete)}
+              className="bg-destructive hover:bg-destructive/90 text-destructive-foreground"
+              disabled={actionLoading}
+            >
+              {actionLoading ? (
+                <Loader2 className="h-4 w-4 animate-spin mr-2" />
+              ) : null}
+              Delete Folder
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
