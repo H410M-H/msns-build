@@ -53,6 +53,8 @@ export function StudentReportCardsDialog({
 
   // Edit State
   const [editData, setEditData] = useState<EditDetailType[]>([]);
+  const [teacherRemarks, setTeacherRemarks] = useState<string>("");
+  const [headRemarks, setHeadRemarks] = useState<string>("");
 
   const updateReportCardMutation = api.reportCard.updateReportCard?.useMutation(
     {
@@ -70,6 +72,8 @@ export function StudentReportCardsDialog({
   const handleEditClick = (report: ReportType) => {
     setEditingReportId(report.reportCardId);
     setEditData(report.ReportCardDetail.map((detail) => ({ ...detail })));
+    setTeacherRemarks(report.teacherRemarks || "");
+    setHeadRemarks(report.headRemarks || "");
   };
 
   const handleSaveEdit = async (report: ReportType) => {
@@ -82,6 +86,8 @@ export function StudentReportCardsDialog({
         obtainedMarks: Number(d.obtainedMarks),
         totalMarks: Number(d.totalMarks),
       })),
+      teacherRemarks,
+      headRemarks,
     });
   };
 
@@ -240,6 +246,44 @@ export function StudentReportCardsDialog({
                     ))}
                   </div>
 
+                  {/* Remarks Section */}
+                  <div className="mt-4 pt-3 border-t border-border space-y-3">
+                    <div>
+                      <label className="text-xs font-semibold text-muted-foreground block mb-1">
+                        Class Teacher's Remarks
+                      </label>
+                      {editingReportId === report.reportCardId ? (
+                        <Input
+                          className="h-8 border-border bg-card text-foreground text-xs"
+                          placeholder="Enter teacher's remarks..."
+                          value={teacherRemarks}
+                          onChange={(e) => setTeacherRemarks(e.target.value)}
+                        />
+                      ) : (
+                        <p className="text-xs text-foreground bg-black/10 dark:bg-white/5 p-2 rounded border border-border/50 min-h-[32px] flex items-center italic">
+                          {report.teacherRemarks || "No remarks added yet."}
+                        </p>
+                      )}
+                    </div>
+                    <div>
+                      <label className="text-xs font-semibold text-muted-foreground block mb-1">
+                        Headmaster's/Principal's Remarks
+                      </label>
+                      {editingReportId === report.reportCardId ? (
+                        <Input
+                          className="h-8 border-border bg-card text-foreground text-xs"
+                          placeholder="Enter head's remarks..."
+                          value={headRemarks}
+                          onChange={(e) => setHeadRemarks(e.target.value)}
+                        />
+                      ) : (
+                        <p className="text-xs text-foreground bg-black/10 dark:bg-white/5 p-2 rounded border border-border/50 min-h-[32px] flex items-center italic">
+                          {report.headRemarks || "No remarks added yet."}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+
                   <div className="flex justify-end gap-2 border-t border-border pt-2">
                     {editingReportId === report.reportCardId ? (
                       <div className="flex gap-2">
@@ -308,13 +352,31 @@ export function StudentReportCardsDialog({
                 >
                   <div className="flex flex-col space-y-6">
                     {/* Header */}
-                    <div className="flex flex-col items-center text-center space-y-2 border-b-2 border-emerald-600 pb-6">
-                      <h1 className="text-3xl font-extrabold tracking-tight text-emerald-800 uppercase">
-                        Minhaj Schooling System
-                      </h1>
-                      <p className="text-sm font-semibold tracking-wider text-slate-500 uppercase">
-                        Academic Progress Report Card
-                      </p>
+                    <div className="flex items-center justify-between border-b-2 border-emerald-600 pb-6 w-full">
+                      <div className="flex items-center gap-4">
+                        <img
+                          src="/api/images/logos/Official_LOGO_grn_ic9ldd.png"
+                          alt="M.S. Naz High School Logo"
+                          className="w-16 h-16 object-contain"
+                          crossOrigin="anonymous"
+                        />
+                        <div className="text-left">
+                          <h1 className="text-2xl font-extrabold tracking-tight text-emerald-800 uppercase">
+                            M.S. Naz High School
+                          </h1>
+                          <p className="text-xs font-semibold text-slate-500">
+                            G.T Road Gakhar
+                          </p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-xs font-bold uppercase tracking-wider text-slate-400">
+                          Academic Progress
+                        </p>
+                        <p className="text-base font-bold text-slate-700">
+                          Report Card
+                        </p>
+                      </div>
                     </div>
 
                     {/* Metadata */}
@@ -401,6 +463,26 @@ export function StudentReportCardsDialog({
                           {report.status}
                         </p>
                       </div>
+                    </div>
+                  </div>
+
+                  {/* Remarks */}
+                  <div className="grid grid-cols-2 gap-8 border border-slate-200 rounded-xl p-5 bg-slate-50/50 mt-4 text-left">
+                    <div>
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-1">
+                        Class Teacher's Remarks
+                      </span>
+                      <p className="text-sm font-medium text-slate-700 italic min-h-[40px] whitespace-pre-wrap">
+                        {report.teacherRemarks || "No remarks added."}
+                      </p>
+                    </div>
+                    <div>
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-1">
+                        Headmaster's/Principal's Remarks
+                      </span>
+                      <p className="text-sm font-medium text-slate-700 italic min-h-[40px] whitespace-pre-wrap">
+                        {report.headRemarks || "No remarks added."}
+                      </p>
                     </div>
                   </div>
 

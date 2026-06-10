@@ -76,12 +76,12 @@ export const reportCardRouter = createTRPCRouter({
               totalMarks: mark.totalMarks,
               obtainedMarks: mark.obtainedMarks,
               percentage,
-              remarks: percentage >= exam.passingMarks ? "Passed" : "Failed",
+              remarks: percentage >= 45 ? "Passed" : "Failed",
             };
           });
 
           const overallPercentage = (totalObtained / totalMax) * 100;
-          const status = overallPercentage >= exam.passingMarks ? "PASSED" : "FAILED";
+          const status = overallPercentage >= 45 ? "PASSED" : "FAILED";
 
           // Upsert Report Card
           const existingReport = await ctx.db.reportCard.findFirst({
@@ -224,13 +224,13 @@ export const reportCardRouter = createTRPCRouter({
             totalMarks: mark.totalMarks,
             obtainedMarks: mark.obtainedMarks,
             percentage,
-            remarks: percentage >= exam.passingMarks ? "Passed" : "Failed",
+            remarks: percentage >= 45 ? "Passed" : "Failed",
           });
         });
 
         const overallPercentage = (totalObtained / totalMax) * 100;
         const status =
-          overallPercentage >= exam.passingMarks ? "PASSED" : "FAILED";
+          overallPercentage >= 45 ? "PASSED" : "FAILED";
 
         // Check if report card already exists
         const existingReport = await ctx.db.reportCard.findFirst({
@@ -315,6 +315,8 @@ export const reportCardRouter = createTRPCRouter({
             totalMarks: z.number().min(1),
           }),
         ),
+        teacherRemarks: z.string().optional().nullable(),
+        headRemarks: z.string().optional().nullable(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
@@ -345,13 +347,13 @@ export const reportCardRouter = createTRPCRouter({
             totalMarks: detail.totalMarks,
             percentage,
             remarks:
-              percentage >= report.Exam.passingMarks ? "Passed" : "Failed",
+              percentage >= 45 ? "Passed" : "Failed",
           };
         });
 
         const overallPercentage = (totalObtained / totalMax) * 100;
         const status =
-          overallPercentage >= report.Exam.passingMarks ? "PASSED" : "FAILED";
+          overallPercentage >= 45 ? "PASSED" : "FAILED";
 
         const updatedReportCard = await ctx.db.$transaction([
           ctx.db.reportCardDetail.deleteMany({
@@ -367,6 +369,8 @@ export const reportCardRouter = createTRPCRouter({
               totalMaxMarks: totalMax,
               percentage: overallPercentage,
               status: status,
+              teacherRemarks: input.teacherRemarks,
+              headRemarks: input.headRemarks,
             },
             include: { ReportCardDetail: true },
           }),

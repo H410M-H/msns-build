@@ -491,6 +491,8 @@ model ReportCard {
   totalMaxMarks      Float
   percentage         Float
   status             ReportCardStatus
+  teacherRemarks     String?
+  headRemarks        String?
   generatedAt        DateTime         @default(now())
   createdAt          DateTime         @default(now())
   updatedAt          DateTime         @updatedAt
