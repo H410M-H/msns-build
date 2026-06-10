@@ -72,8 +72,8 @@ export function StudentReportCardsDialog({
   const handleEditClick = (report: ReportType) => {
     setEditingReportId(report.reportCardId);
     setEditData(report.ReportCardDetail.map((detail) => ({ ...detail })));
-    setTeacherRemarks(report.teacherRemarks || "");
-    setHeadRemarks(report.headRemarks || "");
+    setTeacherRemarks(report.teacherRemarks ?? "");
+    setHeadRemarks(report.headRemarks ?? "");
   };
 
   const handleSaveEdit = async (report: ReportType) => {
@@ -250,7 +250,7 @@ export function StudentReportCardsDialog({
                   <div className="mt-4 pt-3 border-t border-border space-y-3">
                     <div>
                       <label className="text-xs font-semibold text-muted-foreground block mb-1">
-                        Class Teacher's Remarks
+                        {"Class Teacher's Remarks"}
                       </label>
                       {editingReportId === report.reportCardId ? (
                         <Input
@@ -261,13 +261,13 @@ export function StudentReportCardsDialog({
                         />
                       ) : (
                         <p className="text-xs text-foreground bg-black/10 dark:bg-white/5 p-2 rounded border border-border/50 min-h-[32px] flex items-center italic">
-                          {report.teacherRemarks || "No remarks added yet."}
+                          {report.teacherRemarks ?? "No remarks added yet."}
                         </p>
                       )}
                     </div>
                     <div>
                       <label className="text-xs font-semibold text-muted-foreground block mb-1">
-                        Headmaster's/Principal's Remarks
+                        {"Headmaster's/Principal's Remarks"}
                       </label>
                       {editingReportId === report.reportCardId ? (
                         <Input
@@ -278,7 +278,7 @@ export function StudentReportCardsDialog({
                         />
                       ) : (
                         <p className="text-xs text-foreground bg-black/10 dark:bg-white/5 p-2 rounded border border-border/50 min-h-[32px] flex items-center italic">
-                          {report.headRemarks || "No remarks added yet."}
+                          {report.headRemarks ?? "No remarks added yet."}
                         </p>
                       )}
                     </div>
@@ -470,18 +470,18 @@ export function StudentReportCardsDialog({
                   <div className="grid grid-cols-2 gap-8 border border-slate-200 rounded-xl p-5 bg-slate-50/50 mt-4 text-left">
                     <div>
                       <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-1">
-                        Class Teacher's Remarks
+                        {"Class Teacher's Remarks"}
                       </span>
                       <p className="text-sm font-medium text-slate-700 italic min-h-[40px] whitespace-pre-wrap">
-                        {report.teacherRemarks || "No remarks added."}
+                        {report.teacherRemarks ?? "No remarks added."}
                       </p>
                     </div>
                     <div>
                       <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-1">
-                        Headmaster's/Principal's Remarks
+                        {"Headmaster's/Principal's Remarks"}
                       </span>
                       <p className="text-sm font-medium text-slate-700 italic min-h-[40px] whitespace-pre-wrap">
-                        {report.headRemarks || "No remarks added."}
+                        {report.headRemarks ?? "No remarks added."}
                       </p>
                     </div>
                   </div>

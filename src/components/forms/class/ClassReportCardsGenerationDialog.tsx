@@ -14,7 +14,7 @@ import { Button } from "~/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
 import { FileText, Loader2, Sparkles, CheckCircle2, AlertTriangle, Users } from "lucide-react";
 import { toast } from "sonner";
-import { Badge } from "~/components/ui/badge";
+
 
 interface ClassReportCardsGenerationDialogProps {
   classId: string;
