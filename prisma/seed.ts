@@ -9,6 +9,7 @@ import {
   ExamStatus, 
   ReportCardStatus 
 } from '@prisma/client';
+import { hash } from 'bcryptjs';
 
 const prisma = new PrismaClient();
 
@@ -369,22 +370,266 @@ function getSubjectMaxMarks(className: string, subjectName: string): number {
   return 100;
 }
 
-async function main() {
-  console.log('--- Starting Seed Script ---');
+const nameTranslationMap: { [gradeName: string]: { [seedName: string]: string } } = {
+  "Play Group": {
+    "JANNAT NAZIA": "JANNAT NAZIA",
+    "HARRAM NOOR": "HARRAM NOOR",
+    "M.ALI IJAZ": "MUHAMMAD ALI IJAZ",
+    "M.AREESH": "M.AREESH",
+    "M.AHMED": "M.AHMED",
+    "AYESHA ALI": "AYESHA ALI",
+    "EMAN FATIMA": "EMAN FATIMA",
+    "M.AHMED UMAR": "MUHAMMAD AHMED UMAR  ",
+    "M.ARHAM USMAN": "M.ARHAM USMAN",
+    "ANAS IRFAN": "MUHAMMAD ANAS IRFAN",
+    "MIRHA TANVEER": "MIRHA TANVEER",
+    "HAROON NASIR": "HAROON NASIR",
+    "ABRESH ZAIN": "ABREESH ZAIN",
+    "HARAM FATIMA": "HARAM FATIMA",
+    "MIRHA WARIS": "MIRHA WARIS",
+    "ARSHIA NOOR": "ARSHIA NOOR",
+    "M.IRTAZA ASFAND": "M.IRTAZA ASFAND",
+    "KHADIJA RANI": "KHADIJA RANI",
+  },
+  "Nursery": {
+    "HARRAM SHEHZADI": "HARAM SHEHZADI",
+    "HUZAIMA MUBARAK": "HUZAIMA MUBARIK",
+    "M. AZAAN": "M. Azaan",
+    "AYAN ANSAR": "M. AYAN ANSAR",
+  },
+  "Prep": {
+    "M. AHMAD AKBAR": "M. AHMAD AKBAR",
+    "JANNAT SHAHZADI": "JANNAT SHAHZADI",
+    "HUZAIFA MUBARAK": "HUZAIFA MUBARAK CHATTHA",
+    "MUHAMMAD AHMAD": "MUHAMMAD AHMAD",
+    "ZAINAB ABU BAKAR": "ZAINAB ABU BAKAR",
+    "TARFA HANIA": "TARFA HANIA",
+    "SHAZIL BILAL": "SHAZIL BILAL",
+    "CHASHMAN JALAL": "CHASHMAN JALAL",
+    "UMAIR TANVEER": "M.UMAIR",
+    "M.HASHIM": "MUHAMMAD HASHIM",
+    "SEERAT FATIMA": "SEERAT FATIMA",
+    "M.HASHIM CHEEMA": "M.HASHIM CHEEMA",
+  },
+  "Class One": {
+    "DAMAN FATIMA": "DAMAN FATIMA",
+    "ANAYA NAVEED": "ANAYA NAVEED",
+    "M.ARHAM": "M.ARHAM",
+  },
+  "Class Two": {
+    "M. AHMAD": "MUHAMMAD AHMAD",
+    "M. FURQAN": "M. FURQAN",
+    "M.AYYAN ALI": "MUHAMMAD AYYAN ALI",
+    "HARRAM FATIMA": "HARAM FATIMA",
+    "RAFIA ABU BAKAR": "RAFIA ABU BAKAR",
+    "AYAT NOOR": "AYAT NOOR",
+  },
+  "Class Three": {
+    "ANAYA ZUBAIR": "ANAYA ZUBAIR",
+    "MUHAMMAD ARYAN": "MUHAMMAD ARYAN  ",
+    "ALEEHA AKBAR": "ALEEHA AKBAR",
+    "FATIMA ZAHRA": "FATIMA ZAHRA",
+    "M.HUSNAIN": "HUSNAIN",
+  },
+  "Class Four": {
+    "HAIDER ALI": "Haider Ali",
+    "M. HUZAIFA": "M. HUZAIFA",
+    "ASIFA ANSAR": "ASIFA ANSAR",
+    "AMINA RANI": "AMINA RANI",
+    "SULEMAN": "M. SULEMAN AFZAL",
+    "INTASHAL FATIMA": "INTASHAL FATIMA",
+    "M.ARSLAN": "SAQLAIN",
+    "M.SAQLAIN": "SAQLAIN",
+    "M.IBRAHIM": "MUHAMMAD IBRAHIM  ",
+  },
+  "Class Five": {
+    "M.MATEEN AHMAD": "MATEEN AHMAD",
+    "NOOR FATIMA IJAZ": "NOOR FATIMA",
+    "ALI SHER KHALID": "ALI SHAIR CHEEMA",
+    "M. HASHIM AKBAR": "M. HASHIM AKBAR",
+    "M.RIZWAN": "MUUHAMMAD RIZWAN",
+    "M.ADNAN": "MUHAMMAD ADNAN",
+    "HUSSAIN ALI": "HUSSAIN ALI",
+  },
+  "Class Six": {
+    "ADAN QAISAR": "ADAN QAISAR",
+    "AIMA ZAHRA": "AIMA ZAHRA",
+    "ALI AHMAD": "ALI AHMAD  ",
+    "M.AHMAD HASSAN": "M.AHMAD SHAHID",
+    "M.HUZAIF FAREED": "M.HUZAIFA FAREED",
+    "FAIZ-UL-RASOOL": "FAIZ-UL-RASOOL",
+  },
+  "Class Seven": {
+    "ZAINAB SHAHZADI": "ZAINAB SHAHZADI",
+    "MOMINA RANI": "MOMINA RANI",
+    "JAWAD AHMED": "JAWAD AHMAD CHEEMA",
+    "M.UMAIS ABU BAKAR": " M UMAIS ABU BAKER",
+    "M.ABDULLAH": "M.ABDULLAH",
+    "ABDUL REHEEM": "ABDUL RAHEEM  ",
+    "M.ANAS": "M.ANAS",
+    "HANAN SHAHID": "ABDUL HANAN SHAHID",
+    "MUHAMMAD AHMAD": "MUHAMMAD AHMAD",
+    "HASSAN ALI": "HASSAN ALI",
+    "ABDUL REHMAN": "ABDUL REHMAN",
+    "AYAN IJAZ": "AYAN IJAZ",
+  },
+  "9th Junior": {
+    "ARHAM DASTGIR": "ARHAM DASTGIR",
+    "M. BILAL CHEEMA": "M. BILAL CHEEMA",
+    "M. AWAIS CHEEMA": "M. AWAIS CHEEMA",
+    "IMRAN ALI": "IMRAN ALI",
+    "UMAR": "UMAR",
+    "HAWA TEHREEM": "HAWA TEHREEM",
+    "HARRAM SHEHZAD": "HARRAM SHAHZAD",
+    "MISHAAL FATIMA": "MISHAAL FATIMA",
+    "FAQIHA MAHFOOZ": "FAQIHA MAHFOOZ",
+    "REEHA MUBEEN": "REEHA MUBEEN",
+    "HADIA KHURAM": "HADIA KHURAM",
+    "ZAINAB FATIMA": "ZAINAB FATIMA",
+    "ABEEHA FATIMA": "ABEEHA FATIMA",
+    "CAROL SHAKEEL": "CAROL SHAKEEL",
+    "MAHEM NOOR": "MAHEM NOOR",
+    "HAMNA ABID": "HAMNA ABID",
+  },
+  "9th Senior": {
+    "M. SAAD KHOKHAR": "M. SAAD KHOKHAR",
+    "MUHAMMAD UMAIR": "UMAIR DASTGIR",
+    "M. SUBHAN AZHAR": "MUHAMMAD SUBHAN",
+    "M. FAIZAN ADNAN": "M. FAIZAN ADNAN",
+    "ANISHA ZUBAIR": "ANISHA ZUBBAIR",
+    "RAMEEN FATIMA": "RAMEEN FATIMA",
+    "MALAIKA FAROOQ": "MALAIKA FAROOQ",
+    "AYESHA QAISAR": "AYESHA QAISAR",
+    "MINAHAL FATIMA": "MINAHAL FATIMA",
+    "AREEBA TAHIR": "AREEBA TAHIR",
+    "ZEEMAL FATIMA": "ZEEMAL FATIMA",
+    "AROUSH FATIMA": "AROOSH FATIMA",
+    "UROOJ AKBAR": "AROOJ AKBAR",
+    "EMAN SHAKEEL": "EMAN SHAKEEL",
+    "AREEBA IJAZ": "AREEBA IJAZ",
+  },
+  "10th": {
+    "FAIZAN ALI": "FAIZAN ALI",
+    "SUBHAN ALI": "SUBHAN ALI",
+    "REHAN AKHTAR": "REHAN AKHTAR",
+    "AMEER HAMZA": "Ameer Hamza",
+    "M. AHMAD": "M. AHMAD",
+    "M.MAHIR YAR": "M.MAHIR YAR",
+    "M.ABDULLAH": "M.ABDULLAH",
+    "M.SUBHAN JAMIL": "M.SUBHAN JAMIL",
+    "M. SHUJA AHMED": "M. SHUJA AHMED",
+    "ATEEQA NOREEN": "Ateeqa Noureen",
+    "JANNAT SHAHZADI": "Jannat Shahzad",
+    "NOOR  FATIMA": "NOOR FATIMA",
+    "HIRA TARIQ": "HIRA TARIQ",
+    "SAIRA NASIR": "SAIRA NASIR",
+    "UMAMA SHAHBAZ": "UMAMA SHAHBAZ",
+    "MOMNA MANSHA": "MOMINA",
+    "ARMAAN ANSAR": "M. Arman Unsar",
+  }
+};
 
-  // 1. Create or Find Session "2025-2026"
+function mapDatasetToDbClass(grade: string, section: string) {
+  const normGrade = grade.toUpperCase().trim();
+  const normSection = section.toUpperCase().trim();
+
+  let targetGrade = normGrade;
+  let targetSection = normSection;
+
+  if (normGrade === "PLAY GROUP") targetGrade = "PLAYGROUP";
+  else if (normGrade === "CLASS ONE") targetGrade = "ONE";
+  else if (normGrade === "CLASS TWO") targetGrade = "TWO";
+  else if (normGrade === "CLASS THREE") { targetGrade = "THREE"; targetSection = "ROSE"; }
+  else if (normGrade === "CLASS FOUR") { targetGrade = "FOUR"; targetSection = "ROSE"; }
+  else if (normGrade === "CLASS FIVE") { targetGrade = "FIVE"; targetSection = "ROSE"; }
+  else if (normGrade === "CLASS SIX") targetGrade = "SIX";
+  else if (normGrade === "CLASS SEVEN") targetGrade = "SEVEN";
+  else if (normGrade === "PREP") targetSection = "ROSE";
+  else if (normGrade === "9TH JUNIOR") targetGrade = "PRE 9";
+  else if (normGrade === "9TH SENIOR") targetGrade = "NINE";
+  else if (normGrade === "10TH") targetGrade = "TEN";
+
+  return { grade: targetGrade, section: targetSection };
+}
+
+async function generateStudentReg(usersCount: number) {
+  const currentYear = "25";
+  const numStr = (usersCount + 1).toString().padStart(4, "0");
+  return {
+    registrationNumber: `MSN-S-${currentYear}-${numStr}`,
+    admissionNumber: `S${currentYear}${numStr}`,
+    username: `MSN-STUDENT-${currentYear}-${numStr}`,
+    email: `S${currentYear}${numStr}@msns.edu.pk`
+  };
+}
+
+function cleanName(name: string): string {
+  return name.toUpperCase().replace(/[^A-Z0-9]/g, "");
+}
+
+function getBaseName(name: string): string {
+  let clean = cleanName(name);
+  if (clean.startsWith("MUHAMMAD")) {
+    clean = "M" + clean.slice(8);
+  }
+  return clean;
+}
+
+let allStudents: any[] = [];
+let sessionStudentClasses: any[] = [];
+
+async function findStudentInDatabase(seedName: string, gradeName: string, classId: string, sessionId: string) {
+  const dbName = nameTranslationMap[gradeName]?.[seedName] || seedName;
+  const targetBases = [getBaseName(dbName), getBaseName(seedName)];
+
+  const getMatches = () => {
+    return allStudents.filter(s => {
+      const sBase = getBaseName(s.studentName);
+      return targetBases.includes(sBase);
+    });
+  };
+
+  const matches = getMatches();
+  if (matches.length === 0) return null;
+
+  // 1. Same name student already assigned to this class in this session
+  const inClass = matches.find(s =>
+    sessionStudentClasses.some(sc => sc.studentId === s.studentId && sc.classId === classId)
+  );
+  if (inClass) return inClass;
+
+  // 2. Same name student who is NOT assigned in this session
+  const unassigned = matches.find(s =>
+    !sessionStudentClasses.some(sc => sc.studentId === s.studentId)
+  );
+  if (unassigned) return unassigned;
+
+  // 3. Same name student anywhere
+  return matches[0];
+}
+
+async function main() {
+  console.log('--- Starting Seed Script (Targeting Session 2025-26) ---');
+
+  // 1. Fetch Session "2025-26"
   const session = await prisma.sessions.upsert({
-    where: { sessionId: 'session-2025-2026' },
+    where: { sessionId: 'cmf2holu40002jv041uwwcqpv' },
     update: { isActive: true },
     create: {
-      sessionId: 'session-2025-2026',
-      sessionName: '2025-2026',
-      sessionFrom: '2025',
-      sessionTo: '2026',
+      sessionId: 'cmf2holu40002jv041uwwcqpv',
+      sessionName: '2025-26',
+      sessionFrom: '2025-04-01T00:00:00.000Z',
+      sessionTo: '2026-04-01T00:00:00.000Z',
       isActive: true,
     },
   });
   console.log(`Using Session: ${session.sessionName} (ID: ${session.sessionId})`);
+
+  // Load existing records in memory to optimize lookups and resolve latency
+  allStudents = await prisma.students.findMany();
+  sessionStudentClasses = await prisma.studentClass.findMany({
+    where: { sessionId: session.sessionId }
+  });
 
   // 2. Load standard Exam Types
   const examTypeStandard = await prisma.examType.upsert({
@@ -409,66 +654,64 @@ async function main() {
     }
   });
 
-  // Keep track of created items to avoid duplicate queries
   const createdEmployees: { [name: string]: string } = {};
   const createdSubjects: { [name: string]: string } = {};
-
-  // For registration numbers and admission numbers
-  let employeeSeq = 1;
-  let studentSeq = 1;
+  const employeesCount = await prisma.employees.count();
+  let employeeSeq = employeesCount + 1000;
 
   for (const classData of dataset) {
-    console.log(`Processing class: ${classData.grade} (${classData.section})`);
+    const mappedClass = mapDatasetToDbClass(classData.grade, classData.section);
+    console.log(`Processing class: ${classData.grade} (${classData.section}) -> Mapped to DB: ${mappedClass.grade} (${mappedClass.section})`);
 
     // Create Incharge Employee if not exists
     let employeeId = createdEmployees[classData.incharge];
     if (!employeeId) {
-      const regNo = `EMP-2025-${employeeSeq.toString().padStart(4, '0')}`;
-      const admNo = `ADM-EMP-${employeeSeq.toString().padStart(4, '0')}`;
-      employeeSeq++;
-
-      const emp = await prisma.employees.upsert({
-        where: { registrationNumber: regNo },
-        update: {},
-        create: {
-          registrationNumber: regNo,
-          admissionNumber: admNo,
-          employeeName: classData.incharge,
-          fatherName: "Not Specified",
-          gender: Gender.MALE, // Default placeholder
-          maritalStatus: MaritalStatus.Unmarried,
-          designation: Designation.TEACHER,
-          residentialAddress: "Gakkhar Mandi, Pakistan",
-          mobileNo: "0300-0000000",
-        }
+      const existingEmp = await prisma.employees.findFirst({
+        where: { employeeName: { equals: classData.incharge, mode: 'insensitive' } }
       });
-      employeeId = emp.employeeId;
+      if (existingEmp) {
+        employeeId = existingEmp.employeeId;
+      } else {
+        const regNo = `EMP-2025-${employeeSeq.toString().padStart(4, '0')}`;
+        const admNo = `ADM-EMP-${employeeSeq.toString().padStart(4, '0')}`;
+        employeeSeq++;
+
+        const emp = await prisma.employees.create({
+          data: {
+            registrationNumber: regNo,
+            admissionNumber: admNo,
+            employeeName: classData.incharge,
+            fatherName: "Not Specified",
+            gender: Gender.MALE,
+            maritalStatus: MaritalStatus.Unmarried,
+            designation: Designation.TEACHER,
+            residentialAddress: "Gakkhar Mandi, Pakistan",
+            mobileNo: "0300-0000000",
+          }
+        });
+        employeeId = emp.employeeId;
+      }
       createdEmployees[classData.incharge] = employeeId;
     }
 
-    // Create Grade (Class)
-    // Note: classId needs to be distinct for grade + section combination
-    const classKey = `${classData.grade}-${classData.section}`.replace(/\s+/g, '-').toLowerCase();
-    const gradeRecord = await prisma.grades.upsert({
-      where: { classId: `class-${classKey}` },
-      update: {},
-      create: {
-        classId: `class-${classKey}`,
-        grade: classData.grade,
-        section: classData.section,
-        category: classData.category,
-        fee: 1500,
+    // Find the Grade (Class) record in the DB
+    const gradeRecord = await prisma.grades.findFirst({
+      where: {
+        grade: { equals: mappedClass.grade, mode: 'insensitive' },
+        section: { equals: mappedClass.section, mode: 'insensitive' }
       }
     });
 
-    // Create subjects and their ClassSubject assignments
-    const classSubjectIds: string[] = [];
+    if (!gradeRecord) {
+      throw new Error(`Grade not found in database: ${mappedClass.grade} ${mappedClass.section}`);
+    }
+
+    // Create subjects and ClassSubject assignments
     const subjectRecords: { [name: string]: string } = {};
 
     for (const subName of classData.subjects) {
       let subjectId = createdSubjects[subName];
       if (!subjectId) {
-        // Create subject
         const subKey = subName.replace(/[\/\s+]/g, '-').toLowerCase();
         const sub = await prisma.subject.upsert({
           where: { subjectId: `sub-${subKey}` },
@@ -485,7 +728,7 @@ async function main() {
 
       // Assign to Class (ClassSubject)
       const csKey = `${gradeRecord.classId}-${subjectId}`.toLowerCase();
-      const cs = await prisma.classSubject.upsert({
+      await prisma.classSubject.upsert({
         where: { csId: `cs-${csKey}` },
         update: {},
         create: {
@@ -496,10 +739,9 @@ async function main() {
           sessionId: session.sessionId,
         }
       });
-      classSubjectIds.push(cs.csId);
     }
 
-    // Create Exam for this class
+    // Create Exam
     const examKey = `exam-${gradeRecord.classId}-${classData.examType.toLowerCase()}`;
     const examTypeId = classData.examCategory === ExamCategory.STANDARD ? examTypeStandard.examTypeId : examTypePhase.examTypeId;
     const examRecord = await prisma.exam.upsert({
@@ -517,46 +759,85 @@ async function main() {
       }
     });
 
-    // Create students and marks
+    // Create/Find students and marks
     for (const student of classData.students) {
-      const studKey = student.name.replace(/\s+/g, '-').toLowerCase();
-      const regNo = `MSN-S-25-${studentSeq.toString().padStart(4, '0')}`;
-      const admNo = `S25${studentSeq.toString().padStart(4, '0')}`;
-      studentSeq++;
+      let studentRecord = await findStudentInDatabase(student.name, classData.grade, gradeRecord.classId, session.sessionId);
 
-      const studentRecord = await prisma.students.upsert({
-        where: { registrationNumber: regNo },
-        update: {},
-        create: {
-          studentId: `student-${studKey}`,
-          registrationNumber: regNo,
-          admissionNumber: admNo,
-          studentName: student.name,
-          gender: student.gender === 'FEMALE' ? Gender.FEMALE : Gender.MALE,
-          fatherName: "Not Specified",
-          studentCNIC: "0000-0000000-0",
-          fatherCNIC: "0000-0000000-0",
-        }
-      });
+      if (!studentRecord) {
+        // Fallback: Create student using userReg
+        const studentUsersCount = await prisma.user.count({
+          where: { accountType: Designation.STUDENT }
+        });
+        const regInfo = await generateStudentReg(studentUsersCount);
+
+        console.log(`Creating new student record: ${student.name} (${regInfo.registrationNumber})`);
+
+        studentRecord = await prisma.students.create({
+          data: {
+            registrationNumber: regInfo.registrationNumber,
+            admissionNumber: regInfo.admissionNumber,
+            studentName: student.name,
+            gender: student.gender === 'FEMALE' ? Gender.FEMALE : Gender.MALE,
+            fatherName: "Not Specified",
+            studentCNIC: "0000-0000000-0",
+            fatherCNIC: "0000-0000000-0",
+            isAssign: true,
+          }
+        });
+        allStudents.push(studentRecord);
+
+        const password = await hash(regInfo.admissionNumber, 10);
+        await prisma.user.create({
+          data: {
+            accountId: regInfo.registrationNumber,
+            username: regInfo.username,
+            email: regInfo.email,
+            password,
+            accountType: Designation.STUDENT,
+          }
+        });
+      }
 
       // Link Student to Class (StudentClass)
-      const scKey = `sc-${studentRecord.studentId}-${gradeRecord.classId}`;
-      await prisma.studentClass.upsert({
-        where: { scId: scKey },
-        update: {},
-        create: {
-          scId: scKey,
+      const studentClassAssignments = await prisma.studentClass.findMany({
+        where: {
           studentId: studentRecord.studentId,
-          classId: gradeRecord.classId,
-          sessionId: session.sessionId,
+          sessionId: session.sessionId
         }
       });
 
-      // Insert marks and calculate total obtained/max marks
+      let correctClassAssignment = studentClassAssignments.find(sc => sc.classId === gradeRecord.classId);
+      
+      if (!correctClassAssignment) {
+        if (studentClassAssignments.length > 0) {
+          console.log(`Reassigning student ${student.name} (${studentRecord.studentName}) to ${gradeRecord.grade} ${gradeRecord.section}`);
+          await prisma.feeStudentClass.deleteMany({
+            where: { studentClassId: { in: studentClassAssignments.map(sc => sc.scId) } }
+          });
+          await prisma.studentClass.deleteMany({
+            where: { scId: { in: studentClassAssignments.map(sc => sc.scId) } }
+          });
+          sessionStudentClasses = sessionStudentClasses.filter(
+            sc => !studentClassAssignments.some(deleted => deleted.scId === sc.scId)
+          );
+        }
+
+        const scKey = `sc-${studentRecord.studentId}-${gradeRecord.classId}`;
+        correctClassAssignment = await prisma.studentClass.create({
+          data: {
+            scId: scKey,
+            studentId: studentRecord.studentId,
+            classId: gradeRecord.classId,
+            sessionId: session.sessionId,
+          }
+        });
+        sessionStudentClasses.push(correctClassAssignment);
+      }
+
+      // Insert marks
       let totalObtained = 0;
       let totalMax = 0;
       let marksEntered = false;
-
       const marksDetailsToCreate = [];
 
       for (let i = 0; i < classData.subjects.length; i++) {
@@ -564,7 +845,7 @@ async function main() {
         const markVal = student.marks[i];
 
         if (markVal === null) {
-          continue; // Skip absent / non-applicable marks
+          continue;
         }
 
         const maxMark = getSubjectMaxMarks(classData.grade, subName);
@@ -575,8 +856,6 @@ async function main() {
         const subjectId = subjectRecords[subName];
         const csKey = `${gradeRecord.classId}-${subjectId}`.toLowerCase();
 
-        // Create Marks record
-        // Note: Unique constraint is [examId, studentId, subjectId]
         await prisma.marks.upsert({
           where: {
             examId_studentId_subjectId: {
@@ -608,10 +887,10 @@ async function main() {
         });
       }
 
-      // If marks were entered, generate ReportCard
+      // Generate ReportCard
       if (marksEntered) {
         const percentage = totalMax > 0 ? (totalObtained / totalMax) * 100 : 0;
-        const status = percentage >= 40 ? ReportCardStatus.PASSED : ReportCardStatus.FAILED;
+        const status = percentage >= 45 ? ReportCardStatus.PASSED : ReportCardStatus.FAILED;
 
         const rcKey = `rc-${examRecord.examId}-${studentRecord.studentId}`;
         const reportCard = await prisma.reportCard.upsert({
@@ -635,7 +914,6 @@ async function main() {
           }
         });
 
-        // Insert ReportCardDetail items
         for (const detail of marksDetailsToCreate) {
           const rcdKey = `rcd-${reportCard.reportCardId}-${detail.subjectId}`;
           await prisma.reportCardDetail.upsert({
@@ -670,3 +948,5 @@ main()
   .finally(async () => {
     await prisma.$disconnect();
   });
+
+
