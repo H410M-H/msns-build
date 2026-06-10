@@ -439,8 +439,8 @@ async function main() {
       // Create students and marks
       for (const student of classData.students) {
         const studKey = student.name.replace(/\s+/g, '-').toLowerCase();
-        const regNo = `STU-2025-${studentSeq.toString().padStart(4, '0')}`;
-        const admNo = `ADM-STU-${studentSeq.toString().padStart(4, '0')}`;
+        const regNo = `MSN-S-25-${studentSeq.toString().padStart(4, '0')}`;
+        const admNo = `S25${studentSeq.toString().padStart(4, '0')}`;
         studentSeq++;
         let studentId = `student-${studKey}-${regNo.toLowerCase()}`;
 

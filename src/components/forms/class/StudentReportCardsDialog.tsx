@@ -115,12 +115,24 @@ export function StudentReportCardsDialog({
         format: "a4",
       });
 
-      const imgData = canvas.toDataURL("image/png");
+      const imgData = canvas.toDataURL("image/jpeg", 0.75);
       const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+      const pdfHeight = pdf.internal.pageSize.getHeight();
+      
+      const imgHeight = (canvas.height * pdfWidth) / canvas.width;
+      
+      let finalWidth = pdfWidth;
+      let finalHeight = imgHeight;
+      
+      if (imgHeight > pdfHeight) {
+        finalHeight = pdfHeight;
+        finalWidth = (canvas.width * pdfHeight) / canvas.height;
+      }
+      
+      const x = (pdfWidth - finalWidth) / 2;
+      const y = (pdfHeight - finalHeight) / 2;
 
-      // Add image with 10mm top margin
-      pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
+      pdf.addImage(imgData, "JPEG", x, y, finalWidth, finalHeight, undefined, "FAST");
       pdf.save(
         `Report_Card_${studentName.replace(/\s+/g, "_")}_${report.Exam?.examTypeEnum || "Exam"}.pdf`
       );
