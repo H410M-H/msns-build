@@ -240,8 +240,8 @@ const dataset = [
     section: "ROSE",
     category: "SSC_I",
     incharge: "ESHA MUNIR",
-    examType: "FINAL",
-    examCategory: "STANDARD",
+    examType: "PHASE_1",
+    examCategory: "PHASE_TEST",
     subjects: ["ISLAMIAT", "TARJUMA TUL QURAN", "URDU", "ENGLISH", "PHYSICS", "CHEMISTRY", "MATH", "BIOLOGY", "COMPUTER"],
     students: [
       { name: "M. SAAD KHOKHAR", marks: [86, 45, 58, 50, 53, 46, 30, null, 41], gender: "MALE", attendance: 100, position: "2nd" },
@@ -255,8 +255,8 @@ const dataset = [
     section: "TULIP",
     category: "SSC_I",
     incharge: "SHAGUFTA TAWAKUL",
-    examType: "FINAL",
-    examCategory: "STANDARD",
+    examType: "PHASE_1",
+    examCategory: "PHASE_TEST",
     subjects: ["ENGLISH", "MATHEMATICS", "URDU", "PHYSICS", "CHEMISTRY", "ISLAMIYAT/اخلاقیات", "BIOLOGY", "TARJAMA-TUL-QURAN", "COMPUTER"],
     students: [
       { name: "ANISHA ZUBAIR", marks: [43, 50, 69, 44, 38, 95, null, 48, 44], gender: "FEMALE", attendance: 100, position: "5th" },
@@ -277,8 +277,8 @@ const dataset = [
     section: "ROSE",
     category: "SSC_II",
     incharge: "M. REHAN YOUNUS",
-    examType: "FINAL",
-    examCategory: "STANDARD",
+    examType: "PHASE_1",
+    examCategory: "PHASE_TEST",
     subjects: ["Pak. Studies", "TARJUMA TUL QURAN", "URDU", "ENGLISH", "PHYSICS/PHYSICAL EDUCATION", "CHEMISTRY/ G.SCIENCE", "MATH", "COMPUTER/ _x000D_ISL. ELECTIVE"],
     students: [
       { name: "FAIZAN ALI", marks: [68, 49, 46, 36, 37, 33, 56, 36], gender: "MALE", attendance: 100, position: "4th" },
@@ -297,8 +297,8 @@ const dataset = [
     section: "TULIP",
     category: "SSC_II",
     incharge: "FAIZA MUSHTAQ",
-    examType: "FINAL",
-    examCategory: "STANDARD",
+    examType: "PHASE_1",
+    examCategory: "PHASE_TEST",
     subjects: ["PAK-STUDIES", "TARJUMA TUL QURAN", "URDU", "ENGLISH", "PHYSICS", "CHEMISTRY", "BIOLOGY", "MATH", "COMPUTER"],
     students: [
       { name: "ATEEQA NOREEN", marks: [97, 49, 69, 59, 56, 58, 56, 62, null], gender: "FEMALE", attendance: 100, position: "2nd" },
@@ -346,6 +346,34 @@ async function main() {
 
   await client.query('BEGIN');
   try {
+    // 0. Clean up existing session 2025-2026 data to ensure idempotent run
+    console.log('Cleaning up existing session 2025-2026 data...');
+    await client.query(`
+      DELETE FROM "ReportCardDetail" WHERE "reportCardId" IN (
+        SELECT "reportCardId" FROM "ReportCard" WHERE "sessionId" = 'session-2025-2026'
+      )
+    `);
+    await client.query('DELETE FROM "ReportCard" WHERE "sessionId" = \'session-2025-2026\'');
+    await client.query(`
+      DELETE FROM "Marks" WHERE "examId" IN (
+        SELECT "examId" FROM "Exam" WHERE "sessionId" = 'session-2025-2026'
+      )
+    `);
+    await client.query('DELETE FROM "Exam" WHERE "sessionId" = \'session-2025-2026\'');
+    
+    // Get all students for this session and delete them to avoid sequence / duplicate ID issues
+    const stuRes = await client.query('SELECT "studentId" FROM "StudentClass" WHERE "sessionId" = \'session-2025-2026\'');
+    const studentIds = stuRes.rows.map(r => r.studentId);
+    
+    await client.query('DELETE FROM "StudentClass" WHERE "sessionId" = \'session-2025-2026\'');
+    await client.query('DELETE FROM "ClassSubject" WHERE "sessionId" = \'session-2025-2026\'');
+    
+    if (studentIds.length > 0) {
+      const placeholders = studentIds.map((_, idx) => `$${idx + 1}`).join(', ');
+      await client.query(`DELETE FROM "Students" WHERE "studentId" IN (${placeholders})`, studentIds);
+    }
+    console.log('Cleanup completed.');
+
     // 1. Create or Find Session "2025-2026"
     await client.query(`
       INSERT INTO "Sessions" ("sessionId", "sessionName", "sessionFrom", "sessionTo", "isActive")
