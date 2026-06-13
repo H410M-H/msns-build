@@ -14,14 +14,18 @@ export default async function DashboardLayout({
       <AppSidebar />
 
       {/* SidebarInset handles the main content area width calculation automatically */}
-      <SidebarInset className="relative flex min-h-screen flex-col overflow-x-hidden bg-slate-50 text-slate-900 transition-colors duration-300 ease-in-out dark:bg-card dark:text-foreground">
-        {/* --- GLOBAL BACKGROUND (Fixed for all admin pages) --- */}
+      <SidebarInset className="relative flex min-h-screen flex-col overflow-x-hidden bg-slate-950 text-foreground transition-colors duration-300 ease-in-out">
+        {/* === SHARED GLOBAL BACKGROUND === */}
         <div className="pointer-events-none fixed inset-0 z-0 h-full w-full">
-          {/* Light Mode Pattern */}
-          <div className="absolute inset-0 h-full w-full bg-[radial-gradient(#e2e8f0_1px,transparent_1px)] [background-size:16px_16px] [mask-image:radial-gradient(ellipse_50%_50%_at_50%_50%,#000_70%,transparent_100%)] dark:hidden"></div>
+          {/* Cyber Grid Pattern */}
+          <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(16,185,129,0.05)_1px,transparent_1px),linear-gradient(to_bottom,rgba(16,185,129,0.05)_1px,transparent_1px)] bg-[size:3rem_3rem] sm:bg-[size:4rem_4rem]" />
 
-          {/* Dark Mode Pattern */}
-          <div className="absolute inset-0 hidden h-full w-full bg-[radial-gradient(#1e293b_1px,transparent_1px)] [background-size:16px_16px] [mask-image:radial-gradient(ellipse_50%_50%_at_50%_50%,#000_70%,transparent_100%)] dark:block"></div>
+          {/* Deep Dark Overlay */}
+          <div className="absolute inset-0 bg-gradient-to-br from-emerald-950/30 via-slate-950/90 to-slate-950" />
+
+          {/* Animated Ambient Glows */}
+          <div className="absolute -top-20 left-1/4 h-[500px] w-[500px] animate-pulse rounded-full bg-emerald-500/10 opacity-50 blur-[120px]" />
+          <div className="absolute -bottom-20 right-1/4 h-[500px] w-[500px] animate-pulse rounded-full bg-teal-500/10 opacity-50 blur-[120px] delay-1000" />
         </div>
 
         {/* --- MAIN CONTENT --- */}
