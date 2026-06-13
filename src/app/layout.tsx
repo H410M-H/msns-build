@@ -64,7 +64,7 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" suppressHydrationWarning className="dark h-full">
+    <html lang="en" suppressHydrationWarning className="h-full">
       <head>
         {/* Google Tag (gtag.js) - G-K3FXJTBQKM */}
         <Script
