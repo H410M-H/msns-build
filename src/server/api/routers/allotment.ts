@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { createTRPCRouter, publicProcedure } from "../trpc";
+import { createTRPCRouter, protectedProcedure } from "../trpc";
 import { TRPCError } from "@trpc/server";
 import type { StudentClass, Grades, Sessions, Students } from "@prisma/client";
 
@@ -11,7 +11,7 @@ type StudentClassWithRelations = StudentClass & {
 };
 
 export const AllotmentRouter = createTRPCRouter({
-  addToClass: publicProcedure
+  addToClass: protectedProcedure
     .input(
       z.object({
         classId: z.string().cuid(),
@@ -69,7 +69,7 @@ export const AllotmentRouter = createTRPCRouter({
       }
     }),
 
-  getStudentsInClass: publicProcedure
+  getStudentsInClass: protectedProcedure
     .input(z.object({ classId: z.string().cuid() }))
     .query<StudentClassWithRelations[]>(async ({ ctx, input }) => {
       try {
@@ -92,7 +92,7 @@ export const AllotmentRouter = createTRPCRouter({
       }
     }),
 
-  getStudentsByClassAndSession: publicProcedure
+  getStudentsByClassAndSession: protectedProcedure
     .input(
       z.object({
         classId: z.string().cuid().optional(), // Made optional to handle undefined/null from client
@@ -164,7 +164,7 @@ export const AllotmentRouter = createTRPCRouter({
       }
     }),
 
-  deleteStudentsFromClass: publicProcedure
+  deleteStudentsFromClass: protectedProcedure
     .input(
       z.object({
         studentIds: z.array(z.string().cuid()),

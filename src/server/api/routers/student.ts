@@ -1,5 +1,5 @@
 import { TRPCError } from "@trpc/server";
-import { createTRPCRouter, publicProcedure, protectedProcedure } from "../trpc";
+import { createTRPCRouter, protectedProcedure } from "../trpc";
 import { z } from "zod";
 import { generatePdf } from "~/lib/pdf-reports";
 import { type Prisma } from "@prisma/client";
@@ -23,7 +23,7 @@ type StudentReportData = {
 };
 
 export const StudentRouter = createTRPCRouter({
-  getStudents: publicProcedure.query(async ({ ctx }) => {
+  getStudents: protectedProcedure.query(async ({ ctx }) => {
     try {
       const students = await ctx.db.students.findMany({
         orderBy: { createdAt: "desc" },
@@ -63,7 +63,7 @@ export const StudentRouter = createTRPCRouter({
     }
   }),
 
-  getUnAllocateStudents: publicProcedure
+  getUnAllocateStudents: protectedProcedure
     .input(
       z.object({
         searchTerm: z.string().optional(),
@@ -192,7 +192,7 @@ export const StudentRouter = createTRPCRouter({
     }
   }),
 
-  createStudent: publicProcedure
+  createStudent: protectedProcedure
     .input(studentSchema)
     .mutation(async ({ ctx, input }) => {
       try {
@@ -231,7 +231,7 @@ export const StudentRouter = createTRPCRouter({
       }
     }),
 
-  getStudentById: publicProcedure
+  getStudentById: protectedProcedure
     .input(z.object({ studentId: z.string().cuid() }))
     .query(async ({ ctx, input }) => {
       try {
@@ -288,7 +288,7 @@ export const StudentRouter = createTRPCRouter({
       }
     }),
 
-  updateStudent: publicProcedure
+  updateStudent: protectedProcedure
     .input(
       studentSchema
         .omit({
@@ -319,7 +319,7 @@ export const StudentRouter = createTRPCRouter({
       }
     }),
 
-  bulkCreate: publicProcedure
+  bulkCreate: protectedProcedure
     .input(z.array(studentCSVSchema))
     .mutation(async ({ ctx, input }) => {
       try {
@@ -406,7 +406,7 @@ export const StudentRouter = createTRPCRouter({
       }
     }),
 
-  deleteStudentsByIds: publicProcedure
+  deleteStudentsByIds: protectedProcedure
     .input(z.object({ studentIds: z.array(z.string().cuid()) }))
     .mutation(async ({ ctx, input }) => {
       try {
@@ -423,7 +423,7 @@ export const StudentRouter = createTRPCRouter({
       }
     }),
 
-  generateStudentReport: publicProcedure.query(async ({ ctx }) => {
+  generateStudentReport: protectedProcedure.query(async ({ ctx }) => {
     try {
       const students = await ctx.db.students.findMany({
         select: {

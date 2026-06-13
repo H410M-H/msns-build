@@ -1,5 +1,5 @@
 import { TRPCError } from "@trpc/server";
-import { createTRPCRouter, publicProcedure } from "../trpc";
+import { createTRPCRouter, protectedProcedure } from "../trpc";
 import { z } from "zod";
 import type { Prisma } from "@prisma/client";
 
@@ -40,7 +40,7 @@ const updateExamSchema = z.object({
 });
 
 export const examRouter = createTRPCRouter({
-  createExam: publicProcedure
+  createExam: protectedProcedure
     .input(createExamSchema)
     .mutation(async ({ ctx, input }) => {
       try {
@@ -134,7 +134,7 @@ export const examRouter = createTRPCRouter({
       }
     }),
 
-  updateExam: publicProcedure
+  updateExam: protectedProcedure
     .input(updateExamSchema)
     .mutation(async ({ ctx, input }) => {
       try {
@@ -161,7 +161,7 @@ export const examRouter = createTRPCRouter({
       }
     }),
 
-  getExamsForSession: publicProcedure
+  getExamsForSession: protectedProcedure
     .input(z.object({ sessionId: z.string().cuid() }))
     .query(async ({ ctx, input }) => {
       try {
@@ -184,7 +184,7 @@ export const examRouter = createTRPCRouter({
       }
     }),
 
-  getExamsForClass: publicProcedure
+  getExamsForClass: protectedProcedure
     .input(
       z.object({
         classId: z.string().cuid(),
@@ -228,7 +228,7 @@ export const examRouter = createTRPCRouter({
       }
     }),
 
-  getExamDetails: publicProcedure
+  getExamDetails: protectedProcedure
     .input(z.object({ examId: z.string().cuid() }))
     .query(async ({ ctx, input }) => {
       try {
@@ -282,7 +282,7 @@ export const examRouter = createTRPCRouter({
       }
     }),
 
-  deleteExam: publicProcedure
+  deleteExam: protectedProcedure
     .input(z.object({ examId: z.string().cuid() }))
     .mutation(async ({ ctx, input }) => {
       try {
@@ -309,7 +309,7 @@ export const examRouter = createTRPCRouter({
       }
     }),
 
-  getExamWithSubjects: publicProcedure
+  getExamWithSubjects: protectedProcedure
     .input(z.object({ examId: z.string().cuid(), classId: z.string().cuid(), sessionId: z.string().cuid() }))
     .query(async ({ ctx, input }) => {
       try {

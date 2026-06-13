@@ -1,8 +1,26 @@
 import { NextResponse } from "next/server";
 import { copyS3Object } from "~/lib/s3";
+import { auth } from "~/server/auth";
+
+const ALLOWED_ROLES = ["ADMIN", "PRINCIPAL", "HEAD", "CLERK", "TEACHER"];
 
 export async function POST(req: Request) {
   try {
+    // Check authentication
+    const session = await auth();
+    if (!session?.user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    // Check role
+    const userRole = session.user.accountType;
+    if (!ALLOWED_ROLES.includes(userRole)) {
+      return NextResponse.json(
+        { error: "You do not have permission to copy gallery media" },
+        { status: 403 },
+      );
+    }
+
     const body = (await req.json()) as { keys?: string[]; targetFolder?: string };
     const keys = body.keys;
     const targetFolder = body.targetFolder;

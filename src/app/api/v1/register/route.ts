@@ -4,15 +4,58 @@ import { hash } from "bcryptjs";
 import { type NextRequest, NextResponse } from "next/server";
 import { userReg } from "~/lib/utils";
 import { db } from "~/server/db";
+import { auth } from "~/server/auth";
+import { z } from "zod";
 
-type RequestProps = {
-  accountType: string;
-  password: string;
-};
+const ALLOWED_ROLES = ["ADMIN", "PRINCIPAL"];
+
+const registerSchema = z.object({
+  accountType: z.enum([
+    "STUDENT",
+    "FACULTY",
+    "ADMIN",
+    "WORKER",
+    "HEAD",
+    "PRINCIPAL",
+    "CLERK",
+    "TEACHER",
+    "NONE",
+    "ALL",
+  ]),
+  password: z.string().min(6).max(100),
+});
 
 export async function POST(request: NextRequest) {
   try {
-    const input = (await request.json()) as RequestProps;
+    // Authentication check
+    const session = await auth();
+    if (!session?.user) {
+      return NextResponse.json(
+        { message: "Unauthorized — you must be signed in" },
+        { status: 401 },
+      );
+    }
+
+    // Role-based authorization — only ADMIN and PRINCIPAL can register users
+    const userRole = session.user.accountType;
+    if (!ALLOWED_ROLES.includes(userRole)) {
+      return NextResponse.json(
+        { message: "Forbidden — only administrators can register new users" },
+        { status: 403 },
+      );
+    }
+
+    // Validate input with Zod
+    const body: unknown = await request.json();
+    const parseResult = registerSchema.safeParse(body);
+    if (!parseResult.success) {
+      return NextResponse.json(
+        { message: "Invalid input", errors: parseResult.error.flatten() },
+        { status: 400 },
+      );
+    }
+
+    const input = parseResult.data;
     const usersCount = await db.user.count({
       where: {
         accountType: input.accountType as AccountTypeEnum,
@@ -27,6 +70,14 @@ export async function POST(request: NextRequest) {
         email: userInfo.email,
         password,
         accountType: input.accountType as AccountTypeEnum,
+      },
+      select: {
+        id: true,
+        accountId: true,
+        username: true,
+        email: true,
+        accountType: true,
+        // Explicitly exclude password from response
       },
     });
     return NextResponse.json(

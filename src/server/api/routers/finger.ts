@@ -1,8 +1,8 @@
 import { z } from "zod";
-import { createTRPCRouter, publicProcedure } from "../trpc";
+import { createTRPCRouter, protectedProcedure } from "../trpc";
 
 export const fingerRouter = createTRPCRouter({
-  addFinger: publicProcedure
+  addFinger: protectedProcedure
     .input(
       z.object({
         employeeId: z.string(),
@@ -32,7 +32,7 @@ export const fingerRouter = createTRPCRouter({
         throw new Error("Failed to save fingerprint data");
       }
     }),
-  getFinger: publicProcedure
+  getFinger: protectedProcedure
     .input(
       z.object({
         employeeId: z.string(),

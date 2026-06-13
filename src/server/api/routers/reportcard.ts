@@ -1,5 +1,5 @@
 import { TRPCError } from "@trpc/server";
-import { createTRPCRouter, publicProcedure } from "../trpc";
+import { createTRPCRouter, protectedProcedure } from "../trpc";
 import { z } from "zod";
 
 const generateReportCardSchema = z.object({
@@ -8,7 +8,7 @@ const generateReportCardSchema = z.object({
 });
 
 export const reportCardRouter = createTRPCRouter({
-  generateClassReportCards: publicProcedure
+  generateClassReportCards: protectedProcedure
     .input(
       z.object({
         classId: z.string().cuid(),
@@ -149,7 +149,7 @@ export const reportCardRouter = createTRPCRouter({
       }
     }),
 
-  generateReportCard: publicProcedure
+  generateReportCard: protectedProcedure
     .input(generateReportCardSchema)
     .mutation(async ({ ctx, input }) => {
       try {
@@ -304,7 +304,7 @@ export const reportCardRouter = createTRPCRouter({
       }
     }),
 
-  updateReportCard: publicProcedure
+  updateReportCard: protectedProcedure
     .input(
       z.object({
         reportCardId: z.string().cuid(),
@@ -390,7 +390,7 @@ export const reportCardRouter = createTRPCRouter({
       }
     }),
 
-  getStudentReportCard: publicProcedure
+  getStudentReportCard: protectedProcedure
     .input(
       z.object({
         studentId: z.string().cuid(),
@@ -437,7 +437,7 @@ export const reportCardRouter = createTRPCRouter({
       }
     }),
 
-  getClassReportCards: publicProcedure
+  getClassReportCards: protectedProcedure
     .input(
       z.object({
         examId: z.string().cuid(),
@@ -474,7 +474,7 @@ export const reportCardRouter = createTRPCRouter({
       }
     }),
 
-  getStudentSessionReports: publicProcedure
+  getStudentSessionReports: protectedProcedure
     .input(
       z.object({
         studentId: z.string().cuid(),
@@ -532,7 +532,7 @@ export const reportCardRouter = createTRPCRouter({
       }
     }),
 
-  deleteReportCard: publicProcedure
+  deleteReportCard: protectedProcedure
     .input(z.object({ reportCardId: z.string().cuid() }))
     .mutation(async ({ ctx, input }) => {
       try {

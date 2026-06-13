@@ -1,4 +1,4 @@
-import { createTRPCRouter, publicProcedure } from "../trpc";
+import { createTRPCRouter, protectedProcedure } from "../trpc";
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
 import { ClassCategory, type Grades } from "@prisma/client";
@@ -27,7 +27,7 @@ const classSchema = z.object({
 });
 
 export const ClassRouter = createTRPCRouter({
-  getClasses: publicProcedure.query<ClassProps[]>(async ({ ctx }) => {
+  getClasses: protectedProcedure.query<ClassProps[]>(async ({ ctx }) => {
     try {
       return await ctx.db.grades.findMany({
         orderBy: { category: "asc" },
@@ -48,7 +48,7 @@ export const ClassRouter = createTRPCRouter({
     }
   }),
 
-  getClassById: publicProcedure
+  getClassById: protectedProcedure
     .input(z.object({ classId: z.string().cuid() }))
     .query(async ({ ctx, input }) => {
       try {
@@ -78,7 +78,7 @@ export const ClassRouter = createTRPCRouter({
       }
     }),
 
-  getGroupedClasses: publicProcedure.query<Record<ClassCategory, ClassProps[]>>(
+  getGroupedClasses: protectedProcedure.query<Record<ClassCategory, ClassProps[]>>(
     async ({ ctx }) => {
       try {
         const classes = await ctx.db.grades.findMany({
@@ -111,7 +111,7 @@ export const ClassRouter = createTRPCRouter({
     },
   ),
 
-  createClass: publicProcedure
+  createClass: protectedProcedure
     .input(classSchema)
     .mutation<ClassProps>(async ({ ctx, input }) => {
       try {
@@ -135,7 +135,7 @@ export const ClassRouter = createTRPCRouter({
       }
     }),
 
-  deleteClassesByIds: publicProcedure
+  deleteClassesByIds: protectedProcedure
     .input(z.object({ classIds: z.array(z.string().cuid()) }))
     .mutation<{ count: number }>(async ({ ctx, input }) => {
       try {
@@ -152,7 +152,7 @@ export const ClassRouter = createTRPCRouter({
       }
     }),
 
-  generateClassReport: publicProcedure.query<{ pdf: string; filename: string }>(
+  generateClassReport: protectedProcedure.query<{ pdf: string; filename: string }>(
     async ({ ctx }) => {
       try {
         const classesWithStats = await ctx.db.grades.findMany({
@@ -212,7 +212,7 @@ export const ClassRouter = createTRPCRouter({
   ),
 
   // ================= ClassSubject Operations =================
-  getAssignedSubjects: publicProcedure
+  getAssignedSubjects: protectedProcedure
     .input(z.object({ classId: z.string(), sessionId: z.string() }))
     .query(async ({ ctx, input }) => {
       try {
@@ -244,7 +244,7 @@ export const ClassRouter = createTRPCRouter({
       }
     }),
 
-  assignSubject: publicProcedure
+  assignSubject: protectedProcedure
     .input(z.object({
       classId: z.string(),
       sessionId: z.string(),
@@ -286,7 +286,7 @@ export const ClassRouter = createTRPCRouter({
       }
     }),
 
-  removeAssignedSubject: publicProcedure
+  removeAssignedSubject: protectedProcedure
     .input(z.object({ csId: z.string() }))
     .mutation(async ({ ctx, input }) => {
       try {

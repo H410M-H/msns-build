@@ -4,7 +4,6 @@ import { type Prisma } from "@prisma/client";
 import {
   createTRPCRouter,
   protectedProcedure,
-  publicProcedure,
 } from "~/server/api/trpc";
 
 // --- Input Schemas ---
@@ -182,7 +181,7 @@ export const feeRouter = createTRPCRouter({
       }
     }),
 
-  getAllFees: publicProcedure.query(async ({ ctx }) => {
+  getAllFees: protectedProcedure.query(async ({ ctx }) => {
     return await ctx.db.fees.findMany({ orderBy: { level: "asc" } });
   }),
   assignFeeToClass: protectedProcedure
@@ -679,7 +678,7 @@ export const feeRouter = createTRPCRouter({
       return result;
     }),
 
-  getClassFees: publicProcedure
+  getClassFees: protectedProcedure
     .input(
       z.object({
         classId: z.string(),
@@ -727,7 +726,7 @@ export const feeRouter = createTRPCRouter({
       return { studentClasses: processedClasses };
     }),
 
-  getStudentFees: publicProcedure
+  getStudentFees: protectedProcedure
     .input(z.object({ studentId: z.string(), year: z.number().optional() }))
     .query(async ({ ctx, input }) => {
       const student = await ctx.db.students.findUnique({

@@ -1,22 +1,41 @@
 {
   "name": "MSNS LMS Portal",
-  "short_name": "MSNS",
+  "short_name": "MSNS LMS",
   "description": "M.S. Naz High School Learning Management System",
   "start_url": "/",
+  "scope": "/",
   "display": "standalone",
+  "orientation": "portrait-primary",
   "background_color": "#020806",
   "theme_color": "#10b981",
+  "categories": ["education"],
   "icons": [
     {
-      "src": "/favicon.ico",
-      "sizes": "any",
-      "type": "image/x-icon"
+      "src": "/api/images/logos/Official_LOGO_grn_ic9ldd.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
     },
     {
       "src": "/api/images/logos/Official_LOGO_grn_ic9ldd.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "/api/images/logos/Official_LOGO_grn_ic9ldd.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     }
-  ]
+  ],
+  "screenshots": [
+    {
+      "src": "/api/images/logos/Official_LOGO_grn_ic9ldd.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "form_factor": "wide"
+    }
+  ],
+  "prefer_related_applications": false
 }

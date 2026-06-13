@@ -2,10 +2,26 @@ import { NextResponse } from "next/server";
 import { createS3Folder, deleteS3Folder } from "~/lib/s3";
 import { auth } from "~/server/auth";
 
+const ALLOWED_ROLES = ["ADMIN", "PRINCIPAL", "HEAD", "CLERK", "TEACHER"];
 const DELETE_ALLOWED_ROLES = ["ADMIN", "PRINCIPAL", "HEAD"];
 
 export async function POST(req: Request) {
   try {
+    // Check authentication
+    const session = await auth();
+    if (!session?.user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    // Check role
+    const userRole = session.user.accountType;
+    if (!ALLOWED_ROLES.includes(userRole)) {
+      return NextResponse.json(
+        { error: "You do not have permission to create gallery folders" },
+        { status: 403 },
+      );
+    }
+
     const body = (await req.json()) as { folderName?: string };
     const folderName = body.folderName;
 

@@ -49,10 +49,10 @@ export const authConfig = {
           const account = await db.user.findUnique({
             where: { email: email },
           });
-          if (!account) throw new Error("No account found with this email");
+          if (!account) throw new Error("Invalid credentials");
 
           const isValidPassword = await compare(password, account.password);
-          if (!isValidPassword) throw new Error("Invalid password");
+          if (!isValidPassword) throw new Error("Invalid credentials");
 
           return {
             id: account.id,

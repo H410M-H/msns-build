@@ -1,5 +1,5 @@
 import { TRPCError } from "@trpc/server";
-import { createTRPCRouter, publicProcedure } from "../trpc";
+import { createTRPCRouter, protectedProcedure } from "../trpc";
 import { z } from "zod";
 import type { Prisma } from "@prisma/client";
 
@@ -20,7 +20,7 @@ const updateMarksSchema = z.object({
 });
 
 export const marksRouter = createTRPCRouter({
-  uploadMarks: publicProcedure
+  uploadMarks: protectedProcedure
     .input(uploadMarksSchema)
     .mutation(async ({ ctx, input }) => {
       try {
@@ -91,7 +91,7 @@ export const marksRouter = createTRPCRouter({
       }
     }),
 
-  updateMarks: publicProcedure
+  updateMarks: protectedProcedure
     .input(updateMarksSchema)
     .mutation(async ({ ctx, input }) => {
       try {
@@ -126,7 +126,7 @@ export const marksRouter = createTRPCRouter({
       }
     }),
 
-  getMarksForExam: publicProcedure
+  getMarksForExam: protectedProcedure
     .input(
       z.object({
         examId: z.string().cuid(),
@@ -160,7 +160,7 @@ export const marksRouter = createTRPCRouter({
       }
     }),
 
-  getStudentMarksForExam: publicProcedure
+  getStudentMarksForExam: protectedProcedure
     .input(
       z.object({
         studentId: z.string().cuid(),
@@ -190,7 +190,7 @@ export const marksRouter = createTRPCRouter({
       }
     }),
 
-  checkMarksCoverage: publicProcedure
+  checkMarksCoverage: protectedProcedure
     .input(
       z.object({
         examId: z.string().cuid(),

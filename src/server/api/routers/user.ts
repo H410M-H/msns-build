@@ -1,6 +1,6 @@
 // File: user.ts (unchanged, as no errors reported)
 import { TRPCError } from "@trpc/server";
-import { createTRPCRouter, publicProcedure } from "../trpc";
+import { createTRPCRouter, protectedProcedure } from "../trpc";
 import { z } from "zod";
 import { generatePdf } from "~/lib/pdf-reports";
 
@@ -25,9 +25,18 @@ const userSchema = z.object({
 });
 
 export const UserRouter = createTRPCRouter({
-  getUsers: publicProcedure.query(async ({ ctx }) => {
+  getUsers: protectedProcedure.query(async ({ ctx }) => {
     try {
-      const users = await ctx.db.user.findMany();
+      const users = await ctx.db.user.findMany({
+        select: {
+          id: true,
+          accountId: true,
+          username: true,
+          email: true,
+          accountType: true,
+          createdAt: true,
+        },
+      });
       return users;
     } catch (error) {
       console.error(error);
@@ -38,10 +47,18 @@ export const UserRouter = createTRPCRouter({
     }
   }),
 
-  getUserById: publicProcedure.query(async ({ ctx }) => {
+  getUserById: protectedProcedure.query(async ({ ctx }) => {
     try {
       const users = await ctx.db.user.findUnique({
         where: { id: ctx.session?.user.id ?? "" },
+        select: {
+          id: true,
+          accountId: true,
+          username: true,
+          email: true,
+          accountType: true,
+          createdAt: true,
+        },
       });
       return users;
     } catch (error) {
@@ -53,9 +70,18 @@ export const UserRouter = createTRPCRouter({
     }
   }),
 
-  getUnAllocatedUsers: publicProcedure.query(async ({ ctx }) => {
+  getUnAllocatedUsers: protectedProcedure.query(async ({ ctx }) => {
     try {
-      const users = await ctx.db.user.findMany({});
+      const users = await ctx.db.user.findMany({
+        select: {
+          id: true,
+          accountId: true,
+          username: true,
+          email: true,
+          accountType: true,
+          createdAt: true,
+        },
+      });
       return users;
     } catch (error) {
       console.error(error);
@@ -66,7 +92,7 @@ export const UserRouter = createTRPCRouter({
     }
   }),
 
-  createUser: publicProcedure
+  createUser: protectedProcedure
     .input(userSchema)
     .mutation(async ({ ctx, input }) => {
       try {
@@ -94,7 +120,7 @@ export const UserRouter = createTRPCRouter({
       }
     }),
 
-  deleteEmployeesByIds: publicProcedure
+  deleteEmployeesByIds: protectedProcedure
     .input(
       z.object({
         employeeIds: z.string().array(),
@@ -118,7 +144,7 @@ export const UserRouter = createTRPCRouter({
       }
     }),
 
-  getEmployeesByDesignation: publicProcedure
+  getEmployeesByDesignation: protectedProcedure
     .input(
       z.object({
         designation: z.enum([
@@ -147,7 +173,7 @@ export const UserRouter = createTRPCRouter({
       }
     }),
 
-  generateEmployeeReport: publicProcedure.query(async ({ ctx }) => {
+  generateEmployeeReport: protectedProcedure.query(async ({ ctx }) => {
     const employees = await ctx.db.employees.findMany();
     const headers = [
       { key: "employeeId", label: "Employee ID" },

@@ -1,5 +1,5 @@
 import { TRPCError } from "@trpc/server";
-import { createTRPCRouter, publicProcedure } from "../trpc";
+import { createTRPCRouter, protectedProcedure } from "../trpc";
 import { z } from "zod";
 
 interface SessionProps {
@@ -15,7 +15,7 @@ const dateSchema = z
   .regex(/^\d{4}-\d{2}-\d{2}$/, "Invalid date format (YYYY-MM-DD)");
 
 export const SessionRouter = createTRPCRouter({
-  getActiveSession: publicProcedure.query<SessionProps | null>(
+  getActiveSession: protectedProcedure.query<SessionProps | null>(
     async ({ ctx }) => {
       try {
         const session = await ctx.db.sessions.findFirst({
@@ -48,7 +48,7 @@ export const SessionRouter = createTRPCRouter({
     },
   ),
 
-  getSessions: publicProcedure.query<SessionProps[]>(async ({ ctx }) => {
+  getSessions: protectedProcedure.query<SessionProps[]>(async ({ ctx }) => {
     try {
       const sessions = await ctx.db.sessions.findMany({
         orderBy: { sessionFrom: "desc" },
@@ -77,7 +77,7 @@ export const SessionRouter = createTRPCRouter({
     }
   }),
 
-  getGroupedSessions: publicProcedure.query<
+  getGroupedSessions: protectedProcedure.query<
     { year: string; sessions: SessionProps[] }[]
   >(async ({ ctx }) => {
     try {
@@ -124,7 +124,7 @@ export const SessionRouter = createTRPCRouter({
     }
   }),
 
-  createSession: publicProcedure
+  createSession: protectedProcedure
     .input(
       z.object({
         sessionName: z.string().min(1, "Session name is required"),
@@ -179,7 +179,7 @@ export const SessionRouter = createTRPCRouter({
       }
     }),
 
-  deleteSessionsByIds: publicProcedure
+  deleteSessionsByIds: protectedProcedure
     .input(z.object({ sessionIds: z.array(z.string().cuid()) }))
     .mutation<{ count: number }>(async ({ ctx, input }) => {
       try {
@@ -214,7 +214,7 @@ export const SessionRouter = createTRPCRouter({
       }
     }),
 
-  setActiveSession: publicProcedure
+  setActiveSession: protectedProcedure
     .input(z.object({ sessionId: z.string().cuid() }))
     .mutation<SessionProps>(async ({ ctx, input }) => {
       try {

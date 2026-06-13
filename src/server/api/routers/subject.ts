@@ -1,4 +1,4 @@
-import { createTRPCRouter, publicProcedure } from "../trpc";
+import { createTRPCRouter, protectedProcedure } from "../trpc";
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
 import type { Prisma } from "@prisma/client";
@@ -39,7 +39,7 @@ const classAssignmentSchema = z.object({
 });
 
 export const subjectRouter = createTRPCRouter({
-  getAllSubjects: publicProcedure.query(async ({ ctx }) => {
+  getAllSubjects: protectedProcedure.query(async ({ ctx }) => {
     try {
       return await ctx.db.subject.findMany({
         orderBy: { subjectName: "asc" },
@@ -61,7 +61,7 @@ export const subjectRouter = createTRPCRouter({
     }
   }),
 
-  getSubjectsByClass: publicProcedure
+  getSubjectsByClass: protectedProcedure
     .input(
       z.object({
         classId: z.string().cuid("Invalid class ID format"),
@@ -123,7 +123,7 @@ export const subjectRouter = createTRPCRouter({
       }
     }),
 
-  assignSubjectToClass: publicProcedure
+  assignSubjectToClass: protectedProcedure
     .input(classAssignmentSchema)
     .mutation(async ({ ctx, input }) => {
       try {
@@ -178,7 +178,7 @@ export const subjectRouter = createTRPCRouter({
       }
     }),
 
-  createSubject: publicProcedure
+  createSubject: protectedProcedure
     .input(createSubjectSchema)
     .mutation(async ({ ctx, input }) => {
       try {
@@ -222,7 +222,7 @@ export const subjectRouter = createTRPCRouter({
       }
     }),
 
-  updateSubject: publicProcedure
+  updateSubject: protectedProcedure
     .input(updateSubjectSchema)
     .mutation(async ({ ctx, input }) => {
       try {
@@ -285,7 +285,7 @@ export const subjectRouter = createTRPCRouter({
       }
     }),
 
-  deleteSubject: publicProcedure
+  deleteSubject: protectedProcedure
     .input(deleteSubjectSchema)
     .mutation(async ({ ctx, input }) => {
       try {
@@ -341,7 +341,7 @@ export const subjectRouter = createTRPCRouter({
       }
     }),
 
-  listSubjects: publicProcedure
+  listSubjects: protectedProcedure
     .input(
       z.object({
         page: z.number().min(1).default(1),
@@ -385,7 +385,7 @@ export const subjectRouter = createTRPCRouter({
       }
     }),
 
-  updateClassAssignment: publicProcedure
+  updateClassAssignment: protectedProcedure
     .input(
       classAssignmentSchema.extend({
         csId: z.string().cuid("Invalid assignment ID"),
@@ -425,7 +425,7 @@ export const subjectRouter = createTRPCRouter({
       }
     }),
 
-  removeSubjectFromClass: publicProcedure
+  removeSubjectFromClass: protectedProcedure
     .input(
       z.object({
         csId: z.string().cuid("Invalid assignment ID"),

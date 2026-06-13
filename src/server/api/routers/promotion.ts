@@ -1,5 +1,5 @@
 import { TRPCError } from "@trpc/server";
-import { createTRPCRouter, publicProcedure } from "../trpc";
+import { createTRPCRouter, protectedProcedure } from "../trpc";
 import { z } from "zod";
 
 const promoteStudentSchema = z.object({
@@ -20,7 +20,7 @@ const batchPromoteSchema = z.object({
 });
 
 export const promotionRouter = createTRPCRouter({
-  promoteStudent: publicProcedure
+  promoteStudent: protectedProcedure
     .input(promoteStudentSchema)
     .mutation(async ({ ctx, input }) => {
       try {
@@ -124,7 +124,7 @@ export const promotionRouter = createTRPCRouter({
       }
     }),
 
-  batchPromoteStudents: publicProcedure
+  batchPromoteStudents: protectedProcedure
     .input(batchPromoteSchema)
     .mutation(async ({ ctx, input }) => {
       try {
@@ -229,7 +229,7 @@ export const promotionRouter = createTRPCRouter({
       }
     }),
 
-  getPromotionHistory: publicProcedure
+  getPromotionHistory: protectedProcedure
     .input(
       z.object({
         studentId: z.string().cuid().optional(),
@@ -282,7 +282,7 @@ export const promotionRouter = createTRPCRouter({
       }
     }),
 
-  getStudentPromotionStatus: publicProcedure
+  getStudentPromotionStatus: protectedProcedure
     .input(z.object({ studentId: z.string().cuid() }))
     .query(async ({ ctx, input }) => {
       try {
@@ -330,7 +330,7 @@ export const promotionRouter = createTRPCRouter({
       }
     }),
 
-  canPromoteClass: publicProcedure
+  canPromoteClass: protectedProcedure
     .input(
       z.object({
         fromClassId: z.string().cuid(),
@@ -396,7 +396,7 @@ export const promotionRouter = createTRPCRouter({
   // ================================================================
 
   // FR-PRM-07: Manage promotion eligibility rules per exam type
-  upsertEligibilityRule: publicProcedure
+  upsertEligibilityRule: protectedProcedure
     .input(
       z.object({
         examTypeEnum: z.string().min(1),
@@ -419,12 +419,12 @@ export const promotionRouter = createTRPCRouter({
       return ctx.db.promotionEligibilityRule.create({ data: input });
     }),
 
-  getEligibilityRules: publicProcedure.query(({ ctx }) =>
+  getEligibilityRules: protectedProcedure.query(({ ctx }) =>
     ctx.db.promotionEligibilityRule.findMany({ orderBy: { examTypeEnum: "asc" } }),
   ),
 
   // FR-PRM-05/06/08: Compute and store eligibility results for all students in an exam
-  computeEligibility: publicProcedure
+  computeEligibility: protectedProcedure
     .input(
       z.object({
         examId: z.string().cuid(),
@@ -541,7 +541,7 @@ export const promotionRouter = createTRPCRouter({
     }),
 
   // FR-PRM-08: Get promotion eligibility report for a class/exam
-  getEligibilityReport: publicProcedure
+  getEligibilityReport: protectedProcedure
     .input(
       z.object({
         examId: z.string().cuid(),
@@ -577,7 +577,7 @@ export const promotionRouter = createTRPCRouter({
     }),
 
   // FR-PRM-09/10/11/12/13: Execute bulk promotion
-  executeBulkPromotion: publicProcedure
+  executeBulkPromotion: protectedProcedure
     .input(
       z.object({
         examId: z.string().cuid(),
@@ -710,7 +710,7 @@ export const promotionRouter = createTRPCRouter({
     }),
 
   // FR-PRM-15: Get promotion audit trail per class or student
-  getPromotionAuditTrail: publicProcedure
+  getPromotionAuditTrail: protectedProcedure
     .input(
       z.object({
         studentId: z.string().cuid().optional(),
@@ -742,7 +742,7 @@ export const promotionRouter = createTRPCRouter({
     }),
 
   // FR-PRM-16: Promotion reversal (within 30-day window)
-  reversePromotion: publicProcedure
+  reversePromotion: protectedProcedure
     .input(
       z.object({
         studentId: z.string().cuid(),

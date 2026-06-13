@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { createTRPCRouter, publicProcedure } from "../trpc";
+import { createTRPCRouter, protectedProcedure } from "../trpc";
 import { type Prisma } from "@prisma/client";
 import {
   AttendeeStatusSchema,
@@ -14,7 +14,7 @@ import {
 } from "~/lib/event-helpers";
 
 export const EventRouter = createTRPCRouter({
-  create: publicProcedure
+  create: protectedProcedure
     .input(CreateEventSchema)
     .mutation(async ({ ctx, input }): Promise<FrontendEventData> => {
       const eventData = safeTransformEventForDatabase(input);
@@ -56,7 +56,7 @@ export const EventRouter = createTRPCRouter({
       return safeTransformEventForFrontend(event);
     }),
 
-  update: publicProcedure
+  update: protectedProcedure
     .input(UpdateEventSchema)
     .mutation(async ({ ctx, input }): Promise<FrontendEventData> => {
       const eventData = safeTransformEventForDatabase(input);
@@ -102,7 +102,7 @@ export const EventRouter = createTRPCRouter({
       return safeTransformEventForFrontend(event);
     }),
 
-  getById: publicProcedure
+  getById: protectedProcedure
     .input(z.object({ id: z.string().min(1, "Event ID is required") }))
     .query(async ({ ctx, input }): Promise<FrontendEventData> => {
       const event = await ctx.db.event.findUnique({
@@ -120,7 +120,7 @@ export const EventRouter = createTRPCRouter({
       return safeTransformEventForFrontend(event);
     }),
 
-  getAll: publicProcedure
+  getAll: protectedProcedure
     .input(
       z.object({
         search: z.string().optional(),
@@ -178,7 +178,7 @@ export const EventRouter = createTRPCRouter({
       },
     ),
 
-  delete: publicProcedure
+  delete: protectedProcedure
     .input(z.object({ id: z.string().min(1, "Event ID is required") }))
     .mutation(async ({ ctx, input }): Promise<{ success: boolean }> => {
       await ctx.db.event.delete({
@@ -187,7 +187,7 @@ export const EventRouter = createTRPCRouter({
       return { success: true };
     }),
 
-  updateAttendeeStatus: publicProcedure
+  updateAttendeeStatus: protectedProcedure
     .input(
       z.object({
         eventId: z.string().min(1, "Event ID is required"),
@@ -213,7 +213,7 @@ export const EventRouter = createTRPCRouter({
       },
     ),
 
-  createTag: publicProcedure
+  createTag: protectedProcedure
     .input(
       z.object({
         name: z.string().min(1, "Tag name is required"),
@@ -232,13 +232,13 @@ export const EventRouter = createTRPCRouter({
       },
     ),
 
-  getTags: publicProcedure.query(
+  getTags: protectedProcedure.query(
     async ({ ctx }): Promise<{ id: string; name: string; color: string }[]> => {
       return ctx.db.tag.findMany();
     },
   ),
 
-  getRecentActivity: publicProcedure
+  getRecentActivity: protectedProcedure
     .input(z.object({ limit: z.number().int().positive().default(8) }))
     .query(async ({ ctx, input }) => {
       const perSource = Math.max(3, Math.ceil(input.limit / 2));

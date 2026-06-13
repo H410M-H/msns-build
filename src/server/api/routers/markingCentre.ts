@@ -4,7 +4,7 @@
  * Extends existing marks.ts capabilities
  */
 import { TRPCError } from "@trpc/server";
-import { createTRPCRouter, publicProcedure } from "../trpc";
+import { createTRPCRouter, protectedProcedure } from "../trpc";
 import { z } from "zod";
 
 const markingGridCellSchema = z.object({
@@ -16,7 +16,7 @@ const markingGridCellSchema = z.object({
 
 export const markingCentreRouter = createTRPCRouter({
   // FR-EXM-27: Get the full marking grid for an exam (students × subjects)
-  getMarkingGrid: publicProcedure
+  getMarkingGrid: protectedProcedure
     .input(
       z.object({
         examId: z.string().cuid(),
@@ -181,7 +181,7 @@ export const markingCentreRouter = createTRPCRouter({
     }),
 
   // FR-EXM-30: Save a single row (all marks for one student)
-  saveStudentRow: publicProcedure
+  saveStudentRow: protectedProcedure
     .input(
       z.object({
         examId: z.string().cuid(),
@@ -244,7 +244,7 @@ export const markingCentreRouter = createTRPCRouter({
     }),
 
   // FR-EXM-30: Save all (bulk grid save)
-  saveAll: publicProcedure
+  saveAll: protectedProcedure
     .input(
       z.object({
         examId: z.string().cuid(),
@@ -304,7 +304,7 @@ export const markingCentreRouter = createTRPCRouter({
     }),
 
   // FR-EXM-33: CSV import validation (parse and return diff preview)
-  previewCSVImport: publicProcedure
+  previewCSVImport: protectedProcedure
     .input(
       z.object({
         examId: z.string().cuid(),
@@ -391,7 +391,7 @@ export const markingCentreRouter = createTRPCRouter({
     }),
 
   // FR-EXM-36: Log marking session for audit
-  logMarkingSession: publicProcedure
+  logMarkingSession: protectedProcedure
     .input(z.object({ examId: z.string().cuid() }))
     .mutation(async ({ ctx, input }) => {
       const userId = ctx.session?.user?.id;

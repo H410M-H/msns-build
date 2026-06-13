@@ -1,11 +1,11 @@
-import { createTRPCRouter, publicProcedure } from "../trpc";
+import { createTRPCRouter, protectedProcedure } from "../trpc";
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
 import type { DayOfWeek } from "@prisma/client";
 
 export const timetableRouter = createTRPCRouter({
   // Get all timetable entries with relations
-  getTimetable: publicProcedure.query(async ({ ctx }) => {
+  getTimetable: protectedProcedure.query(async ({ ctx }) => {
     try {
       return await ctx.db.timetable.findMany({
         include: {
@@ -26,7 +26,7 @@ export const timetableRouter = createTRPCRouter({
   }),
 
   // Get timetable for a specific class
-  getTimetableByClass: publicProcedure
+  getTimetableByClass: protectedProcedure
     .input(z.object({ classId: z.string().cuid() }))
     .query(async ({ ctx, input }) => {
       try {
@@ -50,7 +50,7 @@ export const timetableRouter = createTRPCRouter({
     }),
 
   // Get timetable for a specific teacher
-  getTimetableByTeacher: publicProcedure
+  getTimetableByTeacher: protectedProcedure
     .input(z.object({ employeeId: z.string().cuid() }))
     .query(async ({ ctx, input }) => {
       try {
@@ -74,7 +74,7 @@ export const timetableRouter = createTRPCRouter({
     }),
 
   // Assign teacher to a time slot
-  assignTeacher: publicProcedure
+  assignTeacher: protectedProcedure
     .input(
       z.object({
         classId: z.string().cuid(),
@@ -174,7 +174,7 @@ export const timetableRouter = createTRPCRouter({
     }),
 
   // Remove teacher from slot
-  removeTeacher: publicProcedure
+  removeTeacher: protectedProcedure
     .input(z.object({ timetableId: z.string().cuid() }))
     .mutation(async ({ ctx, input }) => {
       try {
@@ -192,7 +192,7 @@ export const timetableRouter = createTRPCRouter({
     }),
 
   // Get subjects for a class
-  getSubjectsByClass: publicProcedure
+  getSubjectsByClass: protectedProcedure
     .input(z.object({ classId: z.string().cuid() }))
     .query(async ({ ctx, input }) => {
       try {
@@ -210,7 +210,7 @@ export const timetableRouter = createTRPCRouter({
     }),
 
   // Get subjects available for a class with teachers
-  getSubjectsByClassWithTeachers: publicProcedure
+  getSubjectsByClassWithTeachers: protectedProcedure
     .input(z.object({ classId: z.string().cuid() }))
     .query(async ({ ctx, input }) => {
       try {
@@ -231,7 +231,7 @@ export const timetableRouter = createTRPCRouter({
     }),
 
   // Get active session
-  getActiveSessions: publicProcedure.query(async ({ ctx }) => {
+  getActiveSessions: protectedProcedure.query(async ({ ctx }) => {
     try {
       return await ctx.db.sessions.findMany({
         where: { isActive: true },

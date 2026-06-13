@@ -1,5 +1,5 @@
 import { TRPCError } from "@trpc/server";
-import { createTRPCRouter, publicProcedure, protectedProcedure } from "../trpc";
+import { createTRPCRouter, protectedProcedure } from "../trpc";
 import { z } from "zod";
 import { generatePdf } from "~/lib/pdf-reports";
 import { userReg } from "~/lib/utils";
@@ -80,7 +80,7 @@ export const EmployeeRouter = createTRPCRouter({
       });
     }
   }),
-  getEmployees: publicProcedure.query(async ({ ctx }) => {
+  getEmployees: protectedProcedure.query(async ({ ctx }) => {
     try {
       return await ctx.db.employees.findMany({
         // FIX: Changed from 'createdAt' (which doesn't exist) to 'employeeName'
@@ -102,7 +102,7 @@ export const EmployeeRouter = createTRPCRouter({
     }
   }),
 
-  getAllEmployeesForTimeTable: publicProcedure.query(async ({ ctx }) => {
+  getAllEmployeesForTimeTable: protectedProcedure.query(async ({ ctx }) => {
     try {
       return await ctx.db.employees.findMany({
         select: {
@@ -121,7 +121,7 @@ export const EmployeeRouter = createTRPCRouter({
     }
   }),
 
-  getEmployeeById: publicProcedure
+  getEmployeeById: protectedProcedure
     .input(z.object({ employeeId: z.string().cuid() }))
     .query(async ({ ctx, input }) => {
       const employee = await ctx.db.employees.findUnique({
@@ -132,7 +132,7 @@ export const EmployeeRouter = createTRPCRouter({
     }),
 
   // Get employee profile with linked User account details
-  getEmployeeWithUser: publicProcedure
+  getEmployeeWithUser: protectedProcedure
     .input(z.object({ employeeId: z.string().cuid() }))
     .query(async ({ ctx, input }) => {
       const employee = await ctx.db.employees.findUnique({
@@ -156,7 +156,7 @@ export const EmployeeRouter = createTRPCRouter({
       return { ...employee, user: user ?? null };
     }),
 
-  getUnAllocateEmployees: publicProcedure.query(async ({ ctx }) => {
+  getUnAllocateEmployees: protectedProcedure.query(async ({ ctx }) => {
     try {
       const employees = await ctx.db.employees.findMany({
         where: {
@@ -173,7 +173,7 @@ export const EmployeeRouter = createTRPCRouter({
     }
   }),
 
-  createEmployee: publicProcedure
+  createEmployee: protectedProcedure
     .input(employeeSchema)
     .mutation(async ({ ctx, input }) => {
       try {
@@ -211,7 +211,7 @@ export const EmployeeRouter = createTRPCRouter({
       }
     }),
 
-  updateEmployee: publicProcedure
+  updateEmployee: protectedProcedure
     .input(employeeSchema.extend({ employeeId: z.string().cuid() }))
     .mutation(async ({ ctx, input }) => {
       try {
@@ -233,7 +233,7 @@ export const EmployeeRouter = createTRPCRouter({
     }),
 
   // Update both employee record and linked User account (username + email + designation)
-  updateEmployeeAndUser: publicProcedure
+  updateEmployeeAndUser: protectedProcedure
     .input(
       employeeSchema.extend({
         employeeId: z.string().cuid(),
@@ -287,7 +287,7 @@ export const EmployeeRouter = createTRPCRouter({
       }
     }),
 
-  deleteEmployeesByIds: publicProcedure
+  deleteEmployeesByIds: protectedProcedure
     .input(
       z.object({
         employeeIds: z.string().array(),
@@ -311,7 +311,7 @@ export const EmployeeRouter = createTRPCRouter({
       }
     }),
 
-  getEmployeesByDesignation: publicProcedure
+  getEmployeesByDesignation: protectedProcedure
     .input(
       z.object({
         designation: z.enum([
@@ -341,7 +341,7 @@ export const EmployeeRouter = createTRPCRouter({
       }
     }),
 
-  generateEmployeeReport: publicProcedure.query(async ({ ctx }) => {
+  generateEmployeeReport: protectedProcedure.query(async ({ ctx }) => {
     try {
       const employees = await ctx.db.employees.findMany();
       // Map data to match report requirements
