@@ -74,6 +74,7 @@ const formSchema = z.object({
   education: z.string(),
   username: z.string().min(2).max(100).optional(),
   email: z.string().email().optional().or(z.literal("")),
+  status: z.enum(["Active", "Retired", "Left"]),
 });
 
 type Props = {
@@ -147,6 +148,7 @@ export function EmployeeEditDialog({
       education: employee.education,
       username: initialUsername,
       email: initialEmail,
+      status: (employee.status ?? "Active") as "Active" | "Retired" | "Left",
     },
   });
 
@@ -334,6 +336,26 @@ export function EmployeeEditDialog({
                             ].map((r) => (
                               <SelectItem key={r} value={r} className="hover:bg-slate-800">
                                 {r}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </ThemedField>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="status"
+                    render={({ field }) => (
+                      <ThemedField label="Employment Status">
+                        <Select onValueChange={field.onChange} value={field.value}>
+                          <SelectTrigger className={selectTriggerCls}>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent className={selectContentCls}>
+                            {["Active", "Retired", "Left"].map((s) => (
+                              <SelectItem key={s} value={s} className="hover:bg-slate-800">
+                                {s}
                               </SelectItem>
                             ))}
                           </SelectContent>

@@ -28,6 +28,7 @@ const employeeSchema = z.object({
   education: z.string().min(2).max(100),
   profilePic: z.string().optional(),
   cv: z.string().optional(),
+  status: z.enum(["Active", "Retired", "Left"]).optional(),
 });
 
 type AccountTypeEnum =
@@ -295,13 +296,41 @@ export const EmployeeRouter = createTRPCRouter({
     )
     .mutation(async ({ ctx, input }) => {
       try {
-        await ctx.db.employees.deleteMany({
+        const employeesToDelete = await ctx.db.employees.findMany({
           where: {
             employeeId: {
               in: input.employeeIds,
             },
           },
+          select: {
+            registrationNumber: true,
+          },
         });
+        const regNumbers = employeesToDelete.map((e) => e.registrationNumber);
+
+        await ctx.db.$transaction([
+          ctx.db.bioMetric.deleteMany({ where: { employeeId: { in: input.employeeIds } } }),
+          ctx.db.classSubject.deleteMany({ where: { employeeId: { in: input.employeeIds } } }),
+          ctx.db.timetable.deleteMany({ where: { employeeId: { in: input.employeeIds } } }),
+          ctx.db.salary.deleteMany({ where: { employeeId: { in: input.employeeIds } } }),
+          ctx.db.salaryAssignment.deleteMany({ where: { employeeId: { in: input.employeeIds } } }),
+          ctx.db.salaryIncrement.deleteMany({ where: { employeeId: { in: input.employeeIds } } }),
+          ctx.db.employeeAttendance.deleteMany({ where: { employeeId: { in: input.employeeIds } } }),
+          ctx.db.leaveApplication.deleteMany({ where: { employeeId: { in: input.employeeIds } } }),
+          ctx.db.leaveBalance.deleteMany({ where: { employeeId: { in: input.employeeIds } } }),
+          ctx.db.bulkSalaryCreationItem.deleteMany({ where: { employeeId: { in: input.employeeIds } } }),
+          ctx.db.marks.deleteMany({ where: { uploadedBy: { in: input.employeeIds } } }),
+          ctx.db.promotionHistory.deleteMany({ where: { promotedBy: { in: input.employeeIds } } }),
+          ctx.db.subjectDiary.deleteMany({ where: { teacherId: { in: input.employeeIds } } }),
+          ctx.db.user.deleteMany({ where: { accountId: { in: regNumbers } } }),
+          ctx.db.employees.deleteMany({
+            where: {
+              employeeId: {
+                in: input.employeeIds,
+              },
+            },
+          }),
+        ]);
       } catch (error) {
         console.error(error);
         throw new TRPCError({
@@ -373,6 +402,25 @@ export const EmployeeRouter = createTRPCRouter({
       throw new TRPCError({
         code: "INTERNAL_SERVER_ERROR",
         message: "Failed to generate report",
+      });
+    }
+  }),
+
+  getInactiveEmployees: protectedProcedure.query(async ({ ctx }) => {
+    try {
+      return await ctx.db.employees.findMany({
+        where: {
+          status: {
+            in: ["Retired", "Left"],
+          },
+        },
+        orderBy: { employeeName: "asc" },
+      });
+    } catch (error) {
+      console.error(error);
+      throw new TRPCError({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "Failed to fetch inactive employees",
       });
     }
   }),

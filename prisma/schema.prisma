@@ -82,6 +82,7 @@ model Employees {
   isAssign                   Boolean                   @default(false)
   profilePic                 String?                   @default("/user.jpg")
   cv                         String?
+  status                     String                    @default("Active")
   // v1.6 relations
   BioMetric                  BioMetric?
   ClassSubject               ClassSubject[]

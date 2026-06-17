@@ -33,10 +33,10 @@ import {
   flexRender,
 } from "@tanstack/react-table";
 import { Checkbox } from "~/components/ui/checkbox";
+import { DotsHorizontalIcon } from "@radix-ui/react-icons";
 import { EmployeeDeletionDialog } from "../forms/employee/EmployeeDeletion";
 import { CSVUploadDialog } from "../forms/student/FileInput";
 import {
-  DotSquareIcon,
   RefreshCcw,
   Pencil,
   Eye,
@@ -134,17 +134,34 @@ export function EmployeeTable() {
     {
       accessorKey: "isAssign",
       header: "Status",
-      cell: ({ row }) => (
-        <span
-          className={`rounded-full border px-2 py-0.5 text-[10px] font-medium ${
-            row.original.isAssign
-              ? "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-500/20 dark:bg-emerald-500/10 dark:text-emerald-400"
-              : "border-amber-200 bg-amber-50 text-amber-700 dark:border-yellow-500/20 dark:bg-yellow-500/10 dark:text-yellow-400"
-          }`}
-        >
-          {row.original.isAssign ? "Active" : "Pending"}
-        </span>
-      ),
+      cell: ({ row }) => {
+        const status = row.original.status ?? "Active";
+        if (status === "Retired") {
+          return (
+            <span className="rounded-full border border-blue-200 bg-blue-50 px-2 py-0.5 text-[10px] font-medium text-blue-700 dark:border-blue-500/20 dark:bg-blue-500/10 dark:text-blue-400">
+              Retired
+            </span>
+          );
+        }
+        if (status === "Left") {
+          return (
+            <span className="rounded-full border border-rose-200 bg-rose-50 px-2 py-0.5 text-[10px] font-medium text-rose-700 dark:border-rose-500/20 dark:bg-rose-500/10 dark:text-rose-400">
+              Left
+            </span>
+          );
+        }
+        return (
+          <span
+            className={`rounded-full border px-2 py-0.5 text-[10px] font-medium ${
+              row.original.isAssign
+                ? "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-500/20 dark:bg-emerald-500/10 dark:text-emerald-400"
+                : "border-amber-200 bg-amber-50 text-amber-700 dark:border-yellow-500/20 dark:bg-yellow-500/10 dark:text-yellow-400"
+            }`}
+          >
+            {row.original.isAssign ? "Active" : "Pending"}
+          </span>
+        );
+      },
     },
     {
       id: "actions",
@@ -156,7 +173,8 @@ export function EmployeeTable() {
               variant="ghost"
               className="h-8 w-8 p-0 text-muted-foreground hover:bg-slate-100 hover:text-slate-900 dark:text-muted-foreground dark:hover:bg-emerald-500/20 dark:hover:text-foreground"
             >
-              <DotSquareIcon className="h-4 w-4" />
+              <DotsHorizontalIcon className="h-4 w-4" />
+              <span className="sr-only">Open menu</span>
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent
@@ -241,6 +259,10 @@ export function EmployeeTable() {
             employeeIds={table
               .getSelectedRowModel()
               .rows.map((r) => r.original.employeeId)}
+            onSuccess={() => {
+              void refetch();
+              table.resetRowSelection();
+            }}
           />
 
           <CSVUploadDialog />

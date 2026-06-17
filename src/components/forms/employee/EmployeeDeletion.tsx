@@ -16,10 +16,16 @@ import { Button } from "~/components/ui/button";
 
 export const EmployeeDeletionDialog = ({
   employeeIds,
+  onSuccess,
 }: {
   employeeIds: string[];
+  onSuccess?: () => void;
 }) => {
-  const deleteEmployees = api.employee.deleteEmployeesByIds.useMutation();
+  const deleteEmployees = api.employee.deleteEmployeesByIds.useMutation({
+    onSuccess: () => {
+      onSuccess?.();
+    },
+  });
 
   return (
     <AlertDialog>
