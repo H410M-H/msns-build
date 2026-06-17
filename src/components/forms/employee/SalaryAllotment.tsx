@@ -39,7 +39,7 @@ type EmployeeProps = {
 
 const salaryAssignmentSchema = z.object({
   employeeId: z.string().min(1, "Employee selection is required"),
-  baseSalary: z.number().min(10000, "Base salary must be at least 10,000 PKR"),
+  baseSalary: z.number().min(5000, "Base salary must be at least 5,000 PKR"),
   increment: z.number().min(0, "Increment cannot be negative"),
   sessionId: z.string().min(1, "Session selection is required"),
 });
@@ -55,7 +55,7 @@ export function SalaryAssignmentForm() {
   const form = useForm<z.infer<typeof salaryAssignmentSchema>>({
     resolver: zodResolver(salaryAssignmentSchema),
     defaultValues: {
-      baseSalary: 10000,
+      baseSalary: 5000,
       increment: 0,
     },
   });
