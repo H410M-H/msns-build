@@ -313,6 +313,218 @@ const dataset = [
   }
 ];
 
+const nameTranslationMap = {
+  "Play Group": {
+    "JANNAT NAZIA": "JANNAT NAZIA",
+    "HARRAM NOOR": "HARRAM NOOR",
+    "M.ALI IJAZ": "MUHAMMAD ALI IJAZ",
+    "M.AREESH": "M.AREESH",
+    "M.AHMED": "M.AHMED",
+    "AYESHA ALI": "AYESHA ALI",
+    "EMAN FATIMA": "EMAN FATIMA",
+    "M.AHMED UMAR": "MUHAMMAD AHMED UMAR  ",
+    "M.ARHAM USMAN": "M.ARHAM USMAN",
+    "ANAS IRFAN": "MUHAMMAD ANAS IRFAN",
+    "MIRHA TANVEER": "MIRHA TANVEER",
+    "HAROON NASIR": "HAROON NASIR",
+    "ABRESH ZAIN": "ABREESH ZAIN",
+    "HARAM FATIMA": "HARAM FATIMA",
+    "MIRHA WARIS": "MIRHA WARIS",
+    "ARSHIA NOOR": "ARSHIA NOOR",
+    "M.IRTAZA ASFAND": "M.IRTAZA ASFAND",
+    "KHADIJA RANI": "KHADIJA RANI",
+  },
+  "Nursery": {
+    "HARRAM SHEHZADI": "HARAM SHEHZADI",
+    "HUZAIMA MUBARAK": "HUZAIMA MUBARIK",
+    "M. AZAAN": "M. Azaan",
+    "AYAN ANSAR": "M. AYAN ANSAR",
+  },
+  "Prep": {
+    "M. AHMAD AKBAR": "M. AHMAD AKBAR",
+    "JANNAT SHAHZADI": "JANNAT SHAHZADI",
+    "HUZAIFA MUBARAK": "HUZAIFA MUBARAK CHATTHA",
+    "MUHAMMAD AHMAD": "MUHAMMAD AHMAD",
+    "ZAINAB ABU BAKAR": "ZAINAB ABU BAKAR",
+    "TARFA HANIA": "TARFA HANIA",
+    "SHAZIL BILAL": "SHAZIL BILAL",
+    "CHASHMAN JALAL": "CHASHMAN JALAL",
+    "UMAIR TANVEER": "M.UMAIR",
+    "M.HASHIM": "MUHAMMAD HASHIM",
+    "SEERAT FATIMA": "SEERAT FATIMA",
+    "M.HASHIM CHEEMA": "M.HASHIM CHEEMA",
+  },
+  "Class One": {
+    "DAMAN FATIMA": "DAMAN FATIMA",
+    "ANAYA NAVEED": "ANAYA NAVEED",
+    "M.ARHAM": "M.ARHAM",
+  },
+  "Class Two": {
+    "M. AHMAD": "MUHAMMAD AHMAD",
+    "M. FURQAN": "M. FURQAN",
+    "M.AYYAN ALI": "MUHAMMAD AYYAN ALI",
+    "HARRAM FATIMA": "HARAM FATIMA",
+    "RAFIA ABU BAKAR": "RAFIA ABU BAKAR",
+    "AYAT NOOR": "AYAT NOOR",
+  },
+  "Class Three": {
+    "ANAYA ZUBAIR": "ANAYA ZUBAIR",
+    "MUHAMMAD ARYAN": "MUHAMMAD ARYAN  ",
+    "ALEEHA AKBAR": "ALEEHA AKBAR",
+    "FATIMA ZAHRA": "FATIMA ZAHRA",
+    "M.HUSNAIN": "HUSNAIN",
+  },
+  "Class Four": {
+    "HAIDER ALI": "Haider Ali",
+    "M. HUZAIFA": "M. HUZAIFA",
+    "ASIFA ANSAR": "ASIFA ANSAR",
+    "AMINA RANI": "AMINA RANI",
+    "SULEMAN": "M. SULEMAN AFZAL",
+    "INTASHAL FATIMA": "INTASHAL FATIMA",
+    "M.ARSLAN": "SAQLAIN",
+    "M.SAQLAIN": "SAQLAIN",
+    "M.IBRAHIM": "MUHAMMAD IBRAHIM  ",
+  },
+  "Class Five": {
+    "M.MATEEN AHMAD": "MATEEN AHMAD",
+    "NOOR FATIMA IJAZ": "NOOR FATIMA",
+    "ALI SHER KHALID": "ALI SHAIR CHEEMA",
+    "M. HASHIM AKBAR": "M. HASHIM AKBAR",
+    "M.RIZWAN": "MUUHAMMAD RIZWAN",
+    "M.ADNAN": "MUHAMMAD ADNAN",
+    "HUSSAIN ALI": "HUSSAIN ALI",
+  },
+  "Class Six": {
+    "ADAN QAISAR": "ADAN QAISAR",
+    "AIMA ZAHRA": "AIMA ZAHRA",
+    "ALI AHMAD": "ALI AHMAD  ",
+    "M.AHMAD HASSAN": "M.AHMAD SHAHID",
+    "M.HUZAIF FAREED": "M.HUZAIFA FAREED",
+    "FAIZ-UL-RASOOL": "FAIZ-UL-RASOOL",
+  },
+  "Class Seven": {
+    "ZAINAB SHAHZADI": "ZAINAB SHAHZADI",
+    "MOMINA RANI": "MOMINA RANI",
+    "JAWAD AHMED": "JAWAD AHMAD CHEEMA",
+    "M.UMAIS ABU BAKAR": " M UMAIS ABU BAKER",
+    "M.ABDULLAH": "M.ABDULLAH",
+    "ABDUL REHEEM": "ABDUL RAHEEM  ",
+    "M.ANAS": "M.ANAS",
+    "HANAN SHAHID": "ABDUL HANAN SHAHID",
+    "MUHAMMAD AHMAD": "MUHAMMAD AHMAD",
+    "HASSAN ALI": "HASSAN ALI",
+    "ABDUL REHMAN": "ABDUL REHMAN",
+    "AYAN IJAZ": "AYAN IJAZ",
+  },
+  "9th Junior": {
+    "ARHAM DASTGIR": "ARHAM DASTGIR",
+    "M. BILAL CHEEMA": "M. BILAL CHEEMA",
+    "M. AWAIS CHEEMA": "M. AWAIS CHEEMA",
+    "IMRAN ALI": "IMRAN ALI",
+    "UMAR": "UMAR",
+    "HAWA TEHREEM": "HAWA TEHREEM",
+    "HARRAM SHEHZAD": "HARRAM SHAHZAD",
+    "MISHAAL FATIMA": "MISHAAL FATIMA",
+    "FAQIHA MAHFOOZ": "FAQIHA MAHFOOZ",
+    "REEHA MUBEEN": "REEHA MUBEEN",
+    "HADIA KHURAM": "HADIA KHURAM",
+    "ZAINAB FATIMA": "ZAINAB FATIMA",
+    "ABEEHA FATIMA": "ABEEHA FATIMA",
+    "CAROL SHAKEEL": "CAROL SHAKEEL",
+    "MAHEM NOOR": "MAHEM NOOR",
+    "HAMNA ABID": "HAMNA ABID",
+  },
+  "9th Senior": {
+    "M. SAAD KHOKHAR": "M. SAAD KHOKHAR",
+    "MUHAMMAD UMAIR": "UMAIR DASTGIR",
+    "M. SUBHAN AZHAR": "MUHAMMAD SUBHAN",
+    "M. FAIZAN ADNAN": "M. FAIZAN ADNAN",
+    "ANISHA ZUBAIR": "ANISHA ZUBBAIR",
+    "RAMEEN FATIMA": "RAMEEN FATIMA",
+    "MALAIKA FAROOQ": "MALAIKA FAROOQ",
+    "AYESHA QAISAR": "AYESHA QAISAR",
+    "MINAHAL FATIMA": "MINAHAL FATIMA",
+    "AREEBA TAHIR": "AREEBA TAHIR",
+    "ZEEMAL FATIMA": "ZEEMAL FATIMA",
+    "AROUSH FATIMA": "AROOSH FATIMA",
+    "UROOJ AKBAR": "AROOJ AKBAR",
+    "EMAN SHAKEEL": "EMAN SHAKEEL",
+    "AREEBA IJAZ": "AREEBA IJAZ",
+  },
+  "10th": {
+    "FAIZAN ALI": "FAIZAN ALI",
+    "SUBHAN ALI": "SUBHAN ALI",
+    "REHAN AKHTAR": "REHAN AKHTAR",
+    "AMEER HAMZA": "Ameer Hamza",
+    "M. AHMAD": "M. AHMAD",
+    "M.MAHIR YAR": "M.MAHIR YAR",
+    "M.ABDULLAH": "M.ABDULLAH",
+    "M.SUBHAN JAMIL": "M.SUBHAN JAMIL",
+    "M. SHUJA AHMED": "M. SHUJA AHMED",
+    "ATEEQA NOREEN": "Ateeqa Noureen",
+    "JANNAT SHAHZADI": "Jannat Shahzad",
+    "NOOR  FATIMA": "NOOR FATIMA",
+    "HIRA TARIQ": "HIRA TARIQ",
+    "SAIRA NASIR": "SAIRA NASIR",
+    "UMAMA SHAHBAZ": "UMAMA SHAHBAZ",
+    "MOMNA MANSHA": "MOMINA",
+    "ARMAAN ANSAR": "M. Arman Unsar",
+  }
+};
+
+function cleanName(name) {
+  return name.toUpperCase().replace(/[^A-Z]/g, "");
+}
+
+function getBaseName(name) {
+  let clean = cleanName(name);
+  if (clean.startsWith("MUHAMMAD")) {
+    clean = "M" + clean.slice(8);
+  }
+  return clean;
+}
+
+function findStudentInDatabase(seedName, gradeName, allDbStudents) {
+  const dbName = nameTranslationMap[gradeName]?.[seedName] || seedName;
+  const targetBases = [getBaseName(dbName), getBaseName(seedName)];
+
+  return allDbStudents.find(s => {
+    const sBase = getBaseName(s.studentName);
+    return targetBases.includes(sBase);
+  });
+}
+
+function findEmployeeByName(name, employees) {
+  const normName = name.toLowerCase().trim().replace(/\s+/g, ' ');
+  const manualMappings = {
+    "zoya naz": "zoya naz",
+    "mahnoor khalid": "mahnoor khalid",
+    "farah naz": "farah naz",
+    "mehrab tabasum": "mehrab tabassum",
+    "mehrab tabassum": "mehrab tabassum",
+    "malaika shahid": "maliaka shahid",
+    "kinza noreen": "kinza noreen",
+    "laraib sultan": "laraib sultan",
+    "hamna razzaq": "hamna razzaq",
+    "sir waqas": "waqas ahmad",
+    "waqas ahmad": "waqas ahmad",
+    "aminah noor": "aminah noor",
+    "esha munir": "esha munir",
+    "shagufta tawakul": "shagufta akbar",
+    "shagufta akbar": "shagufta akbar",
+    "m. rehan younus": "muhammad rehan younas",
+    "muhammad rehan younas": "muhammad rehan younas",
+    "faiza mushtaq": "faiza mushtaq",
+  };
+
+  const targetName = manualMappings[normName] || normName;
+
+  return employees.find(emp => {
+    const dbName = emp.employeeName.toLowerCase().trim().replace(/\s+/g, ' ');
+    return dbName === targetName || dbName === normName || dbName.replace(/[^a-z]/g, '') === targetName.replace(/[^a-z]/g, '');
+  });
+}
+
 function getSubjectMaxMarks(className, subjectName) {
   const normName = subjectName.toUpperCase().trim();
   const normClass = className.toUpperCase().trim();
@@ -344,6 +556,12 @@ async function main() {
   await client.connect();
   console.log('Connected to database.');
 
+  const empRes = await client.query('SELECT "employeeId", "employeeName", "registrationNumber" FROM "Employees"');
+  const allDbEmployees = empRes.rows;
+
+  const stuAllRes = await client.query('SELECT "studentId", "studentName", "registrationNumber" FROM "Students"');
+  const allDbStudents = stuAllRes.rows;
+
   await client.query('BEGIN');
   try {
     // 0. Clean up existing session 2025-2026 data to ensure idempotent run
@@ -361,17 +579,8 @@ async function main() {
     `);
     await client.query('DELETE FROM "Exam" WHERE "sessionId" = \'session-2025-2026\'');
     
-    // Get all students for this session and delete them to avoid sequence / duplicate ID issues
-    const stuRes = await client.query('SELECT "studentId" FROM "StudentClass" WHERE "sessionId" = \'session-2025-2026\'');
-    const studentIds = stuRes.rows.map(r => r.studentId);
-    
     await client.query('DELETE FROM "StudentClass" WHERE "sessionId" = \'session-2025-2026\'');
     await client.query('DELETE FROM "ClassSubject" WHERE "sessionId" = \'session-2025-2026\'');
-    
-    if (studentIds.length > 0) {
-      const placeholders = studentIds.map((_, idx) => `$${idx + 1}`).join(', ');
-      await client.query(`DELETE FROM "Students" WHERE "studentId" IN (${placeholders})`, studentIds);
-    }
     console.log('Cleanup completed.');
 
     // 1. Create or Find Session "2025-2026"
@@ -398,26 +607,19 @@ async function main() {
 
     const createdEmployees = {};
     const createdSubjects = {};
-    let employeeSeq = 1;
-    let studentSeq = 1;
 
     for (const classData of dataset) {
       console.log(`Processing class: ${classData.grade} (${classData.section})`);
 
-      // Create Incharge Employee if not exists
+      // Find Incharge Employee
       let employeeId = createdEmployees[classData.incharge];
       if (!employeeId) {
-        const regNo = `EMP-2025-${employeeSeq.toString().padStart(4, '0')}`;
-        const admNo = `ADM-EMP-${employeeSeq.toString().padStart(4, '0')}`;
-        employeeSeq++;
-        employeeId = `emp-${regNo.toLowerCase()}`;
-
-        await client.query(`
-          INSERT INTO "Employees" ("employeeId", "registrationNumber", "employeeName", "fatherName", "admissionNumber", "gender", "dob", "cnic", "maritalStatus", "doj", "designation", "residentialAddress", "mobileNo", "additionalContact", "education", "isAssign", "profilePic", "cv")
-          VALUES ($1, $2, $3, $4, $5, 'MALE', 'none', '0000-0000000-0', 'Unmarried', 'none', 'TEACHER', 'Gakkhar Mandi, Pakistan', '0300-0000000', 'none', 'none', false, '/user.jpg', null)
-          ON CONFLICT ("registrationNumber") DO UPDATE SET "employeeName" = EXCLUDED."employeeName"
-        `, [employeeId, regNo, classData.incharge, "Not Specified", admNo]);
-
+        const match = findEmployeeByName(classData.incharge, allDbEmployees);
+        if (match) {
+          employeeId = match.employeeId;
+        } else {
+          throw new Error(`Incharge employee not found in database: ${classData.incharge}`);
+        }
         createdEmployees[classData.incharge] = employeeId;
       }
 
@@ -464,25 +666,13 @@ async function main() {
         ON CONFLICT ("examId") DO NOTHING
       `, [examId, examTypeId, 'session-2025-2026', classId, classData.examType]);
 
-      // Create students and marks
+      // Find students
       for (const student of classData.students) {
-        const studKey = student.name.replace(/\s+/g, '-').toLowerCase();
-        const regNo = `MSN-S-25-${studentSeq.toString().padStart(4, '0')}`;
-        const admNo = `S25${studentSeq.toString().padStart(4, '0')}`;
-        studentSeq++;
-        let studentId = `student-${studKey}-${regNo.toLowerCase()}`;
-
-        // Check if student registration number already exists to avoid duplicate constraint errors
-        const existCheck = await client.query('SELECT "studentId" FROM "Students" WHERE "registrationNumber" = $1', [regNo]);
-        if (existCheck.rows.length > 0) {
-          studentId = existCheck.rows[0].studentId;
-        } else {
-          await client.query(`
-            INSERT INTO "Students" ("studentId", "registrationNumber", "studentMobile", "fatherMobile", "admissionNumber", "studentName", "gender", "dateOfBirth", "fatherName", "studentCNIC", "fatherCNIC", "fatherProfession", "caste", "currentAddress", "permanentAddress", "medicalProblem", "createdAt", "updatedAt", "isAssign", "profilePic")
-            VALUES ($1, $2, 'none', 'none', $3, $4, $5, 'none', 'Not Specified', '0000-0000000-0', '0000-0000000-0', 'none', 'none', 'none', 'none', null, NOW(), NOW(), false, '/user.jpg')
-            ON CONFLICT ("registrationNumber") DO NOTHING
-          `, [studentId, regNo, admNo, student.name, student.gender]);
+        const studentRecord = findStudentInDatabase(student.name, classData.grade, allDbStudents);
+        if (!studentRecord) {
+          throw new Error(`Student not found in database: ${student.name} (grade: ${classData.grade})`);
         }
+        const studentId = studentRecord.studentId;
 
         // Link student to class
         const scId = `sc-${studentId}-${classId}`;

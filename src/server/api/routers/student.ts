@@ -410,10 +410,72 @@ export const StudentRouter = createTRPCRouter({
     .input(z.object({ studentIds: z.array(z.string().cuid()) }))
     .mutation(async ({ ctx, input }) => {
       try {
-        const result = await ctx.db.students.deleteMany({
+        const studentsToDelete = await ctx.db.students.findMany({
           where: { studentId: { in: input.studentIds } },
+          select: { registrationNumber: true },
         });
-        return { count: result.count };
+        const regNumbers = studentsToDelete.map((s) => s.registrationNumber);
+
+        const studentClasses = await ctx.db.studentClass.findMany({
+          where: { studentId: { in: input.studentIds } },
+          select: { scId: true },
+        });
+        const scIds = studentClasses.map((sc) => sc.scId);
+
+        const reportCards = await ctx.db.reportCard.findMany({
+          where: { studentId: { in: input.studentIds } },
+          select: { reportCardId: true },
+        });
+        const rcIds = reportCards.map((rc) => rc.reportCardId);
+
+        const [
+          feeStudentClassDel,
+          studentClassDel,
+          reportCardDetailDel,
+          reportCardDel,
+          marksDel,
+          promotionHistoryDel,
+          studentAttendanceDel,
+          promotionEligibilityDel,
+          bulkPromotionItemsDel,
+          userDel,
+          studentDel
+        ] = await ctx.db.$transaction([
+          ctx.db.feeStudentClass.deleteMany({ where: { studentClassId: { in: scIds } } }),
+          ctx.db.studentClass.deleteMany({ where: { studentId: { in: input.studentIds } } }),
+          ctx.db.reportCardDetail.deleteMany({ where: { reportCardId: { in: rcIds } } }),
+          ctx.db.reportCard.deleteMany({ where: { studentId: { in: input.studentIds } } }),
+          ctx.db.marks.deleteMany({ where: { studentId: { in: input.studentIds } } }),
+          ctx.db.promotionHistory.deleteMany({ where: { studentId: { in: input.studentIds } } }),
+          ctx.db.studentAttendance.deleteMany({ where: { studentId: { in: input.studentIds } } }),
+          ctx.db.promotionEligibilityResult.deleteMany({ where: { studentId: { in: input.studentIds } } }),
+          ctx.db.bulkPromotionBatchItem.deleteMany({ where: { studentId: { in: input.studentIds } } }),
+          ctx.db.user.deleteMany({ where: { accountId: { in: regNumbers } } }),
+          ctx.db.students.deleteMany({
+            where: { studentId: { in: input.studentIds } },
+          }),
+        ]);
+
+        return {
+          success: true,
+          message: "Students and all their related records successfully deleted.",
+          summary: {
+            studentsDeleted: studentDel.count,
+            usersDeleted: userDel.count,
+            studentClassesDeleted: studentClassDel.count,
+            feeStudentClassesDeleted: feeStudentClassDel.count,
+            reportCardDetailsDeleted: reportCardDetailDel.count,
+            reportCardsDeleted: reportCardDel.count,
+            marksDeleted: marksDel.count,
+            promotionHistoryDeleted: promotionHistoryDel.count,
+            attendanceRecordsDeleted: studentAttendanceDel.count,
+            promotionEligibilityResultsDeleted: promotionEligibilityDel.count,
+            bulkPromotionItemsDeleted: bulkPromotionItemsDel.count,
+          },
+          reasons: [
+            "Cleaned up all database relations to prevent foreign key constraint violations."
+          ]
+        };
       } catch (error) {
         console.error("Error deleting students:", error);
         throw new TRPCError({

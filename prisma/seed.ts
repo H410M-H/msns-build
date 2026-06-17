@@ -608,6 +608,38 @@ async function findStudentInDatabase(seedName: string, gradeName: string, classI
   return matches[0];
 }
 
+function findEmployeeByName(name: string, employees: any[]) {
+  const normName = name.toLowerCase().trim().replace(/\s+/g, ' ');
+  
+  const manualMappings: { [key: string]: string } = {
+    "zoya naz": "zoya naz",
+    "mahnoor khalid": "mahnoor khalid",
+    "farah naz": "farah naz",
+    "mehrab tabasum": "mehrab tabassum",
+    "mehrab tabassum": "mehrab tabassum",
+    "malaika shahid": "maliaka shahid",
+    "kinza noreen": "kinza noreen",
+    "laraib sultan": "laraib sultan",
+    "hamna razzaq": "hamna razzaq",
+    "sir waqas": "waqas ahmad",
+    "waqas ahmad": "waqas ahmad",
+    "aminah noor": "aminah noor",
+    "esha munir": "esha munir",
+    "shagufta tawakul": "shagufta akbar",
+    "shagufta akbar": "shagufta akbar",
+    "m. rehan younus": "muhammad rehan younas",
+    "muhammad rehan younas": "muhammad rehan younas",
+    "faiza mushtaq": "faiza mushtaq",
+  };
+
+  const targetName = manualMappings[normName] || normName;
+
+  return employees.find(emp => {
+    const dbName = emp.employeeName.toLowerCase().trim().replace(/\s+/g, ' ');
+    return dbName === targetName || dbName === normName || dbName.replace(/[^a-z]/g, '') === targetName.replace(/[^a-z]/g, '');
+  });
+}
+
 async function main() {
   console.log('--- Starting Seed Script (Targeting Session 2025-26) ---');
 
@@ -656,40 +688,20 @@ async function main() {
 
   const createdEmployees: { [name: string]: string } = {};
   const createdSubjects: { [name: string]: string } = {};
-  const employeesCount = await prisma.employees.count();
-  let employeeSeq = employeesCount + 1000;
+  const allDbEmployees = await prisma.employees.findMany();
 
   for (const classData of dataset) {
     const mappedClass = mapDatasetToDbClass(classData.grade, classData.section);
     console.log(`Processing class: ${classData.grade} (${classData.section}) -> Mapped to DB: ${mappedClass.grade} (${mappedClass.section})`);
 
-    // Create Incharge Employee if not exists
+    // Find Incharge Employee
     let employeeId = createdEmployees[classData.incharge];
     if (!employeeId) {
-      const existingEmp = await prisma.employees.findFirst({
-        where: { employeeName: { equals: classData.incharge, mode: 'insensitive' } }
-      });
-      if (existingEmp) {
-        employeeId = existingEmp.employeeId;
+      const match = findEmployeeByName(classData.incharge, allDbEmployees);
+      if (match) {
+        employeeId = match.employeeId;
       } else {
-        const regNo = `EMP-2025-${employeeSeq.toString().padStart(4, '0')}`;
-        const admNo = `ADM-EMP-${employeeSeq.toString().padStart(4, '0')}`;
-        employeeSeq++;
-
-        const emp = await prisma.employees.create({
-          data: {
-            registrationNumber: regNo,
-            admissionNumber: admNo,
-            employeeName: classData.incharge,
-            fatherName: "Not Specified",
-            gender: Gender.MALE,
-            maritalStatus: MaritalStatus.Unmarried,
-            designation: Designation.TEACHER,
-            residentialAddress: "Gakkhar Mandi, Pakistan",
-            mobileNo: "0300-0000000",
-          }
-        });
-        employeeId = emp.employeeId;
+        throw new Error(`Incharge employee not found in database: ${classData.incharge}`);
       }
       createdEmployees[classData.incharge] = employeeId;
     }
@@ -764,38 +776,7 @@ async function main() {
       let studentRecord = await findStudentInDatabase(student.name, classData.grade, gradeRecord.classId, session.sessionId);
 
       if (!studentRecord) {
-        // Fallback: Create student using userReg
-        const studentUsersCount = await prisma.user.count({
-          where: { accountType: Designation.STUDENT }
-        });
-        const regInfo = await generateStudentReg(studentUsersCount);
-
-        console.log(`Creating new student record: ${student.name} (${regInfo.registrationNumber})`);
-
-        studentRecord = await prisma.students.create({
-          data: {
-            registrationNumber: regInfo.registrationNumber,
-            admissionNumber: regInfo.admissionNumber,
-            studentName: student.name,
-            gender: student.gender === 'FEMALE' ? Gender.FEMALE : Gender.MALE,
-            fatherName: "Not Specified",
-            studentCNIC: "0000-0000000-0",
-            fatherCNIC: "0000-0000000-0",
-            isAssign: true,
-          }
-        });
-        allStudents.push(studentRecord);
-
-        const password = await hash(regInfo.admissionNumber, 10);
-        await prisma.user.create({
-          data: {
-            accountId: regInfo.registrationNumber,
-            username: regInfo.username,
-            email: regInfo.email,
-            password,
-            accountType: Designation.STUDENT,
-          }
-        });
+        throw new Error(`Student not found in database: ${student.name} (grade: ${classData.grade})`);
       }
 
       // Link Student to Class (StudentClass)
