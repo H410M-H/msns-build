@@ -13,14 +13,12 @@ const inter = Inter({
   subsets: ["latin"],
   variable: "--font-inter",
   display: "swap",
-  preload: false,
 });
 
 const geistMono = Geist_Mono({
   subsets: ["latin"],
   variable: "--font-geist-mono",
   display: "swap",
-  preload: false,
 });
 
 export const metadata: Metadata = {
@@ -69,9 +67,9 @@ export default function RootLayout({
         {/* Google Tag (gtag.js) - G-K3FXJTBQKM */}
         <Script
           src="https://www.googletagmanager.com/gtag/js?id=G-K3FXJTBQKM"
-          strategy="afterInteractive"
+          strategy="lazyOnload"
         />
-        <Script id="google-analytics" strategy="afterInteractive">
+        <Script id="google-analytics" strategy="lazyOnload">
           {`
             window.dataLayer = window.dataLayer || [];
             function gtag(){dataLayer.push(arguments);}

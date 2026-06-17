@@ -151,7 +151,7 @@ export default function StudentCredDetails() {
       </div>
 
       {/* === CONTENT === */}
-      <div className="relative z-10 mx-auto w-full max-w-[1920px] space-y-6 p-4 pb-20 sm:p-6 lg:p-8">
+      <div className="relative z-10 w-full space-y-6 p-4 pb-20">
         {/* === Header Controls === */}
         <div className="sticky top-4 z-40 flex flex-col items-stretch justify-between gap-4 rounded-2xl border border-emerald-500/20 bg-card p-4 shadow-2xl backdrop-blur-xl transition-all duration-300 lg:flex-row lg:items-center">
           {/* Search Bar */}

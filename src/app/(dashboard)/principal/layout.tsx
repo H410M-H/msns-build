@@ -27,7 +27,7 @@ export default async function PrincipalDashboardLayout({
             <div className="absolute -bottom-20 right-1/4 h-[500px] w-[500px] animate-pulse rounded-full bg-teal-300/10 opacity-30 blur-[120px] delay-1000 dark:bg-teal-500/10 dark:opacity-50" />
           </div>
 
-          <div className="relative z-10 grid gap-4 p-4 md:min-h-min sm:gap-6 sm:p-6 lg:p-8">{children}</div>
+          <div className="relative z-10 grid gap-4 p-4 md:min-h-min">{children}</div>
         </SidebarInset>
       </SidebarProvider>
     </>

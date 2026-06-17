@@ -13,8 +13,8 @@ export default function StudentsTablePage() {
       <div className="relative z-10 flex min-h-screen w-full flex-col">
         <PageHeader breadcrumbs={breadcrumbs} />
 
-        <div className="container mx-auto flex-1 px-4 py-6 sm:px-6 lg:px-8">
-          <div className="mx-auto flex max-w-[1600px] flex-col gap-8 duration-700 animate-in fade-in slide-in-from-bottom-4">
+        <div className="flex-1 p-4">
+          <div className="w-full flex flex-col gap-8 duration-700 animate-in fade-in slide-in-from-bottom-4">
             {/* Header Section */}
             <div className="space-y-2">
               <h1 className="font-serif text-3xl font-bold tracking-tight text-foreground sm:text-4xl">

@@ -37,8 +37,8 @@ export default async function FeeDetailsPage({ searchParams }: PageProps) {
       <div className="relative z-10 flex min-h-screen flex-col">
         <PageHeader breadcrumbs={breadcrumbs} />
 
-        <div className="container mx-auto flex-1 px-4 py-8 pt-20 sm:px-6 lg:px-8">
-          <div className="mx-auto max-w-[1920px] space-y-6 duration-700 animate-in fade-in slide-in-from-bottom-4">
+        <div className="flex-1 p-4">
+          <div className="w-full space-y-6 duration-700 animate-in fade-in slide-in-from-bottom-4">
             {/* Header Section */}
             <div className="flex flex-col gap-2">
               <h1 className="flex items-center gap-3 font-serif text-3xl font-bold tracking-tight text-foreground">

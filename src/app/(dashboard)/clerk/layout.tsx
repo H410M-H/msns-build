@@ -29,7 +29,7 @@ export default function ClerkDashboardLayout({
               <div className="absolute -top-20 left-1/4 h-[500px] w-[500px] animate-pulse rounded-full bg-emerald-300/10 opacity-30 blur-[120px] dark:bg-emerald-500/10 dark:opacity-50" />
               <div className="absolute -bottom-20 right-1/4 h-[500px] w-[500px] animate-pulse rounded-full bg-teal-300/10 opacity-30 blur-[120px] delay-1000 dark:bg-teal-500/10 dark:opacity-50" />
             </div>
-            <main className="relative z-10 w-full flex-1 overflow-y-auto p-4 md:p-6 lg:p-8">
+            <main className="relative z-10 w-full flex-1 overflow-y-auto p-4">
               {children}
             </main>
           </div>

@@ -47,7 +47,7 @@ export function SharedAdminDashboard({ role, ManagementSection }: Props) {
   const breadcrumbs = [{ href: base, label: "Dashboard", current: true }];
 
   return (
-    <div className="w-full mx-auto max-w-[1600px] space-y-4">
+    <div className="w-full space-y-4">
       <PageHeader breadcrumbs={breadcrumbs} />
 
       {/* Welcome – compact on lg */}

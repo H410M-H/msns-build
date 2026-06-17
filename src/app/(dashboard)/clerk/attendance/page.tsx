@@ -18,7 +18,7 @@ export default function AttendancePage() {
       <div className="relative z-10 flex min-h-screen flex-col">
         {/* === Header === */}
         <header className="sticky top-0 z-50 border-b border-emerald-500/20 bg-card p-4 backdrop-blur-xl transition-all duration-300 sm:p-6">
-          <div className="mx-auto flex max-w-[1920px] flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex w-full flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             {/* Title Section */}
             <div className="flex items-center gap-4">
               <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-emerald-500/30 bg-gradient-to-br from-emerald-500/20 to-teal-500/20 shadow-lg shadow-emerald-900/20">
@@ -47,8 +47,8 @@ export default function AttendancePage() {
         </header>
 
         {/* === Main Content === */}
-        <main className="flex-1 p-4 sm:p-6 lg:p-8">
-          <div className="mx-auto max-w-[1920px]">
+        <main className="flex-1 p-4">
+          <div className="w-full">
             <Suspense
               fallback={
                 <div className="flex h-[50vh] flex-col items-center justify-center gap-3">
