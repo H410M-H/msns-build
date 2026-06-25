@@ -24,8 +24,9 @@ import { Separator } from "~/components/ui/separator";
 
 export default function RevenuePage() {
   const breadcrumbs = [
-    { href: "/admin", label: "Dashboard" },
-    { href: "/admin/revenue", label: "Financial Overview", current: true },
+    { href: "/admin", label: "Admin" },
+    { href: "/admin/erp", label: "ERP" },
+    { href: "/admin/erp/revenue", label: "Revenue Overview", current: true },
   ];
 
   // Animation Variants

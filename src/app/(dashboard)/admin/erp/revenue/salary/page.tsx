@@ -1,4 +1,4 @@
-// File: src/app/(dashboard)/admin/revenue/salary/page.tsx
+// File: src/app/(dashboard)/admin/erp/revenue/salary/page.tsx
 "use client";
 
 import { useState } from "react";
@@ -310,7 +310,7 @@ export default function SalaryPage() {
               </div>
               <div className="flex gap-2">
                 <Button asChild variant="outline" className="border-emerald-200 text-emerald-700 hover:bg-emerald-50 dark:border-emerald-500/30 dark:text-emerald-400 dark:hover:bg-emerald-500/10">
-                  <Link href="/admin/revenue/bulk-salary">
+                  <Link href="/admin/erp/revenue/bulk-salary">
                     <ListPlus className="mr-2 h-4 w-4" />
                     Bulk Options
                   </Link>

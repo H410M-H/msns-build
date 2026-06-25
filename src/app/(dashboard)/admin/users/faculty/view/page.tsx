@@ -1,6 +1,6 @@
 import { PageHeader } from "~/components/blocks/nav/PageHeader";
 import { EmployeeTable } from "~/components/tables/EmployeeTable";
-import SalaryPage from "../../../revenue/salary/page"; // Ensure this path is correct
+import SalaryPage from "../../../erp/revenue/salary/page"; // Ensure this path is correct
 import AttendancePage from "../../../attendance/page"; // Ensure this path is correct
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import { Users, UserCog, DollarSign, CheckCircle2Icon } from "lucide-react";

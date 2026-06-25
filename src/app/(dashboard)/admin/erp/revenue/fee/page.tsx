@@ -1,4 +1,4 @@
-// File: src/app/(dashboard)/admin/revenue/fee/page.tsx
+// File: src/app/(dashboard)/admin/erp/revenue/fee/page.tsx
 "use client";
 
 import { PageHeader } from "~/components/blocks/nav/PageHeader";
@@ -7,8 +7,9 @@ import { FeeDashboard } from "~/components/forms/fee/feeDashboard";
 
 export default function FeePage() {
   const breadcrumbs = [
-    { href: "/admin", label: "Dashboard" },
-    { href: "/admin/revenue", label: "Revenue" },
+    { href: "/admin", label: "Admin" },
+    { href: "/admin/erp", label: "ERP" },
+    { href: "/admin/erp/revenue", label: "Revenue Overview" },
     { href: "#", label: "Fee Management", current: true },
   ];
 

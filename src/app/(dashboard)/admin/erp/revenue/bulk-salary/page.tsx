@@ -68,8 +68,9 @@ export default function BulkSalaryPage() {
     <div className="w-full space-y-5">
       <PageHeader breadcrumbs={[
         { href: "/admin", label: "Admin" },
-        { href: "/admin/revenue", label: "Revenue" },
-        { href: "/admin/revenue/bulk-salary", label: "Bulk Salary" },
+        { href: "/admin/erp", label: "ERP" },
+        { href: "/admin/erp/revenue", label: "Revenue Overview" },
+        { href: "/admin/erp/revenue/bulk-salary", label: "Bulk Salary", current: true },
       ]} />
 
       <div className="flex items-center gap-3">

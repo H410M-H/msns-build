@@ -2,7 +2,7 @@ import { PageHeader } from "~/components/blocks/nav/PageHeader";
 import { EmployeeTable } from "~/components/tables/EmployeeTable";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import { Users, UserCog, DollarSign, CheckCircle2Icon } from "lucide-react";
-import SalaryPage from "~/app/(dashboard)/admin/revenue/salary/page";
+import SalaryPage from "~/app/(dashboard)/admin/erp/revenue/salary/page";
 import AttendancePage from "~/app/(dashboard)/admin/attendance/page";
 
 export default function EmployeesDashboard() {

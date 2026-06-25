@@ -452,7 +452,7 @@ export function ExpensesTable({ onEdit, onDelete }: ExpensesTableProps) {
                       </Badge>
                     </TableCell>
                     <TableCell className="font-semibold">
-                      ${expense.amount.toLocaleString()}
+                      PKR {expense.amount.toLocaleString()}
                     </TableCell>
                     <TableCell>
                       {months[expense.month - 1]} {expense.year}

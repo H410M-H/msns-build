@@ -67,18 +67,6 @@ const data: NavigationConfig = {
       ],
     },
     {
-      title: "Revenue",
-      url: "/admin/revenue",
-      icon: TrendingUp,
-      items: [
-        { title: "Overview", url: "/admin/revenue" },
-        { title: "Fee Management", url: "/admin/revenue/fee" },
-        { title: "Salary", url: "/admin/revenue/salary" },
-        { title: "Bulk Salary", url: "/admin/revenue/bulk-salary" },
-        { title: "Expenses", url: "/admin/revenue/expense" },
-      ],
-    },
-    {
       title: "Attendance",
       url: "/admin/attendance",
       icon: ClipboardList,
@@ -97,6 +85,11 @@ const data: NavigationConfig = {
       icon: BarChart3,
       items: [
         { title: "ERP Overview", url: "/admin/erp" },
+        { title: "Revenue Overview", url: "/admin/erp/revenue" },
+        { title: "Fee Management", url: "/admin/erp/revenue/fee" },
+        { title: "Salary", url: "/admin/erp/revenue/salary" },
+        { title: "Bulk Salary", url: "/admin/erp/revenue/bulk-salary" },
+        { title: "Expenses", url: "/admin/erp/revenue/expense" },
         { title: "Budget & Cost Centres", url: "/admin/erp/budget" },
         { title: "Purchase Orders", url: "/admin/erp/purchase-orders" },
         { title: "Inventory & Stock", url: "/admin/erp/stock" },

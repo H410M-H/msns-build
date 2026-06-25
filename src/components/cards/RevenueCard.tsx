@@ -26,7 +26,7 @@ const services: Service[] = [
     iconColor: "text-green-500",
     gradientFrom: "from-green-400",
     gradientTo: "to-green-700",
-    href: "/admin/revenue/salary",
+    href: "/admin/erp/revenue/salary",
   },
   {
     title: "Fee Management",
@@ -35,7 +35,7 @@ const services: Service[] = [
     iconColor: "text-blue-500",
     gradientFrom: "from-blue-400",
     gradientTo: "to-blue-700",
-    href: "/admin/revenue/fee",
+    href: "/admin/erp/revenue/fee",
   },
   {
     title: "Expenses Management",
@@ -44,7 +44,7 @@ const services: Service[] = [
     iconColor: "text-purple-500",
     gradientFrom: "from-purple-400",
     gradientTo: "to-purple-700",
-    href: "/admin/revenue/expense",
+    href: "/admin/erp/revenue/expense",
   },
 ];
 

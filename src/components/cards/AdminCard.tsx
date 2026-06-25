@@ -56,7 +56,7 @@ const services: Services[] = [
     title: "Revenue Management",
     description: "Track and manage student fees and payments",
     icon: Wallet,
-    href: "/admin/revenue",
+    href: "/admin/erp/revenue",
     baseColor: "amber",
     lightBg: "hover:bg-amber-50/60",
     darkBg: "hover:bg-amber-950/30",
