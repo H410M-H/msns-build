@@ -78,7 +78,7 @@ export const expensesRouter = createTRPCRouter({
           ];
         }
 
-        const [expenses, total] = await Promise.all([
+        const [expenses, total, sumResult] = await Promise.all([
           ctx.db.expenses.findMany({
             where,
             orderBy: { createdAt: "desc" },
@@ -86,12 +86,17 @@ export const expensesRouter = createTRPCRouter({
             take: input.pageSize,
           }),
           ctx.db.expenses.count({ where }),
+          ctx.db.expenses.aggregate({
+            where,
+            _sum: { amount: true },
+          }),
         ]);
 
         return {
           data: expenses,
           meta: {
             total,
+            totalAmount: sumResult._sum.amount ?? 0,
             page: input.page,
             pageSize: input.pageSize,
             totalPages: Math.ceil(total / input.pageSize),

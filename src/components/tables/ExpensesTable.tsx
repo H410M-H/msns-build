@@ -81,6 +81,8 @@ export function ExpensesTable({ onEdit, onDelete }: ExpensesTableProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterCategory, setFilterCategory] = useState("ALL_CATEGORIES");
   const [filterMonth, setFilterMonth] = useState("ALL_MONTHS");
+  const [filterYear, setFilterYear] = useState("ALL_YEARS");
+  const [currentPage, setCurrentPage] = useState(1);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
 
@@ -93,6 +95,31 @@ export function ExpensesTable({ onEdit, onDelete }: ExpensesTableProps) {
     year: new Date().getFullYear().toString(),
   });
 
+  const { data: availableYears } = api.expense.getExpenseYears.useQuery(
+    undefined,
+    { enabled: status === "authenticated" },
+  );
+
+  const handleCategoryChange = (value: string) => {
+    setFilterCategory(value);
+    setCurrentPage(1);
+  };
+
+  const handleMonthChange = (value: string) => {
+    setFilterMonth(value);
+    setCurrentPage(1);
+  };
+
+  const handleYearChange = (value: string) => {
+    setFilterYear(value);
+    setCurrentPage(1);
+  };
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(e.target.value);
+    setCurrentPage(1);
+  };
+
   // The query returns { data: Expense[], meta: ... } based on the router definition
   const {
     data: expensesResult,
@@ -101,14 +128,18 @@ export function ExpensesTable({ onEdit, onDelete }: ExpensesTableProps) {
   } = api.expense.getAllExpenses.useQuery(
     {
       month: filterMonth !== "ALL_MONTHS" ? parseInt(filterMonth) : undefined,
+      year: filterYear !== "ALL_YEARS" ? parseInt(filterYear) : undefined,
       category:
         filterCategory !== "ALL_CATEGORIES" ? filterCategory : undefined,
       searchTerm: searchTerm || undefined, // Pass search to backend for efficiency
+      page: currentPage,
+      pageSize: 10,
     },
     { enabled: status === "authenticated" },
   );
 
   const expensesData = expensesResult?.data ?? [];
+  const meta = expensesResult?.meta;
 
   const createExpense = api.expense.createExpense.useMutation({
     onSuccess: async () => {
@@ -212,26 +243,15 @@ export function ExpensesTable({ onEdit, onDelete }: ExpensesTableProps) {
     }
   };
 
-  // Client-side fallback filter if needed, though backend handles search now
-  // We type explicitely to avoid implicit any
-  const filteredExpenses: Expense[] = expensesData.filter(
-    (expense: Expense) => {
-      const searchLower = searchTerm.toLowerCase();
-      const titleMatch = expense.title.toLowerCase().includes(searchLower);
-      const descMatch =
-        expense.description?.toLowerCase().includes(searchLower) ?? false;
-      return titleMatch || descMatch;
-    },
-  );
+  const yearsList = availableYears && availableYears.length > 0
+    ? availableYears
+    : [2024, 2025, 2026];
 
-  const totalAmount = filteredExpenses.reduce(
-    (sum: number, expense: Expense) => sum + expense.amount,
-    0,
-  );
+  const filteredExpenses = expensesData;
+  const totalAmount = meta?.totalAmount ?? 0;
 
   if (status === "loading") return <div>Loading...</div>;
   if (status === "unauthenticated") {
-    // Ideally use router.push, but window.location works for force redirect
     if (typeof window !== "undefined")
       window.location.href = "/api/auth/signin";
     return null;
@@ -368,19 +388,19 @@ export function ExpensesTable({ onEdit, onDelete }: ExpensesTableProps) {
           </div>
         </CardTitle>
 
-        <div className="flex flex-col gap-4 sm:flex-row">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 transform text-gray-400" />
             <Input
               placeholder="Search expenses..."
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              onChange={handleSearchChange}
               className="pl-10"
             />
           </div>
 
-          <Select value={filterCategory} onValueChange={setFilterCategory}>
-            <SelectTrigger className="w-full sm:w-48">
+          <Select value={filterCategory} onValueChange={handleCategoryChange}>
+            <SelectTrigger className="w-full sm:w-44">
               <SelectValue placeholder="All Categories" />
             </SelectTrigger>
             <SelectContent>
@@ -397,8 +417,8 @@ export function ExpensesTable({ onEdit, onDelete }: ExpensesTableProps) {
             </SelectContent>
           </Select>
 
-          <Select value={filterMonth} onValueChange={setFilterMonth}>
-            <SelectTrigger className="w-full sm:w-48">
+          <Select value={filterMonth} onValueChange={handleMonthChange}>
+            <SelectTrigger className="w-full sm:w-40">
               <SelectValue placeholder="All Months" />
             </SelectTrigger>
             <SelectContent>
@@ -410,6 +430,40 @@ export function ExpensesTable({ onEdit, onDelete }: ExpensesTableProps) {
               ))}
             </SelectContent>
           </Select>
+
+          <Select value={filterYear} onValueChange={handleYearChange}>
+            <SelectTrigger className="w-full sm:w-36">
+              <SelectValue placeholder="All Years" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="ALL_YEARS">All Years</SelectItem>
+              {yearsList.map((y) => (
+                <SelectItem key={y} value={y.toString()}>
+                  {y}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          {(filterCategory !== "ALL_CATEGORIES" ||
+            filterMonth !== "ALL_MONTHS" ||
+            filterYear !== "ALL_YEARS" ||
+            searchTerm !== "") && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                setFilterCategory("ALL_CATEGORIES");
+                setFilterMonth("ALL_MONTHS");
+                setFilterYear("ALL_YEARS");
+                setSearchTerm("");
+                setCurrentPage(1);
+              }}
+              className="text-muted-foreground hover:text-foreground shrink-0"
+            >
+              Clear Filters
+            </Button>
+          )}
         </div>
       </CardHeader>
 
@@ -482,6 +536,32 @@ export function ExpensesTable({ onEdit, onDelete }: ExpensesTableProps) {
                 ))}
               </TableBody>
             </Table>
+            {/* Pagination Controls */}
+            {meta && meta.totalPages > 1 && (
+              <div className="flex items-center justify-between border-t border-slate-100 dark:border-border px-5 py-4">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  disabled={currentPage <= 1}
+                  onClick={() => setCurrentPage((p) => p - 1)}
+                  className="border-slate-200 dark:border-border text-slate-700 dark:text-foreground"
+                >
+                  Previous
+                </Button>
+                <span className="text-xs text-muted-foreground">
+                  Page {currentPage} of {meta.totalPages} · {meta.total} entries
+                </span>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  disabled={currentPage >= meta.totalPages}
+                  onClick={() => setCurrentPage((p) => p + 1)}
+                  className="border-slate-200 dark:border-border text-slate-700 dark:text-foreground"
+                >
+                  Next
+                </Button>
+              </div>
+            )}
           </div>
         )}
       </CardContent>
