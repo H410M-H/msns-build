@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { api } from "~/trpc/react";
 import { PageHeader } from "~/components/blocks/nav/PageHeader";
 import {
@@ -26,6 +26,7 @@ import {
   TableHeader,
   TableRow,
 } from "~/components/ui/table";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import { Badge } from "~/components/ui/badge";
 import {
   Dialog,
@@ -37,6 +38,8 @@ import {
 } from "~/components/ui/dialog";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
+import { GradientStatCard } from "~/components/shared/GradientStatCard";
+import { PageExportButton } from "~/components/shared/PageExportButton";
 
 import {
   AlertCircle,
@@ -52,6 +55,9 @@ import {
   LayoutGrid,
   ListChecks,
   GraduationCap,
+  Clock,
+  CheckSquare,
+  FileText
 } from "lucide-react";
 import Link from "next/link";
 
@@ -168,15 +174,7 @@ export default function ExamManagementPage() {
       await createExamMutation.mutateAsync({
         sessionId: selectedSession,
         classId: selectedClass,
-        examTypeEnum: newExamData.examType as
-          | "MIDTERM"
-          | "FINAL"
-          | "PHASE_1"
-          | "PHASE_2"
-          | "PHASE_3"
-          | "PHASE_4"
-          | "PHASE_5"
-          | "PHASE_6",
+        examTypeEnum: newExamData.examType as any,
         startDate: new Date(newExamData.startDate),
         endDate: new Date(newExamData.endDate),
         totalMarks: newExamData.totalMarks,
@@ -252,45 +250,336 @@ export default function ExamManagementPage() {
   const selectedClassName = classes?.find((c: Class) => c.classId === selectedClass);
   const selectedSessionName = sessions?.find((s: Session) => s.sessionId === selectedSession);
 
+  const stats = useMemo(() => {
+    if (!examsForSession) return { total: 0, scheduled: 0, ongoing: 0, completed: 0 };
+    return {
+      total: examsForSession.length,
+      scheduled: examsForSession.filter(e => e.status === "SCHEDULED").length,
+      ongoing: examsForSession.filter(e => e.status === "ONGOING").length,
+      completed: examsForSession.filter(e => e.status === "COMPLETED").length,
+    };
+  }, [examsForSession]);
+
+  const exportData = useMemo(() => {
+    if (!examsForSession) return undefined;
+    return {
+      columns: [
+        { key: "type", label: "Exam Type", width: 20 },
+        { key: "class", label: "Class", width: 20 },
+        { key: "start", label: "Start Date", width: 15, format: "date" as const },
+        { key: "end", label: "End Date", width: 15, format: "date" as const },
+        { key: "marks", label: "Marks", width: 15 },
+        { key: "status", label: "Status", width: 15 },
+      ],
+      rows: examsForSession.map(e => ({
+        type: EXAM_TYPES.find(t => t.value === e.examTypeEnum)?.label ?? e.examTypeEnum,
+        class: `${e.Grades.grade} ${e.Grades.section}`,
+        start: new Date(e.startDate),
+        end: new Date(e.endDate),
+        marks: `${e.passingMarks}/${e.totalMarks}`,
+        status: e.status,
+      })),
+      sheetName: "Exams",
+      title: "Exam Registry Export",
+    };
+  }, [examsForSession]);
+
   return (
-    <div className="w-full space-y-5">
+    <div className="w-full space-y-6">
       <PageHeader
         breadcrumbs={[
           { href: "/admin", label: "Admin" },
-          { href: "/admin/exams", label: "Exam Management" },
+          { href: "/admin/exams", label: "Exam Management", current: true },
         ]}
       />
 
       {/* --- Header Section --- */}
-      <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-end">
+      <div className="flex flex-col justify-between gap-4 md:flex-row md:items-end">
         <div>
-          <div className="mb-1.5 flex items-center gap-3">
-            <div className="rounded-lg border border-emerald-200 bg-emerald-100 p-2 text-emerald-600 dark:border-emerald-500/20 dark:bg-emerald-500/10 dark:text-emerald-400">
-              <ClipboardList className="h-5 w-5" />
-            </div>
-            <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-foreground sm:text-3xl">
-              Exam{" "}
-              <span className="text-emerald-600 dark:text-emerald-500">
-                Management
-              </span>
-            </h1>
-          </div>
-          <p className="pl-1 text-sm text-muted-foreground">
+          <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-foreground sm:text-3xl">
+            Exam Management
+          </h1>
+          <p className="mt-1 max-w-xl text-sm text-muted-foreground dark:text-muted-foreground">
             Create, manage and monitor all exams across sessions and classes.
           </p>
         </div>
 
-        <Button
-          size="sm"
-          variant="outline"
-          className="shrink-0 border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 hover:text-emerald-800 dark:border-emerald-500/20 dark:bg-emerald-500/5 dark:text-emerald-300 dark:hover:bg-emerald-500/10"
-          asChild
-        >
-          <Link href="/admin/exams/promotion">
-            <ArrowUpRight className="mr-2 h-3.5 w-3.5" />
-            Student Promotion
-          </Link>
-        </Button>
+        <div className="flex flex-wrap items-center gap-2">
+          {selectedSession && <PageExportButton exportData={exportData} csvFilename={`exams-${selectedSessionName?.sessionName}`} pdfReportType="exams" />}
+          <Button
+            size="sm"
+            variant="outline"
+            className="shrink-0 border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 hover:text-emerald-800 dark:border-emerald-500/20 dark:bg-emerald-500/5 dark:text-emerald-300 dark:hover:bg-emerald-500/10 gap-2"
+            asChild
+          >
+            <Link href="/admin/exams/promotion">
+              <ArrowUpRight className="h-3.5 w-3.5" />
+              Student Promotion
+            </Link>
+          </Button>
+          <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
+            <DialogTrigger asChild>
+              <Button
+                size="sm"
+                className="bg-emerald-600 text-white hover:bg-emerald-700 gap-2"
+                disabled={!selectedSession || !selectedClass}
+              >
+                <Plus className="h-4 w-4" />
+                Create Exam
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-h-[90vh] overflow-y-auto border-slate-200 bg-white dark:border-border dark:bg-card sm:max-w-2xl">
+              <DialogHeader>
+                <DialogTitle className="flex items-center gap-2 text-slate-900 dark:text-foreground">
+                  <ClipboardList className="h-5 w-5 text-emerald-500" />
+                  Create New Exam
+                </DialogTitle>
+                <DialogDescription className="text-muted-foreground">
+                  {selectedClassName &&
+                    `Class ${selectedClassName.grade} ${selectedClassName.section}`}{" "}
+                  ·{" "}
+                  {selectedSessionName?.sessionName}
+                </DialogDescription>
+              </DialogHeader>
+
+              <div className="space-y-5 pt-2">
+                {/* Exam Basics */}
+                <div className="rounded-xl border border-slate-100 p-4 dark:border-border">
+                  <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold text-slate-800 dark:text-foreground">
+                    <ListChecks className="h-4 w-4 text-emerald-500" />
+                    Exam Details
+                  </h3>
+                  <div className="space-y-3">
+                    <div className="space-y-1.5">
+                      <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                        Exam Type
+                      </Label>
+                      <Select
+                        value={newExamData.examType}
+                        onValueChange={(value: string) =>
+                          setNewExamData({ ...newExamData, examType: value })
+                        }
+                      >
+                        <SelectTrigger className="border-slate-200 bg-white dark:border-border dark:bg-card dark:text-foreground">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {EXAM_TYPES.map((t) => (
+                            <SelectItem key={t.value} value={t.value}>
+                              {t.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="space-y-1.5">
+                        <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                          Total Marks
+                        </Label>
+                        <Input
+                          type="number"
+                          value={newExamData.totalMarks}
+                          onChange={(e) =>
+                            setNewExamData({
+                              ...newExamData,
+                              totalMarks: parseInt(e.target.value),
+                            })
+                          }
+                          className="border-slate-200 bg-white dark:border-border dark:bg-card dark:text-foreground"
+                        />
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                          Passing Marks
+                        </Label>
+                        <Input
+                          type="number"
+                          value={newExamData.passingMarks}
+                          onChange={(e) =>
+                            setNewExamData({
+                              ...newExamData,
+                              passingMarks: parseInt(e.target.value),
+                            })
+                          }
+                          className="border-slate-200 bg-white dark:border-border dark:bg-card dark:text-foreground"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="space-y-1.5">
+                        <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                          Start Date
+                        </Label>
+                        <Input
+                          type="date"
+                          value={newExamData.startDate}
+                          onChange={(e) =>
+                            setNewExamData({
+                              ...newExamData,
+                              startDate: e.target.value,
+                            })
+                          }
+                          className="border-slate-200 bg-white dark:border-border dark:bg-card dark:text-foreground"
+                        />
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                          End Date
+                        </Label>
+                        <Input
+                          type="date"
+                          value={newExamData.endDate}
+                          onChange={(e) =>
+                            setNewExamData({
+                              ...newExamData,
+                              endDate: e.target.value,
+                            })
+                          }
+                          className="border-slate-200 bg-white dark:border-border dark:bg-card dark:text-foreground"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Datesheet Section */}
+                <div className="rounded-xl border border-slate-100 p-4 dark:border-border">
+                  <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold text-slate-800 dark:text-foreground">
+                    <CalendarDays className="h-4 w-4 text-blue-500" />
+                    Datesheet
+                    <span className="ml-auto text-xs font-normal text-muted-foreground">
+                      Subjects assigned to this class
+                    </span>
+                  </h3>
+
+                  {subjectsLoading ? (
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground py-4 justify-center">
+                      <Loader2 className="h-4 w-4 animate-spin" /> Loading subjects…
+                    </div>
+                  ) : datesheet.length === 0 ? (
+                    <div className="rounded-lg border border-dashed border-slate-200 dark:border-border bg-slate-50 dark:bg-black/10 p-6 text-center">
+                      <BookOpen className="mx-auto mb-2 h-6 w-6 text-muted-foreground opacity-40" />
+                      <p className="text-sm text-muted-foreground">
+                        No subjects assigned to this class yet. Assign subjects first.
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="max-h-72 space-y-2 overflow-y-auto pr-1">
+                      {datesheet.map((ds, index) => (
+                        <div
+                          key={ds.subjectId}
+                          className="flex flex-col gap-2 rounded-lg border border-slate-100 bg-slate-50 p-3 dark:border-border dark:bg-white/5 sm:flex-row sm:items-center"
+                        >
+                          <div className="min-w-0 flex-1">
+                            <p className="truncate text-sm font-semibold text-slate-800 dark:text-foreground">
+                              {ds.subjectName}
+                            </p>
+                          </div>
+                          <div className="grid grid-cols-3 gap-2 sm:w-auto">
+                            <div className="space-y-1">
+                              <Label className="text-[10px] text-muted-foreground">
+                                Date
+                              </Label>
+                              <Input
+                                type="date"
+                                value={ds.date}
+                                onChange={(e) => {
+                                  const newDs = [...datesheet];
+                                  newDs[index]!.date = e.target.value;
+                                  setDatesheet(newDs);
+                                }}
+                                className="h-7 border-slate-200 bg-white text-xs dark:border-border dark:bg-card dark:text-foreground"
+                              />
+                            </div>
+                            <div className="space-y-1">
+                              <Label className="text-[10px] text-muted-foreground">
+                                Start
+                              </Label>
+                              <Input
+                                type="time"
+                                value={ds.startTime}
+                                onChange={(e) => {
+                                  const newDs = [...datesheet];
+                                  newDs[index]!.startTime = e.target.value;
+                                  setDatesheet(newDs);
+                                }}
+                                className="h-7 border-slate-200 bg-white text-xs dark:border-border dark:bg-card dark:text-foreground"
+                              />
+                            </div>
+                            <div className="space-y-1">
+                              <Label className="text-[10px] text-muted-foreground">
+                                End
+                              </Label>
+                              <Input
+                                type="time"
+                                value={ds.endTime}
+                                onChange={(e) => {
+                                  const newDs = [...datesheet];
+                                  newDs[index]!.endTime = e.target.value;
+                                  setDatesheet(newDs);
+                                }}
+                                className="h-7 border-slate-200 bg-white text-xs dark:border-border dark:bg-card dark:text-foreground"
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                <Button
+                  onClick={handleCreateExam}
+                  disabled={createExamMutation.isPending || !newExamData.startDate || !newExamData.endDate}
+                  className="w-full bg-emerald-600 text-white shadow-md shadow-emerald-200 hover:bg-emerald-700 dark:shadow-emerald-900/20"
+                >
+                  {createExamMutation.isPending ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Creating…
+                    </>
+                  ) : (
+                    <>
+                      <Plus className="mr-2 h-4 w-4" />
+                      Create Exam
+                    </>
+                  )}
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
+        </div>
+      </div>
+
+      {/* --- Key Metrics Grid --- */}
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <GradientStatCard
+          title="Total Exams"
+          value={stats.total}
+          icon={ClipboardList}
+          theme="blue"
+        />
+        <GradientStatCard
+          title="Scheduled"
+          value={stats.scheduled}
+          icon={CalendarDays}
+          theme="amber"
+        />
+        <GradientStatCard
+          title="Ongoing"
+          value={stats.ongoing}
+          icon={Clock}
+          theme="emerald"
+        />
+        <GradientStatCard
+          title="Completed"
+          value={stats.completed}
+          icon={CheckSquare}
+          theme="pink"
+        />
       </div>
 
       {/* --- Filter Section --- */}
@@ -304,9 +593,6 @@ export default function ExamManagementPage() {
               <CardTitle className="text-sm font-bold text-slate-900 dark:text-foreground">
                 Filter &amp; Context
               </CardTitle>
-              <CardDescription className="text-xs text-muted-foreground">
-                Select session and class to view or create exams
-              </CardDescription>
             </div>
           </div>
         </CardHeader>
@@ -347,242 +633,6 @@ export default function ExamManagementPage() {
                 </SelectContent>
               </Select>
             </div>
-
-            <div className="flex items-end">
-              <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
-                <DialogTrigger asChild>
-                  <Button
-                    className="w-full bg-emerald-600 text-white shadow-md shadow-emerald-200 hover:bg-emerald-700 dark:shadow-emerald-900/20"
-                    disabled={!selectedSession || !selectedClass}
-                  >
-                    <Plus className="mr-2 h-4 w-4" />
-                    Create Exam
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="max-h-[90vh] overflow-y-auto border-slate-200 bg-white dark:border-border dark:bg-card sm:max-w-2xl">
-                  <DialogHeader>
-                    <DialogTitle className="flex items-center gap-2 text-slate-900 dark:text-foreground">
-                      <ClipboardList className="h-5 w-5 text-emerald-500" />
-                      Create New Exam
-                    </DialogTitle>
-                    <DialogDescription className="text-muted-foreground">
-                      {selectedClassName &&
-                        `Class ${selectedClassName.grade} ${selectedClassName.section}`}{" "}
-                      ·{" "}
-                      {selectedSessionName?.sessionName}
-                    </DialogDescription>
-                  </DialogHeader>
-
-                  <div className="space-y-5 pt-2">
-                    {/* Exam Basics */}
-                    <div className="rounded-xl border border-slate-100 p-4 dark:border-border">
-                      <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold text-slate-800 dark:text-foreground">
-                        <ListChecks className="h-4 w-4 text-emerald-500" />
-                        Exam Details
-                      </h3>
-                      <div className="space-y-3">
-                        <div className="space-y-1.5">
-                          <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                            Exam Type
-                          </Label>
-                          <Select
-                            value={newExamData.examType}
-                            onValueChange={(value: string) =>
-                              setNewExamData({ ...newExamData, examType: value })
-                            }
-                          >
-                            <SelectTrigger className="border-slate-200 bg-white dark:border-border dark:bg-card dark:text-foreground">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {EXAM_TYPES.map((t) => (
-                                <SelectItem key={t.value} value={t.value}>
-                                  {t.label}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </div>
-
-                        <div className="grid grid-cols-2 gap-3">
-                          <div className="space-y-1.5">
-                            <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                              Total Marks
-                            </Label>
-                            <Input
-                              type="number"
-                              value={newExamData.totalMarks}
-                              onChange={(e) =>
-                                setNewExamData({
-                                  ...newExamData,
-                                  totalMarks: parseInt(e.target.value),
-                                })
-                              }
-                              className="border-slate-200 bg-white dark:border-border dark:bg-card dark:text-foreground"
-                            />
-                          </div>
-                          <div className="space-y-1.5">
-                            <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                              Passing Marks
-                            </Label>
-                            <Input
-                              type="number"
-                              value={newExamData.passingMarks}
-                              onChange={(e) =>
-                                setNewExamData({
-                                  ...newExamData,
-                                  passingMarks: parseInt(e.target.value),
-                                })
-                              }
-                              className="border-slate-200 bg-white dark:border-border dark:bg-card dark:text-foreground"
-                            />
-                          </div>
-                        </div>
-
-                        <div className="grid grid-cols-2 gap-3">
-                          <div className="space-y-1.5">
-                            <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                              Start Date
-                            </Label>
-                            <Input
-                              type="date"
-                              value={newExamData.startDate}
-                              onChange={(e) =>
-                                setNewExamData({
-                                  ...newExamData,
-                                  startDate: e.target.value,
-                                })
-                              }
-                              className="border-slate-200 bg-white dark:border-border dark:bg-card dark:text-foreground"
-                            />
-                          </div>
-                          <div className="space-y-1.5">
-                            <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                              End Date
-                            </Label>
-                            <Input
-                              type="date"
-                              value={newExamData.endDate}
-                              onChange={(e) =>
-                                setNewExamData({
-                                  ...newExamData,
-                                  endDate: e.target.value,
-                                })
-                              }
-                              className="border-slate-200 bg-white dark:border-border dark:bg-card dark:text-foreground"
-                            />
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Datesheet Section */}
-                    <div className="rounded-xl border border-slate-100 p-4 dark:border-border">
-                      <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold text-slate-800 dark:text-foreground">
-                        <CalendarDays className="h-4 w-4 text-blue-500" />
-                        Datesheet
-                        <span className="ml-auto text-xs font-normal text-muted-foreground">
-                          Subjects assigned to this class
-                        </span>
-                      </h3>
-
-                      {subjectsLoading ? (
-                        <div className="flex items-center gap-2 text-sm text-muted-foreground py-4 justify-center">
-                          <Loader2 className="h-4 w-4 animate-spin" /> Loading subjects…
-                        </div>
-                      ) : datesheet.length === 0 ? (
-                        <div className="rounded-lg border border-dashed border-slate-200 dark:border-border bg-slate-50 dark:bg-black/10 p-6 text-center">
-                          <BookOpen className="mx-auto mb-2 h-6 w-6 text-muted-foreground opacity-40" />
-                          <p className="text-sm text-muted-foreground">
-                            No subjects assigned to this class yet. Assign subjects first.
-                          </p>
-                        </div>
-                      ) : (
-                        <div className="max-h-72 space-y-2 overflow-y-auto pr-1">
-                          {datesheet.map((ds, index) => (
-                            <div
-                              key={ds.subjectId}
-                              className="flex flex-col gap-2 rounded-lg border border-slate-100 bg-slate-50 p-3 dark:border-border dark:bg-white/5 sm:flex-row sm:items-center"
-                            >
-                              <div className="min-w-0 flex-1">
-                                <p className="truncate text-sm font-semibold text-slate-800 dark:text-foreground">
-                                  {ds.subjectName}
-                                </p>
-                              </div>
-                              <div className="grid grid-cols-3 gap-2 sm:w-auto">
-                                <div className="space-y-1">
-                                  <Label className="text-[10px] text-muted-foreground">
-                                    Date
-                                  </Label>
-                                  <Input
-                                    type="date"
-                                    value={ds.date}
-                                    onChange={(e) => {
-                                      const newDs = [...datesheet];
-                                      newDs[index]!.date = e.target.value;
-                                      setDatesheet(newDs);
-                                    }}
-                                    className="h-7 border-slate-200 bg-white text-xs dark:border-border dark:bg-card dark:text-foreground"
-                                  />
-                                </div>
-                                <div className="space-y-1">
-                                  <Label className="text-[10px] text-muted-foreground">
-                                    Start
-                                  </Label>
-                                  <Input
-                                    type="time"
-                                    value={ds.startTime}
-                                    onChange={(e) => {
-                                      const newDs = [...datesheet];
-                                      newDs[index]!.startTime = e.target.value;
-                                      setDatesheet(newDs);
-                                    }}
-                                    className="h-7 border-slate-200 bg-white text-xs dark:border-border dark:bg-card dark:text-foreground"
-                                  />
-                                </div>
-                                <div className="space-y-1">
-                                  <Label className="text-[10px] text-muted-foreground">
-                                    End
-                                  </Label>
-                                  <Input
-                                    type="time"
-                                    value={ds.endTime}
-                                    onChange={(e) => {
-                                      const newDs = [...datesheet];
-                                      newDs[index]!.endTime = e.target.value;
-                                      setDatesheet(newDs);
-                                    }}
-                                    className="h-7 border-slate-200 bg-white text-xs dark:border-border dark:bg-card dark:text-foreground"
-                                  />
-                                </div>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-
-                    <Button
-                      onClick={handleCreateExam}
-                      disabled={createExamMutation.isPending || !newExamData.startDate || !newExamData.endDate}
-                      className="w-full bg-emerald-600 text-white shadow-md shadow-emerald-200 hover:bg-emerald-700 dark:shadow-emerald-900/20"
-                    >
-                      {createExamMutation.isPending ? (
-                        <>
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                          Creating…
-                        </>
-                      ) : (
-                        <>
-                          <Plus className="mr-2 h-4 w-4" />
-                          Create Exam
-                        </>
-                      )}
-                    </Button>
-                  </div>
-                </DialogContent>
-              </Dialog>
-            </div>
           </div>
         </CardContent>
       </Card>
@@ -617,149 +667,189 @@ export default function ExamManagementPage() {
         </Card>
       )}
 
-      {/* --- Exams Table --- */}
-      {examsForSession && examsForSession.length > 0 && (
-        <Card className="overflow-hidden border border-slate-200 bg-white/50 shadow-sm backdrop-blur-md dark:border-border dark:bg-card dark:shadow-xl">
-          <CardHeader className="border-b border-slate-100 bg-slate-50/50 px-5 py-3 dark:border-border dark:bg-black/20">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <div className="rounded-lg border border-emerald-200 bg-emerald-100 p-1.5 dark:border-emerald-500/20 dark:bg-emerald-500/10">
-                  <GraduationCap className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+      {/* --- Main Content Tabs --- */}
+      <Tabs defaultValue="registry" className="space-y-6">
+        <TabsList className="h-auto flex-wrap justify-start gap-1 border border-slate-200 bg-slate-100 p-1 dark:border-border dark:bg-card">
+          <TabsTrigger value="registry" className="gap-2 data-[state=active]:bg-white data-[state=active]:text-emerald-700 dark:data-[state=active]:bg-emerald-600 dark:data-[state=active]:text-foreground">
+            <ClipboardList className="h-4 w-4" />
+            Exam Registry
+          </TabsTrigger>
+          <TabsTrigger value="datesheets" className="gap-2 data-[state=active]:bg-white data-[state=active]:text-emerald-700 dark:data-[state=active]:bg-emerald-600 dark:data-[state=active]:text-foreground">
+            <CalendarDays className="h-4 w-4" />
+            Datesheets
+          </TabsTrigger>
+          <TabsTrigger value="results" className="gap-2 data-[state=active]:bg-white data-[state=active]:text-emerald-700 dark:data-[state=active]:bg-emerald-600 dark:data-[state=active]:text-foreground">
+            <FileText className="h-4 w-4" />
+            Results Overview
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="registry" className="m-0 duration-300 animate-in fade-in-50">
+          {examsForSession && examsForSession.length > 0 ? (
+            <Card className="overflow-hidden border border-slate-200 bg-white shadow-sm backdrop-blur-md dark:border-border dark:bg-card dark:shadow-xl">
+              <CardHeader className="border-b border-slate-100 bg-slate-50/50 px-5 py-3 dark:border-border dark:bg-white/5">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="rounded-lg border border-emerald-200 bg-emerald-100 p-1.5 dark:border-emerald-500/20 dark:bg-emerald-500/10">
+                      <GraduationCap className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+                    </div>
+                    <div>
+                      <CardTitle className="text-sm font-bold text-slate-900 dark:text-foreground">
+                        Exam Registry
+                      </CardTitle>
+                    </div>
+                  </div>
                 </div>
-                <div>
-                  <CardTitle className="text-sm font-bold text-slate-900 dark:text-foreground">
-                    Exam Registry
-                  </CardTitle>
-                  <CardDescription className="text-xs text-muted-foreground">
-                    All exams for the selected session
-                  </CardDescription>
+              </CardHeader>
+              <CardContent className="p-0">
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow className="border-b border-slate-100 bg-slate-50/80 dark:border-border dark:bg-black/10">
+                        <TableHead className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                          Exam Type
+                        </TableHead>
+                        <TableHead className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                          Class
+                        </TableHead>
+                        <TableHead className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                          Start Date
+                        </TableHead>
+                        <TableHead className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                          End Date
+                        </TableHead>
+                        <TableHead className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                          Marks
+                        </TableHead>
+                        <TableHead className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                          Status
+                        </TableHead>
+                        <TableHead className="text-right text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                          Actions
+                        </TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {examsForSession.map((exam: Exam) => (
+                        <TableRow
+                          key={exam.examId}
+                          className="border-b border-slate-100 transition-colors hover:bg-slate-50/50 dark:border-border dark:hover:bg-white/5"
+                        >
+                          <TableCell className="font-semibold text-slate-900 dark:text-foreground">
+                            <Badge variant="outline" className="border-emerald-500/20 bg-emerald-500/5 text-emerald-700 dark:text-emerald-400 text-xs">
+                              {EXAM_TYPES.find(t => t.value === exam.examTypeEnum)?.label ?? exam.examTypeEnum}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-slate-600 dark:text-foreground">
+                            {exam.Grades.grade} {exam.Grades.section}
+                          </TableCell>
+                          <TableCell className="font-mono text-sm text-slate-600 dark:text-foreground">
+                            {new Date(exam.startDate).toLocaleDateString()}
+                          </TableCell>
+                          <TableCell className="font-mono text-sm text-slate-600 dark:text-foreground">
+                            {new Date(exam.endDate).toLocaleDateString()}
+                          </TableCell>
+                          <TableCell>
+                            <span className="font-mono text-sm text-slate-700 dark:text-foreground">
+                              {exam.passingMarks}
+                              <span className="text-muted-foreground">/</span>
+                              {exam.totalMarks ?? 100}
+                            </span>
+                          </TableCell>
+                          <TableCell>
+                            <Badge
+                              variant="outline"
+                              className={`border font-semibold text-xs ${getStatusBadge(exam.status)}`}
+                            >
+                              {exam.status}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <div className="flex items-center justify-end gap-2">
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() =>
+                                  handlePromotionCheck(exam.classId, exam.examId)
+                                }
+                                className="h-7 border-slate-200 bg-white text-xs text-slate-600 hover:bg-emerald-50 hover:text-emerald-700 dark:border-border dark:bg-white/5 dark:text-foreground dark:hover:bg-emerald-500/10 dark:hover:text-emerald-300"
+                              >
+                                <CheckCircle2 className="mr-1.5 h-3 w-3" />
+                                Check
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => handleDeleteExam(exam.examId)}
+                                className="h-7 border-red-200 bg-white text-xs text-red-600 hover:bg-red-50 hover:text-red-700 dark:border-red-500/20 dark:bg-white/5 dark:text-red-400 dark:hover:bg-red-500/10 dark:hover:text-red-300"
+                              >
+                                <Trash2 className="h-3 w-3" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              </CardContent>
+            </Card>
+          ) : selectedSession ? (
+            <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-slate-300 bg-slate-50 py-14 text-center animate-in fade-in-50 dark:border-border dark:bg-card">
+              <div className="mb-4 rounded-full border border-slate-200 bg-white p-4 shadow-sm dark:border-border dark:bg-muted">
+                <AlertCircle className="h-7 w-7 text-muted-foreground dark:text-slate-600" />
+              </div>
+              <h3 className="mb-1 text-lg font-bold text-slate-900 dark:text-foreground">
+                No exams found
+              </h3>
+              <p className="mb-5 max-w-xs text-sm text-muted-foreground">
+                No exams found for the selected session. Select a class and create one to get started.
+              </p>
+            </div>
+          ) : (
+            <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-slate-200 bg-slate-50/50 py-14 text-center dark:border-border dark:bg-card/50">
+              <div className="mb-4 rounded-full border border-slate-200 bg-white p-4 shadow-sm dark:border-border dark:bg-muted">
+                <LayoutGrid className="h-7 w-7 text-muted-foreground opacity-50" />
+              </div>
+              <p className="text-sm text-muted-foreground">
+                Select a session above to view or create exams.
+              </p>
+            </div>
+          )}
+        </TabsContent>
+
+        <TabsContent value="datesheets" className="m-0 duration-300 animate-in fade-in-50">
+          <Card className="border border-slate-200 bg-white shadow-sm dark:border-emerald-500/10 dark:bg-card">
+            <CardHeader>
+              <CardTitle>View Datesheets</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex h-64 items-center justify-center rounded-lg border border-dashed border-slate-200 dark:border-border">
+                <div className="text-center text-muted-foreground">
+                  <CalendarDays className="mx-auto mb-2 h-8 w-8 opacity-20" />
+                  <p>Datesheets viewer coming soon</p>
                 </div>
               </div>
-              <Badge variant="outline" className="border-emerald-500/20 bg-emerald-500/5 text-emerald-600 dark:text-emerald-400">
-                {examsForSession.length} exam{examsForSession.length !== 1 ? "s" : ""}
-              </Badge>
-            </div>
-          </CardHeader>
-          <CardContent className="p-0">
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow className="border-b border-slate-100 bg-slate-50/80 dark:border-border dark:bg-black/10">
-                    <TableHead className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                      Exam Type
-                    </TableHead>
-                    <TableHead className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                      Class
-                    </TableHead>
-                    <TableHead className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                      Start Date
-                    </TableHead>
-                    <TableHead className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                      End Date
-                    </TableHead>
-                    <TableHead className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                      Marks
-                    </TableHead>
-                    <TableHead className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                      Status
-                    </TableHead>
-                    <TableHead className="text-right text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                      Actions
-                    </TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {examsForSession.map((exam: Exam) => (
-                    <TableRow
-                      key={exam.examId}
-                      className="border-b border-slate-100 transition-colors hover:bg-slate-50/50 dark:border-border dark:hover:bg-white/5"
-                    >
-                      <TableCell className="font-semibold text-slate-900 dark:text-foreground">
-                        <Badge variant="outline" className="border-emerald-500/20 bg-emerald-500/5 text-emerald-700 dark:text-emerald-400 text-xs">
-                          {EXAM_TYPES.find(t => t.value === exam.examTypeEnum)?.label ?? exam.examTypeEnum}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-slate-600 dark:text-foreground">
-                        {exam.Grades.grade} {exam.Grades.section}
-                      </TableCell>
-                      <TableCell className="font-mono text-sm text-slate-600 dark:text-foreground">
-                        {new Date(exam.startDate).toLocaleDateString()}
-                      </TableCell>
-                      <TableCell className="font-mono text-sm text-slate-600 dark:text-foreground">
-                        {new Date(exam.endDate).toLocaleDateString()}
-                      </TableCell>
-                      <TableCell>
-                        <span className="font-mono text-sm text-slate-700 dark:text-foreground">
-                          {exam.passingMarks}
-                          <span className="text-muted-foreground">/</span>
-                          {exam.totalMarks ?? 100}
-                        </span>
-                      </TableCell>
-                      <TableCell>
-                        <Badge
-                          variant="outline"
-                          className={`border font-semibold text-xs ${getStatusBadge(exam.status)}`}
-                        >
-                          {exam.status}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex items-center justify-end gap-2">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() =>
-                              handlePromotionCheck(exam.classId, exam.examId)
-                            }
-                            className="h-7 border-slate-200 bg-white text-xs text-slate-600 hover:bg-emerald-50 hover:text-emerald-700 dark:border-border dark:bg-white/5 dark:text-foreground dark:hover:bg-emerald-500/10 dark:hover:text-emerald-300"
-                          >
-                            <CheckCircle2 className="mr-1.5 h-3 w-3" />
-                            Check
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => handleDeleteExam(exam.examId)}
-                            className="h-7 border-red-200 bg-white text-xs text-red-600 hover:bg-red-50 hover:text-red-700 dark:border-red-500/20 dark:bg-white/5 dark:text-red-400 dark:hover:bg-red-500/10 dark:hover:text-red-300"
-                          >
-                            <Trash2 className="h-3 w-3" />
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-          </CardContent>
-        </Card>
-      )}
+            </CardContent>
+          </Card>
+        </TabsContent>
 
-      {/* --- Empty State --- */}
-      {selectedSession && examsForSession?.length === 0 && (
-        <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-slate-300 bg-slate-50 py-14 text-center animate-in fade-in-50 dark:border-border dark:bg-card">
-          <div className="mb-4 rounded-full border border-slate-200 bg-white p-4 shadow-sm dark:border-border dark:bg-muted">
-            <AlertCircle className="h-7 w-7 text-muted-foreground dark:text-slate-600" />
-          </div>
-          <h3 className="mb-1 text-lg font-bold text-slate-900 dark:text-foreground">
-            No exams found
-          </h3>
-          <p className="mb-5 max-w-xs text-sm text-muted-foreground">
-            No exams found for the selected session. Select a class and create one to get started.
-          </p>
-        </div>
-      )}
-
-      {!selectedSession && (
-        <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-slate-200 bg-slate-50/50 py-14 text-center dark:border-border dark:bg-card/50">
-          <div className="mb-4 rounded-full border border-slate-200 bg-white p-4 shadow-sm dark:border-border dark:bg-muted">
-            <LayoutGrid className="h-7 w-7 text-muted-foreground opacity-50" />
-          </div>
-          <p className="text-sm text-muted-foreground">
-            Select a session above to view or create exams.
-          </p>
-        </div>
-      )}
+        <TabsContent value="results" className="m-0 duration-300 animate-in fade-in-50">
+          <Card className="border border-slate-200 bg-white shadow-sm dark:border-emerald-500/10 dark:bg-card">
+            <CardHeader>
+              <CardTitle>Results Overview</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex h-64 items-center justify-center rounded-lg border border-dashed border-slate-200 dark:border-border">
+                <div className="text-center text-muted-foreground">
+                  <FileText className="mx-auto mb-2 h-8 w-8 opacity-20" />
+                  <p>Results analytics coming soon</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

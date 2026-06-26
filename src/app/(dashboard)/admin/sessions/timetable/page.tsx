@@ -1,13 +1,17 @@
 "use client";
 
-import { useState, Suspense } from "react";
+import { useState, Suspense, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import { ClasswiseView } from "~/components/attendance/timetable/classwise-view";
 import { TeacherwiseView } from "~/components/attendance/timetable/teacherwise-view";
 import type { Class, Teacher, TimetableViewMode } from "~/lib/timetable-types";
-import { GridIcon, Users, AlertCircle, Clock } from "lucide-react";
+import { GridIcon, Users, AlertCircle, Clock, BookOpen, Calendar, Printer, FileText, UploadCloud, LayoutGrid } from "lucide-react";
 import { api } from "~/trpc/react";
+import { PageHeader } from "~/components/blocks/nav/PageHeader";
+import { GradientStatCard } from "~/components/shared/GradientStatCard";
+import { PageExportButton } from "~/components/shared/PageExportButton";
+import { Button } from "~/components/ui/button";
 
 const DEFAULT_TIME_SLOTS = [
   { lectureNumber: 1, startTime: "08:00", endTime: "08:35" },
@@ -21,44 +25,53 @@ const DEFAULT_TIME_SLOTS = [
   { lectureNumber: 9, startTime: "13:40", endTime: "14:15" },
 ];
 
-interface EmployeeResponse {
-  employeeId: string;
-  employeeName: string;
-  designation: string;
-  education: string | null;
-}
-
-interface ClassResponse {
-  classId: string;
-  grade: string;
-  section: string;
-  category: string;
-  fee: number;
-}
-
 function TimetableContent() {
   const [viewMode, setViewMode] = useState<TimetableViewMode>("class");
+
+  const breadcrumbs = [
+    { href: "/admin", label: "Dashboard" },
+    { href: "/admin/sessions/timetable", label: "Timetable Management", current: true },
+  ];
 
   const { data: teachers, isLoading: teachersLoading } =
     api.employee.getAllEmployeesForTimeTable.useQuery();
   const { data: classes, isLoading: classesLoading } =
     api.class.getClasses.useQuery();
 
+  const exportData = useMemo(() => {
+    if (!teachers) return undefined;
+    return {
+      columns: [
+        { key: "employeeName", label: "Teacher Name", width: 25 },
+        { key: "designation", label: "Designation", width: 20 },
+        { key: "education", label: "Education", width: 20 },
+      ],
+      rows: teachers.map((t: any) => ({
+        employeeName: t.employeeName,
+        designation: t.designation,
+        education: t.education ?? "N/A",
+      })),
+      sheetName: "Teachers",
+      title: "Teachers List for Timetable",
+    };
+  }, [teachers]);
+
   if (teachersLoading || classesLoading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-indigo-100 via-purple-100 to-pink-100 p-4">
-        <div className="space-y-2 text-center">
-          <Clock className="mx-auto h-8 w-8 animate-spin text-indigo-500" />
-          <p className="animate-pulse text-lg font-semibold text-indigo-700">
-            Loading timetable data...
-          </p>
+      <div className="w-full space-y-4">
+        <div className="h-10 w-48 animate-pulse rounded-md bg-slate-200 dark:bg-emerald-900/20" />
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="h-32 animate-pulse rounded-xl bg-slate-200 dark:bg-emerald-900/20" />
+          ))}
         </div>
+        <div className="h-96 w-full animate-pulse rounded-xl bg-slate-200 dark:bg-emerald-900/20" />
       </div>
     );
   }
 
   const transformedClasses: Class[] = (classes ?? []).map(
-    (cls: ClassResponse) => ({
+    (cls: any) => ({
       classId: cls.classId,
       grade: cls.grade,
       section: cls.section,
@@ -66,7 +79,7 @@ function TimetableContent() {
   );
 
   const transformedTeachers: Teacher[] = (teachers ?? []).map(
-    (teacher: EmployeeResponse) => ({
+    (teacher: any) => ({
       employeeId: teacher.employeeId,
       employeeName: teacher.employeeName,
       designation: teacher.designation,
@@ -75,113 +88,118 @@ function TimetableContent() {
   );
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 p-4 sm:p-6 md:p-8">
-      <div className="mx-auto w-screen max-w-[105rem] space-y-6 sm:space-y-8">
-        {/* Header */}
-        <div className="space-y-2 text-center sm:space-y-4">
-          <h1 className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-3xl font-extrabold text-transparent sm:text-4xl md:text-5xl">
+    <div className="w-full space-y-6">
+      <PageHeader breadcrumbs={breadcrumbs} />
+
+      {/* --- Header Section with Actions --- */}
+      <div className="flex flex-col justify-between gap-4 md:flex-row md:items-end">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-foreground sm:text-3xl">
             Timetable Management
           </h1>
-          <p className="mx-auto max-w-2xl text-sm text-muted-foreground sm:text-base md:text-lg">
-            Effortlessly manage class schedules with intuitive drag-and-drop
-            teacher assignments and real-time updates.
+          <p className="mt-1 max-w-xl text-sm text-muted-foreground dark:text-muted-foreground">
+            Manage class schedules, assign teachers, and view weekly timetables.
           </p>
         </div>
 
-        {/* View Mode Tabs */}
-        <Card className="overflow-hidden rounded-3xl border border-border bg-white/40 shadow-2xl backdrop-blur-xl transition-all duration-300 hover:shadow-indigo-500/20">
-          <CardHeader className="border-b border-border bg-gradient-to-r from-indigo-500/10 to-purple-500/10 p-4 sm:p-6">
-            <CardTitle className="flex items-center gap-2 text-base font-semibold text-indigo-800 sm:text-lg md:text-xl">
-              <GridIcon className="h-4 w-4 sm:h-5 sm:w-5" />
-              Choose Your View
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-4 sm:p-6">
-            <Tabs
-              value={viewMode}
-              onValueChange={(value) => setViewMode(value as TimetableViewMode)}
-              className="space-y-4 sm:space-y-6"
-            >
-              <TabsList className="mx-auto grid w-screen max-w-md grid-cols-2 gap-2 bg-transparent sm:gap-3 md:gap-4">
+        <div className="flex flex-wrap items-center gap-2">
+          <PageExportButton exportData={exportData} csvFilename="teachers-list" pdfReportType="teachers" />
+          <Button variant="outline" size="sm" className="gap-2">
+            <UploadCloud className="h-4 w-4" />
+            Import
+          </Button>
+          <Button size="sm" className="gap-2 bg-emerald-600 hover:bg-emerald-700 text-white">
+            <Printer className="h-4 w-4" />
+            Print All
+          </Button>
+        </div>
+      </div>
+
+      {/* --- Key Metrics Grid --- */}
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <GradientStatCard
+          title="Total Classes"
+          value={transformedClasses.length}
+          icon={LayoutGrid}
+          theme="emerald"
+        />
+        <GradientStatCard
+          title="Available Teachers"
+          value={transformedTeachers.length}
+          icon={Users}
+          theme="blue"
+        />
+        <GradientStatCard
+          title="Time Slots / Day"
+          value={DEFAULT_TIME_SLOTS.length}
+          icon={Clock}
+          theme="amber"
+        />
+        <GradientStatCard
+          title="Working Days"
+          value={6}
+          icon={Calendar}
+          theme="pink"
+        />
+      </div>
+
+      {/* View Mode Tabs */}
+      <Card className="overflow-hidden border border-slate-200 bg-white shadow-sm backdrop-blur-xl dark:border-emerald-500/10 dark:bg-card dark:shadow-2xl">
+        <CardHeader className="border-b border-slate-100 bg-slate-50/50 px-4 py-3 dark:border-border dark:bg-white/5">
+          <CardTitle className="flex items-center gap-2 text-base font-bold text-slate-900 dark:text-foreground">
+            <GridIcon className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+            Timetable Board
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="p-0 sm:p-0">
+          <Tabs
+            value={viewMode}
+            onValueChange={(value) => setViewMode(value as TimetableViewMode)}
+            className="w-full"
+          >
+            <div className="px-4 py-3 sm:px-6">
+              <TabsList className="h-auto flex-wrap justify-start gap-1 border border-slate-200 bg-slate-100 p-1 dark:border-border dark:bg-card">
                 <TabsTrigger
                   value="class"
-                  className="flex items-center justify-center gap-1 rounded-xl border border-border bg-white/30 text-sm shadow-md backdrop-blur-md transition-all duration-200 hover:scale-105 hover:bg-indigo-200/40 data-[state=active]:bg-indigo-500 data-[state=active]:text-foreground data-[state=active]:shadow-lg sm:gap-2 sm:text-base"
+                  className="gap-2 data-[state=active]:bg-white data-[state=active]:text-emerald-700 dark:data-[state=active]:bg-emerald-600 dark:data-[state=active]:text-foreground"
                 >
-                  <GridIcon className="h-3 w-3 sm:h-4 sm:w-4" />
+                  <LayoutGrid className="h-4 w-4" />
                   Class View
                 </TabsTrigger>
                 <TabsTrigger
                   value="teacher"
-                  className="flex items-center justify-center gap-1 rounded-xl border border-border bg-white/30 text-sm shadow-md backdrop-blur-md transition-all duration-200 hover:scale-105 hover:bg-purple-200/40 data-[state=active]:bg-purple-500 data-[state=active]:text-foreground data-[state=active]:shadow-lg sm:gap-2 sm:text-base"
+                  className="gap-2 data-[state=active]:bg-white data-[state=active]:text-emerald-700 dark:data-[state=active]:bg-emerald-600 dark:data-[state=active]:text-foreground"
                 >
-                  <Users className="h-4 w-4 sm:h-6 sm:w-6" />
+                  <Users className="h-4 w-4" />
                   Teacher View
                 </TabsTrigger>
               </TabsList>
+            </div>
 
-              {/* Classwise View */}
-              <TabsContent value="class" className="mt-4 sm:mt-6">
+            {/* Classwise View */}
+            <TabsContent value="class" className="m-0 border-t border-slate-100 dark:border-border duration-300 animate-in fade-in-50">
+              <div className="p-4 sm:p-6">
                 <ClasswiseView
                   classes={transformedClasses}
                   teachers={transformedTeachers}
                   defaultTimeSlots={DEFAULT_TIME_SLOTS}
                 />
-              </TabsContent>
+              </div>
+            </TabsContent>
 
-              {/* Teacherwise View */}
-              <TabsContent value="teacher" className="mt-4 sm:mt-6">
+            {/* Teacherwise View */}
+            <TabsContent value="teacher" className="m-0 border-t border-slate-100 dark:border-border duration-300 animate-in fade-in-50">
+              <div className="p-4 sm:p-6">
                 <TeacherwiseView
                   teachers={transformedTeachers}
                   classes={transformedClasses}
                   defaultTimeSlots={DEFAULT_TIME_SLOTS}
                 />
-              </TabsContent>
-            </Tabs>
-          </CardContent>
-        </Card>
-
-        {/* Features Card */}
-        <Card className="overflow-hidden rounded-3xl border border-border bg-white/40 shadow-2xl backdrop-blur-xl transition-all duration-300 hover:shadow-purple-500/20">
-          <CardHeader className="border-b border-border bg-gradient-to-r from-purple-500/10 to-pink-500/10 p-4 sm:p-6">
-            <CardTitle className="flex items-center gap-2 text-base font-semibold text-purple-800 sm:text-lg md:text-xl">
-              <AlertCircle className="h-4 w-4 sm:h-5 sm:w-5" />
-              Key Features
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3 p-4 text-xs text-muted-foreground sm:space-y-4 sm:p-6 sm:text-sm md:text-base">
-            <ul className="list-inside space-y-2 sm:space-y-3">
-              <li className="flex items-start gap-1 sm:gap-2">
-                <Clock className="mt-0.5 h-4 w-4 flex-shrink-0 text-indigo-500 sm:h-5 sm:w-5" />
-                <span>
-                  <strong>Classwise View:</strong> Drag and drop teachers to
-                  time slots with instant validation.
-                </span>
-              </li>
-              <li className="flex items-start gap-1 sm:gap-2">
-                <Users className="mt-0.5 h-4 w-4 flex-shrink-0 text-purple-500 sm:h-5 sm:w-5" />
-                <span>
-                  <strong>Teacherwise View:</strong> Comprehensive weekly
-                  overview with class details and timings.
-                </span>
-              </li>
-              <li className="flex items-start gap-1 sm:gap-2">
-                <AlertCircle className="mt-0.5 h-4 w-4 flex-shrink-0 text-pink-500 sm:h-5 sm:w-5" />
-                <span>
-                  <strong>Smart Sync:</strong> Real-time database updates with
-                  conflict prevention.
-                </span>
-              </li>
-              <li className="flex items-start gap-1 sm:gap-2">
-                <GridIcon className="mt-0.5 h-4 w-4 flex-shrink-0 text-indigo-500 sm:h-5 sm:w-5" />
-                <span>
-                  <strong>Responsive Design:</strong> Optimized for mobile,
-                  tablet, and desktop viewing.
-                </span>
-              </li>
-            </ul>
-          </CardContent>
-        </Card>
-      </div>
+              </div>
+            </TabsContent>
+          </Tabs>
+        </CardContent>
+      </Card>
     </div>
   );
 }
@@ -190,13 +208,14 @@ export default function TimetablePage() {
   return (
     <Suspense
       fallback={
-        <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-indigo-100 via-purple-100 to-pink-100 p-4">
-          <div className="space-y-2 text-center">
-            <Clock className="mx-auto h-8 w-8 animate-spin text-indigo-500" />
-            <p className="animate-pulse text-lg font-semibold text-indigo-700">
-              Preparing your timetable...
-            </p>
+        <div className="w-full space-y-4">
+          <div className="h-10 w-48 animate-pulse rounded-md bg-slate-200 dark:bg-emerald-900/20" />
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className="h-32 animate-pulse rounded-xl bg-slate-200 dark:bg-emerald-900/20" />
+            ))}
           </div>
+          <div className="h-96 w-full animate-pulse rounded-xl bg-slate-200 dark:bg-emerald-900/20" />
         </div>
       }
     >

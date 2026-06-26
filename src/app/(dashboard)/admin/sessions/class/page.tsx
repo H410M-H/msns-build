@@ -5,6 +5,7 @@ import { ClassAttendanceTab } from "~/components/blocks/class/ClassAttendanceTab
 import { ClassExamsTab } from "~/components/blocks/class/ClassExamsTab";
 import { ClassDiariesTab } from "~/components/blocks/class/ClassDiariesTab";
 import { ClassSubjectsTab } from "~/components/blocks/class/ClassSubjectsTab";
+import { ClassStatsHeader } from "~/components/blocks/class/ClassStatsHeader";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import {
   Users,
@@ -25,6 +26,10 @@ export default async function ClassDetailsPage({ searchParams }: PageProps) {
   const breadcrumbs = [
     { href: "/admin", label: "Dashboard" },
     {
+      href: `/admin/sessions`,
+      label: "Sessions",
+    },
+    {
       href: `/admin/sessions/${searchProps.sessionId}`,
       label: "Session Details",
     },
@@ -35,43 +40,45 @@ export default async function ClassDetailsPage({ searchParams }: PageProps) {
     <div className="w-full space-y-6">
       <PageHeader breadcrumbs={breadcrumbs} />
 
+      <ClassStatsHeader classId={searchProps.classId} sessionId={searchProps.sessionId} />
+
       {/* Render Table Directly without redundant Card wrapper */}
-      <div className="duration-500 animate-in fade-in">
+      <div className="duration-500 animate-in fade-in mt-6">
         <Tabs defaultValue="roster" className="w-full">
-          <TabsList className="mb-8 grid w-full grid-cols-3 bg-card p-1 md:grid-cols-6">
+          <TabsList className="mb-8 grid w-full grid-cols-3 bg-card p-1 md:grid-cols-6 border border-slate-200 dark:border-border">
             <TabsTrigger
               value="roster"
-              className="data-[state=active]:bg-emerald-600/20 data-[state=active]:text-emerald-400"
+              className="data-[state=active]:bg-emerald-600/20 data-[state=active]:text-emerald-700 dark:data-[state=active]:text-emerald-400"
             >
               <Users className="mr-2 h-4 w-4" /> Roster
             </TabsTrigger>
             <TabsTrigger
               value="subjects"
-              className="data-[state=active]:bg-teal-600/20 data-[state=active]:text-teal-400"
+              className="data-[state=active]:bg-teal-600/20 data-[state=active]:text-teal-700 dark:data-[state=active]:text-teal-400"
             >
               <Library className="mr-2 h-4 w-4" /> Subjects
             </TabsTrigger>
             <TabsTrigger
               value="timetable"
-              className="data-[state=active]:bg-blue-600/20 data-[state=active]:text-blue-400"
+              className="data-[state=active]:bg-blue-600/20 data-[state=active]:text-blue-700 dark:data-[state=active]:text-blue-400"
             >
               <Clock className="mr-2 h-4 w-4" /> Timetable
             </TabsTrigger>
             <TabsTrigger
               value="attendance"
-              className="data-[state=active]:bg-purple-600/20 data-[state=active]:text-purple-400"
+              className="data-[state=active]:bg-purple-600/20 data-[state=active]:text-purple-700 dark:data-[state=active]:text-purple-400"
             >
               <ClipboardCheck className="mr-2 h-4 w-4" /> Attendance
             </TabsTrigger>
             <TabsTrigger
               value="exams"
-              className="data-[state=active]:bg-amber-600/20 data-[state=active]:text-amber-400"
+              className="data-[state=active]:bg-amber-600/20 data-[state=active]:text-amber-700 dark:data-[state=active]:text-amber-400"
             >
               <FileText className="mr-2 h-4 w-4" /> Exams
             </TabsTrigger>
             <TabsTrigger
               value="diaries"
-              className="data-[state=active]:bg-indigo-600/20 data-[state=active]:text-indigo-400"
+              className="data-[state=active]:bg-indigo-600/20 data-[state=active]:text-indigo-700 dark:data-[state=active]:text-indigo-400"
             >
               <BookOpen className="mr-2 h-4 w-4" /> Diaries
             </TabsTrigger>

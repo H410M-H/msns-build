@@ -1,15 +1,19 @@
 "use client";
 
 import Link from "next/link";
+import { useMemo } from "react";
 import {
   Building2, ShoppingCart, Package, Landmark, Wallet,
   BarChart3, Receipt, ArrowRight, TrendingDown, TrendingUp,
-  AlertTriangle, CheckCircle2,
+  AlertTriangle, CheckCircle2, Settings, LayoutGrid, BellRing, PieChart
 } from "lucide-react";
 import { PageHeader } from "~/components/blocks/nav/PageHeader";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "~/components/ui/card";
 import { Badge } from "~/components/ui/badge";
 import { api } from "~/trpc/react";
+import { GradientStatCard } from "~/components/shared/GradientStatCard";
+import { PageExportButton } from "~/components/shared/PageExportButton";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 
 const ERP_MODULES = [
   {
@@ -154,30 +158,43 @@ export default function ErpHubPage() {
     } : null,
   ].filter(Boolean);
 
+  const exportData = useMemo(() => {
+    return {
+      columns: [
+        { key: "module", label: "ERP Module", width: 30 },
+        { key: "description", label: "Description", width: 70 },
+      ],
+      rows: ERP_MODULES.map(m => ({
+        module: m.title,
+        description: m.description,
+      })),
+      sheetName: "ERP Modules",
+      title: "ERP Hub Modules List",
+    };
+  }, []);
+
   return (
     <div className="w-full space-y-6">
       <PageHeader
         breadcrumbs={[
           { href: "/admin", label: "Admin" },
-          { href: "/admin/erp", label: "ERP Control Centre" },
+          { href: "/admin/erp", label: "ERP Control Centre", current: true },
         ]}
       />
 
-      {/* Header */}
-      <div className="flex flex-col gap-2">
-        <div className="flex items-center gap-3">
-          <div className="rounded-xl border border-emerald-200 bg-gradient-to-br from-emerald-100 to-teal-100 p-2.5 text-emerald-600 shadow-sm dark:border-emerald-500/20 dark:from-emerald-500/10 dark:to-teal-500/10 dark:text-emerald-400">
-            <BarChart3 className="h-6 w-6" />
-          </div>
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-foreground sm:text-3xl">
-              ERP{" "}
-              <span className="text-emerald-600 dark:text-emerald-400">Control Centre</span>
-            </h1>
-            <p className="text-sm text-muted-foreground">
-              Integrated financial management — budgets, procurement, assets, and reporting
-            </p>
-          </div>
+      {/* --- Header Section --- */}
+      <div className="flex flex-col justify-between gap-4 md:flex-row md:items-end">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-foreground sm:text-3xl">
+            ERP Control Centre
+          </h1>
+          <p className="mt-1 max-w-xl text-sm text-muted-foreground dark:text-muted-foreground">
+            Integrated financial management — budgets, procurement, assets, and reporting
+          </p>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-2">
+          <PageExportButton exportData={exportData} csvFilename="erp-modules" />
         </div>
       </div>
 
@@ -196,54 +213,127 @@ export default function ErpHubPage() {
         </div>
       )}
 
-      {/* Quick Stats Row */}
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        {[
-          { label: "Pending POs", value: pendingPOs?.total ?? 0, icon: TrendingUp, color: "violet" },
-          { label: "Low Stock Items", value: lowStockItems?.length ?? 0, icon: TrendingDown, color: "amber" },
-          { label: "Overdue Maintenance", value: overdueMaintenance?.length ?? 0, icon: AlertTriangle, color: "rose" },
-          { label: "Active Session", value: latestSession?.sessionName ?? "—", icon: CheckCircle2, color: "emerald" },
-        ].map((stat) => (
-          <Card key={stat.label} className="border-slate-200 bg-white/60 shadow-sm backdrop-blur-sm dark:border-border dark:bg-card">
-            <CardContent className="p-4">
-              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{stat.label}</p>
-              <p className="mt-1 text-2xl font-bold text-slate-900 dark:text-foreground">{stat.value}</p>
-            </CardContent>
-          </Card>
-        ))}
+      {/* --- Key Metrics Grid --- */}
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <GradientStatCard
+          title="Pending POs"
+          value={pendingPOs?.total ?? 0}
+          icon={TrendingUp}
+          theme="violet"
+        />
+        <GradientStatCard
+          title="Low Stock Items"
+          value={lowStockItems?.length ?? 0}
+          icon={TrendingDown}
+          theme="amber"
+        />
+        <GradientStatCard
+          title="Overdue Maintenance"
+          value={overdueMaintenance?.length ?? 0}
+          icon={AlertTriangle}
+          theme="rose"
+        />
+        <GradientStatCard
+          title="Active Session"
+          value={latestSession?.sessionName ?? "—"}
+          icon={CheckCircle2}
+          theme="emerald"
+        />
       </div>
 
-      {/* Module Grid */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
-        {ERP_MODULES.map((mod) => {
-          const Icon = mod.icon;
-          return (
-            <Link key={mod.href} href={mod.href}>
-              <Card className={`group h-full cursor-pointer border-slate-200 bg-white/70 shadow-sm backdrop-blur-sm transition-all duration-200 hover:shadow-md dark:border-border dark:bg-card ${mod.cardClass}`}>
-                <CardHeader className="pb-3">
-                  <div className="flex items-start justify-between">
-                    <div className={`rounded-xl border p-2.5 ${mod.accentClass}`}>
-                      <Icon className="h-5 w-5" />
+      {/* --- Tabs Section --- */}
+      <Tabs defaultValue="modules" className="space-y-6">
+        <TabsList className="h-auto flex-wrap justify-start gap-1 border border-slate-200 bg-slate-100 p-1 dark:border-border dark:bg-card">
+          <TabsTrigger value="modules" className="gap-2 data-[state=active]:bg-white data-[state=active]:text-emerald-700 dark:data-[state=active]:bg-emerald-600 dark:data-[state=active]:text-foreground">
+            <LayoutGrid className="h-4 w-4" />
+            ERP Modules
+          </TabsTrigger>
+          <TabsTrigger value="analytics" className="gap-2 data-[state=active]:bg-white data-[state=active]:text-emerald-700 dark:data-[state=active]:bg-emerald-600 dark:data-[state=active]:text-foreground">
+            <PieChart className="h-4 w-4" />
+            Dashboard Analytics
+          </TabsTrigger>
+          <TabsTrigger value="alerts" className="gap-2 data-[state=active]:bg-white data-[state=active]:text-emerald-700 dark:data-[state=active]:bg-emerald-600 dark:data-[state=active]:text-foreground">
+            <BellRing className="h-4 w-4" />
+            System Alerts
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="modules" className="m-0 duration-300 animate-in fade-in-50">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+            {ERP_MODULES.map((mod) => {
+              const Icon = mod.icon;
+              return (
+                <Link key={mod.href} href={mod.href}>
+                  <Card className={`group h-full cursor-pointer border-slate-200 bg-white/70 shadow-sm backdrop-blur-sm transition-all duration-200 hover:shadow-md dark:border-border dark:bg-card ${mod.cardClass}`}>
+                    <CardHeader className="pb-3">
+                      <div className="flex items-start justify-between">
+                        <div className={`rounded-xl border p-2.5 ${mod.accentClass}`}>
+                          <Icon className="h-5 w-5" />
+                        </div>
+                        <ArrowRight className="h-4 w-4 translate-x-0 text-muted-foreground opacity-0 transition-all duration-200 group-hover:translate-x-1 group-hover:opacity-100" />
+                      </div>
+                      <CardTitle className="mt-3 text-base font-bold text-slate-900 dark:text-foreground">
+                        {mod.title}
+                      </CardTitle>
+                      <CardDescription className="text-xs leading-relaxed text-muted-foreground">
+                        {mod.description}
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="pt-0">
+                      <Badge variant="outline" className={`text-xs font-medium ${mod.badgeClass}`}>
+                        ERP v2.0
+                      </Badge>
+                    </CardContent>
+                  </Card>
+                </Link>
+              );
+            })}
+          </div>
+        </TabsContent>
+
+        <TabsContent value="analytics" className="m-0 duration-300 animate-in fade-in-50">
+          <Card className="border border-slate-200 bg-white shadow-sm dark:border-emerald-500/10 dark:bg-card">
+            <CardHeader>
+              <CardTitle>Enterprise Analytics</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex h-64 items-center justify-center rounded-lg border border-dashed border-slate-200 dark:border-border">
+                <div className="text-center text-muted-foreground">
+                  <PieChart className="mx-auto mb-2 h-8 w-8 opacity-20" />
+                  <p>Comprehensive enterprise analytics coming soon</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="alerts" className="m-0 duration-300 animate-in fade-in-50">
+          <Card className="border border-slate-200 bg-white shadow-sm dark:border-emerald-500/10 dark:bg-card">
+            <CardHeader>
+              <CardTitle>System Alerts &amp; Notifications</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {alerts.length > 0 ? (
+                <div className="space-y-4">
+                  {alerts.map((alert, i) => (
+                    <div key={i} className="flex items-center gap-3 rounded-lg border border-slate-200 p-4 dark:border-border">
+                      <AlertTriangle className="h-5 w-5 text-amber-500" />
+                      <span className="text-sm font-medium text-slate-700 dark:text-foreground">{alert!.message}</span>
                     </div>
-                    <ArrowRight className="h-4 w-4 translate-x-0 text-muted-foreground opacity-0 transition-all duration-200 group-hover:translate-x-1 group-hover:opacity-100" />
+                  ))}
+                </div>
+              ) : (
+                <div className="flex h-64 items-center justify-center rounded-lg border border-dashed border-slate-200 dark:border-border">
+                  <div className="text-center text-muted-foreground">
+                    <BellRing className="mx-auto mb-2 h-8 w-8 opacity-20" />
+                    <p>No active system alerts</p>
                   </div>
-                  <CardTitle className="mt-3 text-base font-bold text-slate-900 dark:text-foreground">
-                    {mod.title}
-                  </CardTitle>
-                  <CardDescription className="text-xs leading-relaxed text-muted-foreground">
-                    {mod.description}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="pt-0">
-                  <Badge variant="outline" className={`text-xs font-medium ${mod.badgeClass}`}>
-                    ERP v2.0
-                  </Badge>
-                </CardContent>
-              </Card>
-            </Link>
-          );
-        })}
-      </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
