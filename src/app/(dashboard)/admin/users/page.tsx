@@ -2,7 +2,7 @@
 
 import { useMemo } from "react";
 import { motion } from "framer-motion";
-import { GraduationCap, ArrowRight, Sparkles, Users, UserCheck, Shield, FileSpreadsheet } from "lucide-react";
+import { GraduationCap, Sparkles, Users, UserCheck, Shield, FileSpreadsheet } from "lucide-react";
 import { PageHeader } from "~/components/blocks/nav/PageHeader";
 import RegistrationCards from "~/components/cards/RegistrationCard";
 import { GradientStatCard } from "~/components/shared/GradientStatCard";
@@ -10,7 +10,6 @@ import { PageExportButton } from "~/components/shared/PageExportButton";
 import { api } from "~/trpc/react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
-import { Button } from "~/components/ui/button";
 
 export default function RegistrationPage() {
   const breadcrumbs = [
@@ -41,7 +40,7 @@ export default function RegistrationPage() {
           type: "Faculty",
           id: f.employeeId,
           name: f.employeeName,
-          contact: f.mobile,
+          contact: f.mobileNo,
         }))
       ],
       sheetName: "All Users",

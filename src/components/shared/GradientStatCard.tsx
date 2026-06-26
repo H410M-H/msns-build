@@ -10,9 +10,9 @@ import { cn } from "~/lib/utils";
 export interface GradientStatCardProps {
   title: string;
   value: number | string;
-  icon: React.ElementType;
+  icon: React.ComponentType<{ className?: string }> | React.ReactNode;
   trend?: number | null;
-  theme?: "blue" | "green" | "orange" | "purple" | "pink" | "amber" | "indigo" | "emerald";
+  theme?: "blue" | "green" | "orange" | "purple" | "pink" | "amber" | "indigo" | "emerald" | "rose" | "violet";
   isLoading?: boolean;
   formatAsCurrency?: boolean;
   subtitle?: string;
@@ -21,7 +21,7 @@ export interface GradientStatCardProps {
 export function GradientStatCard({
   title,
   value,
-  icon: Icon,
+  icon,
   trend,
   theme = "blue",
   isLoading = false,
@@ -37,6 +37,8 @@ export function GradientStatCard({
     pink: "bg-pink-50 border-pink-200 text-pink-700 dark:bg-pink-500/10 dark:border-pink-500/20 dark:text-pink-300 hover:shadow-pink-500/10",
     amber: "bg-amber-50 border-amber-200 text-amber-700 dark:bg-amber-500/10 dark:border-amber-500/20 dark:text-amber-300 hover:shadow-amber-500/10",
     indigo: "bg-indigo-50 border-indigo-200 text-indigo-700 dark:bg-indigo-500/10 dark:border-indigo-500/20 dark:text-indigo-300 hover:shadow-indigo-500/10",
+    rose: "bg-rose-50 border-rose-200 text-rose-700 dark:bg-rose-500/10 dark:border-rose-500/20 dark:text-rose-300 hover:shadow-rose-500/10",
+    violet: "bg-violet-50 border-violet-200 text-violet-700 dark:bg-violet-500/10 dark:border-violet-500/20 dark:text-violet-300 hover:shadow-violet-500/10",
   };
 
   const iconColorClasses = {
@@ -48,6 +50,8 @@ export function GradientStatCard({
     pink: "bg-pink-100 text-pink-600 dark:bg-pink-500/20 dark:text-pink-400",
     amber: "bg-amber-100 text-amber-600 dark:bg-amber-500/20 dark:text-amber-400",
     indigo: "bg-indigo-100 text-indigo-600 dark:bg-indigo-500/20 dark:text-indigo-400",
+    rose: "bg-rose-100 text-rose-600 dark:bg-rose-500/20 dark:text-rose-400",
+    violet: "bg-violet-100 text-violet-600 dark:bg-violet-500/20 dark:text-violet-400",
   };
 
   const displayValue = formatAsCurrency && typeof value === 'number'
@@ -66,7 +70,16 @@ export function GradientStatCard({
           {title}
         </CardTitle>
         <div className={cn("rounded-lg p-2", iconColorClasses[theme])}>
-          <Icon className="h-4 w-4" />
+          {icon && (
+            typeof icon === "function" || (typeof icon === "object" && !("props" in icon)) ? (
+              (() => {
+                const IconComp = icon as React.ComponentType<{ className?: string }>;
+                return <IconComp className="h-4 w-4" />;
+              })()
+            ) : (
+              icon
+            )
+          )}
         </div>
       </CardHeader>
       <CardContent>

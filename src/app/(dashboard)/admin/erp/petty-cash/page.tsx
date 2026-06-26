@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { api } from "~/trpc/react";
 import { PageHeader } from "~/components/blocks/nav/PageHeader";
 import { Card, CardContent } from "~/components/ui/card";
@@ -12,9 +12,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "~/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "~/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
-import { Wallet, Plus, Loader2, AlertTriangle, ArrowDown, ArrowUp, RefreshCw } from "lucide-react";
+import { Wallet, Plus, Loader2, ArrowDown, ArrowUp, RefreshCw, Landmark, Percent } from "lucide-react";
 import { toast } from "sonner";
-import { Progress } from "~/components/ui/progress";
+import { GradientStatCard } from "~/components/shared/GradientStatCard";
+import { PageExportButton } from "~/components/shared/PageExportButton";
+import { Separator } from "~/components/ui/separator";
 
 export default function PettyCashPage() {
   const [disbForm, setDisbForm] = useState({ amount: 0, payee: "", purpose: "", expenseCategory: "" });
@@ -26,7 +28,7 @@ export default function PettyCashPage() {
   const [selectedSessionId, setSelectedSessionId] = useState("");
 
   const { data: sessions } = api.session.getSessions.useQuery();
-  const { data: register, refetch } = api.erp.pettyCash.getRegister.useQuery(
+  const { data: register, refetch, isLoading } = api.erp.pettyCash.getRegister.useQuery(
     { sessionId: selectedSessionId },
     { enabled: !!selectedSessionId },
   );
@@ -53,25 +55,67 @@ export default function PettyCashPage() {
     ? Math.round((register.currentBalance / register.openingBalance) * 100)
     : 0;
 
+  // Stats computation
+  const stats = useMemo(() => {
+    if (!register) return { current: 0, opening: 0, disbursements: 0, reconciliations: 0 };
+    const current = register.currentBalance;
+    const opening = register.openingBalance;
+    const disbursements = register.Disbursements.reduce((sum, d) => sum + d.amount, 0);
+    const reconciliations = register.Reconciliations.length;
+    return { current, opening, disbursements, reconciliations };
+  }, [register]);
+
+  // Export Data definition
+  const exportData = useMemo(() => {
+    if (!register) return undefined;
+    return {
+      columns: [
+        { key: "date", label: "Date" },
+        { key: "payee", label: "Payee" },
+        { key: "purpose", label: "Purpose" },
+        { key: "category", label: "Category" },
+        { key: "amount", label: "Amount (PKR)" },
+        { key: "by", label: "Recorded By" },
+      ],
+      rows: register.Disbursements.map(d => ({
+        date: new Date(d.date).toLocaleDateString(),
+        payee: d.payee,
+        purpose: d.purpose,
+        category: d.expenseCategory,
+        amount: d.amount.toLocaleString(),
+        by: d.RecordedBy.employeeName,
+      })),
+      sheetName: "Petty Cash Disbursements",
+      title: "Petty Cash Disbursements Log",
+    };
+  }, [register]);
+
   return (
-    <div className="w-full space-y-5">
+    <div className="w-full space-y-6">
       <PageHeader breadcrumbs={[
         { href: "/admin", label: "Admin" },
         { href: "/admin/erp", label: "ERP" },
         { href: "/admin/erp/petty-cash", label: "Petty Cash" },
       ]} />
 
-      <div className="flex items-center gap-3">
-        <div className="rounded-xl border border-orange-200 bg-orange-100 p-2.5 text-orange-600 dark:border-orange-500/20 dark:bg-orange-500/10 dark:text-orange-400">
-          <Wallet className="h-5 w-5" />
+      <div className="flex flex-col justify-between gap-4 md:flex-row md:items-end">
+        <div className="flex items-center gap-3">
+          <div className="rounded-xl border border-orange-200 bg-orange-100 p-2.5 text-orange-600 dark:border-orange-500/20 dark:bg-orange-500/10 dark:text-orange-400">
+            <Wallet className="h-5 w-5" />
+          </div>
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-foreground">
+              Petty <span className="text-orange-600 dark:text-orange-400">Cash</span>
+            </h1>
+            <p className="text-sm text-muted-foreground">Manage petty cash registers, disbursements, and reconciliations</p>
+          </div>
         </div>
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-foreground">
-            Petty <span className="text-orange-600 dark:text-orange-400">Cash</span>
-          </h1>
-          <p className="text-sm text-muted-foreground">Manage petty cash registers, disbursements, and reconciliations</p>
+        <div className="flex items-center gap-2">
+          <PageExportButton exportData={exportData} csvFilename="petty-cash-disbursements" />
         </div>
       </div>
+
+      <Separator className="bg-orange-500/20" />
 
       {/* Session Selector */}
       <Card className="border-slate-200 bg-white/50 shadow-sm dark:border-border dark:bg-card">
@@ -94,7 +138,7 @@ export default function PettyCashPage() {
         </div>
       )}
 
-      {selectedSessionId && !register && (
+      {selectedSessionId && !register && !isLoading && (
         <div className="flex items-center justify-center rounded-2xl border border-dashed border-orange-200 bg-orange-50/50 py-10 text-center dark:border-orange-500/20 dark:bg-orange-500/5">
           <div>
             <p className="mb-3 text-sm font-medium text-orange-700 dark:text-orange-400">No petty cash register for this session.</p>
@@ -112,32 +156,33 @@ export default function PettyCashPage() {
 
       {register && (
         <>
-          {/* Balance Card */}
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-            <Card className={`border ${register.needsReplenishment ? "border-red-200 bg-red-50/60 dark:border-red-500/20 dark:bg-red-500/5" : "border-emerald-200 bg-emerald-50/60 dark:border-emerald-500/20 dark:bg-emerald-500/5"} shadow-sm`}>
-              <CardContent className="p-4">
-                <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Current Balance</p>
-                <p className={`mt-1 font-mono text-2xl font-bold ${register.needsReplenishment ? "text-red-700 dark:text-red-400" : "text-emerald-700 dark:text-emerald-400"}`}>
-                  PKR {register.currentBalance.toLocaleString()}
-                </p>
-                {register.needsReplenishment && (
-                  <p className="mt-1 flex items-center gap-1 text-xs text-red-600 dark:text-red-400"><AlertTriangle className="h-3 w-3" /> Below minimum threshold</p>
-                )}
-              </CardContent>
-            </Card>
-            <Card className="border-slate-200 bg-white/60 shadow-sm dark:border-border dark:bg-card">
-              <CardContent className="p-4">
-                <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Opening Balance</p>
-                <p className="mt-1 font-mono text-2xl font-bold text-slate-900 dark:text-foreground">PKR {register.openingBalance.toLocaleString()}</p>
-              </CardContent>
-            </Card>
-            <Card className="border-slate-200 bg-white/60 shadow-sm dark:border-border dark:bg-card">
-              <CardContent className="p-4">
-                <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Balance Health</p>
-                <Progress value={balancePct} className="mt-2 h-3" />
-                <p className="mt-1 text-xs text-muted-foreground">{balancePct}% of opening balance remaining</p>
-              </CardContent>
-            </Card>
+          {/* Stats Cards */}
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <GradientStatCard
+              title="Current Balance"
+              value={isLoading ? "..." : `PKR ${stats.current.toLocaleString()}`}
+              icon={<Wallet className="h-5 w-5" />}
+              theme={register.needsReplenishment ? "rose" : "emerald"}
+              subtitle={register.needsReplenishment ? "Below minimum threshold" : "Balance Healthy"}
+            />
+            <GradientStatCard
+              title="Opening Balance"
+              value={isLoading ? "..." : `PKR ${stats.opening.toLocaleString()}`}
+              icon={<Landmark className="h-5 w-5" />}
+              theme="blue"
+            />
+            <GradientStatCard
+              title="Total Disbursed"
+              value={isLoading ? "..." : `PKR ${stats.disbursements.toLocaleString()}`}
+              icon={<ArrowDown className="h-5 w-5" />}
+              theme="orange"
+            />
+            <GradientStatCard
+              title="Remaining Health"
+              value={isLoading ? "..." : `${balancePct}%`}
+              icon={<Percent className="h-5 w-5" />}
+              theme="purple"
+            />
           </div>
 
           {/* Actions */}
@@ -203,16 +248,18 @@ export default function PettyCashPage() {
                       {register.Reconciliations.map(r => (
                         <TableRow key={r.reconciliationId} className="border-b border-slate-100 hover:bg-slate-50/50 dark:border-border dark:hover:bg-white/5">
                           <TableCell className="font-mono text-xs">{new Date(r.performedAt).toLocaleDateString()}</TableCell>
-                          <TableCell className="font-mono text-sm">PKR {r.systemBalance.toLocaleString()}</TableCell>
-                          <TableCell className="font-mono text-sm">PKR {r.physicalCount.toLocaleString()}</TableCell>
-                          <TableCell className={`font-mono text-sm font-bold ${r.variance >= 0 ? "text-emerald-600 dark:text-emerald-400" : "text-red-600 dark:text-red-400"}`}>
-                            {r.variance >= 0 ? "+" : ""}{r.variance.toLocaleString()}
+                          <TableCell className="font-mono text-sm font-semibold">PKR {r.systemBalance.toLocaleString()}</TableCell>
+                          <TableCell className="font-mono text-sm font-semibold">PKR {r.physicalCount.toLocaleString()}</TableCell>
+                          <TableCell>
+                            <Badge variant="outline" className={`text-xs font-mono font-bold ${r.variance === 0 ? "border-slate-300 bg-slate-50 text-slate-700" : r.variance > 0 ? "border-emerald-300 bg-emerald-50 text-emerald-700 dark:border-emerald-500/20 dark:bg-emerald-500/5 dark:text-emerald-400" : "border-red-300 bg-red-50 text-red-700 dark:border-red-500/20 dark:bg-red-500/5 dark:text-red-400"}`}>
+                              {r.variance > 0 ? "+" : ""}{r.variance.toLocaleString()}
+                            </Badge>
                           </TableCell>
                           <TableCell className="text-xs text-muted-foreground">{r.PerformedBy.employeeName}</TableCell>
                         </TableRow>
                       ))}
                       {!register.Reconciliations.length && (
-                        <TableRow><TableCell colSpan={5} className="py-10 text-center text-sm text-muted-foreground">No reconciliations yet.</TableCell></TableRow>
+                        <TableRow><TableCell colSpan={5} className="py-10 text-center text-sm text-muted-foreground">No reconciliations performed yet.</TableCell></TableRow>
                       )}
                     </TableBody>
                   </Table>
@@ -223,49 +270,66 @@ export default function PettyCashPage() {
         </>
       )}
 
-      {/* Disbursement Dialog */}
+      {/* Record Disbursement Dialog */}
       <Dialog open={showDisbDialog} onOpenChange={setShowDisbDialog}>
         <DialogContent className="sm:max-w-md">
-          <DialogHeader><DialogTitle>Record Disbursement</DialogTitle></DialogHeader>
+          <DialogHeader><DialogTitle><ArrowDown className="inline mr-2 h-4 w-4 text-orange-500" />Record Disbursement</DialogTitle></DialogHeader>
           <div className="space-y-3 pt-2">
             <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1.5"><Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Payee</Label><Input value={disbForm.payee} onChange={e => setDisbForm({ ...disbForm, payee: e.target.value })} /></div>
+              <div className="space-y-1.5"><Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Payee Name</Label><Input value={disbForm.payee} onChange={e => setDisbForm({ ...disbForm, payee: e.target.value })} /></div>
               <div className="space-y-1.5"><Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Amount (PKR)</Label><Input type="number" value={disbForm.amount || ""} onChange={e => setDisbForm({ ...disbForm, amount: parseFloat(e.target.value) })} /></div>
             </div>
-            <div className="space-y-1.5"><Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Purpose</Label><Input value={disbForm.purpose} onChange={e => setDisbForm({ ...disbForm, purpose: e.target.value })} /></div>
-            <div className="space-y-1.5"><Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Category</Label><Input value={disbForm.expenseCategory} onChange={e => setDisbForm({ ...disbForm, expenseCategory: e.target.value })} placeholder="e.g. Office Supplies" /></div>
-            <Button className="w-full bg-orange-600 text-white hover:bg-orange-700" disabled={disburse.isPending || !disbForm.payee || !disbForm.purpose || disbForm.amount <= 0}
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5"><Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Purpose</Label><Input value={disbForm.purpose} onChange={e => setDisbForm({ ...disbForm, purpose: e.target.value })} /></div>
+              <div className="space-y-1.5">
+                <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Expense Category</Label>
+                <Select value={disbForm.expenseCategory} onValueChange={v => setDisbForm({ ...disbForm, expenseCategory: v })}>
+                  <SelectTrigger><SelectValue placeholder="Category" /></SelectTrigger>
+                  <SelectContent>{["Stationery", "Utilities", "Repairs", "Entertainment", "Logistics", "Others"].map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
+                </Select>
+              </div>
+            </div>
+            <Button className="w-full bg-orange-600 text-white hover:bg-orange-700" disabled={disburse.isPending || !disbForm.amount || !disbForm.payee}
               onClick={() => disburse.mutate({ sessionId: selectedSessionId, ...disbForm })}>
-              {disburse.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <ArrowDown className="mr-2 h-4 w-4" />} Record Disbursement
+              {disburse.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null} Record Disbursement
             </Button>
           </div>
         </DialogContent>
       </Dialog>
 
-      {/* Replenishment Dialog */}
+      {/* Replenish Dialog */}
       <Dialog open={showReplenishDialog} onOpenChange={setShowReplenishDialog}>
-        <DialogContent className="sm:max-w-sm">
-          <DialogHeader><DialogTitle>Replenish Petty Cash</DialogTitle></DialogHeader>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader><DialogTitle><ArrowUp className="inline mr-2 h-4 w-4 text-emerald-500" />Replenish Register</DialogTitle></DialogHeader>
           <div className="space-y-3 pt-2">
-            <div className="space-y-1.5"><Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Amount (PKR)</Label><Input type="number" value={replenishAmount || ""} onChange={e => setReplenishAmount(parseFloat(e.target.value))} /></div>
-            <Button className="w-full bg-emerald-600 text-white hover:bg-emerald-700" disabled={replenish.isPending || replenishAmount <= 0}
+            <div className="space-y-1.5">
+              <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Replenish Amount (PKR)</Label>
+              <Input type="number" value={replenishAmount || ""} onChange={e => setReplenishAmount(parseFloat(e.target.value))} />
+            </div>
+             <Button className="w-full bg-emerald-600 text-white hover:bg-emerald-700" disabled={replenish.isPending || !replenishAmount}
               onClick={() => replenish.mutate({ sessionId: selectedSessionId, amount: replenishAmount })}>
-              {replenish.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <ArrowUp className="mr-2 h-4 w-4" />} Replenish
+              {replenish.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null} Replenish Register
             </Button>
           </div>
         </DialogContent>
       </Dialog>
 
-      {/* Reconciliation Dialog */}
+      {/* Reconcile Dialog */}
       <Dialog open={showReconDialog} onOpenChange={setShowReconDialog}>
-        <DialogContent className="sm:max-w-sm">
-          <DialogHeader><DialogTitle>Reconcile Petty Cash</DialogTitle></DialogHeader>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader><DialogTitle><RefreshCw className="inline mr-2 h-4 w-4 text-slate-500" />Perform Reconciliation</DialogTitle></DialogHeader>
           <div className="space-y-3 pt-2">
-            <div className="space-y-1.5"><Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Physical Count (PKR)</Label><Input type="number" value={reconForm.physicalCount || ""} onChange={e => setReconForm({ ...reconForm, physicalCount: parseFloat(e.target.value) })} /></div>
-            <div className="space-y-1.5"><Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Explanation</Label><Input value={reconForm.explanation} onChange={e => setReconForm({ ...reconForm, explanation: e.target.value })} /></div>
-            <Button className="w-full bg-blue-600 text-white hover:bg-blue-700" disabled={reconcile.isPending}
+            <div className="space-y-1.5">
+              <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Physical Cash Count (PKR)</Label>
+              <Input type="number" value={reconForm.physicalCount || ""} onChange={e => setReconForm({ ...reconForm, physicalCount: parseFloat(e.target.value) })} />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Notes / Explanation</Label>
+              <Input value={reconForm.explanation} onChange={e => setReconForm({ ...reconForm, explanation: e.target.value })} placeholder="e.g. Reconciliation verified" />
+            </div>
+            <Button className="w-full bg-slate-700 text-white hover:bg-slate-800" disabled={reconcile.isPending}
               onClick={() => reconcile.mutate({ sessionId: selectedSessionId, ...reconForm })}>
-              {reconcile.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null} Save Reconciliation
+              {reconcile.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null} Complete Reconciliation
             </Button>
           </div>
         </DialogContent>

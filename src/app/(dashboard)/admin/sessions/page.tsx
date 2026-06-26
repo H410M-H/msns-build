@@ -11,7 +11,6 @@ import { PageHeader } from "~/components/blocks/nav/PageHeader";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import { GradientStatCard } from "~/components/shared/GradientStatCard";
 import { PageExportButton } from "~/components/shared/PageExportButton";
-import { cn } from "~/lib/utils";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 
 // --- Icons ---
@@ -95,7 +94,7 @@ export default function SessionFeePage() {
       ],
       rows: allSessions.map((s) => ({
         sessionName: s.sessionName,
-        year: s.year,
+        year: s.sessionFrom ? new Date(s.sessionFrom).getFullYear() : null,
         startDate: s.sessionFrom ? new Date(s.sessionFrom) : null,
         endDate: s.sessionTo ? new Date(s.sessionTo) : null,
         status: s.isActive ? "Active" : "Inactive",

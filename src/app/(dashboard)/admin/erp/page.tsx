@@ -1,19 +1,24 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo } from "react";
+import { useMemo, useState, useEffect } from "react";
 import {
   Building2, ShoppingCart, Package, Landmark, Wallet,
   BarChart3, Receipt, ArrowRight, TrendingDown, TrendingUp,
-  AlertTriangle, CheckCircle2, Settings, LayoutGrid, BellRing, PieChart
+  AlertTriangle, CheckCircle2, LayoutGrid, BellRing, PieChart,
+  DollarSign, Briefcase, UserPlus
 } from "lucide-react";
 import { PageHeader } from "~/components/blocks/nav/PageHeader";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "~/components/ui/card";
 import { Badge } from "~/components/ui/badge";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
 import { api } from "~/trpc/react";
 import { GradientStatCard } from "~/components/shared/GradientStatCard";
 import { PageExportButton } from "~/components/shared/PageExportButton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
+import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, PieChart as RechartsPieChart, Pie, Cell, Legend } from "recharts";
+
+const COLORS = ["#7c3aed", "#ef4444", "#f59e0b", "#3b82f6", "#10b981"];
 
 const ERP_MODULES = [
   {
@@ -53,7 +58,7 @@ const ERP_MODULES = [
     icon: BarChart3,
     color: "amber",
     accentClass: "border-amber-200 bg-amber-100 text-amber-600 dark:border-amber-500/20 dark:bg-amber-500/10 dark:text-amber-400",
-    badgeClass: "border-amber-500/20 bg-amber-500/5 text-amber-600 dark:text-amber-400",
+    badgeClass: "border-amber-500/20 bg-emerald-500/5 text-amber-600 dark:text-amber-400",
     cardClass: "hover:border-amber-300 dark:hover:border-amber-500/30",
   },
   {
@@ -129,8 +134,15 @@ const ERP_MODULES = [
 ];
 
 export default function ErpHubPage() {
+  const [selectedSessionId, setSelectedSessionId] = useState<string>("");
   const { data: sessions } = api.session.getSessions.useQuery();
   const latestSession = sessions?.[0];
+
+  useEffect(() => {
+    if (latestSession && !selectedSessionId) {
+      setSelectedSessionId(latestSession.sessionId);
+    }
+  }, [latestSession, selectedSessionId]);
 
   const { data: pendingPOs } = api.erp.purchaseOrders.getAll.useQuery(
     { status: "PendingApprovalL1", pageSize: 1 },
@@ -139,6 +151,58 @@ export default function ErpHubPage() {
     { lowStockOnly: true },
   );
   const { data: overdueMaintenance } = api.erp.assets.getOverdueMaintenance.useQuery();
+
+  // Profit/Loss Yearly Analytics
+  const { data: profitLoss, isLoading: isPLLoading } = api.erp.ledger.getProfitLoss.useQuery(
+    { sessionId: selectedSessionId },
+    { enabled: !!selectedSessionId }
+  );
+
+  // New Student registrations
+  const { data: students } = api.student.getStudents.useQuery();
+
+  const newRegistrations = useMemo(() => {
+    if (!students || !selectedSessionId || !sessions) return 0;
+    const session = sessions.find(s => s.sessionId === selectedSessionId);
+    if (!session) return 0;
+    const from = new Date(session.sessionFrom);
+    const to = new Date(session.sessionTo);
+    return students.filter(s => {
+      const created = new Date(s.createdAt);
+      return created >= from && created <= to;
+    }).length;
+  }, [students, selectedSessionId, sessions]);
+
+  const totalOtherExpenses = useMemo(() => {
+    if (!profitLoss) return 0;
+    const { directExpenses, pettyCash, purchaseOrders, otherExpenses } = profitLoss.breakdown;
+    return directExpenses + pettyCash + purchaseOrders + otherExpenses;
+  }, [profitLoss]);
+
+  // Chart Data: Revenue vs Expenditure
+  const revExpData = useMemo(() => {
+    if (!profitLoss) return [];
+    return [
+      {
+        name: "Financial Summary",
+        Revenue: profitLoss.totalIncome,
+        Expenditure: profitLoss.totalExpenditure,
+      }
+    ];
+  }, [profitLoss]);
+
+  // Chart Data: Expense Share Breakdown
+  const expenseBreakdown = useMemo(() => {
+    if (!profitLoss) return [];
+    const { salaries, directExpenses, pettyCash, purchaseOrders, otherExpenses } = profitLoss.breakdown;
+    return [
+      { name: "Salaries Paid", value: salaries },
+      { name: "Direct Expenses", value: directExpenses },
+      { name: "Petty Cash Spent", value: pettyCash },
+      { name: "POs Settlement", value: purchaseOrders },
+      { name: "Other Expenses", value: otherExpenses },
+    ].filter(item => item.value > 0);
+  }, [profitLoss]);
 
   const alerts = [
     pendingPOs?.total && pendingPOs.total > 0 ? {
@@ -159,19 +223,23 @@ export default function ErpHubPage() {
   ].filter(Boolean);
 
   const exportData = useMemo(() => {
+    if (!profitLoss) return undefined;
     return {
       columns: [
-        { key: "module", label: "ERP Module", width: 30 },
-        { key: "description", label: "Description", width: 70 },
+        { key: "category", label: "Financial Category" },
+        { key: "value", label: "Amount (PKR)" },
       ],
-      rows: ERP_MODULES.map(m => ({
-        module: m.title,
-        description: m.description,
-      })),
-      sheetName: "ERP Modules",
-      title: "ERP Hub Modules List",
+      rows: [
+        { category: "Collected Fee Total", value: profitLoss.totalIncome.toLocaleString() },
+        { category: "Total Salaries Paid", value: profitLoss.breakdown.salaries.toLocaleString() },
+        { category: "Total Operational Expenditures", value: totalOtherExpenses.toLocaleString() },
+        { category: "New Student Registrations", value: newRegistrations.toString() },
+        { category: "Net Surplus/Deficit", value: profitLoss.netSurplusDeficit.toLocaleString() },
+      ],
+      sheetName: "Yearly Analytics Summary",
+      title: `Yearly Analytics Summary (${sessions?.find(s => s.sessionId === selectedSessionId)?.sessionName})`,
     };
-  }, []);
+  }, [profitLoss, totalOtherExpenses, newRegistrations, sessions, selectedSessionId]);
 
   return (
     <div className="w-full space-y-6">
@@ -193,8 +261,12 @@ export default function ErpHubPage() {
           </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2">
-          <PageExportButton exportData={exportData} csvFilename="erp-modules" />
+        <div className="flex flex-wrap items-center gap-3">
+          <Select value={selectedSessionId} onValueChange={setSelectedSessionId}>
+            <SelectTrigger className="h-9 w-40 text-xs bg-card border-slate-200 dark:border-border"><SelectValue placeholder="Session" /></SelectTrigger>
+            <SelectContent>{sessions?.map(s => <SelectItem key={s.sessionId} value={s.sessionId}>{s.sessionName}</SelectItem>)}</SelectContent>
+          </Select>
+          <PageExportButton exportData={exportData} csvFilename="erp-yearly-summary" />
         </div>
       </div>
 
@@ -218,25 +290,25 @@ export default function ErpHubPage() {
         <GradientStatCard
           title="Pending POs"
           value={pendingPOs?.total ?? 0}
-          icon={TrendingUp}
+          icon={<ShoppingCart className="h-5 w-5" />}
           theme="violet"
         />
         <GradientStatCard
           title="Low Stock Items"
           value={lowStockItems?.length ?? 0}
-          icon={TrendingDown}
+          icon={<Package className="h-5 w-5" />}
           theme="amber"
         />
         <GradientStatCard
           title="Overdue Maintenance"
           value={overdueMaintenance?.length ?? 0}
-          icon={AlertTriangle}
+          icon={<AlertTriangle className="h-5 w-5" />}
           theme="rose"
         />
         <GradientStatCard
           title="Active Session"
           value={latestSession?.sessionName ?? "—"}
-          icon={CheckCircle2}
+          icon={<CheckCircle2 className="h-5 w-5" />}
           theme="emerald"
         />
       </div>
@@ -291,20 +363,94 @@ export default function ErpHubPage() {
           </div>
         </TabsContent>
 
-        <TabsContent value="analytics" className="m-0 duration-300 animate-in fade-in-50">
-          <Card className="border border-slate-200 bg-white shadow-sm dark:border-emerald-500/10 dark:bg-card">
-            <CardHeader>
-              <CardTitle>Enterprise Analytics</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex h-64 items-center justify-center rounded-lg border border-dashed border-slate-200 dark:border-border">
-                <div className="text-center text-muted-foreground">
-                  <PieChart className="mx-auto mb-2 h-8 w-8 opacity-20" />
-                  <p>Comprehensive enterprise analytics coming soon</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+        <TabsContent value="analytics" className="m-0 duration-300 animate-in fade-in-50 space-y-6">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <GradientStatCard
+              title="Collected Fees"
+              value={isPLLoading ? "..." : `PKR ${profitLoss?.totalIncome.toLocaleString()}`}
+              icon={<DollarSign className="h-5 w-5" />}
+              theme="emerald"
+            />
+            <GradientStatCard
+              title="Salaries Paid"
+              value={isPLLoading ? "..." : `PKR ${profitLoss?.breakdown.salaries.toLocaleString()}`}
+              icon={<Briefcase className="h-5 w-5" />}
+              theme="purple"
+            />
+            <GradientStatCard
+              title="Expenses Made"
+              value={isPLLoading ? "..." : `PKR ${totalOtherExpenses.toLocaleString()}`}
+              icon={<TrendingDown className="h-5 w-5" />}
+              theme="rose"
+            />
+            <GradientStatCard
+              title="New Registrations"
+              value={isPLLoading ? "..." : newRegistrations}
+              icon={<UserPlus className="h-5 w-5" />}
+              theme="blue"
+            />
+          </div>
+
+          <div className="grid gap-6 md:grid-cols-2">
+            <Card className="border border-slate-200 bg-white shadow-sm dark:border-emerald-500/10 dark:bg-card">
+              <CardHeader>
+                <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                  <BarChart3 className="h-4 w-4 text-emerald-600" /> Revenue vs Expenditure
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="h-64">
+                {isPLLoading ? (
+                  <div className="h-full flex items-center justify-center text-sm text-muted-foreground">Loading chart data...</div>
+                ) : (
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={revExpData}>
+                      <XAxis dataKey="name" fontSize={11} stroke="currentColor" className="text-muted-foreground" />
+                      <YAxis fontSize={11} stroke="currentColor" className="text-muted-foreground" />
+                      <Tooltip formatter={(value) => [`PKR ${Number(value).toLocaleString()}`]} />
+                      <Legend />
+                      <Bar dataKey="Revenue" fill="#10b981" radius={[4, 4, 0, 0]} />
+                      <Bar dataKey="Expenditure" fill="#ef4444" radius={[4, 4, 0, 0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                )}
+              </CardContent>
+            </Card>
+
+            <Card className="border border-slate-200 bg-white shadow-sm dark:border-emerald-500/10 dark:bg-card">
+              <CardHeader>
+                <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                  <PieChart className="h-4 w-4 text-emerald-600" /> Operational Expense Distribution
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="h-64 flex justify-center items-center">
+                {isPLLoading ? (
+                  <div className="text-sm text-muted-foreground">Loading chart data...</div>
+                ) : expenseBreakdown.length === 0 ? (
+                  <div className="text-sm text-muted-foreground">No expenses recorded for this session.</div>
+                ) : (
+                  <ResponsiveContainer width="100%" height="100%">
+                    <RechartsPieChart>
+                      <Pie
+                        data={expenseBreakdown}
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={60}
+                        outerRadius={80}
+                        paddingAngle={5}
+                        dataKey="value"
+                        label={({ name, percent }) => `${name} (${(percent * 100).toFixed(0)}%)`}
+                      >
+                        {expenseBreakdown.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                        ))}
+                      </Pie>
+                      <Tooltip formatter={(value) => [`PKR ${Number(value).toLocaleString()}`]} />
+                    </RechartsPieChart>
+                  </ResponsiveContainer>
+                )}
+              </CardContent>
+            </Card>
+          </div>
         </TabsContent>
 
         <TabsContent value="alerts" className="m-0 duration-300 animate-in fade-in-50">

@@ -15,7 +15,6 @@ import {
   UserCheck,
   UserX,
   UserMinus,
-  FileText,
   UploadCloud,
   Printer,
   CalendarDays,
@@ -105,7 +104,7 @@ function AttendanceDashboardContent() {
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
-          <PageExportButton exportData={exportData} csvFilename={`attendance-${todayStr}`} pdfReportType="attendance" />
+          <PageExportButton exportData={exportData} csvFilename={`attendance-${todayStr}`} />
           <Button variant="outline" size="sm" className="gap-2">
             <UploadCloud className="h-4 w-4" />
             Import Log

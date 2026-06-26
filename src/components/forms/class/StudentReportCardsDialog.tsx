@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useRef } from "react";
+import Image from "next/image";
 import { api } from "~/trpc/react";
 import {
   Dialog,
@@ -366,10 +367,12 @@ export function StudentReportCardsDialog({
                     {/* Header */}
                     <div className="flex items-center justify-between border-b-2 border-emerald-600 pb-6 w-full">
                       <div className="flex items-center gap-4">
-                        <img
+                        <Image
                           src="/api/images/logos/Official_LOGO_grn_ic9ldd.png"
                           alt="M.S. Naz High School Logo"
-                          className="w-16 h-16 object-contain"
+                          width={64}
+                          height={64}
+                          className="object-contain"
                           crossOrigin="anonymous"
                         />
                         <div className="text-left">

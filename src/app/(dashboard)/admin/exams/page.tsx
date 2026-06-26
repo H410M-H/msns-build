@@ -6,7 +6,6 @@ import { PageHeader } from "~/components/blocks/nav/PageHeader";
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
 } from "~/components/ui/card";
@@ -174,7 +173,7 @@ export default function ExamManagementPage() {
       await createExamMutation.mutateAsync({
         sessionId: selectedSession,
         classId: selectedClass,
-        examTypeEnum: newExamData.examType as any,
+        examTypeEnum: newExamData.examType as "MIDTERM" | "FINAL" | "PHASE_1" | "PHASE_2" | "PHASE_3" | "PHASE_4" | "PHASE_5" | "PHASE_6",
         startDate: new Date(newExamData.startDate),
         endDate: new Date(newExamData.endDate),
         totalMarks: newExamData.totalMarks,
@@ -305,7 +304,7 @@ export default function ExamManagementPage() {
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
-          {selectedSession && <PageExportButton exportData={exportData} csvFilename={`exams-${selectedSessionName?.sessionName}`} pdfReportType="exams" />}
+          {selectedSession && <PageExportButton exportData={exportData} csvFilename={`exams-${selectedSessionName?.sessionName}`} />}
           <Button
             size="sm"
             variant="outline"

@@ -10,7 +10,6 @@ import {
   FileText,
   ClipboardList,
   BookOpen,
-  TrendingUp,
   Briefcase,
   Receipt,
   Images,

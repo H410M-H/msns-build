@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { api } from "~/trpc/react";
 import { PageHeader } from "~/components/blocks/nav/PageHeader";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
@@ -12,8 +12,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "~/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "~/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
-import { Landmark, Plus, Loader2, AlertTriangle, Wrench } from "lucide-react";
+import { Landmark, Plus, Loader2, AlertTriangle, Wrench, CircleDot, Tag } from "lucide-react";
 import { toast } from "sonner";
+import { GradientStatCard } from "~/components/shared/GradientStatCard";
+import { PageExportButton } from "~/components/shared/PageExportButton";
+import { Separator } from "~/components/ui/separator";
 
 const CONDITION_COLORS: Record<string, string> = {
   New: "border-blue-300 bg-blue-50 text-blue-700 dark:border-blue-500/30 dark:bg-blue-500/10 dark:text-blue-400",
@@ -35,7 +38,7 @@ export default function AssetsPage() {
   const [mxForm, setMxForm] = useState({ maintenanceType: "Preventive" as const, scheduledDate: "", vendorName: "", cost: 0 });
   const [disposeForm, setDisposeForm] = useState({ disposalDate: "", disposalMethod: "Sale" as const, proceedsReceived: 0, notes: "" });
 
-  const { data: assets, refetch } = api.erp.assets.getAssetRegister.useQuery({ includeDisposed: false });
+  const { data: assets, refetch, isLoading } = api.erp.assets.getAssetRegister.useQuery({ includeDisposed: false });
   const { data: categories, refetch: refetchCats } = api.erp.assets.getAllCategories.useQuery();
   const { data: overdue } = api.erp.assets.getOverdueMaintenance.useQuery();
 
@@ -59,15 +62,48 @@ export default function AssetsPage() {
 
   const currentPeriod = new Date().toISOString().slice(0, 7); // YYYY-MM
 
+  // Stats computation
+  const stats = useMemo(() => {
+    if (!assets) return { totalVal: 0, count: 0 };
+    const totalVal = assets.assets.reduce((sum, a) => sum + a.purchaseCost, 0);
+    const count = assets.totalAssets;
+    return { totalVal, count };
+  }, [assets]);
+
+  // Export dataset
+  const exportData = useMemo(() => {
+    if (!assets) return undefined;
+    return {
+      columns: [
+        { key: "assetTag", label: "Asset Tag" },
+        { key: "assetName", label: "Asset Name" },
+        { key: "category", label: "Category" },
+        { key: "location", label: "Location" },
+        { key: "condition", label: "Condition" },
+        { key: "purchaseCost", label: "Purchase Cost (PKR)" },
+      ],
+      rows: assets.assets.map(a => ({
+        assetTag: a.assetTag,
+        assetName: a.assetName,
+        category: a.AssetCategory.name,
+        location: a.location ?? "",
+        condition: a.condition,
+        purchaseCost: a.purchaseCost.toLocaleString(),
+      })),
+      sheetName: "Asset Register",
+      title: "School Asset Register",
+    };
+  }, [assets]);
+
   return (
-    <div className="w-full space-y-5">
+    <div className="w-full space-y-6">
       <PageHeader breadcrumbs={[
         { href: "/admin", label: "Admin" },
         { href: "/admin/erp", label: "ERP" },
         { href: "/admin/erp/assets", label: "Asset Management" },
       ]} />
 
-      <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-end">
+      <div className="flex flex-col justify-between gap-4 md:flex-row md:items-end">
         <div className="flex items-center gap-3">
           <div className="rounded-xl border border-emerald-200 bg-emerald-100 p-2.5 text-emerald-600 dark:border-emerald-500/20 dark:bg-emerald-500/10 dark:text-emerald-400">
             <Landmark className="h-5 w-5" />
@@ -79,56 +115,89 @@ export default function AssetsPage() {
             <p className="text-sm text-muted-foreground">Register, depreciate, maintain, and dispose of school assets</p>
           </div>
         </div>
-        <Dialog open={showAssetDialog} onOpenChange={setShowAssetDialog}>
-          <DialogTrigger asChild>
-            <Button className="bg-emerald-600 text-white hover:bg-emerald-700 shadow-md shadow-emerald-200 dark:shadow-emerald-900/20">
-              <Plus className="mr-2 h-4 w-4" /> Register Asset
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
-            <DialogHeader><DialogTitle>Register New Asset</DialogTitle></DialogHeader>
-            <div className="space-y-3 pt-2">
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1.5"><Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Asset Tag</Label><Input value={assetForm.assetTag} onChange={e => setAssetForm({ ...assetForm, assetTag: e.target.value })} placeholder="e.g. AST-2026-001" /></div>
-                <div className="space-y-1.5"><Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Asset Name</Label><Input value={assetForm.assetName} onChange={e => setAssetForm({ ...assetForm, assetName: e.target.value })} /></div>
-              </div>
-              <div className="space-y-1.5">
-                <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Category</Label>
-                <div className="flex gap-2">
-                  <Select value={assetForm.assetCategoryId} onValueChange={v => setAssetForm({ ...assetForm, assetCategoryId: v })}>
-                    <SelectTrigger className="flex-1"><SelectValue placeholder="Select category" /></SelectTrigger>
-                    <SelectContent>{categories?.map(c => <SelectItem key={c.assetCategoryId} value={c.assetCategoryId}>{c.name}</SelectItem>)}</SelectContent>
-                  </Select>
-                  <Button type="button" variant="outline" size="sm" onClick={() => { const n = prompt("Category name:"); if (n) createCategory.mutate({ name: n }); }}>+ New</Button>
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1.5"><Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Purchase Cost (PKR)</Label><Input type="number" value={assetForm.purchaseCost || ""} onChange={e => setAssetForm({ ...assetForm, purchaseCost: parseFloat(e.target.value) })} /></div>
-                <div className="space-y-1.5"><Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Useful Life (years)</Label><Input type="number" min={1} value={assetForm.usefulLifeYears} onChange={e => setAssetForm({ ...assetForm, usefulLifeYears: parseInt(e.target.value) })} /></div>
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1.5">
-                  <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Condition</Label>
-                  <Select value={assetForm.condition} onValueChange={v => setAssetForm({ ...assetForm, condition: v as typeof assetForm.condition })}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent>{["New", "Good", "Fair", "Poor"].map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-1.5">
-                  <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Depreciation Method</Label>
-                  <Select value={assetForm.depreciationMethod} onValueChange={v => setAssetForm({ ...assetForm, depreciationMethod: v as typeof assetForm.depreciationMethod })}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent><SelectItem value="StraightLine">Straight Line</SelectItem><SelectItem value="DecliningBalance">Declining Balance</SelectItem></SelectContent>
-                  </Select>
-                </div>
-              </div>
-              <div className="space-y-1.5"><Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Location</Label><Input value={assetForm.location} onChange={e => setAssetForm({ ...assetForm, location: e.target.value })} placeholder="e.g. Principal's Office" /></div>
-              <Button className="w-full bg-emerald-600 text-white hover:bg-emerald-700" disabled={createAsset.isPending || !assetForm.assetTag || !assetForm.assetName || !assetForm.assetCategoryId} onClick={() => createAsset.mutate(assetForm)}>
-                {createAsset.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Plus className="mr-2 h-4 w-4" />} Register Asset
+        <div className="flex items-center gap-2">
+          <PageExportButton exportData={exportData} csvFilename="asset-register" />
+          <Dialog open={showAssetDialog} onOpenChange={setShowAssetDialog}>
+            <DialogTrigger asChild>
+              <Button className="bg-emerald-600 text-white hover:bg-emerald-700 shadow-md shadow-emerald-200 dark:shadow-emerald-900/20">
+                <Plus className="mr-2 h-4 w-4" /> Register Asset
               </Button>
-            </div>
-          </DialogContent>
-        </Dialog>
+            </DialogTrigger>
+            <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
+              <DialogHeader><DialogTitle>Register New Asset</DialogTitle></DialogHeader>
+              <div className="space-y-3 pt-2">
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1.5"><Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Asset Tag</Label><Input value={assetForm.assetTag} onChange={e => setAssetForm({ ...assetForm, assetTag: e.target.value })} placeholder="e.g. AST-2026-001" /></div>
+                  <div className="space-y-1.5"><Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Asset Name</Label><Input value={assetForm.assetName} onChange={e => setAssetForm({ ...assetForm, assetName: e.target.value })} /></div>
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Category</Label>
+                  <div className="flex gap-2">
+                    <Select value={assetForm.assetCategoryId} onValueChange={v => setAssetForm({ ...assetForm, assetCategoryId: v })}>
+                      <SelectTrigger className="flex-1"><SelectValue placeholder="Select category" /></SelectTrigger>
+                      <SelectContent>{categories?.map(c => <SelectItem key={c.assetCategoryId} value={c.assetCategoryId}>{c.name}</SelectItem>)}</SelectContent>
+                    </Select>
+                    <Button type="button" variant="outline" size="sm" onClick={() => { const n = prompt("Category name:"); if (n) createCategory.mutate({ name: n }); }}>+ New</Button>
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1.5"><Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Purchase Cost (PKR)</Label><Input type="number" value={assetForm.purchaseCost || ""} onChange={e => setAssetForm({ ...assetForm, purchaseCost: parseFloat(e.target.value) })} /></div>
+                  <div className="space-y-1.5"><Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Useful Life (years)</Label><Input type="number" min={1} value={assetForm.usefulLifeYears} onChange={e => setAssetForm({ ...assetForm, usefulLifeYears: parseInt(e.target.value) })} /></div>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1.5">
+                    <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Condition</Label>
+                    <Select value={assetForm.condition} onValueChange={v => setAssetForm({ ...assetForm, condition: v as typeof assetForm.condition })}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>{["New", "Good", "Fair", "Poor"].map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Depreciation Method</Label>
+                    <Select value={assetForm.depreciationMethod} onValueChange={v => setAssetForm({ ...assetForm, depreciationMethod: v as typeof assetForm.depreciationMethod })}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent><SelectItem value="StraightLine">Straight Line</SelectItem><SelectItem value="DecliningBalance">Declining Balance</SelectItem></SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                <div className="space-y-1.5"><Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Location</Label><Input value={assetForm.location} onChange={e => setAssetForm({ ...assetForm, location: e.target.value })} placeholder="e.g. Principal's Office" /></div>
+                <Button className="w-full bg-emerald-600 text-white hover:bg-emerald-700" disabled={createAsset.isPending || !assetForm.assetTag || !assetForm.assetName || !assetForm.assetCategoryId} onClick={() => createAsset.mutate(assetForm)}>
+                  {createAsset.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Plus className="mr-2 h-4 w-4" />} Register Asset
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
+        </div>
+      </div>
+
+      <Separator className="bg-emerald-500/20" />
+
+      {/* Stats Cards */}
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <GradientStatCard
+          title="Total Assets Value"
+          value={isLoading ? "..." : `PKR ${stats.totalVal.toLocaleString()}`}
+          icon={<Landmark className="h-5 w-5" />}
+          theme="blue"
+        />
+        <GradientStatCard
+          title="Registered Assets"
+          value={isLoading ? "..." : stats.count}
+          icon={<Tag className="h-5 w-5" />}
+          theme="emerald"
+        />
+        <GradientStatCard
+          title="Overdue Maintenance"
+          value={isLoading ? "..." : overdue?.length ?? 0}
+          icon={<AlertTriangle className="h-5 w-5" />}
+          theme="orange"
+        />
+        <GradientStatCard
+          title="Asset Categories"
+          value={isLoading ? "..." : categories?.length ?? 0}
+          icon={<CircleDot className="h-5 w-5" />}
+          theme="purple"
+        />
       </div>
 
       {/* Overdue Maintenance Alert */}

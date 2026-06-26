@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { api } from "~/trpc/react";
 import { PageHeader } from "~/components/blocks/nav/PageHeader";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
@@ -13,8 +13,11 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "~/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
-import { ShoppingCart, Plus, Loader2, Eye, CheckCircle2, XCircle, Package, Truck, FileCheck } from "lucide-react";
+import { ShoppingCart, Plus, Loader2, Eye, FileCheck, DollarSign, Hourglass, ShieldAlert } from "lucide-react";
 import { toast } from "sonner";
+import { GradientStatCard } from "~/components/shared/GradientStatCard";
+import { PageExportButton } from "~/components/shared/PageExportButton";
+import { Separator } from "~/components/ui/separator";
 
 const STATUS_STYLES: Record<string, string> = {
   Draft: "border-slate-300 bg-slate-50 text-slate-700 dark:border-slate-500/30 dark:bg-slate-500/10 dark:text-slate-400",
@@ -45,7 +48,7 @@ export default function PurchaseOrdersPage() {
   });
   const [lineItems, setLineItems] = useState([{ description: "", quantity: 1, unit: "pcs", estimatedUnitPrice: 0 }]);
 
-  const { data: pos, refetch } = api.erp.purchaseOrders.getAll.useQuery({ status: statusFilter, page, pageSize: 15 });
+  const { data: pos, refetch, isLoading } = api.erp.purchaseOrders.getAll.useQuery({ status: statusFilter, page, pageSize: 15 });
   const { data: poDetail } = api.erp.purchaseOrders.getById.useQuery({ poId: showDetailId! }, { enabled: !!showDetailId });
   const { data: costCentres } = api.erp.budget.getAllCostCentres.useQuery();
 
@@ -73,8 +76,45 @@ export default function PurchaseOrdersPage() {
   const addLineItem = () => setLineItems([...lineItems, { description: "", quantity: 1, unit: "pcs", estimatedUnitPrice: 0 }]);
   const estTotal = lineItems.reduce((s, l) => s + l.quantity * l.estimatedUnitPrice, 0);
 
+  // Stats computation
+  const stats = useMemo(() => {
+    if (!pos) return { totalVal: 0, pendingL1: 0, pendingL2: 0, completed: 0 };
+    const totalVal = pos.pos.reduce((sum, po) => sum + po.estimatedTotal, 0);
+    const pendingL1 = pos.pos.filter(po => po.status === "PendingApprovalL1").length;
+    const pendingL2 = pos.pos.filter(po => po.status === "PendingApprovalL2").length;
+    const completed = pos.pos.filter(po => po.status === "Paid" || po.status === "Received").length;
+    return { totalVal, pendingL1, pendingL2, completed };
+  }, [pos]);
+
+  // Export Data definition
+  const exportData = useMemo(() => {
+    if (!pos) return undefined;
+    return {
+      columns: [
+        { key: "poNumber", label: "PO Number" },
+        { key: "supplierName", label: "Supplier Name" },
+        { key: "supplierContact", label: "Contact" },
+        { key: "category", label: "Expense Category" },
+        { key: "total", label: "Estimated Total (PKR)" },
+        { key: "status", label: "Status" },
+        { key: "created", label: "Date Created" },
+      ],
+      rows: pos.pos.map(po => ({
+        poNumber: po.poNumber,
+        supplierName: po.supplierName,
+        supplierContact: po.supplierContact,
+        category: po.expenseCategory,
+        total: po.estimatedTotal.toLocaleString(),
+        status: po.status,
+        created: new Date(po.createdAt).toLocaleDateString(),
+      })),
+      sheetName: "Purchase Orders",
+      title: "School Purchase Orders Logs",
+    };
+  }, [pos]);
+
   return (
-    <div className="w-full space-y-5">
+    <div className="w-full space-y-6">
       <PageHeader breadcrumbs={[
         { href: "/admin", label: "Admin" },
         { href: "/admin/erp", label: "ERP" },
@@ -82,7 +122,7 @@ export default function PurchaseOrdersPage() {
       ]} />
 
       {/* Header */}
-      <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-end">
+      <div className="flex flex-col justify-between gap-4 md:flex-row md:items-end">
         <div className="flex items-center gap-3">
           <div className="rounded-xl border border-violet-200 bg-violet-100 p-2.5 text-violet-600 dark:border-violet-500/20 dark:bg-violet-500/10 dark:text-violet-400">
             <ShoppingCart className="h-5 w-5" />
@@ -94,74 +134,107 @@ export default function PurchaseOrdersPage() {
             <p className="text-sm text-muted-foreground">Manage procurement requests and approvals</p>
           </div>
         </div>
-        <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
-          <DialogTrigger asChild>
-            <Button className="bg-violet-600 text-white hover:bg-violet-700 shadow-md shadow-violet-200 dark:shadow-violet-900/20">
-              <Plus className="mr-2 h-4 w-4" /> New Purchase Order
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
-            <DialogHeader><DialogTitle className="flex items-center gap-2"><ShoppingCart className="h-4 w-4 text-violet-500" /> New Purchase Order</DialogTitle></DialogHeader>
-            <div className="space-y-4 pt-2">
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1.5">
-                  <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Supplier Name</Label>
-                  <Input value={form.supplierName} onChange={e => setForm({ ...form, supplierName: e.target.value })} placeholder="Supplier / Vendor name" />
-                </div>
-                <div className="space-y-1.5">
-                  <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Contact</Label>
-                  <Input value={form.supplierContact} onChange={e => setForm({ ...form, supplierContact: e.target.value })} placeholder="Phone / Email" />
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1.5">
-                  <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Cost Centre</Label>
-                  <Select value={form.costCentreId} onValueChange={v => setForm({ ...form, costCentreId: v })}>
-                    <SelectTrigger><SelectValue placeholder="Select cost centre" /></SelectTrigger>
-                    <SelectContent>{costCentres?.map(cc => <SelectItem key={cc.costCentreId} value={cc.costCentreId}>{cc.name}</SelectItem>)}</SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-1.5">
-                  <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Expense Category</Label>
-                  <Input value={form.expenseCategory} onChange={e => setForm({ ...form, expenseCategory: e.target.value })} placeholder="e.g. Office Supplies" />
-                </div>
-              </div>
-              <div className="space-y-1.5">
-                <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Justification</Label>
-                <Textarea value={form.justification} onChange={e => setForm({ ...form, justification: e.target.value })} placeholder="Why is this purchase needed?" rows={2} />
-              </div>
-
-              {/* Line Items */}
-              <div className="rounded-xl border border-slate-100 p-4 dark:border-border">
-                <div className="mb-3 flex items-center justify-between">
-                  <h3 className="text-sm font-semibold text-slate-800 dark:text-foreground">Line Items</h3>
-                  <Button size="sm" variant="outline" onClick={addLineItem}><Plus className="mr-1 h-3 w-3" /> Add Item</Button>
-                </div>
-                {lineItems.map((li, i) => (
-                  <div key={i} className="mb-2 grid grid-cols-4 gap-2">
-                    <Input className="col-span-2 text-xs" placeholder="Description" value={li.description} onChange={e => { const l = [...lineItems]; l[i]!.description = e.target.value; setLineItems(l); }} />
-                    <Input type="number" className="text-xs" placeholder="Qty" value={li.quantity} onChange={e => { const l = [...lineItems]; l[i]!.quantity = parseFloat(e.target.value); setLineItems(l); }} />
-                    <Input type="number" className="text-xs" placeholder="Unit Price" value={li.estimatedUnitPrice || ""} onChange={e => { const l = [...lineItems]; l[i]!.estimatedUnitPrice = parseFloat(e.target.value); setLineItems(l); }} />
-                  </div>
-                ))}
-                <div className="mt-3 flex justify-end">
-                  <p className="text-sm font-semibold text-slate-800 dark:text-foreground">
-                    Estimated Total: <span className="font-mono text-violet-600 dark:text-violet-400">PKR {estTotal.toLocaleString()}</span>
-                  </p>
-                </div>
-              </div>
-
-              <Button
-                className="w-full bg-violet-600 text-white hover:bg-violet-700"
-                disabled={createPO.isPending || !form.supplierName || !form.costCentreId || !form.justification}
-                onClick={() => createPO.mutate({ ...form, lineItems, attachmentUrls: [] })}
-              >
-                {createPO.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Plus className="mr-2 h-4 w-4" />}
-                Create Purchase Order
+        <div className="flex items-center gap-2">
+          <PageExportButton exportData={exportData} csvFilename="purchase-orders" />
+          <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
+            <DialogTrigger asChild>
+              <Button className="bg-violet-600 text-white hover:bg-violet-700 shadow-md shadow-violet-200 dark:shadow-violet-900/20">
+                <Plus className="mr-2 h-4 w-4" /> New Purchase Order
               </Button>
-            </div>
-          </DialogContent>
-        </Dialog>
+            </DialogTrigger>
+            <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
+              <DialogHeader><DialogTitle className="flex items-center gap-2"><ShoppingCart className="h-4 w-4 text-violet-500" /> New Purchase Order</DialogTitle></DialogHeader>
+              <div className="space-y-4 pt-2">
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1.5">
+                    <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Supplier Name</Label>
+                    <Input value={form.supplierName} onChange={e => setForm({ ...form, supplierName: e.target.value })} placeholder="Supplier / Vendor name" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Contact</Label>
+                    <Input value={form.supplierContact} onChange={e => setForm({ ...form, supplierContact: e.target.value })} placeholder="Phone / Email" />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1.5">
+                    <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Cost Centre</Label>
+                    <Select value={form.costCentreId} onValueChange={v => setForm({ ...form, costCentreId: v })}>
+                      <SelectTrigger><SelectValue placeholder="Select cost centre" /></SelectTrigger>
+                      <SelectContent>{costCentres?.map(cc => <SelectItem key={cc.costCentreId} value={cc.costCentreId}>{cc.name}</SelectItem>)}</SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Expense Category</Label>
+                    <Input value={form.expenseCategory} onChange={e => setForm({ ...form, expenseCategory: e.target.value })} placeholder="e.g. Office Supplies" />
+                  </div>
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Justification</Label>
+                  <Textarea value={form.justification} onChange={e => setForm({ ...form, justification: e.target.value })} placeholder="Why is this purchase needed?" rows={2} />
+                </div>
+
+                {/* Line Items */}
+                <div className="rounded-xl border border-slate-100 p-4 dark:border-border">
+                  <div className="mb-3 flex items-center justify-between">
+                    <h3 className="text-sm font-semibold text-slate-800 dark:text-foreground">Line Items</h3>
+                    <Button size="sm" variant="outline" onClick={addLineItem}><Plus className="mr-1 h-3 w-3" /> Add Item</Button>
+                  </div>
+                  {lineItems.map((li, i) => (
+                    <div key={i} className="mb-2 grid grid-cols-4 gap-2">
+                      <Input className="col-span-2 text-xs" placeholder="Description" value={li.description} onChange={e => { const l = [...lineItems]; l[i]!.description = e.target.value; setLineItems(l); }} />
+                      <Input type="number" className="text-xs" placeholder="Qty" value={li.quantity} onChange={e => { const l = [...lineItems]; l[i]!.quantity = parseFloat(e.target.value); setLineItems(l); }} />
+                      <Input type="number" className="text-xs" placeholder="Unit Price" value={li.estimatedUnitPrice || ""} onChange={e => { const l = [...lineItems]; l[i]!.estimatedUnitPrice = parseFloat(e.target.value); setLineItems(l); }} />
+                    </div>
+                  ))}
+                  <div className="mt-3 flex justify-end">
+                    <p className="text-sm font-semibold text-slate-800 dark:text-foreground">
+                      Estimated Total: <span className="font-mono text-violet-600 dark:text-violet-400">PKR {estTotal.toLocaleString()}</span>
+                    </p>
+                  </div>
+                </div>
+
+                <Button
+                  className="w-full bg-violet-600 text-white hover:bg-violet-700"
+                  disabled={createPO.isPending || !form.supplierName || !form.costCentreId || !form.justification}
+                  onClick={() => createPO.mutate({ ...form, lineItems, attachmentUrls: [] })}
+                >
+                  {createPO.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Plus className="mr-2 h-4 w-4" />}
+                  Create Purchase Order
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
+        </div>
+      </div>
+
+      <Separator className="bg-violet-500/20" />
+
+      {/* Stats Cards */}
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <GradientStatCard
+          title="Total Estimated Value"
+          value={isLoading ? "..." : `PKR ${stats.totalVal.toLocaleString()}`}
+          icon={<DollarSign className="h-5 w-5" />}
+          theme="violet"
+        />
+        <GradientStatCard
+          title="Pending L1 Approval"
+          value={isLoading ? "..." : stats.pendingL1}
+          icon={<Hourglass className="h-5 w-5" />}
+          theme="amber"
+        />
+        <GradientStatCard
+          title="Pending L2 Approval"
+          value={isLoading ? "..." : stats.pendingL2}
+          icon={<ShieldAlert className="h-5 w-5" />}
+          theme="orange"
+        />
+        <GradientStatCard
+          title="Fulfilled POs"
+          value={isLoading ? "..." : stats.completed}
+          icon={<FileCheck className="h-5 w-5" />}
+          theme="emerald"
+        />
       </div>
 
       {/* Status Tabs */}
@@ -202,26 +275,23 @@ export default function PurchaseOrdersPage() {
                         <TableCell className="text-xs text-muted-foreground">{po.CreatedBy.employeeName}</TableCell>
                         <TableCell>
                           <div className="flex items-center gap-1">
-                            <Button size="sm" variant="ghost" onClick={() => setShowDetailId(po.poId)} className="h-7 w-7 p-0"><Eye className="h-3.5 w-3.5" /></Button>
+                            <Button size="sm" variant="ghost" onClick={() => setShowDetailId(po.poId)} className="h-7 px-2 text-xs">
+                              <Eye className="mr-1 h-3.5 w-3.5 text-muted-foreground" /> View
+                            </Button>
                             {po.status === "Draft" && (
-                              <Button size="sm" variant="ghost" onClick={() => submitPO.mutate({ poId: po.poId })} className="h-7 px-2 text-xs text-violet-600 hover:bg-violet-50 dark:hover:bg-violet-500/10">
-                                <Truck className="mr-1 h-3 w-3" /> Submit
-                              </Button>
+                              <Button size="sm" variant="ghost" onClick={() => submitPO.mutate({ poId: po.poId })} className="h-7 px-2 text-xs text-emerald-600">Submit</Button>
                             )}
                             {po.status === "PendingApprovalL1" && (
-                              <>
-                                <Button size="sm" variant="ghost" onClick={() => approveL1.mutate({ poId: po.poId })} className="h-7 px-2 text-xs text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-500/10">
-                                  <CheckCircle2 className="mr-1 h-3 w-3" /> Approve
-                                </Button>
-                                <Button size="sm" variant="ghost" onClick={() => rejectPO.mutate({ poId: po.poId, reason: "Rejected by L1 approver" })} className="h-7 px-2 text-xs text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10">
-                                  <XCircle className="mr-1 h-3 w-3" /> Reject
-                                </Button>
-                              </>
+                              <div className="flex gap-1">
+                                <Button size="sm" variant="ghost" onClick={() => approveL1.mutate({ poId: po.poId })} className="h-7 px-2 text-xs text-emerald-600">Approve L1</Button>
+                                <Button size="sm" variant="ghost" onClick={() => rejectPO.mutate({ poId: po.poId, reason: "Rejected" })} className="h-7 px-2 text-xs text-red-500">Reject</Button>
+                              </div>
                             )}
                             {po.status === "PendingApprovalL2" && (
-                              <Button size="sm" variant="ghost" onClick={() => approveL2.mutate({ poId: po.poId })} className="h-7 px-2 text-xs text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-500/10">
-                                <FileCheck className="mr-1 h-3 w-3" /> Final Approve
-                              </Button>
+                              <div className="flex gap-1">
+                                <Button size="sm" variant="ghost" onClick={() => approveL2.mutate({ poId: po.poId })} className="h-7 px-2 text-xs text-emerald-600">Approve L2</Button>
+                                <Button size="sm" variant="ghost" onClick={() => rejectPO.mutate({ poId: po.poId, reason: "Rejected" })} className="h-7 px-2 text-xs text-red-500">Reject</Button>
+                              </div>
                             )}
                           </div>
                         </TableCell>
@@ -236,7 +306,7 @@ export default function PurchaseOrdersPage() {
               {pos && pos.total > 15 && (
                 <div className="flex items-center justify-between border-t border-slate-100 px-5 py-3 dark:border-border">
                   <Button size="sm" variant="outline" disabled={page <= 1} onClick={() => setPage(p => p - 1)}>Previous</Button>
-                  <span className="text-xs text-muted-foreground">Page {pos.page} · {pos.total} total</span>
+                  <span className="text-xs text-muted-foreground">Page {page} · {pos.total} entries</span>
                   <Button size="sm" variant="outline" disabled={page * 15 >= pos.total} onClick={() => setPage(p => p + 1)}>Next</Button>
                 </div>
               )}
@@ -247,37 +317,57 @@ export default function PurchaseOrdersPage() {
 
       {/* PO Detail Dialog */}
       <Dialog open={!!showDetailId} onOpenChange={open => !open && setShowDetailId(null)}>
-        <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
-          <DialogHeader><DialogTitle className="flex items-center gap-2"><Package className="h-4 w-4 text-violet-500" /> PO Details — {poDetail?.poNumber}</DialogTitle></DialogHeader>
-          {poDetail && (
+        <DialogContent className="max-w-lg">
+          <DialogHeader><DialogTitle>Purchase Order Details</DialogTitle></DialogHeader>
+          {poDetail ? (
             <div className="space-y-4 pt-2 text-sm">
-              <div className="grid grid-cols-2 gap-3 rounded-xl border border-slate-100 p-4 dark:border-border">
-                <div><p className="text-xs text-muted-foreground">Supplier</p><p className="font-semibold text-slate-900 dark:text-foreground">{poDetail.supplierName}</p></div>
-                <div><p className="text-xs text-muted-foreground">Cost Centre</p><p className="font-semibold">{poDetail.CostCentre.name}</p></div>
-                <div><p className="text-xs text-muted-foreground">Category</p><p className="font-semibold">{poDetail.expenseCategory}</p></div>
-                <div><p className="text-xs text-muted-foreground">Estimated Total</p><p className="font-mono font-bold text-violet-600 dark:text-violet-400">PKR {poDetail.estimatedTotal.toLocaleString()}</p></div>
+              <div className="grid grid-cols-2 gap-2 border-b pb-2">
+                <div><span className="text-xs text-muted-foreground">PO Number:</span> <p className="font-semibold font-mono text-emerald-600 dark:text-emerald-400">{poDetail.poNumber}</p></div>
+                <div><span className="text-xs text-muted-foreground">Status:</span> <p className="mt-0.5"><Badge variant="outline" className={`text-xs ${STATUS_STYLES[poDetail.status] ?? ""}`}>{poDetail.status}</Badge></p></div>
+              </div>
+              <div className="grid grid-cols-2 gap-2 border-b pb-2">
+                <div><span className="text-xs text-muted-foreground">Supplier:</span> <p className="font-medium">{poDetail.supplierName}</p></div>
+                <div><span className="text-xs text-muted-foreground">Contact:</span> <p className="text-muted-foreground">{poDetail.supplierContact}</p></div>
+              </div>
+              <div className="grid grid-cols-2 gap-2 border-b pb-2">
+                <div><span className="text-xs text-muted-foreground">Cost Centre:</span> <p>{poDetail.CostCentre.name}</p></div>
+                <div><span className="text-xs text-muted-foreground">Category:</span> <p>{poDetail.expenseCategory}</p></div>
               </div>
               <div>
-                <h4 className="mb-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">Justification</h4>
-                <p className="rounded-lg bg-slate-50 p-3 text-xs text-slate-700 dark:bg-black/20 dark:text-foreground">{poDetail.justification}</p>
+                <span className="text-xs text-muted-foreground">Justification:</span>
+                <p className="rounded bg-slate-50 p-2 text-xs italic text-muted-foreground dark:bg-black/20">{poDetail.justification}</p>
               </div>
-              <div>
-                <h4 className="mb-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">Line Items</h4>
+
+              {/* Line items table */}
+              <div className="rounded border">
                 <Table>
-                  <TableHeader><TableRow><TableHead className="text-xs">Description</TableHead><TableHead className="text-xs">Qty</TableHead><TableHead className="text-xs">Unit Price</TableHead><TableHead className="text-xs">Total</TableHead></TableRow></TableHeader>
+                  <TableHeader>
+                    <TableRow className="bg-slate-50/50 dark:bg-black/10">
+                      <TableHead className="py-2 text-xs">Item Description</TableHead>
+                      <TableHead className="py-2 text-xs text-right">Qty</TableHead>
+                      <TableHead className="py-2 text-xs text-right">Unit Price</TableHead>
+                      <TableHead className="py-2 text-xs text-right">Total</TableHead>
+                    </TableRow>
+                  </TableHeader>
                   <TableBody>
-                    {poDetail.LineItems.map(li => (
-                      <TableRow key={li.lineItemId}>
-                        <TableCell className="text-xs">{li.description}</TableCell>
-                        <TableCell className="font-mono text-xs">{li.quantity} {li.unit}</TableCell>
-                        <TableCell className="font-mono text-xs">PKR {li.estimatedUnitPrice.toLocaleString()}</TableCell>
-                        <TableCell className="font-mono text-xs font-semibold">PKR {li.totalEstimatedCost.toLocaleString()}</TableCell>
+                    {poDetail.LineItems.map((item, idx) => (
+                      <TableRow key={idx}>
+                        <TableCell className="py-2 text-xs font-medium">{item.description}</TableCell>
+                        <TableCell className="py-2 text-xs text-right font-mono">{item.quantity} {item.unit}</TableCell>
+                        <TableCell className="py-2 text-xs text-right font-mono">PKR {item.estimatedUnitPrice.toLocaleString()}</TableCell>
+                        <TableCell className="py-2 text-xs text-right font-mono font-semibold">PKR {(item.quantity * item.estimatedUnitPrice).toLocaleString()}</TableCell>
                       </TableRow>
                     ))}
+                    <TableRow className="bg-slate-50 dark:bg-black/20 font-bold">
+                      <TableCell colSpan={3} className="py-2 text-xs font-bold">ESTIMATED TOTAL</TableCell>
+                      <TableCell className="py-2 text-xs text-right font-mono">PKR {poDetail.estimatedTotal.toLocaleString()}</TableCell>
+                    </TableRow>
                   </TableBody>
                 </Table>
               </div>
             </div>
+          ) : (
+            <div className="py-10 text-center"><Loader2 className="h-6 w-6 animate-spin mx-auto text-muted-foreground" /></div>
           )}
         </DialogContent>
       </Dialog>

@@ -5,7 +5,7 @@ import { api } from "~/trpc/react";
 import { GradientStatCard } from "~/components/shared/GradientStatCard";
 import { PageExportButton } from "~/components/shared/PageExportButton";
 import { Button } from "~/components/ui/button";
-import { Users, BookOpen, DollarSign, Calendar, UploadCloud, Printer, FileText } from "lucide-react";
+import { Users, BookOpen, DollarSign, Calendar, UploadCloud, Printer } from "lucide-react";
 import { Skeleton } from "~/components/ui/skeleton";
 
 interface ClassStatsHeaderProps {
@@ -26,7 +26,7 @@ export function ClassStatsHeader({ classId, sessionId }: ClassStatsHeaderProps) 
         { key: "fatherName", label: "Father Name", width: 25 },
         { key: "grade", label: "Grade", width: 10 },
       ],
-      rows: students.data?.map((s: any) => ({
+      rows: students.data?.map((s) => ({
         studentName: s.Students.studentName,
         fatherName: s.Students.fatherName,
         grade: classDetails.grade,
@@ -68,7 +68,7 @@ export function ClassStatsHeader({ classId, sessionId }: ClassStatsHeaderProps) 
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
-          <PageExportButton exportData={exportData} csvFilename={`class-${classDetails?.grade}-roster`} pdfReportType="class-roster" />
+          <PageExportButton exportData={exportData} csvFilename={`class-${classDetails?.grade}-roster`} />
           <Button variant="outline" size="sm" className="gap-2">
             <UploadCloud className="h-4 w-4" />
             Import

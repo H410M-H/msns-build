@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { api } from "~/trpc/react";
 import { PageHeader } from "~/components/blocks/nav/PageHeader";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
@@ -13,8 +13,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~
 import { Progress } from "~/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "~/components/ui/table";
-import { Building2, Plus, Loader2, AlertTriangle, BarChart3, RefreshCw } from "lucide-react";
+import { Building2, Plus, Loader2, AlertTriangle, BarChart3, RefreshCw, Landmark, Briefcase, TrendingDown, Percent } from "lucide-react";
 import { toast } from "sonner";
+import { GradientStatCard } from "~/components/shared/GradientStatCard";
+import { PageExportButton } from "~/components/shared/PageExportButton";
+import { Separator } from "~/components/ui/separator";
 
 export default function BudgetPage() {
   const [showCCDialog, setShowCCDialog] = useState(false);
@@ -30,7 +33,7 @@ export default function BudgetPage() {
     { sessionId: planForm.sessionId },
     { enabled: !!planForm.sessionId },
   );
-  const { data: utilisation } = api.erp.budget.getBudgetUtilisation.useQuery(
+  const { data: utilisation, isLoading: isUtilLoading } = api.erp.budget.getBudgetUtilisation.useQuery(
     { budgetPlanId: selectedPlanId },
     { enabled: !!selectedPlanId },
   );
@@ -52,15 +55,52 @@ export default function BudgetPage() {
     return u.allocatedAmount > 0 ? Math.round((used / u.allocatedAmount) * 100) : 0;
   };
 
+  // Stats computation
+  const stats = useMemo(() => {
+    if (!utilisation) return { totalAllocated: 0, totalSpend: 0, totalRemaining: 0, avgUtil: 0 };
+    const totalAllocated = utilisation.utilisation.reduce((sum, u) => sum + u.allocatedAmount, 0);
+    const totalSpend = utilisation.utilisation.reduce((sum, u) => sum + u.approvedSpend + u.committed, 0);
+    const totalRemaining = totalAllocated - totalSpend;
+    const avgUtil = totalAllocated > 0 ? Math.round((totalSpend / totalAllocated) * 100) : 0;
+    return { totalAllocated, totalSpend, totalRemaining, avgUtil };
+  }, [utilisation]);
+
+  // Export Data definition
+  const exportData = useMemo(() => {
+    if (!utilisation) return undefined;
+    return {
+      columns: [
+        { key: "costCentre", label: "Cost Centre" },
+        { key: "category", label: "Category" },
+        { key: "allocated", label: "Allocated (PKR)" },
+        { key: "spent", label: "Spent (PKR)" },
+        { key: "committed", label: "Committed (PKR)" },
+        { key: "remaining", label: "Remaining (PKR)" },
+        { key: "percentUsed", label: "Utilisation %" },
+      ],
+      rows: utilisation.utilisation.map(u => ({
+        costCentre: `${u.costCentreName} (${u.costCentreCode})`,
+        category: u.expenseCategory,
+        allocated: u.allocatedAmount.toLocaleString(),
+        spent: u.approvedSpend.toLocaleString(),
+        committed: u.committed.toLocaleString(),
+        remaining: u.remaining.toLocaleString(),
+        percentUsed: `${u.percentUsed}%`,
+      })),
+      sheetName: "Budget Utilisation",
+      title: `Budget Utilisation Summary - ${utilisation.plan.name}`,
+    };
+  }, [utilisation]);
+
   return (
-    <div className="w-full space-y-5">
+    <div className="w-full space-y-6">
       <PageHeader breadcrumbs={[
         { href: "/admin", label: "Admin" },
         { href: "/admin/erp", label: "ERP" },
         { href: "/admin/erp/budget", label: "Budget & Cost Centres" },
       ]} />
 
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col justify-between gap-4 md:flex-row md:items-end">
         <div className="flex items-center gap-3">
           <div className="rounded-xl border border-blue-200 bg-blue-100 p-2.5 text-blue-600 dark:border-blue-500/20 dark:bg-blue-500/10 dark:text-blue-400">
             <Building2 className="h-5 w-5" />
@@ -72,7 +112,8 @@ export default function BudgetPage() {
             <p className="text-sm text-muted-foreground">Manage cost centres, budget plans, and track utilisation</p>
           </div>
         </div>
-        <div className="flex gap-2">
+        <div className="flex items-center gap-2">
+          <PageExportButton exportData={exportData} csvFilename="budget-utilisation" />
           <Dialog open={showCCDialog} onOpenChange={setShowCCDialog}>
             <DialogTrigger asChild>
               <Button size="sm" variant="outline" className="border-blue-200 text-blue-700 hover:bg-blue-50 dark:border-blue-500/20 dark:text-blue-400">
@@ -159,6 +200,36 @@ export default function BudgetPage() {
         </div>
       </div>
 
+      <Separator className="bg-blue-500/20" />
+
+      {/* Stats Cards */}
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <GradientStatCard
+          title="Total Allocated"
+          value={isUtilLoading ? "..." : `PKR ${stats.totalAllocated.toLocaleString()}`}
+          icon={<Landmark className="h-5 w-5" />}
+          theme="blue"
+        />
+        <GradientStatCard
+          title="Total Spend"
+          value={isUtilLoading ? "..." : `PKR ${stats.totalSpend.toLocaleString()}`}
+          icon={<Briefcase className="h-5 w-5" />}
+          theme="emerald"
+        />
+        <GradientStatCard
+          title="Remaining Budget"
+          value={isUtilLoading ? "..." : `PKR ${stats.totalRemaining.toLocaleString()}`}
+          icon={<TrendingDown className="h-5 w-5" />}
+          theme="orange"
+        />
+        <GradientStatCard
+          title="Utilisation Rate"
+          value={isUtilLoading ? "..." : `${stats.avgUtil}%`}
+          icon={<Percent className="h-5 w-5" />}
+          theme="purple"
+        />
+      </div>
+
       <Tabs defaultValue="utilisation">
         <TabsList className="border border-slate-200 bg-slate-50 dark:border-border dark:bg-card">
           <TabsTrigger value="utilisation"><BarChart3 className="mr-1.5 h-3.5 w-3.5" />Utilisation</TabsTrigger>
@@ -168,9 +239,9 @@ export default function BudgetPage() {
         <TabsContent value="utilisation" className="mt-4 space-y-4">
           <Card className="border-slate-200 bg-white/50 shadow-sm dark:border-border dark:bg-card">
             <CardHeader className="border-b border-slate-100 bg-slate-50/50 px-5 py-3 dark:border-border dark:bg-black/20">
-              <div className="flex items-center gap-3">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
                 <CardTitle className="text-sm font-bold">Budget Plan Selector</CardTitle>
-                <div className="flex items-center gap-2 ml-auto">
+                <div className="flex items-center gap-2 sm:ml-auto">
                   <Select value={planForm.sessionId} onValueChange={v => { setPlanForm({ ...planForm, sessionId: v }); setSelectedPlanId(""); }}>
                     <SelectTrigger className="h-8 w-40 text-xs"><SelectValue placeholder="Session" /></SelectTrigger>
                     <SelectContent>{sessions?.map(s => <SelectItem key={s.sessionId} value={s.sessionId}>{s.sessionName}</SelectItem>)}</SelectContent>
@@ -185,11 +256,11 @@ export default function BudgetPage() {
             <CardContent className="p-0">
               {!selectedPlanId ? (
                 <div className="py-12 text-center text-sm text-muted-foreground">Select a session and budget plan to view utilisation.</div>
-              ) : !utilisation ? (
+              ) : isUtilLoading ? (
                 <div className="flex items-center justify-center gap-2 py-12 text-sm text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin" /> Loading…</div>
               ) : (
                 <div className="divide-y divide-slate-100 dark:divide-border">
-                  {utilisation.utilisation.map((u) => {
+                  {utilisation?.utilisation.map((u) => {
                     const pct = utilPct(u);
                     return (
                       <div key={u.allocationId} className="px-5 py-4">

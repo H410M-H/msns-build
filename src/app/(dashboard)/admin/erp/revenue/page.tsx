@@ -1,6 +1,6 @@
 "use client";
 
-import { RevenueCards } from "~/components/cards/RevenueCard";
+import { useMemo, useState, useEffect } from "react";
 import { ExpensesTable, type Expense } from "~/components/tables/ExpensesTable";
 import { PageHeader } from "~/components/blocks/nav/PageHeader";
 import {
@@ -18,11 +18,86 @@ import {
   SelectValue,
 } from "~/components/ui/select";
 import { motion, type Variants } from "framer-motion";
-import { Calendar, TrendingUp, Wallet, Filter } from "lucide-react";
-import { DownloadPdfButton } from "~/components/ui/DownloadPdfButton";
+import { Calendar, TrendingUp, Wallet, Filter, DollarSign, Receipt } from "lucide-react";
 import { Separator } from "~/components/ui/separator";
+import { api } from "~/trpc/react";
+import { GradientStatCard } from "~/components/shared/GradientStatCard";
+import { PageExportButton } from "~/components/shared/PageExportButton";
 
 export default function RevenuePage() {
+  const [selectedSessionId, setSelectedSessionId] = useState<string>("");
+  const { data: sessions } = api.session.getSessions.useQuery();
+  const latestSession = sessions?.[0];
+
+  useEffect(() => {
+    if (latestSession && !selectedSessionId) {
+      setSelectedSessionId(latestSession.sessionId);
+    }
+  }, [latestSession, selectedSessionId]);
+
+  const selectedYear = useMemo(() => {
+    if (!selectedSessionId || !sessions) return undefined;
+    const session = sessions.find((s) => s.sessionId === selectedSessionId);
+    if (!session) return undefined;
+    return new Date(session.sessionFrom).getFullYear();
+  }, [selectedSessionId, sessions]);
+
+  // Financial overview stats from ledger Profit & Loss
+  const { data: profitLoss, isLoading: isPLLoading } = api.erp.ledger.getProfitLoss.useQuery(
+    { sessionId: selectedSessionId },
+    { enabled: !!selectedSessionId }
+  );
+
+  // Fee Analytics
+  const { data: feeAnalytics, isLoading: isFeeLoading } = api.fee.getFeeAnalytics.useQuery(
+    { sessionId: selectedSessionId, year: selectedYear ?? 2025 },
+    { enabled: !!selectedSessionId && !!selectedYear }
+  );
+
+  // All expenses for CSV export
+  const { data: allExpensesData } = api.expense.getAllExpenses.useQuery({
+    pageSize: 1000,
+  });
+
+  const totalCollected = useMemo(() => {
+    if (!feeAnalytics?.monthlyTrend) return 0;
+    return feeAnalytics.monthlyTrend.reduce((sum, item) => sum + item.collected, 0);
+  }, [feeAnalytics]);
+
+  const totalOutstanding = feeAnalytics?.summary?.totalOutstanding ?? 0;
+
+  const totalExpected = useMemo(() => {
+    if (!feeAnalytics?.monthlyTrend) return 0;
+    return feeAnalytics.monthlyTrend.reduce((sum, item) => sum + (item.collected + item.outstanding), 0);
+  }, [feeAnalytics]);
+
+  const otherRevenue = useMemo(() => {
+    if (!profitLoss) return 0;
+    return Math.max(0, profitLoss.totalIncome - totalCollected);
+  }, [profitLoss, totalCollected]);
+
+  const exportData = useMemo(() => {
+    if (!allExpensesData?.data) return undefined;
+    return {
+      columns: [
+        { key: "title", label: "Expense Title" },
+        { key: "amount", label: "Amount (PKR)" },
+        { key: "category", label: "Category" },
+        { key: "date", label: "Date" },
+        { key: "description", label: "Description" },
+      ],
+      rows: allExpensesData.data.map((exp) => ({
+        title: exp.title,
+        amount: exp.amount,
+        category: exp.category,
+        date: `${exp.month}/${exp.year}`,
+        description: exp.description ?? "",
+      })),
+      sheetName: "Expenses",
+      title: "Expenses Report",
+    };
+  }, [allExpensesData]);
+
   const breadcrumbs = [
     { href: "/admin", label: "Admin" },
     { href: "/admin/erp", label: "ERP" },
@@ -94,15 +169,17 @@ export default function RevenuePage() {
 
             {/* Controls Toolbar */}
             <div className="flex flex-wrap items-center gap-3 rounded-xl border border-emerald-500/20 bg-card p-1.5 shadow-lg backdrop-blur-md">
-              <Select defaultValue="this_year">
-                <SelectTrigger className="h-10 w-[160px] border-emerald-500/20 bg-muted text-foreground focus:ring-emerald-500/50">
+              <Select value={selectedSessionId} onValueChange={setSelectedSessionId}>
+                <SelectTrigger className="h-10 w-[180px] border-emerald-500/20 bg-muted text-foreground focus:ring-emerald-500/50">
                   <Calendar className="mr-2 h-4 w-4 text-emerald-400" />
-                  <SelectValue placeholder="Period" />
+                  <SelectValue placeholder="Select Session" />
                 </SelectTrigger>
                 <SelectContent className="border-emerald-500/20 bg-card text-foreground">
-                  <SelectItem value="this_month">This Month</SelectItem>
-                  <SelectItem value="last_month">Last Month</SelectItem>
-                  <SelectItem value="this_year">This Year</SelectItem>
+                  {sessions?.map((s) => (
+                    <SelectItem key={s.sessionId} value={s.sessionId}>
+                      {s.sessionName}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
 
@@ -111,11 +188,11 @@ export default function RevenuePage() {
                 className="hidden h-6 bg-emerald-500/20 sm:block"
               />
 
-              <DownloadPdfButton
-                reportType="fees"
-                label="Export Report"
-                variant="default"
-                className="h-10 border-0 bg-emerald-600 text-foreground shadow-lg shadow-emerald-900/20 hover:bg-emerald-500"
+              <PageExportButton
+                exportData={exportData}
+                csvFilename="revenue-expenses-report"
+                pdfReportType="fees"
+                buttonLabel="Export Report"
               />
             </div>
           </motion.div>
@@ -124,7 +201,36 @@ export default function RevenuePage() {
           <motion.div variants={itemVariants} className="relative">
             {/* Decorative blob behind cards */}
             <div className="absolute inset-0 -z-10 bg-emerald-500/5 blur-3xl" />
-            <RevenueCards />
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              <GradientStatCard
+                title="Total Income"
+                value={isPLLoading ? "..." : `PKR ${(profitLoss?.totalIncome ?? 0).toLocaleString()}`}
+                icon={<TrendingUp className="h-5 w-5" />}
+                subtitle="Total collected revenue"
+                theme="emerald"
+              />
+              <GradientStatCard
+                title="Invoiced Fees"
+                value={isFeeLoading ? "..." : `PKR ${totalExpected.toLocaleString()}`}
+                icon={<Receipt className="h-5 w-5" />}
+                subtitle="Total generated billings"
+                theme="blue"
+              />
+              <GradientStatCard
+                title="Other Revenue"
+                value={isPLLoading || isFeeLoading ? "..." : `PKR ${otherRevenue.toLocaleString()}`}
+                icon={<DollarSign className="h-5 w-5" />}
+                subtitle="Late fees & other funds"
+                theme="amber"
+              />
+              <GradientStatCard
+                title="Pending Collections"
+                value={isFeeLoading ? "..." : `PKR ${totalOutstanding.toLocaleString()}`}
+                icon={<Wallet className="h-5 w-5" />}
+                subtitle="Unpaid vouchers total"
+                theme="rose"
+              />
+            </div>
           </motion.div>
 
           {/* === 2. Transactions Table Section === */}
@@ -141,8 +247,7 @@ export default function RevenuePage() {
                         Expense Transactions
                       </CardTitle>
                       <CardDescription className="text-muted-foreground">
-                        Detailed breakdown of operational expenses and salary
-                        disbursements.
+                        Detailed breakdown of operational expenses and salary disbursements.
                       </CardDescription>
                     </div>
                   </div>
@@ -162,7 +267,6 @@ export default function RevenuePage() {
 
               <CardContent className="p-0">
                 <div className="overflow-x-auto p-4 sm:p-6">
-                  {/* Ensure ExpensesTable handles dark mode styling internally or via global CSS */}
                   <ExpensesTable onEdit={handleEdit} onDelete={handleDelete} />
                 </div>
               </CardContent>

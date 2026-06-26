@@ -6,7 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import { ClasswiseView } from "~/components/attendance/timetable/classwise-view";
 import { TeacherwiseView } from "~/components/attendance/timetable/teacherwise-view";
 import type { Class, Teacher, TimetableViewMode } from "~/lib/timetable-types";
-import { GridIcon, Users, AlertCircle, Clock, BookOpen, Calendar, Printer, FileText, UploadCloud, LayoutGrid } from "lucide-react";
+import { GridIcon, Users, Clock, Calendar, Printer, UploadCloud, LayoutGrid } from "lucide-react";
 import { api } from "~/trpc/react";
 import { PageHeader } from "~/components/blocks/nav/PageHeader";
 import { GradientStatCard } from "~/components/shared/GradientStatCard";
@@ -46,7 +46,7 @@ function TimetableContent() {
         { key: "designation", label: "Designation", width: 20 },
         { key: "education", label: "Education", width: 20 },
       ],
-      rows: teachers.map((t: any) => ({
+      rows: teachers.map((t) => ({
         employeeName: t.employeeName,
         designation: t.designation,
         education: t.education ?? "N/A",
@@ -71,7 +71,7 @@ function TimetableContent() {
   }
 
   const transformedClasses: Class[] = (classes ?? []).map(
-    (cls: any) => ({
+    (cls) => ({
       classId: cls.classId,
       grade: cls.grade,
       section: cls.section,
@@ -79,7 +79,7 @@ function TimetableContent() {
   );
 
   const transformedTeachers: Teacher[] = (teachers ?? []).map(
-    (teacher: any) => ({
+    (teacher) => ({
       employeeId: teacher.employeeId,
       employeeName: teacher.employeeName,
       designation: teacher.designation,
@@ -103,7 +103,7 @@ function TimetableContent() {
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
-          <PageExportButton exportData={exportData} csvFilename="teachers-list" pdfReportType="teachers" />
+          <PageExportButton exportData={exportData} csvFilename="teachers-list" />
           <Button variant="outline" size="sm" className="gap-2">
             <UploadCloud className="h-4 w-4" />
             Import
