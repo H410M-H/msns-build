@@ -1,82 +1,52 @@
 "use client";
 
-import { useMemo, Suspense } from "react";
+import { useMemo } from "react";
 import { PageHeader } from "~/components/blocks/nav/PageHeader";
 import { GradientStatCard } from "~/components/shared/GradientStatCard";
-import { PageExportButton } from "~/components/shared/PageExportButton";
-import { CalendarGrid } from "~/components/attendance/attendance/attendance-calendar";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
-import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "~/components/ui/card";
 import { Button } from "~/components/ui/button";
+import { Badge } from "~/components/ui/badge";
 import { api } from "~/trpc/react";
 import {
-  CalendarIcon,
   Users,
   UserCheck,
   UserX,
   UserMinus,
-  UploadCloud,
-  Printer,
-  CalendarDays,
-  FileBarChart,
-  CalendarRange
+  ClipboardCheck,
+  CalendarIcon,
+  ArrowRight,
+  ShieldAlert
 } from "lucide-react";
+import Link from "next/link";
 import dayjs from "dayjs";
 
-function AttendanceDashboardContent() {
-  const { data: employees, isLoading: employeesLoading } = api.employee.getEmployees.useQuery();
-  const { data: attendances, isLoading: attendancesLoading } = api.attendance.getAllEmployeeAttendance.useQuery();
+function StudentAttendanceDashboardContent() {
+  const { data: activeSession, isLoading: sessionLoading } = api.session.getActiveSession.useQuery();
 
-  const todayStr = dayjs().format("YYYY-MM-DD");
+  const { data: classesData, isLoading: classesLoading } = api.class.getClassesWithStudentCount.useQuery(
+    { sessionId: activeSession?.sessionId ?? "" },
+    { enabled: !!activeSession?.sessionId }
+  );
 
-  const { presentCount, absentCount, leaveCount } = useMemo(() => {
-    let present = 0;
-    let absent = 0;
-    let leave = 0;
+  const stats = useMemo(() => {
+    let totalStudents = 0;
+    let totalPresent = 0;
+    let totalAbsent = 0;
+    let totalLeave = 0;
 
-    if (!attendances) return { presentCount: 0, absentCount: 0, leaveCount: 0 };
+    if (classesData) {
+      classesData.forEach((c) => {
+        totalStudents += c.studentCount;
+        totalPresent += c.presentCount;
+        totalAbsent += c.absentCount;
+        totalLeave += c.leaveCount;
+      });
+    }
 
-    // Get today's attendance records
-    const todaysRecords = attendances.filter(a => a.date === todayStr);
-    
-    // We count based on morning/afternoon logic, simplified:
-    todaysRecords.forEach(record => {
-      if (record.morning === "P" || record.afternoon === "P") present++;
-      else if (record.morning === "L" || record.afternoon === "L") leave++;
-      else absent++;
-    });
+    return { totalStudents, totalPresent, totalAbsent, totalLeave };
+  }, [classesData]);
 
-    return { presentCount: present, absentCount: absent, leaveCount: leave };
-  }, [attendances, todayStr]);
-
-  const exportData = useMemo(() => {
-    if (!employees) return undefined;
-    return {
-      columns: [
-        { key: "employeeName", label: "Employee Name", width: 25 },
-        { key: "designation", label: "Designation", width: 20 },
-        { key: "status", label: "Today's Status", width: 15 },
-      ],
-      rows: employees.map((emp) => {
-        const record = attendances?.find(a => a.employeeId === emp.employeeId && a.date === todayStr);
-        let status = "Not Marked";
-        if (record) {
-          if (record.morning === "P" || record.afternoon === "P") status = "Present";
-          else if (record.morning === "L" || record.afternoon === "L") status = "Leave";
-          else status = "Absent";
-        }
-        return {
-          employeeName: emp.employeeName,
-          designation: emp.designation,
-          status,
-        };
-      }),
-      sheetName: "Daily Attendance",
-      title: `Daily Attendance Report - ${dayjs().format("MMMM D, YYYY")}`,
-    };
-  }, [employees, attendances, todayStr]);
-
-  if (employeesLoading || attendancesLoading) {
+  if (sessionLoading || (activeSession?.sessionId && classesLoading)) {
     return (
       <div className="w-full space-y-4">
         <div className="h-10 w-48 animate-pulse rounded-md bg-slate-200 dark:bg-emerald-900/20" />
@@ -90,128 +60,159 @@ function AttendanceDashboardContent() {
     );
   }
 
+  if (!activeSession) {
+    return (
+      <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-slate-300 bg-slate-50 py-16 text-center dark:border-border dark:bg-card">
+        <div className="mb-4 rounded-full border border-slate-200 bg-white p-4 shadow-sm dark:border-border dark:bg-muted">
+          <ShieldAlert className="h-8 w-8 text-amber-500" />
+        </div>
+        <h3 className="mb-1 text-xl font-bold text-slate-900 dark:text-foreground">
+          No Active Academic Session
+        </h3>
+        <p className="mb-6 max-w-xs text-sm text-muted-foreground">
+          Please set an active session in Session Management before viewing student attendance.
+        </p>
+        <Button asChild className="bg-emerald-600 hover:bg-emerald-700 text-white">
+          <Link href="/admin/sessions">Manage Sessions</Link>
+        </Button>
+      </div>
+    );
+  }
+
   return (
-    <>
-      {/* --- Header Section with Actions --- */}
+    <div className="space-y-6">
+      {/* Header Section */}
       <div className="flex flex-col justify-between gap-4 md:flex-row md:items-end">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-foreground sm:text-3xl">
-            Attendance Management
-          </h1>
-          <p className="mt-1 max-w-xl text-sm text-muted-foreground dark:text-muted-foreground">
-            Track and manage employee attendance records, leaves, and daily reports.
+          <div className="flex items-center gap-3">
+            <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-foreground sm:text-3xl">
+              Student Attendance
+            </h1>
+            <Badge
+              variant="outline"
+              className="border-emerald-200 bg-emerald-50 px-3 py-1 text-emerald-700 dark:border-emerald-500/20 dark:bg-emerald-500/5 dark:text-emerald-300"
+            >
+              Session: {activeSession.sessionName}
+            </Badge>
+          </div>
+          <p className="mt-1 max-w-xl text-sm text-muted-foreground">
+            Track, mark, and manage student attendance registers across classes.
           </p>
         </div>
-
-        <div className="flex flex-wrap items-center gap-2">
-          <PageExportButton exportData={exportData} csvFilename={`attendance-${todayStr}`} />
-          <Button variant="outline" size="sm" className="gap-2">
-            <UploadCloud className="h-4 w-4" />
-            Import Log
-          </Button>
-          <Button size="sm" className="gap-2 bg-emerald-600 hover:bg-emerald-700 text-white">
-            <Printer className="h-4 w-4" />
-            Print Daily Sheet
-          </Button>
+        <div className="text-sm font-semibold text-slate-500 dark:text-slate-400">
+          Today: {dayjs().format("dddd, MMMM D, YYYY")}
         </div>
       </div>
 
-      {/* --- Key Metrics Grid --- */}
+      {/* Stats Cards */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <GradientStatCard
-          title="Total Staff"
-          value={employees?.length ?? 0}
+          title="Total Students"
+          value={stats.totalStudents}
           icon={Users}
           theme="blue"
         />
         <GradientStatCard
           title="Present Today"
-          value={presentCount}
+          value={stats.totalPresent}
           icon={UserCheck}
           theme="emerald"
         />
         <GradientStatCard
           title="Absent Today"
-          value={absentCount}
+          value={stats.totalAbsent}
           icon={UserX}
           theme="pink"
         />
         <GradientStatCard
           title="On Leave"
-          value={leaveCount}
+          value={stats.totalLeave}
           icon={UserMinus}
           theme="amber"
         />
       </div>
 
-      {/* --- Tabs Section --- */}
-      <Tabs defaultValue="calendar" className="space-y-6">
-        <TabsList className="h-auto flex-wrap justify-start gap-1 border border-slate-200 bg-slate-100 p-1 dark:border-border dark:bg-card">
-          <TabsTrigger value="calendar" className="gap-2 data-[state=active]:bg-white data-[state=active]:text-emerald-700 dark:data-[state=active]:bg-emerald-600 dark:data-[state=active]:text-foreground">
-            <CalendarDays className="h-4 w-4" />
-            Calendar View
-          </TabsTrigger>
-          <TabsTrigger value="daily" className="gap-2 data-[state=active]:bg-white data-[state=active]:text-emerald-700 dark:data-[state=active]:bg-emerald-600 dark:data-[state=active]:text-foreground">
-            <FileBarChart className="h-4 w-4" />
-            Daily Report
-          </TabsTrigger>
-          <TabsTrigger value="leave" className="gap-2 data-[state=active]:bg-white data-[state=active]:text-emerald-700 dark:data-[state=active]:bg-emerald-600 dark:data-[state=active]:text-foreground">
-            <CalendarRange className="h-4 w-4" />
-            Leave Requests
-          </TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="calendar" className="m-0 duration-300 animate-in fade-in-50">
-          <Card className="overflow-hidden border border-slate-200 bg-white shadow-sm backdrop-blur-xl dark:border-emerald-500/10 dark:bg-card dark:shadow-2xl">
-            <CardHeader className="border-b border-slate-100 bg-slate-50/50 px-4 py-3 dark:border-border dark:bg-white/5">
-              <CardTitle className="flex items-center gap-2 text-base font-bold text-slate-900 dark:text-foreground">
-                <CalendarIcon className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
-                Attendance Calendar
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="p-4 sm:p-6">
-              <div className="h-[600px] w-full">
-                <Suspense fallback={<div className="flex h-full items-center justify-center">Loading Calendar...</div>}>
-                  <CalendarGrid />
-                </Suspense>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="daily" className="m-0 duration-300 animate-in fade-in-50">
-          <Card className="border border-slate-200 bg-white shadow-sm dark:border-emerald-500/10 dark:bg-card">
-            <CardHeader>
-              <CardTitle>Daily Report View</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex h-64 items-center justify-center rounded-lg border border-dashed border-slate-200 dark:border-border">
-                <div className="text-center text-muted-foreground">
-                  <FileBarChart className="mx-auto mb-2 h-8 w-8 opacity-20" />
-                  <p>Detailed Daily Report coming soon</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="leave" className="m-0 duration-300 animate-in fade-in-50">
-          <Card className="border border-slate-200 bg-white shadow-sm dark:border-emerald-500/10 dark:bg-card">
-            <CardHeader>
-              <CardTitle>Leave Requests</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex h-64 items-center justify-center rounded-lg border border-dashed border-slate-200 dark:border-border">
-                <div className="text-center text-muted-foreground">
-                  <CalendarRange className="mx-auto mb-2 h-8 w-8 opacity-20" />
-                  <p>Leave Requests Management coming soon</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
-    </>
+      {/* Classes List */}
+      <Card className="border border-slate-200 bg-white shadow-sm dark:border-border dark:bg-card">
+        <CardHeader className="border-b border-slate-100 bg-slate-50/50 px-6 py-4 dark:border-border dark:bg-white/5">
+          <CardTitle className="text-lg font-bold text-slate-900 dark:text-foreground flex items-center gap-2">
+            <ClipboardCheck className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+            Class Registers
+          </CardTitle>
+          <CardDescription className="text-xs">
+            Manage attendance registers for classes in the current session.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="p-0">
+          {!classesData || classesData.length === 0 ? (
+            <div className="p-8 text-center text-muted-foreground">
+              No classes defined in this session.
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-sm">
+                <thead className="border-b border-slate-200 bg-slate-50/50 text-muted-foreground dark:border-border dark:bg-black/20">
+                  <tr>
+                    <th className="px-6 py-3 font-semibold">Class / Grade</th>
+                    <th className="px-6 py-3 font-semibold">Section</th>
+                    <th className="px-6 py-3 font-semibold">Category</th>
+                    <th className="px-6 py-3 text-center font-semibold">Enrolled Students</th>
+                    <th className="px-6 py-3 text-center font-semibold">Today's Register</th>
+                    <th className="px-6 py-3 text-right font-semibold">Action</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 dark:divide-border">
+                  {classesData.map((c) => {
+                    const hasAttendanceMarked = c.presentCount > 0 || c.absentCount > 0 || c.leaveCount > 0;
+                    return (
+                      <tr key={c.classId} className="hover:bg-slate-50/50 dark:hover:bg-white/[0.02]">
+                        <td className="px-6 py-4 font-bold text-slate-900 dark:text-foreground">
+                          {c.grade}
+                        </td>
+                        <td className="px-6 py-4">
+                          <Badge variant="outline" className="border-emerald-500/20 bg-emerald-500/5 text-emerald-600 dark:text-emerald-400">
+                            {c.section}
+                          </Badge>
+                        </td>
+                        <td className="px-6 py-4 text-muted-foreground">
+                          {c.category}
+                        </td>
+                        <td className="px-6 py-4 text-center font-mono font-medium">
+                          {c.studentCount}
+                        </td>
+                        <td className="px-6 py-4">
+                          {hasAttendanceMarked ? (
+                            <div className="flex items-center justify-center gap-2 text-xs font-semibold">
+                              <span className="text-emerald-600 dark:text-emerald-400">{c.presentCount} P</span>
+                              <span className="text-slate-400">/</span>
+                              <span className="text-red-500">{c.absentCount} A</span>
+                              <span className="text-slate-400">/</span>
+                              <span className="text-amber-500">{c.leaveCount} L</span>
+                            </div>
+                          ) : (
+                            <div className="text-center text-xs text-muted-foreground italic">
+                              Not Marked
+                            </div>
+                          )}
+                        </td>
+                        <td className="px-6 py-4 text-right">
+                          <Button size="sm" variant="ghost" className="text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 dark:text-emerald-400 dark:hover:text-emerald-300 dark:hover:bg-emerald-950/20 gap-1.5" asChild>
+                            <Link href={`/admin/sessions/class/?classId=${c.classId}&sessionId=${activeSession.sessionId}&tab=attendance`}>
+                              Manage Register
+                              <ArrowRight className="h-4 w-4" />
+                            </Link>
+                          </Button>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </div>
   );
 }
 
@@ -224,7 +225,7 @@ export default function AttendancePage() {
   return (
     <div className="w-full space-y-6">
       <PageHeader breadcrumbs={breadcrumbs} />
-      <AttendanceDashboardContent />
+      <StudentAttendanceDashboardContent />
     </div>
   );
 }

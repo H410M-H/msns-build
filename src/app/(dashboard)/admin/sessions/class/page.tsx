@@ -17,7 +17,7 @@ import {
 } from "lucide-react";
 
 type PageProps = {
-  searchParams: Promise<{ classId: string; sessionId: string }>;
+  searchParams: Promise<{ classId: string; sessionId: string; tab?: string }>;
 };
 
 export default async function ClassDetailsPage({ searchParams }: PageProps) {
@@ -44,7 +44,7 @@ export default async function ClassDetailsPage({ searchParams }: PageProps) {
 
       {/* Render Table Directly without redundant Card wrapper */}
       <div className="duration-500 animate-in fade-in mt-6">
-        <Tabs defaultValue="roster" className="w-full">
+        <Tabs defaultValue={searchProps.tab ?? "roster"} className="w-full">
           <TabsList className="mb-8 grid w-full grid-cols-3 bg-card p-1 md:grid-cols-6 border border-slate-200 dark:border-border">
             <TabsTrigger
               value="roster"

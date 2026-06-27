@@ -4,11 +4,12 @@ import { ClassSubjectsTab } from "~/components/blocks/class/ClassSubjectsTab";
 import { ClassTimetableTab } from "~/components/blocks/class/ClassTimetableTab";
 import { ClassExamsTab } from "~/components/blocks/class/ClassExamsTab";
 import { ClassDiariesTab } from "~/components/blocks/class/ClassDiariesTab";
+import { ClassAttendanceTab } from "~/components/blocks/class/ClassAttendanceTab";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
-import { Users, Library, Clock, FileText, BookOpen } from "lucide-react";
+import { Users, Library, Clock, FileText, BookOpen, ClipboardCheck } from "lucide-react";
 
 type PageProps = {
-  searchParams: Promise<{ classId: string; sessionId: string }>;
+  searchParams: Promise<{ classId: string; sessionId: string; tab?: string }>;
 };
 
 export default async function ClerkClassDetailsPage({ searchParams }: PageProps) {
@@ -27,8 +28,8 @@ export default async function ClerkClassDetailsPage({ searchParams }: PageProps)
       <PageHeader breadcrumbs={breadcrumbs} />
 
       <div className="duration-500 animate-in fade-in">
-        <Tabs defaultValue="roster" className="w-full">
-          <TabsList className="mb-8 grid w-full grid-cols-3 bg-card p-1 md:grid-cols-5">
+        <Tabs defaultValue={searchProps.tab ?? "roster"} className="w-full">
+          <TabsList className="mb-8 grid w-full grid-cols-3 bg-card p-1 md:grid-cols-6">
             <TabsTrigger
               value="roster"
               className="data-[state=active]:bg-emerald-600/20 data-[state=active]:text-emerald-400"
@@ -46,6 +47,12 @@ export default async function ClerkClassDetailsPage({ searchParams }: PageProps)
               className="data-[state=active]:bg-blue-600/20 data-[state=active]:text-blue-400"
             >
               <Clock className="mr-2 h-4 w-4" /> Timetable
+            </TabsTrigger>
+            <TabsTrigger
+              value="attendance"
+              className="data-[state=active]:bg-purple-600/20 data-[state=active]:text-purple-400"
+            >
+              <ClipboardCheck className="mr-2 h-4 w-4" /> Attendance
             </TabsTrigger>
             <TabsTrigger
               value="exams"
@@ -91,6 +98,13 @@ export default async function ClerkClassDetailsPage({ searchParams }: PageProps)
 
           <TabsContent value="diaries" className="m-0">
             <ClassDiariesTab
+              classId={searchProps.classId}
+              sessionId={searchProps.sessionId}
+            />
+          </TabsContent>
+
+          <TabsContent value="attendance" className="m-0">
+            <ClassAttendanceTab
               classId={searchProps.classId}
               sessionId={searchProps.sessionId}
             />

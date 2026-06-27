@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import { UserPlus, Users, type LucideIcon, ArrowRight } from "lucide-react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import {
   Card,
   CardContent,
@@ -66,13 +67,18 @@ const services: Service[] = [
 ];
 
 export default function RegistrationCards() {
+  const pathname = usePathname();
+  const isClerk = pathname?.startsWith("/clerk");
+  const prefix = isClerk ? "/clerk" : "/admin";
+
   return (
     <div className="mx-auto grid w-full max-w-7xl gap-6 md:grid-cols-2 lg:grid-cols-4">
       {services.map((service, _index) => {
         const Icon = service.icon;
+        const href = service.href.replace("/admin", prefix);
         return (
           <Link
-            href={service.href}
+            href={href}
             key={service.title}
             className="group block h-full"
           >

@@ -3,6 +3,7 @@ import { z } from "zod";
 import { TRPCError } from "@trpc/server";
 import { ClassCategory, type Grades } from "@prisma/client";
 import { generatePdf } from "~/lib/pdf-reports";
+import dayjs from "dayjs";
 
 export type ClassProps = Grades & {
   studentCount?: number;
@@ -27,6 +28,71 @@ const classSchema = z.object({
 });
 
 export const ClassRouter = createTRPCRouter({
+  getClassesWithStudentCount: protectedProcedure
+    .input(z.object({ sessionId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      try {
+        const classes = await ctx.db.grades.findMany({
+          orderBy: { category: "asc" },
+          select: {
+            classId: true,
+            grade: true,
+            section: true,
+            category: true,
+            fee: true,
+          },
+        });
+
+        // Get student counts for each class in the session
+        const counts = await ctx.db.studentClass.groupBy({
+          by: ["classId"],
+          where: { sessionId: input.sessionId },
+          _count: { studentId: true },
+        });
+
+        const countMap = new Map(counts.map((c) => [c.classId, c._count.studentId]));
+
+        // Get today's attendance summary for each class
+        const todayStr = dayjs().format("YYYY-MM-DD");
+        const attendance = await ctx.db.studentAttendance.findMany({
+          where: {
+            sessionId: input.sessionId,
+            date: todayStr,
+          },
+          select: {
+            classId: true,
+            status: true,
+          },
+        });
+
+        const attendanceSummary = new Map<string, { present: number; absent: number; leave: number }>();
+        attendance.forEach((a) => {
+          const stats = attendanceSummary.get(a.classId) ?? { present: 0, absent: 0, leave: 0 };
+          if (a.status === "P") stats.present++;
+          else if (a.status === "A") stats.absent++;
+          else if (a.status === "L") stats.leave++;
+          attendanceSummary.set(a.classId, stats);
+        });
+
+        return classes.map((c) => {
+          const stats = attendanceSummary.get(c.classId) ?? { present: 0, absent: 0, leave: 0 };
+          return {
+            ...c,
+            studentCount: countMap.get(c.classId) ?? 0,
+            presentCount: stats.present,
+            absentCount: stats.absent,
+            leaveCount: stats.leave,
+          };
+        });
+      } catch (error) {
+        console.error("Error in getClassesWithStudentCount:", error);
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to retrieve classes stats",
+        });
+      }
+    }),
+
   getClasses: protectedProcedure.query<ClassProps[]>(async ({ ctx }) => {
     try {
       return await ctx.db.grades.findMany({
