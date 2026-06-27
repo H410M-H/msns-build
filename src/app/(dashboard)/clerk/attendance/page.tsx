@@ -156,7 +156,7 @@ function StudentAttendanceDashboardContent() {
                     <th className="px-6 py-3 font-semibold">Section</th>
                     <th className="px-6 py-3 font-semibold">Category</th>
                     <th className="px-6 py-3 text-center font-semibold">Enrolled Students</th>
-                    <th className="px-6 py-3 text-center font-semibold">Today's Register</th>
+                    <th className="px-6 py-3 text-center font-semibold">{"Today's Register"}</th>
                     <th className="px-6 py-3 text-right font-semibold">Action</th>
                   </tr>
                 </thead>
