@@ -529,6 +529,7 @@ const nameTranslationMap: { [gradeName: string]: { [seedName: string]: string } 
   }
 };
 
+<<<<<<< HEAD
 function mapDatasetToDbClass(grade: string, section: string) {
   const normGrade = grade.toUpperCase().trim();
   const normSection = section.toUpperCase().trim();
@@ -642,6 +643,126 @@ function findEmployeeByName(name: string, employees: any[]) {
 
 async function main() {
   console.log('--- Starting Seed Script (Targeting Session 2025-26) ---');
+
+  // 1. Clean up existing session data to ensure idempotent run
+  console.log('Cleaning up existing session data...');
+  const sessionId = 'cmf2holu40002jv041uwwcqpv';
+  
+  await prisma.reportCardDetail.deleteMany({
+    where: {
+      ReportCard: {
+        sessionId: sessionId,
+      },
+    },
+  });
+  
+  await prisma.reportCard.deleteMany({
+    where: { sessionId: sessionId },
+  });
+  
+  await prisma.marks.deleteMany({
+    where: {
+      Exam: {
+        sessionId: sessionId,
+      },
+    },
+  });
+  
+  await prisma.exam.deleteMany({
+    where: { sessionId: sessionId },
+  });
+  
+  // Get all students for this session and delete them to avoid sequence / duplicate ID issues
+  const studentClasses = await prisma.studentClass.findMany({
+    where: { sessionId: sessionId },
+    select: { studentId: true },
+  });
+  const studentIds = studentClasses.map(sc => sc.studentId);
+  
+  await prisma.studentClass.deleteMany({
+    where: { sessionId: sessionId },
+  });
+  
+  await prisma.classSubject.deleteMany({
+    where: { sessionId: sessionId },
+  });
+  
+  if (studentIds.length > 0) {
+    await prisma.students.deleteMany({
+      where: {
+        studentId: { in: studentIds },
+      },
+    });
+  }
+  
+  // Clean up any empty classes (Grades) that have no students at all
+  console.log('Cleaning up empty classes...');
+  const allGrades = await prisma.grades.findMany({
+    include: {
+      StudentClass: true,
+    },
+  });
+  
+  const emptyGrades = allGrades.filter(g => g.StudentClass.length === 0);
+  for (const grade of emptyGrades) {
+    // Delete dependent records first to satisfy foreign key constraints
+    await prisma.classSubject.deleteMany({
+      where: { classId: grade.classId },
+    });
+    await prisma.timetable.deleteMany({
+      where: { classId: grade.classId },
+    });
+    const exams = await prisma.exam.findMany({
+      where: { classId: grade.classId },
+    });
+    const examIds = exams.map(e => e.examId);
+    if (examIds.length > 0) {
+      await prisma.marks.deleteMany({
+        where: { examId: { in: examIds } },
+      });
+      await prisma.examDatesheet.deleteMany({
+        where: { examId: { in: examIds } },
+      });
+      await prisma.exam.deleteMany({
+        where: { classId: grade.classId },
+      });
+    }
+    const reportCards = await prisma.reportCard.findMany({
+      where: { classId: grade.classId },
+    });
+    const reportCardIds = reportCards.map(rc => rc.reportCardId);
+    if (reportCardIds.length > 0) {
+      await prisma.reportCardDetail.deleteMany({
+        where: { reportCardId: { in: reportCardIds } },
+      });
+      await prisma.reportCard.deleteMany({
+        where: { classId: grade.classId },
+      });
+    }
+    await prisma.promotionHistory.deleteMany({
+      where: {
+        OR: [
+          { fromClassId: grade.classId },
+          { toClassId: grade.classId },
+        ],
+      },
+    });
+    await prisma.studentAttendance.deleteMany({
+      where: { classId: grade.classId },
+    });
+    await prisma.bulkPromotionBatch.deleteMany({
+      where: {
+        OR: [
+          { fromClassId: grade.classId },
+          { toClassId: grade.classId },
+        ],
+      },
+    });
+    await prisma.grades.delete({
+      where: { classId: grade.classId },
+    });
+  }
+  console.log('Cleanup completed.');
 
   // 1. Fetch Session "2025-26"
   const session = await prisma.sessions.upsert({

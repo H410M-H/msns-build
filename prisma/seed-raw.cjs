@@ -581,6 +581,57 @@ async function main() {
     
     await client.query('DELETE FROM "StudentClass" WHERE "sessionId" = \'session-2025-2026\'');
     await client.query('DELETE FROM "ClassSubject" WHERE "sessionId" = \'session-2025-2026\'');
+    
+    // Clean up empty classes (classes with no students in any session)
+    console.log('Cleaning up empty classes...');
+    const emptyClassesRes = await client.query(`
+      SELECT "classId" FROM "Grades" g
+      WHERE NOT EXISTS (
+        SELECT 1 FROM "StudentClass" sc WHERE sc."classId" = g."classId"
+      )
+    `);
+    const emptyClassIds = emptyClassesRes.rows.map(r => r.classId);
+    if (emptyClassIds.length > 0) {
+      const placeholders = emptyClassIds.map((_, idx) => `$${idx + 1}`).join(', ');
+      
+      // Delete ClassSubject
+      await client.query(`DELETE FROM "ClassSubject" WHERE "classId" IN (${placeholders})`, emptyClassIds);
+      
+      // Delete Timetable
+      await client.query(`DELETE FROM "Timetable" WHERE "classId" IN (${placeholders})`, emptyClassIds);
+      
+      // Delete Exam-dependent Marks, ExamDatesheet, and Exam
+      const examsRes = await client.query(`SELECT "examId" FROM "Exam" WHERE "classId" IN (${placeholders})`, emptyClassIds);
+      const examIds = examsRes.rows.map(r => r.examId);
+      if (examIds.length > 0) {
+        const examPlaceholders = examIds.map((_, idx) => `$${idx + 1}`).join(', ');
+        await client.query(`DELETE FROM "Marks" WHERE "examId" IN (${examPlaceholders})`, examIds);
+        await client.query(`DELETE FROM "ExamDatesheet" WHERE "examId" IN (${examPlaceholders})`, examIds);
+        await client.query(`DELETE FROM "Exam" WHERE "classId" IN (${placeholders})`, emptyClassIds);
+      }
+      
+      // Delete ReportCardDetail and ReportCard
+      const rcRes = await client.query(`SELECT "reportCardId" FROM "ReportCard" WHERE "classId" IN (${placeholders})`, emptyClassIds);
+      const reportCardIds = rcRes.rows.map(r => r.reportCardId);
+      if (reportCardIds.length > 0) {
+        const rcPlaceholders = reportCardIds.map((_, idx) => `$${idx + 1}`).join(', ');
+        await client.query(`DELETE FROM "ReportCardDetail" WHERE "reportCardId" IN (${rcPlaceholders})`, reportCardIds);
+        await client.query(`DELETE FROM "ReportCard" WHERE "classId" IN (${placeholders})`, emptyClassIds);
+      }
+      
+      // Delete PromotionHistory
+      await client.query(`DELETE FROM "PromotionHistory" WHERE "fromClassId" IN (${placeholders}) OR "toClassId" IN (${placeholders})`, emptyClassIds);
+      
+      // Delete StudentAttendance
+      await client.query(`DELETE FROM "StudentAttendance" WHERE "classId" IN (${placeholders})`, emptyClassIds);
+      
+      // Delete BulkPromotionBatch
+      await client.query(`DELETE FROM "BulkPromotionBatch" WHERE "fromClassId" IN (${placeholders}) OR "toClassId" IN (${placeholders})`, emptyClassIds);
+      
+      // Delete Grades
+      await client.query(`DELETE FROM "Grades" WHERE "classId" IN (${placeholders})`, emptyClassIds);
+      console.log(`Deleted ${emptyClassIds.length} empty classes.`);
+    }
     console.log('Cleanup completed.');
 
     // 1. Create or Find Session "2025-2026"
