@@ -42,7 +42,7 @@ type Designation =
   | "TEACHER"
   | "WORKER";
 
-export default function MarkEmployeeAttendancePage() {
+export function MarkAttendanceTab() {
   const [selectedDesignation, setSelectedDesignation] = useState<string>("");
   const [selectedDate, setSelectedDate] = useState<string>(
     new Date().toISOString().split("T")[0] ?? "",

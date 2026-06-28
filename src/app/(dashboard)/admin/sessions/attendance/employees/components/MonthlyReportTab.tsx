@@ -49,7 +49,7 @@ const designations = [
   { value: "WORKER", label: "Workers" },
 ];
 
-export default function EmployeeMonthlyAttendancePage() {
+export function MonthlyReportTab() {
   const [selectedDesignation, setSelectedDesignation] =
     useState<Designation>("ALL");
   const [currentMonth, setCurrentMonth] = useState(dayjs().month());
