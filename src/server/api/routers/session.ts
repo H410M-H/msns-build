@@ -180,7 +180,7 @@ export const SessionRouter = createTRPCRouter({
     }),
 
   deleteSessionsByIds: protectedProcedure
-    .input(z.object({ sessionIds: z.array(z.string().cuid()) }))
+    .input(z.object({ sessionIds: z.array(z.string()) }))
     .mutation<{ count: number }>(async ({ ctx, input }) => {
       try {
         // Prevent deleting active session
@@ -215,7 +215,7 @@ export const SessionRouter = createTRPCRouter({
     }),
 
   setActiveSession: protectedProcedure
-    .input(z.object({ sessionId: z.string().cuid() }))
+    .input(z.object({ sessionId: z.string() }))
     .mutation<SessionProps>(async ({ ctx, input }) => {
       try {
         await ctx.db.$transaction([
@@ -264,7 +264,7 @@ export const SessionRouter = createTRPCRouter({
     }),
 
   setSessionCompleted: protectedProcedure
-    .input(z.object({ sessionId: z.string().cuid() }))
+    .input(z.object({ sessionId: z.string() }))
     .mutation<SessionProps>(async ({ ctx, input }) => {
       try {
         const session = await ctx.db.sessions.update({
