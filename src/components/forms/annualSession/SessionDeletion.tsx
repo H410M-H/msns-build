@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { api } from "~/trpc/react";
 import { Trash2Icon } from "lucide-react";
+import { useToast } from "~/hooks/use-toast";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -24,15 +25,30 @@ export default function SessionDeletionDialog({
   onSuccess,
 }: SessionDeletionDialogProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const { toast } = useToast();
+  const utils = api.useUtils();
 
   const deleteSessions = api.session.deleteSessionsByIds.useMutation({
     onSuccess: () => {
+      toast({
+        title: "Success",
+        description: "Sessions deleted successfully.",
+      });
       setIsOpen(false);
       onSuccess?.();
+      void utils.session.getSessions.invalidate();
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to delete sessions",
+        variant: "destructive",
+      });
     },
   });
 
-  const handleDelete = () => {
+  const handleDelete = (e: React.MouseEvent) => {
+    e.preventDefault();
     deleteSessions.mutate({ sessionIds });
   };
 
@@ -58,7 +74,7 @@ export default function SessionDeletionDialog({
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogCancel disabled={deleteSessions.isPending}>Cancel</AlertDialogCancel>
           <AlertDialogAction asChild>
             <Button
               variant="destructive"
