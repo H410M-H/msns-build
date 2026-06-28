@@ -252,13 +252,45 @@ export const SessionRouter = createTRPCRouter({
           sessionName: activatedSession.sessionName,
           sessionFrom: new Date(activatedSession.sessionFrom),
           sessionTo: new Date(activatedSession.sessionTo),
-          isActive: activatedSession.isActive,
+          isActive: Boolean(activatedSession.isActive),
         };
       } catch (error) {
         console.error("Error in setActiveSession:", error);
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
           message: "Failed to set active session",
+        });
+      }
+    }),
+
+  setSessionCompleted: protectedProcedure
+    .input(z.object({ sessionId: z.string().cuid() }))
+    .mutation<SessionProps>(async ({ ctx, input }) => {
+      try {
+        const session = await ctx.db.sessions.update({
+          where: { sessionId: input.sessionId },
+          data: { isActive: false },
+          select: {
+            sessionId: true,
+            sessionName: true,
+            sessionFrom: true,
+            sessionTo: true,
+            isActive: true,
+          },
+        });
+
+        return {
+          sessionId: session.sessionId,
+          sessionName: session.sessionName,
+          sessionFrom: new Date(session.sessionFrom),
+          sessionTo: new Date(session.sessionTo),
+          isActive: Boolean(session.isActive),
+        };
+      } catch (error) {
+        console.error("Error in setSessionCompleted:", error);
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to mark session as completed",
         });
       }
     }),
