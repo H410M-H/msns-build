@@ -6,6 +6,8 @@ import { hash, compare } from "bcryptjs";
 const updateProfileSchema = z.object({
   username: z.string().min(2).max(100),
   email: z.string().email(),
+  bio: z.string().max(500).optional(),
+  profilePic: z.string().optional(),
   currentPassword: z.string().optional(),
   newPassword: z.string().min(6).max(100).optional(),
 });
@@ -19,6 +21,7 @@ const updateSettingsSchema = z.object({
   profileVisibility: z.boolean().optional(),
   twoFactorAuth: z.boolean().optional(),
   marketingEmails: z.boolean().optional(),
+  pushNotifications: z.boolean().optional(),
 });
 
 export const ProfileRouter = createTRPCRouter({
@@ -34,7 +37,13 @@ export const ProfileRouter = createTRPCRouter({
           accountId: true,
           accountType: true,
           createdAt: true,
-          bio: true, // Added bio
+          bio: true,
+          profilePic: true,
+          emailNotifications: true,
+          marketingEmails: true,
+          profileVisibility: true,
+          pushNotifications: true,
+          twoFactorAuth: true,
         },
       });
 
@@ -60,15 +69,19 @@ export const ProfileRouter = createTRPCRouter({
     .input(updateProfileSchema)
     .mutation(async ({ ctx, input }) => {
       try {
-        const { username, email, currentPassword, newPassword } = input;
+        const { username, email, bio, profilePic, currentPassword, newPassword } = input;
 
         const updateData: {
           username: string;
           email: string;
+          bio?: string;
+          profilePic?: string;
           password?: string;
         } = {
           username,
           email: email.toLowerCase(),
+          bio,
+          profilePic,
         };
 
         // If changing password, validate current password and hash new one
@@ -112,6 +125,8 @@ export const ProfileRouter = createTRPCRouter({
             username: true,
             accountId: true,
             accountType: true,
+            bio: true,
+            profilePic: true,
           },
         });
 

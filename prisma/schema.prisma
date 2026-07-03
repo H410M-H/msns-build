@@ -17,6 +17,7 @@ model User {
   username           String      @unique
   email              String      @unique
   bio                String?     @default("")
+  profilePic         String?     @default("/user.jpg")
   emailNotifications Boolean     @default(true)
   marketingEmails    Boolean     @default(false)
   profileVisibility  Boolean     @default(true)
