@@ -9,6 +9,14 @@ const nextConfig = {
     minimumCacheTTL: 86400,
   },
   output: "standalone",
+  async rewrites() {
+    return [
+      {
+        source: "/uploads/:path*",
+        destination: "/api/uploads/:path*",
+      },
+    ];
+  },
 };
 
 export default nextConfig;
