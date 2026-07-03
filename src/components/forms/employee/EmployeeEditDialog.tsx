@@ -131,6 +131,10 @@ export function EmployeeEditDialog({
   initialUsername = "",
   initialEmail = "",
 }: Props) {
+  const { data: employeeData } = api.employee.getEmployeeWithUser.useQuery({
+    employeeId: employee.employeeId,
+  });
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -152,11 +156,13 @@ export function EmployeeEditDialog({
     },
   });
 
-  // Sync when initialUsername/initialEmail arrive (async)
+  // Sync when initialUsername/initialEmail or fetched user arrive
   useEffect(() => {
-    if (initialUsername) form.setValue("username", initialUsername);
-    if (initialEmail) form.setValue("email", initialEmail);
-  }, [initialUsername, initialEmail, form]);
+    const usernameToSet = initialUsername || employeeData?.user?.username;
+    const emailToSet = initialEmail || employeeData?.user?.email;
+    if (usernameToSet) form.setValue("username", usernameToSet);
+    if (emailToSet) form.setValue("email", emailToSet);
+  }, [initialUsername, initialEmail, employeeData, form]);
 
   const updateEmployee = api.employee.updateEmployeeAndUser.useMutation({
     onSuccess: () => {
