@@ -5,7 +5,6 @@ import {
   ChevronsUpDown,
   LogOut,
   Settings,
-  User,
   Moon,
   Sun,
 } from "lucide-react";
@@ -27,12 +26,19 @@ import {
 import { useState } from "react";
 import Link from "next/link";
 import { useTheme } from "next-themes";
+import { api } from "~/trpc/react";
+import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 
 export const NavUser = () => {
   const { isMobile } = useSidebar();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const session = useSession();
   const { theme, setTheme } = useTheme();
+  
+  const { data: userProfile } = api.profile.getProfile.useQuery();
+  const profilePic = userProfile?.profilePic;
+  const username = userProfile?.username ?? session.data?.user.username ?? "User";
+  const initials = username.charAt(0).toUpperCase();
 
   const handleSignOut = async () => {
     setIsLoggingOut(true);
@@ -48,7 +54,15 @@ export const NavUser = () => {
               size="lg"
               className="group data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
             >
-              <User className="h-8 w-8 rounded-lg" />
+              <Avatar className="h-8 w-8 rounded-lg">
+                {profilePic && profilePic !== "/user.jpg" ? (
+                  <AvatarImage src={profilePic} className="object-cover" />
+                ) : (
+                  <AvatarFallback className="rounded-lg bg-emerald-500/10 font-bold text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400">
+                    {initials}
+                  </AvatarFallback>
+                )}
+              </Avatar>
               <p className="line-clamp-1 text-xs text-foreground">
                 {session.data?.user.email}
               </p>
@@ -64,10 +78,21 @@ export const NavUser = () => {
             <DropdownMenuLabel className="p-0 font-normal">
               <div className="flex flex-col gap-1 p-4">
                 <div className="flex items-center gap-3">
-                  <User className="h-6 w-6 rounded-lg" />
-                  <p className="text-xs text-muted-foreground">
-                    {session.data?.user.email}
-                  </p>
+                  <Avatar className="h-8 w-8 rounded-lg">
+                    {profilePic && profilePic !== "/user.jpg" ? (
+                      <AvatarImage src={profilePic} className="object-cover" />
+                    ) : (
+                      <AvatarFallback className="rounded-lg bg-emerald-500/10 font-bold text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400">
+                        {initials}
+                      </AvatarFallback>
+                    )}
+                  </Avatar>
+                  <div className="flex flex-col">
+                    <p className="text-sm font-medium">{username}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {session.data?.user.email}
+                    </p>
+                  </div>
                 </div>
               </div>
             </DropdownMenuLabel>
