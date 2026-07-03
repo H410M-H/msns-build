@@ -1426,3 +1426,11 @@ enum CostCentreStatus {
   Active
   Inactive
 }
+
+model Broadcast {
+  id        String   @id @default(cuid())
+  router    String
+  action    String
+  message   String
+  createdAt DateTime @default(now())
+}

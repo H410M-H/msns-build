@@ -183,14 +183,12 @@ export const SessionRouter = createTRPCRouter({
     .input(z.object({ sessionIds: z.array(z.string()) }))
     .mutation<{ count: number }>(async ({ ctx, input }) => {
       try {
-        // Prevent deleting active session
-        const activeSession = await ctx.db.sessions.findFirst({
-          where: {
-            sessionId: { in: input.sessionIds },
-            isActive: true,
-          },
+        const sessions = await ctx.db.sessions.findMany({
+          where: { sessionId: { in: input.sessionIds } },
         });
 
+        // Prevent deleting active session
+        const activeSession = sessions.find(s => s.isActive);
         if (activeSession) {
           throw new TRPCError({
             code: "BAD_REQUEST",
@@ -198,11 +196,86 @@ export const SessionRouter = createTRPCRouter({
           });
         }
 
-        const result = await ctx.db.sessions.deleteMany({
-          where: { sessionId: { in: input.sessionIds } },
+        let deletedCount = 0;
+
+        await ctx.db.$transaction(async (tx) => {
+          for (const sessionId of input.sessionIds) {
+            // Delete related Timetable entries
+            await tx.timetable.deleteMany({ where: { sessionId } });
+
+            // Delete ClassSubject
+            const classSubjects = await tx.classSubject.findMany({ where: { sessionId } });
+            const csIds = classSubjects.map(cs => cs.csId);
+            if (csIds.length > 0) {
+              await tx.marks.deleteMany({ where: { classSubjectId: { in: csIds } } });
+              await tx.subjectDiary.deleteMany({ where: { classSubjectId: { in: csIds } } });
+              await tx.classSubject.deleteMany({ where: { sessionId } });
+            }
+
+            // Delete Fees
+            // Note: Fees do not belong to a session, they are global. Do not delete them.
+
+            // Delete Exams
+            const exams = await tx.exam.findMany({ where: { sessionId } });
+            const examIds = exams.map(e => e.examId);
+            if (examIds.length > 0) {
+              await tx.marks.deleteMany({ where: { examId: { in: examIds } } });
+              await tx.examDatesheet.deleteMany({ where: { examId: { in: examIds } } });
+              await tx.examinationMarkingSession.deleteMany({ where: { examId: { in: examIds } } });
+              await tx.exam.deleteMany({ where: { sessionId } });
+            }
+
+            // Delete LeaveBalances
+            await tx.leaveBalance.deleteMany({ where: { sessionId } });
+
+            // Delete SalaryAssignment
+            await tx.salaryAssignment.deleteMany({ where: { sessionId } });
+            await tx.salary.deleteMany({ where: { sessionId } });
+
+            // Delete PromotionHistory & BulkPromotionBatch
+            await tx.promotionHistory.deleteMany({
+              where: { OR: [{ fromSessionId: sessionId }, { toSessionId: sessionId }] }
+            });
+            const bulkBatches = await tx.bulkPromotionBatch.findMany({
+              where: { OR: [{ fromSessionId: sessionId }, { toSessionId: sessionId }] }
+            });
+            const batchIds = bulkBatches.map(b => b.batchId);
+            if (batchIds.length > 0) {
+              await tx.bulkPromotionBatchItem.deleteMany({ where: { batchId: { in: batchIds } } });
+              await tx.bulkPromotionBatch.deleteMany({ where: { batchId: { in: batchIds } } });
+            }
+
+            // Delete BulkSalaryCreationBatch
+            const bulkSalaryBatches = await tx.bulkSalaryCreationBatch.findMany({
+              where: { toSessionId: sessionId }
+            });
+            const bulkSalaryBatchIds = bulkSalaryBatches.map(b => b.batchId);
+            if (bulkSalaryBatchIds.length > 0) {
+              await tx.bulkSalaryCreationItem.deleteMany({ where: { batchId: { in: bulkSalaryBatchIds } } });
+              await tx.bulkSalaryCreationBatch.deleteMany({ where: { batchId: { in: bulkSalaryBatchIds } } });
+            }
+
+            // Note: Classes (Grades) do NOT belong to a session, they are master data.
+            // Do not delete classes when a session is deleted.
+          }
+
+          const result = await tx.sessions.deleteMany({
+            where: { sessionId: { in: input.sessionIds } },
+          });
+          deletedCount = result.count;
+
+          for (const session of sessions) {
+            await tx.broadcast.create({
+              data: {
+                router: "session.deleteSessionsByIds",
+                action: "DELETE",
+                message: `Deleted session: ${session.sessionName}`,
+              },
+            });
+          }
         });
 
-        return { count: result.count };
+        return { count: deletedCount };
       } catch (error) {
         if (error instanceof TRPCError) throw error;
 
