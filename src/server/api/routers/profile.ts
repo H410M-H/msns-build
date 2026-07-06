@@ -54,7 +54,7 @@ export const ProfileRouter = createTRPCRouter({
         });
       }
 
-      if (user.profilePic && user.profilePic.startsWith("/uploads/")) {
+      if (user.profilePic?.startsWith("/uploads/")) {
         user.profilePic = `/api${user.profilePic}`;
       }
 

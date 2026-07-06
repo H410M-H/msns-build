@@ -27,7 +27,6 @@ import { Button } from "~/components/ui/button";
 import { CSVUploadDialog } from "../forms/student/FileInput";
 import { StudentEditDialog } from "../forms/student/StudentEdit";
 import Link from "next/link";
-import Image from "next/image";
 import type { Students } from "@prisma/client";
 import { toast } from "sonner";
 

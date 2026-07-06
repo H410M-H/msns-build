@@ -54,7 +54,7 @@ export const StudentRouter = createTRPCRouter({
       });
 
       return students.map(student => {
-        if (student.profilePic && student.profilePic.startsWith("/uploads/")) {
+        if (student.profilePic?.startsWith("/uploads/")) {
           return { ...student, profilePic: `/api${student.profilePic}` };
         }
         return student;
@@ -186,7 +186,7 @@ export const StudentRouter = createTRPCRouter({
         });
       }
 
-      if (student.profilePic && student.profilePic.startsWith("/uploads/")) {
+      if (student.profilePic?.startsWith("/uploads/")) {
         student.profilePic = `/api${student.profilePic}`;
       }
 
@@ -287,7 +287,7 @@ export const StudentRouter = createTRPCRouter({
           },
         });
         if (!student) throw new TRPCError({ code: "NOT_FOUND" });
-        if (student.profilePic && student.profilePic.startsWith("/uploads/")) {
+        if (student.profilePic?.startsWith("/uploads/")) {
           student.profilePic = `/api${student.profilePic}`;
         }
         return student;

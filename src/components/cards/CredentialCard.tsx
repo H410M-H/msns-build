@@ -24,7 +24,6 @@ import { Input } from "~/components/ui/input";
 import { Button } from "~/components/ui/button";
 import { CSVUploadDialog } from "../forms/student/FileInput"; // Assuming shared or similar path
 import Link from "next/link";
-import Image from "next/image";
 
 // Keep local type or import from Prisma if available
 type Employee = {

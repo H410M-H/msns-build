@@ -96,7 +96,7 @@ export const EmployeeRouter = createTRPCRouter({
       });
 
       return employees.map((employee) => {
-        if (employee.profilePic && employee.profilePic.startsWith("/uploads/")) {
+        if (employee.profilePic?.startsWith("/uploads/")) {
           return { ...employee, profilePic: `/api${employee.profilePic}` };
         }
         return employee;
@@ -136,7 +136,7 @@ export const EmployeeRouter = createTRPCRouter({
         where: { employeeId: input.employeeId },
       });
       if (!employee) throw new TRPCError({ code: "NOT_FOUND" });
-      if (employee.profilePic && employee.profilePic.startsWith("/uploads/")) {
+      if (employee.profilePic?.startsWith("/uploads/")) {
         employee.profilePic = `/api${employee.profilePic}`;
       }
       return employee;
@@ -165,11 +165,11 @@ export const EmployeeRouter = createTRPCRouter({
         },
       });
 
-      if (employee.profilePic && employee.profilePic.startsWith("/uploads/")) {
+      if (employee.profilePic?.startsWith("/uploads/")) {
         employee.profilePic = `/api${employee.profilePic}`;
       }
 
-      if (user?.profilePic && user.profilePic.startsWith("/uploads/")) {
+      if (user?.profilePic?.startsWith("/uploads/")) {
         user.profilePic = `/api${user.profilePic}`;
       }
 
