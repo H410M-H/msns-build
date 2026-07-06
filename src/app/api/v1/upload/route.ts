@@ -83,7 +83,7 @@ export async function POST(request: Request) {
     }
 
     await writeFile(filepath, buffer);
-    return NextResponse.json({ url: `/uploads/${filename}` });
+    return NextResponse.json({ url: `/api/uploads/${filename}` });
   } catch (error) {
     console.error("Error saving file:", error);
     return NextResponse.json(

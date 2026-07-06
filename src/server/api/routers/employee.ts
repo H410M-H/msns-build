@@ -83,7 +83,7 @@ export const EmployeeRouter = createTRPCRouter({
   }),
   getEmployees: protectedProcedure.query(async ({ ctx }) => {
     try {
-      return await ctx.db.employees.findMany({
+      const employees = await ctx.db.employees.findMany({
         // FIX: Changed from 'createdAt' (which doesn't exist) to 'employeeName'
         orderBy: { employeeName: "asc" },
         include: {
@@ -93,6 +93,13 @@ export const EmployeeRouter = createTRPCRouter({
             },
           },
         },
+      });
+
+      return employees.map((employee) => {
+        if (employee.profilePic && employee.profilePic.startsWith("/uploads/")) {
+          return { ...employee, profilePic: `/api${employee.profilePic}` };
+        }
+        return employee;
       });
     } catch (error) {
       console.error(error);
@@ -129,6 +136,9 @@ export const EmployeeRouter = createTRPCRouter({
         where: { employeeId: input.employeeId },
       });
       if (!employee) throw new TRPCError({ code: "NOT_FOUND" });
+      if (employee.profilePic && employee.profilePic.startsWith("/uploads/")) {
+        employee.profilePic = `/api${employee.profilePic}`;
+      }
       return employee;
     }),
 
@@ -151,8 +161,17 @@ export const EmployeeRouter = createTRPCRouter({
           accountType: true,
           accountId: true,
           createdAt: true,
+          profilePic: true,
         },
       });
+
+      if (employee.profilePic && employee.profilePic.startsWith("/uploads/")) {
+        employee.profilePic = `/api${employee.profilePic}`;
+      }
+
+      if (user?.profilePic && user.profilePic.startsWith("/uploads/")) {
+        user.profilePic = `/api${user.profilePic}`;
+      }
 
       return { ...employee, user: user ?? null };
     }),
