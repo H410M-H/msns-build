@@ -8,10 +8,12 @@ export function EmployeeAttendanceContent({
   externalMonth,
   externalYear,
   externalSessionId: _externalSessionId,
+  defaultTab = "mark",
 }: {
   externalMonth?: string;
   externalYear?: string;
   externalSessionId?: string;
+  defaultTab?: "mark" | "report";
 } = {}) {
   const isEmbedded = !!externalMonth;
   const parsedMonth = externalMonth ? parseInt(externalMonth, 10) - 1 : undefined;
@@ -32,7 +34,7 @@ export function EmployeeAttendanceContent({
         </div>
       )}
 
-      <Tabs defaultValue="mark" className="w-full">
+      <Tabs defaultValue={defaultTab} className="w-full">
         <TabsList className="mb-4 grid w-full grid-cols-2 md:w-[400px]">
           <TabsTrigger value="mark">Mark Attendance</TabsTrigger>
           <TabsTrigger value="report">Monthly Report</TabsTrigger>
