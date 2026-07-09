@@ -33,11 +33,20 @@ type SalaryData = {
 
 interface SalarySlipProps {
   salary: SalaryData;
+  trigger?: React.ReactNode;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }
 
-export function SalarySlip({ salary }: SalarySlipProps) {
+export function SalarySlip({ salary, trigger, open, onOpenChange }: SalarySlipProps) {
   const [isGenerating, setIsGenerating] = useState(false);
   const slipRef = useRef<HTMLDivElement>(null);
+  
+  // Internal state if not controlled
+  const [internalOpen, setInternalOpen] = useState(false);
+  const isControlled = open !== undefined && onOpenChange !== undefined;
+  const dialogOpen = isControlled ? open : internalOpen;
+  const setDialogOpen = isControlled ? onOpenChange : setInternalOpen;
 
   const handlePrint = () => {
     const content = slipRef.current;
@@ -101,12 +110,18 @@ export function SalarySlip({ salary }: SalarySlipProps) {
   };
 
   return (
-    <Dialog>
-      <DialogTrigger asChild>
-        <Button variant="ghost" size="icon" className="h-8 w-8 text-blue-600">
-          <FileText className="h-4 w-4" />
-        </Button>
-      </DialogTrigger>
+    <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+      {!isControlled && (
+        <DialogTrigger asChild>
+          {trigger ? (
+            trigger
+          ) : (
+            <Button variant="ghost" size="icon" className="h-8 w-8 text-blue-600">
+              <FileText className="h-4 w-4" />
+            </Button>
+          )}
+        </DialogTrigger>
+      )}
       <DialogContent className="max-h-[90vh] max-w-4xl overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Salary Slip Preview</DialogTitle>
@@ -254,20 +269,7 @@ export function SalarySlip({ salary }: SalarySlipProps) {
 
             {/* Footer */}
             <div className="mt-8 pt-8">
-              <div className="flex items-end justify-between pb-8 text-left">
-                <div className="text-center">
-                  <div className="mb-2 w-40 border-b border-gray-300"></div>
-                  <p className="text-[10px] font-medium uppercase text-gray-500">
-                    Principal Signature
-                  </p>
-                </div>
-                <div className="text-center">
-                  <div className="mb-2 w-40 border-b border-gray-300"></div>
-                  <p className="text-[10px] font-medium uppercase text-gray-500">
-                    Admin / Finance Signature
-                  </p>
-                </div>
-              </div>
+
               <div className="flex items-center justify-between border-t border-gray-100 pt-4 text-[10px] text-gray-400">
                 <p>This document is computer generated and does not require signature.</p>
                 <div className="flex items-center gap-1">

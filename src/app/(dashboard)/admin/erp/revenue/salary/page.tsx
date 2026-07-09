@@ -69,6 +69,10 @@ export default function SalaryPage() {
     String(new Date().getFullYear()),
   );
   const [isGenerating, setIsGenerating] = useState(false);
+  
+  // Pagination State for Salary Structures Table
+  const [tablePage, setTablePage] = useState(1);
+  const [tablePageSize, setTablePageSize] = useState(10);
 
   // Queries for Stats with Loading States
   const { data: payrollCost, isLoading: loadingCost } =
@@ -321,10 +325,10 @@ export default function SalaryPage() {
             </CardHeader>
             <CardContent className="p-6">
               <SalaryTable
-                page={1}
-                pageSize={10}
-                setPage={() => ""}
-                setPageSize={() => ""}
+                page={tablePage}
+                pageSize={tablePageSize}
+                setPage={setTablePage}
+                setPageSize={setTablePageSize}
                 searchTerm=""
               />
             </CardContent>

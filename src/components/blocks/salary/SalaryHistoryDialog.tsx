@@ -675,21 +675,7 @@ export function SalaryHistoryDialog({
                   </table>
                 </div>
 
-                {/* Signatures */}
-                <div className="mt-16 flex justify-between px-4 pt-8">
-                  <div className="text-center">
-                    <div className="mb-2 w-40 border-b border-gray-300"></div>
-                    <p className="text-xs font-medium uppercase text-gray-500">
-                      Employee Signature
-                    </p>
-                  </div>
-                  <div className="text-center">
-                    <div className="mb-2 w-40 border-b border-gray-300"></div>
-                    <p className="text-xs font-medium uppercase text-gray-500">
-                      Authority Signature
-                    </p>
-                  </div>
-                </div>
+
 
                 {/* Footer */}
                 <div className="mt-12 flex items-end justify-between border-t border-gray-100 pt-6 text-[10px] text-gray-400">

@@ -268,20 +268,7 @@ export const AnnualSalarySlip = React.forwardRef<
 
       {/* Footer / Signatures */}
       <div className="mt-auto">
-        <div className="flex items-end justify-between pb-8">
-          <div className="text-center">
-            <div className="mb-2 w-40 border-b border-gray-300"></div>
-            <p className="text-[10px] font-medium uppercase text-gray-500">
-              Principal Signature
-            </p>
-          </div>
-          <div className="text-center">
-            <div className="mb-2 w-40 border-b border-gray-300"></div>
-            <p className="text-[10px] font-medium uppercase text-gray-500">
-              Admin / Finance Signature
-            </p>
-          </div>
-        </div>
+
         <div className="flex items-center justify-between border-t border-gray-100 pt-4 text-[10px] text-gray-400">
           <p>This document is computer generated.</p>
           <div className="flex items-center gap-1">

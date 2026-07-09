@@ -587,17 +587,21 @@ export const salaryRouter = createTRPCRouter({
         }
       }
 
-      const [salaries, totalCount] = await Promise.all([
+      const [salaries, groupedCount] = await Promise.all([
         ctx.db.salaryAssignment.findMany({
           where,
           take: pageSize,
           skip: (page - 1) * pageSize,
           orderBy,
+          distinct: ["employeeId"],
           include: { Employees: true, Sessions: true },
         }),
-        ctx.db.salaryAssignment.count({ where }),
+        ctx.db.salaryAssignment.groupBy({
+          by: ["employeeId"],
+          where,
+        }),
       ]);
 
-      return { salaries, totalCount };
+      return { salaries, totalCount: groupedCount.length };
     }),
 });
