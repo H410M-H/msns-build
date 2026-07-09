@@ -2,7 +2,6 @@
 
 import { motion } from "framer-motion";
 import { Calendar, Loader2 } from "lucide-react";
-import { useSession } from "next-auth/react";
 import { api } from "~/trpc/react";
 
 import { PageHeader } from "~/components/blocks/nav/PageHeader";
@@ -19,7 +18,6 @@ import { BroadcastBoard } from "~/components/blocks/dashboard/BroadcastBoard";
 import { format } from "date-fns";
 
 export default function WorkerDashboard() {
-  const { data: _session } = useSession();
   const breadcrumbs = [{ href: "/worker", label: "Dashboard", current: true }];
 
   const { data: eventsData, isLoading: isEventsLoading } = api.event.getAll.useQuery({ limit: 5 });

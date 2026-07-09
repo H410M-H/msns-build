@@ -5,8 +5,12 @@ export interface Env {
   HYPERDRIVE: { connectionString: string };
 }
 
-export default {
-  async fetch(request: Request, env: Env, ctx: any): Promise<Response> {
+export interface ExecutionContext {
+  waitUntil(promise: Promise<unknown>): void;
+}
+
+const worker = {
+  async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
     // 1. Initialize Client using the connection string from Hyperdrive
     const client = new Client({
       connectionString: env.HYPERDRIVE.connectionString,
@@ -34,3 +38,5 @@ export default {
     }
   },
 };
+
+export default worker;
