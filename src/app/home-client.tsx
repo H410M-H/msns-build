@@ -113,6 +113,7 @@ export default function HomeClient() {
               alt="M.S. Naz High School Logo"
               fill
               className="object-contain drop-shadow-2xl"
+              sizes="(max-width: 640px) 160px, 224px"
               priority
             />
           </motion.div>
