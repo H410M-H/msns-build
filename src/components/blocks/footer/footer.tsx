@@ -72,12 +72,11 @@ export const Footer = ({ className, ...props }: FooterProps) => {
               </div>
               <p className="text-center font-serif text-lg font-semibold text-green-800 md:text-left">
                 KNOW THYSELF | PURSUIT OF EXCELLENCE
-              </p>
-              <div className="flex space-x-3">
+              </p>              <div className="flex space-x-3">
                 {[
-                  { icon: Facebook, label: "Facebook", href: "#" },
-                  { icon: Twitter, label: "Twitter", href: "#" },
-                  { icon: Instagram, label: "Instagram", href: "#" },
+                  { icon: Facebook, label: "Facebook", href: "https://www.facebook.com/msnazhighschool" },
+                  { icon: Twitter, label: "Twitter", href: "https://twitter.com/msnazhighschool" },
+                  { icon: Instagram, label: "Instagram", href: "https://www.instagram.com/msnazhighschool" },
                   { icon: Linkedin, label: "LinkedIn", href: "#" },
                 ].map(({ icon: Icon, label, href }) => (
                   <Link

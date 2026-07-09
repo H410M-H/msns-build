@@ -1,0 +1,45 @@
+2026-06-10 03:52:41.174 PKT [24595] LOG:  starting PostgreSQL 18.2 on aarch64-unknown-linux-android, compiled by Android (13989888, +pgo, +bolt, +lto, +mlgo, based on r563880c) clang version 21.0.0 (https://android.googlesource.com/toolchain/llvm-project 5e96669f06077099aa41290cdb4c5e6fa0f59349), 64-bit
+2026-06-10 03:52:41.176 PKT [24595] LOG:  listening on IPv4 address "127.0.0.1", port 5432
+2026-06-10 03:52:41.180 PKT [24595] LOG:  listening on Unix socket "/data/data/com.termux/files/usr/tmp/.s.PGSQL.5432"
+2026-06-10 03:52:41.216 PKT [24603] LOG:  database system was interrupted; last known up at 2026-06-07 03:28:43 PKT
+2026-06-10 03:52:41.405 PKT [24603] LOG:  database system was not properly shut down; automatic recovery in progress
+2026-06-10 03:52:41.407 PKT [24603] LOG:  redo starts at 0/22E9A08
+2026-06-10 03:52:41.408 PKT [24603] LOG:  invalid record length at 0/22E9B48: expected at least 24, got 0
+2026-06-10 03:52:41.408 PKT [24603] LOG:  redo done at 0/22E9B10 system usage: CPU: user: 0.00 s, system: 0.00 s, elapsed: 0.00 s
+2026-06-10 03:52:41.416 PKT [24601] LOG:  checkpoint starting: end-of-recovery immediate wait
+2026-06-10 03:52:41.430 PKT [24601] LOG:  checkpoint complete: wrote 0 buffers (0.0%), wrote 3 SLRU buffers; 0 WAL file(s) added, 0 removed, 0 recycled; write=0.005 s, sync=0.002 s, total=0.016 s; sync files=2, longest=0.002 s, average=0.001 s; distance=0 kB, estimate=0 kB; lsn=0/22E9B48, redo lsn=0/22E9B48
+2026-06-10 03:52:41.436 PKT [24595] LOG:  database system is ready to accept connections
+2026-06-10 03:54:36.406 PKT [24991] ERROR:  column g.classid does not exist at character 200
+2026-06-10 03:54:36.406 PKT [24991] HINT:  Perhaps you meant to reference the column "g.classId".
+2026-06-10 03:54:36.406 PKT [24991] STATEMENT:  
+	    SELECT sc."classId", g.grade, g.section, s."studentId", s."studentName" 
+	    FROM "StudentClass" sc
+	    JOIN "Students" s ON sc."studentId" = s."studentId"
+	    JOIN "Grades" g ON sc."classId" = g.classId
+	    WHERE sc."sessionId" = 'session-2025-2026'
+	  
+2026-06-10 03:57:41.531 PKT [24601] LOG:  checkpoint starting: time
+2026-06-10 03:57:41.896 PKT [24601] LOG:  checkpoint complete: wrote 3 buffers (0.0%), wrote 0 SLRU buffers; 0 WAL file(s) added, 0 removed, 0 recycled; write=0.309 s, sync=0.003 s, total=0.365 s; sync files=1, longest=0.003 s, average=0.003 s; distance=22 kB, estimate=22 kB; lsn=0/22EF500, redo lsn=0/22EF4A8
+2026-06-10 03:57:59.729 PKT [25698] FATAL:  no PostgreSQL user name specified in startup packet
+2026-06-10 04:02:41.910 PKT [24601] LOG:  checkpoint starting: time
+2026-06-10 04:03:20.362 PKT [24601] LOG:  checkpoint complete: wrote 381 buffers (2.3%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 0 recycled; write=38.367 s, sync=0.043 s, total=38.452 s; sync files=34, longest=0.009 s, average=0.002 s; distance=3153 kB, estimate=3153 kB; lsn=0/2614400, redo lsn=0/2603C80
+2026-06-10 13:56:11.344 PKT [24595] LOG:  background worker "logical replication launcher" (PID 24606) was terminated by signal 9: Killed
+2026-06-10 13:56:11.359 PKT [24595] LOG:  terminating any other active server processes
+2026-06-27 22:41:34.731 PKT [9021] LOG:  starting PostgreSQL 18.2 on aarch64-unknown-linux-android, compiled by Android (13989888, +pgo, +bolt, +lto, +mlgo, based on r563880c) clang version 21.0.0 (https://android.googlesource.com/toolchain/llvm-project 5e96669f06077099aa41290cdb4c5e6fa0f59349), 64-bit
+2026-06-27 22:41:34.733 PKT [9021] LOG:  listening on IPv4 address "127.0.0.1", port 5432
+2026-06-27 22:41:34.735 PKT [9021] LOG:  listening on Unix socket "/data/data/com.termux/files/usr/tmp/.s.PGSQL.5432"
+2026-06-27 22:41:34.762 PKT [9029] LOG:  database system was interrupted; last known up at 2026-06-10 21:21:54 PKT
+2026-06-27 22:41:35.062 PKT [9029] LOG:  database system was not properly shut down; automatic recovery in progress
+2026-06-27 22:41:35.064 PKT [9029] LOG:  redo starts at 0/2DC35C0
+2026-06-27 22:41:35.064 PKT [9029] LOG:  invalid record length at 0/2DC3700: expected at least 24, got 0
+2026-06-27 22:41:35.064 PKT [9029] LOG:  redo done at 0/2DC36C8 system usage: CPU: user: 0.00 s, system: 0.00 s, elapsed: 0.00 s
+2026-06-27 22:41:35.076 PKT [9027] LOG:  checkpoint starting: end-of-recovery immediate wait
+2026-06-27 22:41:35.102 PKT [9027] LOG:  checkpoint complete: wrote 0 buffers (0.0%), wrote 3 SLRU buffers; 0 WAL file(s) added, 0 removed, 0 recycled; write=0.008 s, sync=0.003 s, total=0.030 s; sync files=2, longest=0.002 s, average=0.002 s; distance=0 kB, estimate=0 kB; lsn=0/2DC3700, redo lsn=0/2DC3700
+2026-06-27 22:41:35.108 PKT [9021] LOG:  database system is ready to accept connections
+2026-06-27 22:44:51.999 PKT [10056] FATAL:  no PostgreSQL user name specified in startup packet
+2026-06-27 22:46:35.200 PKT [9027] LOG:  checkpoint starting: time
+2026-06-27 22:47:12.754 PKT [9027] LOG:  checkpoint complete: wrote 371 buffers (2.3%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 1 recycled; write=37.396 s, sync=0.076 s, total=37.555 s; sync files=45, longest=0.008 s, average=0.002 s; distance=3607 kB, estimate=3607 kB; lsn=0/31496A8, redo lsn=0/3149618
+2026-06-27 22:51:35.847 PKT [9027] LOG:  checkpoint starting: time
+2026-06-27 22:52:14.092 PKT [9027] LOG:  checkpoint complete: wrote 379 buffers (2.3%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 0 recycled; write=38.160 s, sync=0.054 s, total=38.246 s; sync files=44, longest=0.006 s, average=0.002 s; distance=3570 kB, estimate=3604 kB; lsn=0/34C6298, redo lsn=0/34C6208
+2026-06-27 22:56:35.112 PKT [9027] LOG:  checkpoint starting: time
+2026-06-27 22:56:36.004 PKT [9027] LOG:  checkpoint complete: wrote 8 buffers (0.0%), wrote 0 SLRU buffers; 0 WAL file(s) added, 0 removed, 0 recycled; write=0.813 s, sync=0.015 s, total=0.893 s; sync files=5, longest=0.006 s, average=0.003 s; distance=45 kB, estimate=3248 kB; lsn=0/34D16C0, redo lsn=0/34D1668
