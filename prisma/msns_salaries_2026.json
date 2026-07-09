@@ -1,0 +1,1789 @@
+{
+  "meta": {
+    "source_file": "1783621301345_SALRIES_-JANUARY-_2026_-.xlsx",
+    "description": "MSNS staff salary register, extracted from all workbook sheets",
+    "sheet_tabs": [
+      "JANUARY",
+      "FEBRUARY",
+      "MARCH",
+      "APRIL",
+      "MAY",
+      "JUNE",
+      "JULY",
+      "AUGUST",
+      "SEPTEMBER",
+      "OCTOBER",
+      "NOVEMBER",
+      "DECEMBER"
+    ],
+    "months_with_data": [
+      "January",
+      "February",
+      "March",
+      "April",
+      "May",
+      "June"
+    ],
+    "empty_months": [
+      "July",
+      "August",
+      "September",
+      "October",
+      "November",
+      "December"
+    ],
+    "currency": "PKR (not explicitly labeled in source cells; inferred from context)",
+    "columns": {
+      "sr_no": "Serial number as listed in the source sheet (blank in source = null)",
+      "basic_pay": "Basic pay for the month",
+      "net_payable": "Net amount actually payable/paid after deductions"
+    }
+  },
+  "notes": [
+    "Each month tab lists staff in two side-by-side blocks: FEMALE STAFF and MALE STAFF, each with its own Sr. No./Name/Basic Pay/Net Payable/Signature columns.",
+    "'saved' = (Grand Total Basic Pay) - (Grand Total Net Payable) for that month, i.e. total amount withheld/unpaid across all staff. Verified consistent with the sheet's own Grand Total figures for all 6 months.",
+    "The first three male entries each month (PRO. AZAM SIDDIQUE, HAFIZ FAIZAN AZAM, HASSAN AZAM) have no Basic Pay/Net Payable recorded in any month - they are listed but not part of this cash salary register.",
+    "March and April sheets contain a 'consolidated_register': a secondary table further down the sheet that re-lists the same female+male staff as one sequential list. Verified the totals match the primary tables exactly. May and June also have this secondary table.",
+    "January and February sheets do NOT have a consolidated_register section.",
+    "June's consolidated_register has one extra column, headed literally '----' in the source file (meaning not specified) with a per-person value (mostly 850 or 0), totaling 11050.",
+    "TOTAL STAFF MEMBERS declared in-sheet does not match the actual row count for March (declared 25, actual 27 rows) and April (declared 25, actual 28 rows). Likely not updated after staff were added mid-month. All other months match.",
+    "JULY through DECEMBER tabs exist in the workbook but contain no data (template only)."
+  ],
+  "months": {
+    "January": {
+      "month": "January",
+      "year": 2026,
+      "female_staff": [
+        {
+          "sr_no": 1,
+          "name": "FIZZA WASEEM",
+          "basic_pay": 18500,
+          "net_payable": 14920
+        },
+        {
+          "sr_no": 2,
+          "name": "FAIZA MUSHTAQ",
+          "basic_pay": 17500,
+          "net_payable": 14680
+        },
+        {
+          "sr_no": 3,
+          "name": "FARAH NAZ",
+          "basic_pay": 16000,
+          "net_payable": 16000
+        },
+        {
+          "sr_no": 4,
+          "name": "KINZA NOREEN",
+          "basic_pay": 11500,
+          "net_payable": 9650
+        },
+        {
+          "sr_no": 5,
+          "name": "MALAIKA SHAHID",
+          "basic_pay": 12000,
+          "net_payable": 3870
+        },
+        {
+          "sr_no": 6,
+          "name": "AMINA NOOR",
+          "basic_pay": 13000,
+          "net_payable": 13000
+        },
+        {
+          "sr_no": 7,
+          "name": "AQSA RAZZAQ",
+          "basic_pay": 14000,
+          "net_payable": 11290
+        },
+        {
+          "sr_no": 8,
+          "name": "SHAGUFTA AKBAR",
+          "basic_pay": 18500,
+          "net_payable": 17600
+        },
+        {
+          "sr_no": 9,
+          "name": "AYESHA JAMIL",
+          "basic_pay": 14000,
+          "net_payable": 13100
+        },
+        {
+          "sr_no": 10,
+          "name": "LARAIB SULTAN",
+          "basic_pay": 14000,
+          "net_payable": 6770
+        },
+        {
+          "sr_no": 11,
+          "name": "HAMNA RAZZAQ",
+          "basic_pay": 13000,
+          "net_payable": 9650
+        },
+        {
+          "sr_no": 12,
+          "name": "MEHRAB TABASSUM",
+          "basic_pay": 12500,
+          "net_payable": 9270
+        },
+        {
+          "sr_no": 13,
+          "name": "ZOYA NAZ",
+          "basic_pay": 12500,
+          "net_payable": 11290
+        },
+        {
+          "sr_no": 14,
+          "name": "MAHNOOR",
+          "basic_pay": 8500,
+          "net_payable": 3150
+        },
+        {
+          "sr_no": 15,
+          "name": "ESHA MUNIR",
+          "basic_pay": 12000,
+          "net_payable": 9290
+        },
+        {
+          "sr_no": 16,
+          "name": "FATIMA TUL ZAHRA",
+          "basic_pay": 11000,
+          "net_payable": 4610
+        },
+        {
+          "sr_no": 17,
+          "name": "AREEJ FATIMA",
+          "basic_pay": 8500,
+          "net_payable": 3570
+        }
+      ],
+      "male_staff": [
+        {
+          "sr_no": 1,
+          "name": "PRO. AZAM SIDDIQUE",
+          "basic_pay": null,
+          "net_payable": null
+        },
+        {
+          "sr_no": 2,
+          "name": "HAFIZ FAIZAN AZAM",
+          "basic_pay": null,
+          "net_payable": null
+        },
+        {
+          "sr_no": 3,
+          "name": "HASSAN AZAM",
+          "basic_pay": null,
+          "net_payable": null
+        },
+        {
+          "sr_no": 4,
+          "name": "REHAN YOUNAS",
+          "basic_pay": 15000,
+          "net_payable": 13790
+        },
+        {
+          "sr_no": 5,
+          "name": "ABBAS BUTT",
+          "basic_pay": 17500,
+          "net_payable": 11850
+        },
+        {
+          "sr_no": 6,
+          "name": "WAQAS AHMED",
+          "basic_pay": 15500,
+          "net_payable": 15500
+        },
+        {
+          "sr_no": 7,
+          "name": "GUL BAHADAR KHAN",
+          "basic_pay": 30000,
+          "net_payable": 30000
+        },
+        {
+          "sr_no": 8,
+          "name": "JALAL KHAN",
+          "basic_pay": 30000,
+          "net_payable": 30000
+        }
+      ],
+      "totals": {
+        "female": {
+          "basic_pay": 227000,
+          "net_payable": 171710
+        },
+        "male": {
+          "basic_pay": 108000,
+          "net_payable": 101140
+        },
+        "male_summary_block": {
+          "basic_pay": 108000,
+          "net_payable": 101140
+        },
+        "female_summary_block": {
+          "basic_pay": 227000,
+          "net_payable": 171710
+        },
+        "grand_total": {
+          "basic_pay": 335000,
+          "net_payable": 272850
+        }
+      },
+      "total_staff_members_declared": 25,
+      "saved": 62150,
+      "consolidated_register": null
+    },
+    "February": {
+      "month": "February",
+      "year": 2026,
+      "female_staff": [
+        {
+          "sr_no": 1,
+          "name": "FIZZA WASEEM",
+          "basic_pay": 18500,
+          "net_payable": 18170
+        },
+        {
+          "sr_no": 2,
+          "name": "FAIZA MUSHTAQ",
+          "basic_pay": 17500,
+          "net_payable": 17500
+        },
+        {
+          "sr_no": 3,
+          "name": "FARAH NAZ",
+          "basic_pay": 16000,
+          "net_payable": 16000
+        },
+        {
+          "sr_no": 4,
+          "name": "KINZA NOREEN",
+          "basic_pay": 11500,
+          "net_payable": 10680
+        },
+        {
+          "sr_no": 5,
+          "name": "MALAIKA SHAHID",
+          "basic_pay": 12000,
+          "net_payable": 10720
+        },
+        {
+          "sr_no": 6,
+          "name": "AMINA NOOR",
+          "basic_pay": 13000,
+          "net_payable": 12770
+        },
+        {
+          "sr_no": 7,
+          "name": "AQSA RAZZAQ",
+          "basic_pay": 14000,
+          "net_payable": 14000
+        },
+        {
+          "sr_no": 8,
+          "name": "SHAGUFTA AKBAR",
+          "basic_pay": 18500,
+          "net_payable": 16850
+        },
+        {
+          "sr_no": 9,
+          "name": "AYESHA JAMIL",
+          "basic_pay": 14000,
+          "net_payable": 14000
+        },
+        {
+          "sr_no": 10,
+          "name": "LARAIB SULTAN",
+          "basic_pay": 14000,
+          "net_payable": 10500
+        },
+        {
+          "sr_no": 11,
+          "name": "HAMNA RAZZAQ",
+          "basic_pay": 13000,
+          "net_payable": 12070
+        },
+        {
+          "sr_no": 12,
+          "name": "MEHRAB TABASSUM",
+          "basic_pay": 12500,
+          "net_payable": 12500
+        },
+        {
+          "sr_no": 13,
+          "name": "ZOYA NAZ",
+          "basic_pay": 12500,
+          "net_payable": 9820
+        },
+        {
+          "sr_no": 14,
+          "name": "ESHA MUNIR",
+          "basic_pay": 12000,
+          "net_payable": 11140
+        },
+        {
+          "sr_no": 15,
+          "name": "FATIMA TUL ZAHRA",
+          "basic_pay": 11000,
+          "net_payable": 11000
+        },
+        {
+          "sr_no": 16,
+          "name": "AREEJ FATIMA",
+          "basic_pay": 8500,
+          "net_payable": 8900
+        }
+      ],
+      "male_staff": [
+        {
+          "sr_no": 1,
+          "name": "PRO. AZAM SIDDIQUE",
+          "basic_pay": null,
+          "net_payable": null
+        },
+        {
+          "sr_no": 2,
+          "name": "HAFIZ FAIZAN AZAM",
+          "basic_pay": null,
+          "net_payable": null
+        },
+        {
+          "sr_no": 3,
+          "name": "HASSAN AZAM",
+          "basic_pay": null,
+          "net_payable": null
+        },
+        {
+          "sr_no": 4,
+          "name": "REHAN YOUNAS",
+          "basic_pay": 15000,
+          "net_payable": 15000
+        },
+        {
+          "sr_no": 5,
+          "name": "ABBAS BUTT",
+          "basic_pay": 17500,
+          "net_payable": 14070
+        },
+        {
+          "sr_no": 6,
+          "name": "WAQAS AHMED",
+          "basic_pay": 15500,
+          "net_payable": 15230
+        },
+        {
+          "sr_no": 7,
+          "name": "GUL BAHADAR KHAN",
+          "basic_pay": 30500,
+          "net_payable": 30500
+        },
+        {
+          "sr_no": 8,
+          "name": "JALAL KHAN",
+          "basic_pay": 32000,
+          "net_payable": 32000
+        }
+      ],
+      "totals": {
+        "female": {
+          "basic_pay": 218500,
+          "net_payable": 206620
+        },
+        "male": {
+          "basic_pay": 110500,
+          "net_payable": 106800
+        },
+        "male_summary_block": {
+          "basic_pay": 110500,
+          "net_payable": 106800
+        },
+        "female_summary_block": {
+          "basic_pay": 218500,
+          "net_payable": 206620
+        },
+        "grand_total": {
+          "basic_pay": 329000,
+          "net_payable": 313420
+        }
+      },
+      "total_staff_members_declared": 24,
+      "saved": 15580,
+      "consolidated_register": null
+    },
+    "March": {
+      "month": "March",
+      "year": 2026,
+      "female_staff": [
+        {
+          "sr_no": 1,
+          "name": "FIZZA WASEEM",
+          "basic_pay": 18500,
+          "net_payable": 15520
+        },
+        {
+          "sr_no": 2,
+          "name": "FAIZA MUSHTAQ",
+          "basic_pay": 17500,
+          "net_payable": 17220
+        },
+        {
+          "sr_no": 3,
+          "name": "FARAH NAZ",
+          "basic_pay": 16000,
+          "net_payable": 16000
+        },
+        {
+          "sr_no": 4,
+          "name": "KINZA NOREEN",
+          "basic_pay": 11500,
+          "net_payable": 11500
+        },
+        {
+          "sr_no": 5,
+          "name": "MALAIKA SHAHID",
+          "basic_pay": 12000,
+          "net_payable": 9680
+        },
+        {
+          "sr_no": 6,
+          "name": "AMINA NOOR",
+          "basic_pay": 13000,
+          "net_payable": 12790
+        },
+        {
+          "sr_no": 7,
+          "name": "AQSA RAZZAQ",
+          "basic_pay": 14000,
+          "net_payable": 11740
+        },
+        {
+          "sr_no": 8,
+          "name": "SHAGUFTA AKBAR",
+          "basic_pay": 18500,
+          "net_payable": 17330
+        },
+        {
+          "sr_no": 9,
+          "name": "AYESHA JAMIL",
+          "basic_pay": 14000,
+          "net_payable": 12650
+        },
+        {
+          "sr_no": 10,
+          "name": "LARAIB SULTAN",
+          "basic_pay": 14000,
+          "net_payable": 11290
+        },
+        {
+          "sr_no": 11,
+          "name": "HAMNA RAZZAQ",
+          "basic_pay": 13000,
+          "net_payable": 10480
+        },
+        {
+          "sr_no": 12,
+          "name": "MEHRAB TABASSUM",
+          "basic_pay": 12500,
+          "net_payable": 12500
+        },
+        {
+          "sr_no": 13,
+          "name": "ZOYA NAZ",
+          "basic_pay": 12500,
+          "net_payable": 12500
+        },
+        {
+          "sr_no": 14,
+          "name": "ESHA MUNIR",
+          "basic_pay": 12000,
+          "net_payable": 1940
+        },
+        {
+          "sr_no": 15,
+          "name": "FATIMA TUL ZAHRA",
+          "basic_pay": 11000,
+          "net_payable": 9940
+        },
+        {
+          "sr_no": 16,
+          "name": "AREEJ FATIMA",
+          "basic_pay": 8500,
+          "net_payable": 8500
+        },
+        {
+          "sr_no": 17,
+          "name": "ZAINAB JAMSHID",
+          "basic_pay": 9000,
+          "net_payable": 8850
+        },
+        {
+          "sr_no": 18,
+          "name": "NADIA+ EMAN",
+          "basic_pay": 15000,
+          "net_payable": 1940
+        },
+        {
+          "sr_no": null,
+          "name": "ZUNERA",
+          "basic_pay": 14000,
+          "net_payable": 7230
+        }
+      ],
+      "male_staff": [
+        {
+          "sr_no": 1,
+          "name": "PRO. AZAM SIDDIQUE",
+          "basic_pay": null,
+          "net_payable": null
+        },
+        {
+          "sr_no": 2,
+          "name": "HAFIZ FAIZAN AZAM",
+          "basic_pay": null,
+          "net_payable": null
+        },
+        {
+          "sr_no": 3,
+          "name": "HASSAN AZAM",
+          "basic_pay": null,
+          "net_payable": null
+        },
+        {
+          "sr_no": 4,
+          "name": "REHAN YOUNAS",
+          "basic_pay": 15000,
+          "net_payable": 15000
+        },
+        {
+          "sr_no": 5,
+          "name": "ABBAS BUTT",
+          "basic_pay": 17500,
+          "net_payable": 17500
+        },
+        {
+          "sr_no": 6,
+          "name": "WAQAS AHMED",
+          "basic_pay": 15500,
+          "net_payable": 15500
+        },
+        {
+          "sr_no": 7,
+          "name": "GUL BAHADAR KHAN",
+          "basic_pay": 30500,
+          "net_payable": 30500
+        },
+        {
+          "sr_no": 8,
+          "name": "JALAL KHAN",
+          "basic_pay": 32000,
+          "net_payable": 32000
+        }
+      ],
+      "totals": {
+        "female": {
+          "basic_pay": 256500,
+          "net_payable": 209600
+        },
+        "male": {
+          "basic_pay": 110500,
+          "net_payable": 110500
+        },
+        "male_summary_block": {
+          "basic_pay": 110500,
+          "net_payable": 110500
+        },
+        "female_summary_block": {
+          "basic_pay": 256500,
+          "net_payable": 209600
+        },
+        "grand_total": {
+          "basic_pay": 367000,
+          "net_payable": 320100
+        }
+      },
+      "total_staff_members_declared": 25,
+      "saved": 46900,
+      "consolidated_register": {
+        "entries": [
+          {
+            "sr_no": 1,
+            "name": "FIZZA WASEEM",
+            "basic_pay": 18500,
+            "net_payable": 15520
+          },
+          {
+            "sr_no": 2,
+            "name": "FAIZA MUSHTAQ",
+            "basic_pay": 17500,
+            "net_payable": 17220
+          },
+          {
+            "sr_no": 3,
+            "name": "FARAH NAZ",
+            "basic_pay": 16000,
+            "net_payable": 16000
+          },
+          {
+            "sr_no": 4,
+            "name": "KINZA NOREEN",
+            "basic_pay": 11500,
+            "net_payable": 11500
+          },
+          {
+            "sr_no": 5,
+            "name": "MALAIKA SHAHID",
+            "basic_pay": 12000,
+            "net_payable": 9680
+          },
+          {
+            "sr_no": 6,
+            "name": "AMINA NOOR",
+            "basic_pay": 13000,
+            "net_payable": 12790
+          },
+          {
+            "sr_no": 7,
+            "name": "AQSA RAZZAQ",
+            "basic_pay": 14000,
+            "net_payable": 11740
+          },
+          {
+            "sr_no": 8,
+            "name": "SHAGUFTA AKBAR",
+            "basic_pay": 18500,
+            "net_payable": 17330
+          },
+          {
+            "sr_no": 9,
+            "name": "AYESHA JAMIL",
+            "basic_pay": 14000,
+            "net_payable": 12650
+          },
+          {
+            "sr_no": 10,
+            "name": "LARAIB SULTAN",
+            "basic_pay": 14000,
+            "net_payable": 11290
+          },
+          {
+            "sr_no": 11,
+            "name": "HAMNA RAZZAQ",
+            "basic_pay": 13000,
+            "net_payable": 10480
+          },
+          {
+            "sr_no": 12,
+            "name": "MEHRAB TABASSUM",
+            "basic_pay": 12500,
+            "net_payable": 12500
+          },
+          {
+            "sr_no": 13,
+            "name": "ZOYA NAZ",
+            "basic_pay": 12500,
+            "net_payable": 12500
+          },
+          {
+            "sr_no": 14,
+            "name": "ESHA MUNIR",
+            "basic_pay": 12000,
+            "net_payable": 1940
+          },
+          {
+            "sr_no": 15,
+            "name": "FATIMA TUL ZAHRA",
+            "basic_pay": 11000,
+            "net_payable": 9940
+          },
+          {
+            "sr_no": 16,
+            "name": "AREEJ FATIMA",
+            "basic_pay": 8500,
+            "net_payable": 8500
+          },
+          {
+            "sr_no": 17,
+            "name": "ZAINAB JAMSHID",
+            "basic_pay": 9000,
+            "net_payable": 8850
+          },
+          {
+            "sr_no": 18,
+            "name": "NADIA+ EMAN",
+            "basic_pay": 15000,
+            "net_payable": 1940
+          },
+          {
+            "sr_no": 19,
+            "name": "ZUNERA",
+            "basic_pay": 14000,
+            "net_payable": 7230
+          },
+          {
+            "sr_no": 20,
+            "name": "REHAN YOUNAS",
+            "basic_pay": 15000,
+            "net_payable": 15000
+          },
+          {
+            "sr_no": 21,
+            "name": "ABBAS BUTT",
+            "basic_pay": 17500,
+            "net_payable": 17500
+          },
+          {
+            "sr_no": 22,
+            "name": "WAQAS AHMED",
+            "basic_pay": 15500,
+            "net_payable": 15500
+          },
+          {
+            "sr_no": 23,
+            "name": "GUL BAHADAR KHAN",
+            "basic_pay": 30500,
+            "net_payable": 30500
+          },
+          {
+            "sr_no": 24,
+            "name": "JALAL KHAN",
+            "basic_pay": 32000,
+            "net_payable": 32000
+          }
+        ],
+        "total": {
+          "basic_pay": 367000,
+          "net_payable": 320100
+        },
+        "extra_column_header": null
+      }
+    },
+    "April": {
+      "month": "April",
+      "year": 2026,
+      "female_staff": [
+        {
+          "sr_no": 1,
+          "name": "FIZZA WASEEM",
+          "basic_pay": 18500,
+          "net_payable": 16650
+        },
+        {
+          "sr_no": 2,
+          "name": "SHAGUFTA AKBAR",
+          "basic_pay": 18500,
+          "net_payable": 18500
+        },
+        {
+          "sr_no": 3,
+          "name": "FAIZA MUSHTAQ",
+          "basic_pay": 17500,
+          "net_payable": 17210
+        },
+        {
+          "sr_no": 4,
+          "name": "FARAH NAZ",
+          "basic_pay": 16000,
+          "net_payable": 16000
+        },
+        {
+          "sr_no": 5,
+          "name": "AYESHA JAMIL",
+          "basic_pay": 14000,
+          "net_payable": 14000
+        },
+        {
+          "sr_no": 6,
+          "name": "LARAIB SULTAN",
+          "basic_pay": 14000,
+          "net_payable": 10030
+        },
+        {
+          "sr_no": 7,
+          "name": "AQSA RAZZAQ",
+          "basic_pay": 14000,
+          "net_payable": 14000
+        },
+        {
+          "sr_no": 8,
+          "name": "ZUNERA",
+          "basic_pay": 14000,
+          "net_payable": 14000
+        },
+        {
+          "sr_no": 9,
+          "name": "HAMNA RAZZAQ",
+          "basic_pay": 13000,
+          "net_payable": 11270
+        },
+        {
+          "sr_no": 10,
+          "name": "AMINA NOOR",
+          "basic_pay": 13000,
+          "net_payable": 13000
+        },
+        {
+          "sr_no": 11,
+          "name": "MEHRAB TABASSUM",
+          "basic_pay": 12500,
+          "net_payable": 12500
+        },
+        {
+          "sr_no": 12,
+          "name": "ZOYA NAZ",
+          "basic_pay": 12500,
+          "net_payable": 12500
+        },
+        {
+          "sr_no": 13,
+          "name": "MALAIKA SHAHID",
+          "basic_pay": 12000,
+          "net_payable": 10800
+        },
+        {
+          "sr_no": 14,
+          "name": "ZAINAB JAMSHID",
+          "basic_pay": 9000,
+          "net_payable": 9000
+        },
+        {
+          "sr_no": 15,
+          "name": "AREEJ FATIMA",
+          "basic_pay": 8500,
+          "net_payable": 8500
+        },
+        {
+          "sr_no": 16,
+          "name": "ARBAB MUSHTAQ",
+          "basic_pay": 13500,
+          "net_payable": 13500
+        },
+        {
+          "sr_no": 17,
+          "name": "MARIAM RANI",
+          "basic_pay": 13000,
+          "net_payable": 6930
+        },
+        {
+          "sr_no": 18,
+          "name": "MAHNOOR KHALID",
+          "basic_pay": 8500,
+          "net_payable": 5670
+        },
+        {
+          "sr_no": 19,
+          "name": "FATIMA TUL ZAHRA",
+          "basic_pay": 11000,
+          "net_payable": 3670
+        },
+        {
+          "sr_no": 20,
+          "name": "NADIA+ EMAN",
+          "basic_pay": 15000,
+          "net_payable": 15000
+        }
+      ],
+      "male_staff": [
+        {
+          "sr_no": 1,
+          "name": "PRO. AZAM SIDDIQUE",
+          "basic_pay": null,
+          "net_payable": null
+        },
+        {
+          "sr_no": 2,
+          "name": "HAFIZ FAIZAN AZAM",
+          "basic_pay": null,
+          "net_payable": null
+        },
+        {
+          "sr_no": 3,
+          "name": "HASSAN AZAM",
+          "basic_pay": null,
+          "net_payable": null
+        },
+        {
+          "sr_no": 4,
+          "name": "REHAN YOUNAS",
+          "basic_pay": 15000,
+          "net_payable": 13750
+        },
+        {
+          "sr_no": 5,
+          "name": "ABBAS BUTT",
+          "basic_pay": 17500,
+          "net_payable": 15750
+        },
+        {
+          "sr_no": 6,
+          "name": "WAQAS AHMED",
+          "basic_pay": 15500,
+          "net_payable": 15240
+        },
+        {
+          "sr_no": 7,
+          "name": "GUL BAHADAR KHAN",
+          "basic_pay": 30500,
+          "net_payable": 30500
+        },
+        {
+          "sr_no": 8,
+          "name": "JALAL KHAN",
+          "basic_pay": 32000,
+          "net_payable": 32000
+        }
+      ],
+      "totals": {
+        "female": {
+          "basic_pay": 268000,
+          "net_payable": 242730
+        },
+        "male": {
+          "basic_pay": 110500,
+          "net_payable": 107240
+        },
+        "male_summary_block": {
+          "basic_pay": 110500,
+          "net_payable": 107240
+        },
+        "female_summary_block": {
+          "basic_pay": 268000,
+          "net_payable": 242730
+        },
+        "grand_total": {
+          "basic_pay": 378500,
+          "net_payable": 349970
+        }
+      },
+      "total_staff_members_declared": 25,
+      "saved": 28530,
+      "consolidated_register": {
+        "entries": [
+          {
+            "sr_no": 1,
+            "name": "FIZZA WASEEM",
+            "basic_pay": 18500,
+            "net_payable": 16650
+          },
+          {
+            "sr_no": 2,
+            "name": "SHAGUFTA AKBAR",
+            "basic_pay": 18500,
+            "net_payable": 18500
+          },
+          {
+            "sr_no": 3,
+            "name": "FAIZA MUSHTAQ",
+            "basic_pay": 17500,
+            "net_payable": 17210
+          },
+          {
+            "sr_no": 4,
+            "name": "FARAH NAZ",
+            "basic_pay": 16000,
+            "net_payable": 16000
+          },
+          {
+            "sr_no": 5,
+            "name": "AYESHA JAMIL",
+            "basic_pay": 14000,
+            "net_payable": 14000
+          },
+          {
+            "sr_no": 6,
+            "name": "LARAIB SULTAN",
+            "basic_pay": 14000,
+            "net_payable": 10030
+          },
+          {
+            "sr_no": 7,
+            "name": "AQSA RAZZAQ",
+            "basic_pay": 14000,
+            "net_payable": 14000
+          },
+          {
+            "sr_no": 8,
+            "name": "ZUNERA",
+            "basic_pay": 14000,
+            "net_payable": 14000
+          },
+          {
+            "sr_no": 9,
+            "name": "HAMNA RAZZAQ",
+            "basic_pay": 13000,
+            "net_payable": 11270
+          },
+          {
+            "sr_no": 10,
+            "name": "AMINA NOOR",
+            "basic_pay": 13000,
+            "net_payable": 13000
+          },
+          {
+            "sr_no": 11,
+            "name": "MEHRAB TABASSUM",
+            "basic_pay": 12500,
+            "net_payable": 12500
+          },
+          {
+            "sr_no": 12,
+            "name": "ZOYA NAZ",
+            "basic_pay": 12500,
+            "net_payable": 12500
+          },
+          {
+            "sr_no": 13,
+            "name": "MALAIKA SHAHID",
+            "basic_pay": 12000,
+            "net_payable": 10800
+          },
+          {
+            "sr_no": 14,
+            "name": "ZAINAB JAMSHID",
+            "basic_pay": 9000,
+            "net_payable": 9000
+          },
+          {
+            "sr_no": 15,
+            "name": "AREEJ FATIMA",
+            "basic_pay": 8500,
+            "net_payable": 8500
+          },
+          {
+            "sr_no": 16,
+            "name": "ARBAB MUSHTAQ",
+            "basic_pay": 13500,
+            "net_payable": 13500
+          },
+          {
+            "sr_no": 17,
+            "name": "MARIAM RANI",
+            "basic_pay": 13000,
+            "net_payable": 6930
+          },
+          {
+            "sr_no": 18,
+            "name": "MAHNOOR KHALID",
+            "basic_pay": 8500,
+            "net_payable": 5670
+          },
+          {
+            "sr_no": 19,
+            "name": "FATIMA TUL ZAHRA",
+            "basic_pay": 11000,
+            "net_payable": 3670
+          },
+          {
+            "sr_no": 20,
+            "name": "NADIA+ EMAN",
+            "basic_pay": 15000,
+            "net_payable": 15000
+          },
+          {
+            "sr_no": 21,
+            "name": "REHAN YOUNAS",
+            "basic_pay": 15000,
+            "net_payable": 13750
+          },
+          {
+            "sr_no": 22,
+            "name": "ABBAS BUTT",
+            "basic_pay": 17500,
+            "net_payable": 15750
+          },
+          {
+            "sr_no": 23,
+            "name": "WAQAS AHMED",
+            "basic_pay": 15500,
+            "net_payable": 15240
+          },
+          {
+            "sr_no": 24,
+            "name": "GUL BAHADAR KHAN",
+            "basic_pay": 30500,
+            "net_payable": 30500
+          },
+          {
+            "sr_no": 25,
+            "name": "JALAL KHAN",
+            "basic_pay": 32000,
+            "net_payable": 32000
+          }
+        ],
+        "total": {
+          "basic_pay": 378500,
+          "net_payable": 349970
+        },
+        "extra_column_header": null
+      }
+    },
+    "May": {
+      "month": "May",
+      "year": 2026,
+      "female_staff": [
+        {
+          "sr_no": 1,
+          "name": "FIZZA WASEEM",
+          "basic_pay": 18500,
+          "net_payable": 18500
+        },
+        {
+          "sr_no": 2,
+          "name": "SHAGUFTA AKBAR",
+          "basic_pay": 18500,
+          "net_payable": 18500
+        },
+        {
+          "sr_no": 3,
+          "name": "FARAH NAZ",
+          "basic_pay": 16000,
+          "net_payable": 16000
+        },
+        {
+          "sr_no": 4,
+          "name": "AYESHA JAMIL",
+          "basic_pay": 14000,
+          "net_payable": 13070
+        },
+        {
+          "sr_no": 5,
+          "name": "LARAIB SULTAN",
+          "basic_pay": 14000,
+          "net_payable": 12370
+        },
+        {
+          "sr_no": 6,
+          "name": "AQSA RAZZAQ",
+          "basic_pay": 14000,
+          "net_payable": 13770
+        },
+        {
+          "sr_no": 7,
+          "name": "ZUNERA RAFIQ",
+          "basic_pay": 14000,
+          "net_payable": 13770
+        },
+        {
+          "sr_no": 8,
+          "name": "ARBAB MUSHTAQ",
+          "basic_pay": 13500,
+          "net_payable": 12150
+        },
+        {
+          "sr_no": 9,
+          "name": "HAMNA RAZZAQ",
+          "basic_pay": 13000,
+          "net_payable": 11550
+        },
+        {
+          "sr_no": 10,
+          "name": "AMINA NOOR",
+          "basic_pay": 13000,
+          "net_payable": 13000
+        },
+        {
+          "sr_no": 11,
+          "name": "MEHRAB TABASSUM",
+          "basic_pay": 12500,
+          "net_payable": 11670
+        },
+        {
+          "sr_no": 12,
+          "name": "ZOYA NAZ",
+          "basic_pay": 12500,
+          "net_payable": 12500
+        },
+        {
+          "sr_no": 13,
+          "name": "MARIAM RANI",
+          "basic_pay": 13000,
+          "net_payable": 13000
+        },
+        {
+          "sr_no": 14,
+          "name": "MALAIKA SHAHID",
+          "basic_pay": 12000,
+          "net_payable": 11200
+        },
+        {
+          "sr_no": 15,
+          "name": "ZAINAB JAMSHAID",
+          "basic_pay": 9000,
+          "net_payable": 9000
+        },
+        {
+          "sr_no": 16,
+          "name": "AREEJ FATIMA",
+          "basic_pay": 8500,
+          "net_payable": 7930
+        },
+        {
+          "sr_no": 17,
+          "name": "NADIA",
+          "basic_pay": 10000,
+          "net_payable": 10000
+        }
+      ],
+      "male_staff": [
+        {
+          "sr_no": 1,
+          "name": "PRO. AZAM SIDDIQUE",
+          "basic_pay": null,
+          "net_payable": null
+        },
+        {
+          "sr_no": 2,
+          "name": "HAFIZ FAIZAN AZAM",
+          "basic_pay": null,
+          "net_payable": null
+        },
+        {
+          "sr_no": 3,
+          "name": "HASSAN AZAM",
+          "basic_pay": null,
+          "net_payable": null
+        },
+        {
+          "sr_no": 4,
+          "name": "REHAN YOUNAS",
+          "basic_pay": 15000,
+          "net_payable": 14750
+        },
+        {
+          "sr_no": 5,
+          "name": "ABBAS BUTT",
+          "basic_pay": 17500,
+          "net_payable": 17210
+        },
+        {
+          "sr_no": 6,
+          "name": "WAQAS AHMED",
+          "basic_pay": 15500,
+          "net_payable": 15500
+        },
+        {
+          "sr_no": 7,
+          "name": "GUL BAHADAR KHAN",
+          "basic_pay": 30500,
+          "net_payable": 30500
+        },
+        {
+          "sr_no": 8,
+          "name": "JALAL KHAN",
+          "basic_pay": 32000,
+          "net_payable": 32000
+        }
+      ],
+      "totals": {
+        "female": {
+          "basic_pay": 226000,
+          "net_payable": 217980
+        },
+        "male": {
+          "basic_pay": 110500,
+          "net_payable": 109960
+        },
+        "male_summary_block": {
+          "basic_pay": 110500,
+          "net_payable": 109960
+        },
+        "female_summary_block": {
+          "basic_pay": 226000,
+          "net_payable": 217980
+        },
+        "grand_total": {
+          "basic_pay": 336500,
+          "net_payable": 327940
+        }
+      },
+      "total_staff_members_declared": 25,
+      "saved": 8560,
+      "consolidated_register": {
+        "entries": [
+          {
+            "sr_no": 1,
+            "name": "FIZZA WASEEM",
+            "basic_pay": 18500,
+            "net_payable": 18500
+          },
+          {
+            "sr_no": 2,
+            "name": "SHAGUFTA AKBAR",
+            "basic_pay": 18500,
+            "net_payable": 18500
+          },
+          {
+            "sr_no": 3,
+            "name": "FARAH NAZ",
+            "basic_pay": 16000,
+            "net_payable": 16000
+          },
+          {
+            "sr_no": 4,
+            "name": "AYESHA JAMIL",
+            "basic_pay": 14000,
+            "net_payable": 13070
+          },
+          {
+            "sr_no": 5,
+            "name": "LARAIB SULTAN",
+            "basic_pay": 14000,
+            "net_payable": 12370
+          },
+          {
+            "sr_no": 6,
+            "name": "AQSA RAZZAQ",
+            "basic_pay": 14000,
+            "net_payable": 13770
+          },
+          {
+            "sr_no": 7,
+            "name": "ZUNERA RAFIQ",
+            "basic_pay": 14000,
+            "net_payable": 13770
+          },
+          {
+            "sr_no": 8,
+            "name": "ARBAB MUSHTAQ",
+            "basic_pay": 13500,
+            "net_payable": 12150
+          },
+          {
+            "sr_no": 9,
+            "name": "HAMNA RAZZAQ",
+            "basic_pay": 13000,
+            "net_payable": 11550
+          },
+          {
+            "sr_no": 10,
+            "name": "AMINA NOOR",
+            "basic_pay": 13000,
+            "net_payable": 13000
+          },
+          {
+            "sr_no": 11,
+            "name": "MEHRAB TABASSUM",
+            "basic_pay": 12500,
+            "net_payable": 11670
+          },
+          {
+            "sr_no": 12,
+            "name": "ZOYA NAZ",
+            "basic_pay": 12500,
+            "net_payable": 12500
+          },
+          {
+            "sr_no": 13,
+            "name": "MARIAM RANI",
+            "basic_pay": 13000,
+            "net_payable": 13000
+          },
+          {
+            "sr_no": 14,
+            "name": "MALAIKA SHAHID",
+            "basic_pay": 12000,
+            "net_payable": 11200
+          },
+          {
+            "sr_no": 15,
+            "name": "ZAINAB JAMSHAID",
+            "basic_pay": 9000,
+            "net_payable": 9000
+          },
+          {
+            "sr_no": 16,
+            "name": "AREEJ FATIMA",
+            "basic_pay": 8500,
+            "net_payable": 7930
+          },
+          {
+            "sr_no": 17,
+            "name": "NADIA",
+            "basic_pay": 10000,
+            "net_payable": 10000
+          },
+          {
+            "sr_no": 18,
+            "name": "REHAN YOUNAS",
+            "basic_pay": 15000,
+            "net_payable": 14750
+          },
+          {
+            "sr_no": 19,
+            "name": "ABBAS BUTT",
+            "basic_pay": 17500,
+            "net_payable": 17210
+          },
+          {
+            "sr_no": 20,
+            "name": "WAQAS AHMED",
+            "basic_pay": 15500,
+            "net_payable": 15500
+          },
+          {
+            "sr_no": 21,
+            "name": "GUL BAHADAR KHAN",
+            "basic_pay": 30500,
+            "net_payable": 30500
+          },
+          {
+            "sr_no": 22,
+            "name": "JALAL KHAN",
+            "basic_pay": 32000,
+            "net_payable": 32000
+          }
+        ],
+        "total": {
+          "basic_pay": 336500,
+          "net_payable": 327940
+        },
+        "extra_column_header": null
+      }
+    },
+    "June": {
+      "month": "June",
+      "year": 2026,
+      "female_staff": [
+        {
+          "sr_no": 1,
+          "name": "FIZZA WASEEM",
+          "basic_pay": 18500,
+          "net_payable": 18500
+        },
+        {
+          "sr_no": 2,
+          "name": "SHAGUFTA AKBAR",
+          "basic_pay": 18500,
+          "net_payable": 18500
+        },
+        {
+          "sr_no": 3,
+          "name": "FARAH NAZ",
+          "basic_pay": 16000,
+          "net_payable": 16000
+        },
+        {
+          "sr_no": 4,
+          "name": "AYESHA JAMIL",
+          "basic_pay": 14000,
+          "net_payable": 13070
+        },
+        {
+          "sr_no": 5,
+          "name": "LARAIB SULTAN",
+          "basic_pay": 14000,
+          "net_payable": 3730
+        },
+        {
+          "sr_no": 6,
+          "name": "AQSA RAZZAQ",
+          "basic_pay": 14000,
+          "net_payable": 13070
+        },
+        {
+          "sr_no": 7,
+          "name": "ZUNERA RAFIQ",
+          "basic_pay": 14000,
+          "net_payable": 4670
+        },
+        {
+          "sr_no": 8,
+          "name": "ARBAB MUSHTAQ",
+          "basic_pay": 13500,
+          "net_payable": 12600
+        },
+        {
+          "sr_no": 9,
+          "name": "HAMNA RAZZAQ",
+          "basic_pay": 13000,
+          "net_payable": 10840
+        },
+        {
+          "sr_no": 10,
+          "name": "AMINA NOOR",
+          "basic_pay": 13000,
+          "net_payable": 13000
+        },
+        {
+          "sr_no": 11,
+          "name": "MEHRAB TABASSUM",
+          "basic_pay": 12500,
+          "net_payable": 8340
+        },
+        {
+          "sr_no": 12,
+          "name": "ZOYA NAZ",
+          "basic_pay": 12500,
+          "net_payable": 4170
+        },
+        {
+          "sr_no": 13,
+          "name": "MARIAM RANI",
+          "basic_pay": 13000,
+          "net_payable": 4330
+        },
+        {
+          "sr_no": 14,
+          "name": "MALAIKA SHAHID",
+          "basic_pay": 12000,
+          "net_payable": 7800
+        },
+        {
+          "sr_no": 15,
+          "name": "ZAINAB JAMSHAID",
+          "basic_pay": 9000,
+          "net_payable": 3000
+        },
+        {
+          "sr_no": 16,
+          "name": "AREEJ FATIMA",
+          "basic_pay": 8500,
+          "net_payable": 2830
+        },
+        {
+          "sr_no": 17,
+          "name": "NADIA",
+          "basic_pay": 10000,
+          "net_payable": 10000
+        }
+      ],
+      "male_staff": [
+        {
+          "sr_no": 1,
+          "name": "PRO. AZAM SIDDIQUE",
+          "basic_pay": null,
+          "net_payable": null
+        },
+        {
+          "sr_no": 2,
+          "name": "HAFIZ FAIZAN AZAM",
+          "basic_pay": null,
+          "net_payable": null
+        },
+        {
+          "sr_no": 3,
+          "name": "HASSAN AZAM",
+          "basic_pay": null,
+          "net_payable": null
+        },
+        {
+          "sr_no": 4,
+          "name": "REHAN YOUNAS",
+          "basic_pay": 7500,
+          "net_payable": 6000
+        },
+        {
+          "sr_no": 5,
+          "name": "ABBAS BUTT",
+          "basic_pay": 17500,
+          "net_payable": 15170
+        },
+        {
+          "sr_no": 6,
+          "name": "WAQAS AHMED",
+          "basic_pay": 15500,
+          "net_payable": 15500
+        },
+        {
+          "sr_no": 7,
+          "name": "GUL BAHADAR KHAN",
+          "basic_pay": 30500,
+          "net_payable": 30500
+        },
+        {
+          "sr_no": 8,
+          "name": "JALAL KHAN",
+          "basic_pay": 32000,
+          "net_payable": 32000
+        }
+      ],
+      "totals": {
+        "female": {
+          "basic_pay": 226000,
+          "net_payable": 164450
+        },
+        "male": {
+          "basic_pay": 103000,
+          "net_payable": 99170
+        },
+        "male_summary_block": {
+          "basic_pay": 103000,
+          "net_payable": 99170
+        },
+        "female_summary_block": {
+          "basic_pay": 226000,
+          "net_payable": 164450
+        },
+        "grand_total": {
+          "basic_pay": 329000,
+          "net_payable": 263620
+        }
+      },
+      "total_staff_members_declared": 25,
+      "saved": 65380,
+      "consolidated_register": {
+        "entries": [
+          {
+            "sr_no": 1,
+            "name": "FIZZA WASEEM",
+            "basic_pay": 18500,
+            "net_payable": 18500,
+            "----": 850
+          },
+          {
+            "sr_no": 2,
+            "name": "SHAGUFTA AKBAR",
+            "basic_pay": 18500,
+            "net_payable": 18500,
+            "----": 850
+          },
+          {
+            "sr_no": 3,
+            "name": "FARAH NAZ",
+            "basic_pay": 16000,
+            "net_payable": 16000,
+            "----": 850
+          },
+          {
+            "sr_no": 4,
+            "name": "AYESHA JAMIL",
+            "basic_pay": 14000,
+            "net_payable": 13070,
+            "----": 850
+          },
+          {
+            "sr_no": 5,
+            "name": "LARAIB SULTAN",
+            "basic_pay": 14000,
+            "net_payable": 3730,
+            "----": 0
+          },
+          {
+            "sr_no": 6,
+            "name": "AQSA RAZZAQ",
+            "basic_pay": 14000,
+            "net_payable": 13070,
+            "----": 850
+          },
+          {
+            "sr_no": 7,
+            "name": "ZUNERA RAFIQ",
+            "basic_pay": 14000,
+            "net_payable": 4670,
+            "----": 850
+          },
+          {
+            "sr_no": 8,
+            "name": "ARBAB MUSHTAQ",
+            "basic_pay": 13500,
+            "net_payable": 12600,
+            "----": 850
+          },
+          {
+            "sr_no": 9,
+            "name": "HAMNA RAZZAQ",
+            "basic_pay": 13000,
+            "net_payable": 10840,
+            "----": 850
+          },
+          {
+            "sr_no": 10,
+            "name": "AMINA NOOR",
+            "basic_pay": 13000,
+            "net_payable": 13000,
+            "----": 850
+          },
+          {
+            "sr_no": 11,
+            "name": "MEHRAB TABASSUM",
+            "basic_pay": 12500,
+            "net_payable": 8340,
+            "----": 850
+          },
+          {
+            "sr_no": 12,
+            "name": "ZOYA NAZ",
+            "basic_pay": 12500,
+            "net_payable": 4170,
+            "----": 0
+          },
+          {
+            "sr_no": 13,
+            "name": "MARIAM RANI",
+            "basic_pay": 13000,
+            "net_payable": 4330,
+            "----": 0
+          },
+          {
+            "sr_no": 14,
+            "name": "MALAIKA SHAHID",
+            "basic_pay": 12000,
+            "net_payable": 7800,
+            "----": 0
+          },
+          {
+            "sr_no": 15,
+            "name": "ZAINAB JAMSHAID",
+            "basic_pay": 9000,
+            "net_payable": 3000,
+            "----": 850
+          },
+          {
+            "sr_no": 16,
+            "name": "AREEJ FATIMA",
+            "basic_pay": 8500,
+            "net_payable": 2830,
+            "----": 0
+          },
+          {
+            "sr_no": 17,
+            "name": "NADIA",
+            "basic_pay": 10000,
+            "net_payable": 10000,
+            "----": 0
+          },
+          {
+            "sr_no": 18,
+            "name": "REHAN YOUNAS",
+            "basic_pay": 7500,
+            "net_payable": 6000,
+            "----": 0
+          },
+          {
+            "sr_no": 19,
+            "name": "ABBAS BUTT",
+            "basic_pay": 17500,
+            "net_payable": 15170,
+            "----": 850
+          },
+          {
+            "sr_no": 20,
+            "name": "WAQAS AHMED",
+            "basic_pay": 15500,
+            "net_payable": 15500,
+            "----": 850
+          },
+          {
+            "sr_no": 21,
+            "name": "GUL BAHADAR KHAN",
+            "basic_pay": 30500,
+            "net_payable": 30500,
+            "----": 0
+          },
+          {
+            "sr_no": 22,
+            "name": "JALAL KHAN",
+            "basic_pay": 32000,
+            "net_payable": 32000,
+            "----": 0
+          }
+        ],
+        "total": {
+          "basic_pay": 329000,
+          "net_payable": 263620,
+          "----": 11050
+        },
+        "extra_column_header": "----"
+      }
+    }
+  }
+}
