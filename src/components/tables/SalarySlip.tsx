@@ -113,6 +113,7 @@ export function SalarySlip({ salary, trigger, open, onOpenChange }: SalarySlipPr
     <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
       {!isControlled && (
         <DialogTrigger asChild>
+          {/* eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing */}
           {trigger ?? (
             <Button variant="ghost" size="icon" className="h-8 w-8 text-blue-600">
               <FileText className="h-4 w-4" />
