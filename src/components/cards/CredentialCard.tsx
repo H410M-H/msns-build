@@ -337,9 +337,15 @@ export default function EmployeeCredDetails() {
                                 </Link>
                               </DropdownMenuItem>
                               <DropdownMenuItem asChild className="cursor-pointer">
-                                <Link href={`/admin/users/faculty/${employee.employeeId}`}>
+                                <Link href={`/admin/users/faculty/${employee.employeeId}/profile`}>
                                   <Edit className="mr-2 h-4 w-4 text-amber-600 dark:text-amber-400" />
                                   <span>Edit Details</span>
+                                </Link>
+                              </DropdownMenuItem>
+                              <DropdownMenuItem asChild className="cursor-pointer">
+                                <Link href={`/admin/users/faculty/${employee.employeeId}`}>
+                                  <Clock className="mr-2 h-4 w-4 text-sky-600 dark:text-sky-400" />
+                                  <span>Attendance History</span>
                                 </Link>
                               </DropdownMenuItem>
                             </DropdownMenuContent>
