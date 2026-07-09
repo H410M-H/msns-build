@@ -49,11 +49,21 @@ const designations = [
   { value: "WORKER", label: "Workers" },
 ];
 
-export function MonthlyReportTab() {
+export function MonthlyReportTab({
+  externalMonth,
+  externalYear,
+}: {
+  externalMonth?: number;
+  externalYear?: number;
+} = {}) {
   const [selectedDesignation, setSelectedDesignation] =
     useState<Designation>("ALL");
-  const [currentMonth, setCurrentMonth] = useState(dayjs().month());
-  const [currentYear, setCurrentYear] = useState(dayjs().year());
+  const [internalMonth, setInternalMonth] = useState(dayjs().month());
+  const [internalYear, setInternalYear] = useState(dayjs().year());
+
+  const currentMonth = externalMonth ?? internalMonth;
+  const currentYear = externalYear ?? internalYear;
+  const isEmbedded = externalMonth !== undefined;
 
   const daysInMonth = dayjs()
     .year(currentYear)
@@ -159,17 +169,17 @@ export function MonthlyReportTab() {
   const navigateMonth = (direction: "prev" | "next") => {
     if (direction === "prev") {
       if (currentMonth === 0) {
-        setCurrentMonth(11);
-        setCurrentYear(currentYear - 1);
+        setInternalMonth(11);
+        setInternalYear(currentYear - 1);
       } else {
-        setCurrentMonth(currentMonth - 1);
+        setInternalMonth(currentMonth - 1);
       }
     } else {
       if (currentMonth === 11) {
-        setCurrentMonth(0);
-        setCurrentYear(currentYear + 1);
+        setInternalMonth(0);
+        setInternalYear(currentYear + 1);
       } else {
-        setCurrentMonth(currentMonth + 1);
+        setInternalMonth(currentMonth + 1);
       }
     }
   };
@@ -229,25 +239,27 @@ export function MonthlyReportTab() {
                 Filter by designation to view specific employee groups
               </CardDescription>
             </div>
-            <div className="flex items-center space-x-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => navigateMonth("prev")}
-              >
-                <ChevronLeft className="h-4 w-4" />
-              </Button>
-              <span className="min-w-[120px] text-center text-sm font-medium">
-                {monthName} {currentYear}
-              </span>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => navigateMonth("next")}
-              >
-                <ChevronRight className="h-4 w-4" />
-              </Button>
-            </div>
+            {!isEmbedded && (
+              <div className="flex items-center space-x-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => navigateMonth("prev")}
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                </Button>
+                <span className="min-w-[120px] text-center text-sm font-medium">
+                  {monthName} {currentYear}
+                </span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => navigateMonth("next")}
+                >
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              </div>
+            )}
           </div>
         </CardHeader>
         <CardContent className="space-y-4">

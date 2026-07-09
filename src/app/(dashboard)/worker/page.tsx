@@ -19,7 +19,7 @@ import { BroadcastBoard } from "~/components/blocks/dashboard/BroadcastBoard";
 import { format } from "date-fns";
 
 export default function WorkerDashboard() {
-  const { data: session } = useSession();
+  const { data: _session } = useSession();
   const breadcrumbs = [{ href: "/worker", label: "Dashboard", current: true }];
 
   const { data: eventsData, isLoading: isEventsLoading } = api.event.getAll.useQuery({ limit: 5 });
