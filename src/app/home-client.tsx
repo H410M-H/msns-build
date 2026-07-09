@@ -114,6 +114,7 @@ export default function HomeClient() {
               fill
               className="object-contain drop-shadow-2xl"
               priority
+              unoptimized
             />
           </motion.div>
         </TiltCard>

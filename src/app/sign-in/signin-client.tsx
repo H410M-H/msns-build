@@ -71,6 +71,7 @@ export default function SignInClient() {
                   fill
                   className="object-contain drop-shadow-2xl"
                   priority
+                  unoptimized
                 />
               </motion.div>
             </motion.div>
