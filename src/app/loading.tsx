@@ -96,7 +96,6 @@ export default function Loading() {
                     className="relative z-10 h-3/4 w-3/4 object-contain drop-shadow-2xl"
                     width={200}
                     height={200}
-                    unoptimized
                   />
 
                   {/* Animated overlay effects */}
