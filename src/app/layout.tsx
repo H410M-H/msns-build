@@ -55,7 +55,6 @@ export const metadata: Metadata = {
     canonical: "https://msns.edu.pk",
   },
   manifest: "/manifest.json",
-  icons: [{ rel: "icon", url: "/favicon.ico" }],
 };
 
 export default function RootLayout({

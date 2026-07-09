@@ -1,6 +1,8 @@
 "use client";
 
+import { useState } from "react";
 import { api } from "~/trpc/react";
+import { useToast } from "~/hooks/use-toast";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -14,13 +16,34 @@ import {
 } from "~/components/ui/alert-dialog";
 import { Button } from "~/components/ui/button";
 
-export const ClassDeletionDialog = ({ classIds }: { classIds: string[] }) => {
-  const deleteClasses = api.class.deleteClassesByIds.useMutation();
+export const ClassDeletionDialog = ({ classIds, onSuccess }: { classIds: string[], onSuccess?: () => void }) => {
+  const [open, setOpen] = useState(false);
+  const { toast } = useToast();
+  const utils = api.useUtils();
+
+  const deleteClasses = api.class.deleteClassesByIds.useMutation({
+    onSuccess: () => {
+      toast({
+        title: "Success",
+        description: "Classes deleted successfully.",
+      });
+      setOpen(false);
+      if (onSuccess) onSuccess();
+      void utils.class.getClasses.invalidate();
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to delete classes",
+        variant: "destructive",
+      });
+    },
+  });
 
   return (
-    <AlertDialog>
+    <AlertDialog open={open} onOpenChange={setOpen}>
       <AlertDialogTrigger asChild>
-        <Button variant="destructive" disabled={classIds.length == 0}>
+        <Button variant="destructive" disabled={classIds.length === 0}>
           Delete selected
         </Button>
       </AlertDialogTrigger>
@@ -28,19 +51,22 @@ export const ClassDeletionDialog = ({ classIds }: { classIds: string[] }) => {
         <AlertDialogHeader>
           <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
           <AlertDialogDescription>
-            This action cannot be undone. This will permanently delete your
-            account and remove your data from our servers.
+            This action cannot be undone. This will permanently delete the
+            selected classes and remove their data from our servers.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogCancel disabled={deleteClasses.isPending}>Cancel</AlertDialogCancel>
           <AlertDialogAction asChild>
             <Button
               variant="destructive"
-              onClick={() => deleteClasses.mutate({ classIds: classIds })}
+              onClick={(e) => {
+                e.preventDefault();
+                deleteClasses.mutate({ classIds: classIds });
+              }}
               disabled={deleteClasses.isPending}
             >
-              Confirm
+              {deleteClasses.isPending ? "Deleting..." : "Confirm"}
             </Button>
           </AlertDialogAction>
         </AlertDialogFooter>

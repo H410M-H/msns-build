@@ -27,9 +27,23 @@ import {
   ArrowUpDown,
   Trash2,
   RefreshCcw,
+  MoreHorizontal,
+  History,
+  User,
+  FileText
 } from "lucide-react";
 import { Checkbox } from "~/components/ui/checkbox";
 import { SalarySlip } from "./SalarySlip";
+import { SalaryHistoryDialog } from "../blocks/salary/SalaryHistoryDialog";
+import Link from "next/link";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "~/components/ui/dropdown-menu";
 import {
   useReactTable,
   getCoreRowModel,
@@ -52,6 +66,8 @@ type SalaryData = {
   sessionId: string;
   Employees: {
     employeeName: string;
+    designation?: string;
+    registrationNumber?: string;
   };
   Sessions: {
     sessionName: string;
@@ -64,6 +80,59 @@ type SalaryTableProps = {
   setPage: React.Dispatch<React.SetStateAction<number>>;
   setPageSize: React.Dispatch<React.SetStateAction<number>>;
   searchTerm: string;
+};
+
+const ActionCell = ({ salary }: { salary: SalaryData }) => {
+  const [historyOpen, setHistoryOpen] = useState(false);
+  const [slipOpen, setSlipOpen] = useState(false);
+
+  return (
+    <div className="flex justify-end">
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="ghost" className="h-8 w-8 p-0">
+            <span className="sr-only">Open menu</span>
+            <MoreHorizontal className="h-4 w-4" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end">
+          <DropdownMenuLabel>Actions</DropdownMenuLabel>
+          <DropdownMenuItem onClick={() => setSlipOpen(true)}>
+            <FileText className="mr-2 h-4 w-4 text-blue-600" />
+            Salary Slip
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => setHistoryOpen(true)}>
+            <History className="mr-2 h-4 w-4 text-emerald-600" />
+            Pay History
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem asChild>
+            <Link href={`/admin/erp/hr/employees/${salary.employeeId}`}>
+              <User className="mr-2 h-4 w-4" />
+              Employee Details
+            </Link>
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+
+      <SalaryHistoryDialog
+        open={historyOpen}
+        onOpenChange={setHistoryOpen}
+        employeeId={salary.employeeId}
+        employeeName={salary.Employees.employeeName}
+        designation={salary.Employees.designation ?? "Employee"}
+        registrationNumber={salary.Employees.registrationNumber ?? ""}
+        currentSessionId={salary.sessionId}
+        baseSalary={salary.baseSalary}
+      />
+
+      <SalarySlip 
+        salary={salary} 
+        open={slipOpen} 
+        onOpenChange={setSlipOpen} 
+      />
+    </div>
+  );
 };
 
 export function SalaryTable({
@@ -245,12 +314,8 @@ export function SalaryTable({
       },
       {
         id: "actions",
-        header: "Actions",
-        cell: ({ row }) => (
-          <div className="flex justify-end">
-            <SalarySlip salary={row.original} />
-          </div>
-        ),
+        header: () => <div className="text-right">Actions</div>,
+        cell: ({ row }) => <ActionCell salary={row.original} />,
       },
     ],
     [handleSort],

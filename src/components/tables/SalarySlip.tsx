@@ -9,7 +9,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "~/components/ui/dialog";
-import { Download, Loader2, FileText, Printer } from "lucide-react";
+import { Download, Loader2, FileText, Printer, Building2, Phone, Mail, Globe } from "lucide-react";
 import * as jsPDF from "jspdf";
 import * as html2canvas from "html2canvas-pro";
 
@@ -33,11 +33,20 @@ type SalaryData = {
 
 interface SalarySlipProps {
   salary: SalaryData;
+  trigger?: React.ReactNode;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }
 
-export function SalarySlip({ salary }: SalarySlipProps) {
+export function SalarySlip({ salary, trigger, open, onOpenChange }: SalarySlipProps) {
   const [isGenerating, setIsGenerating] = useState(false);
   const slipRef = useRef<HTMLDivElement>(null);
+  
+  // Internal state if not controlled
+  const [internalOpen, setInternalOpen] = useState(false);
+  const isControlled = open !== undefined && onOpenChange !== undefined;
+  const dialogOpen = isControlled ? open : internalOpen;
+  const setDialogOpen = isControlled ? onOpenChange : setInternalOpen;
 
   const handlePrint = () => {
     const content = slipRef.current;
@@ -101,12 +110,16 @@ export function SalarySlip({ salary }: SalarySlipProps) {
   };
 
   return (
-    <Dialog>
-      <DialogTrigger asChild>
-        <Button variant="ghost" size="icon" className="h-8 w-8 text-blue-600">
-          <FileText className="h-4 w-4" />
-        </Button>
-      </DialogTrigger>
+    <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+      {!isControlled && (
+        <DialogTrigger asChild>
+          {trigger ?? (
+            <Button variant="ghost" size="icon" className="h-8 w-8 text-blue-600">
+              <FileText className="h-4 w-4" />
+            </Button>
+          )}
+        </DialogTrigger>
+      )}
       <DialogContent className="max-h-[90vh] max-w-4xl overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Salary Slip Preview</DialogTitle>
@@ -119,17 +132,45 @@ export function SalarySlip({ salary }: SalarySlipProps) {
             className="w-full max-w-[210mm] border border-gray-200 bg-white p-10 shadow-sm"
           >
             {/* Header */}
-            <div className="mb-8 text-center">
-              <h1 className="text-2xl font-bold uppercase tracking-wider text-gray-900">
-                Academic Institute
-              </h1>
-              <p className="text-sm text-gray-500">Salary Slip</p>
-              <p className="mt-1 text-sm font-medium">
-                {new Date(salary.assignedDate).toLocaleString("default", {
-                  month: "long",
-                  year: "numeric",
-                })}
-              </p>
+            <div className="mb-8 flex items-start justify-between border-b-2 border-indigo-100 pb-6">
+              <div className="flex items-center gap-4">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src="/api/images/logos/Official_LOGO_grn_ic9ldd.png"
+                  alt="School Logo"
+                  className="h-20 w-20 object-contain"
+                />
+                <div className="text-left">
+                  <h1 className="text-2xl font-bold tracking-tight text-indigo-950">
+                    M. S. NAZ HIGH SCHOOL®
+                  </h1>
+                  <p className="font-medium text-indigo-600">
+                    Salary Slip
+                  </p>
+                  <div className="mt-2 space-y-0.5 text-xs text-gray-500">
+                    <p className="flex items-center gap-1">
+                      <Building2 className="h-3 w-3" /> G.T. Road, Ghakhar, Pakistan
+                    </p>
+                    <p className="flex items-center gap-1">
+                      <Phone className="h-3 w-3" /> +92 (318) 7625415
+                    </p>
+                    <p className="flex items-center gap-1">
+                      <Mail className="h-3 w-3" /> info@msns.edu.pk
+                    </p>
+                  </div>
+                </div>
+              </div>
+              <div className="text-right">
+                <p className="mt-1 text-sm font-medium">
+                  {new Date(salary.assignedDate).toLocaleString("default", {
+                    month: "long",
+                    year: "numeric",
+                  })}
+                </p>
+                <p className="mt-1 text-xs text-gray-400">
+                  Generated: {new Date().toLocaleDateString()}
+                </p>
+              </div>
             </div>
 
             {/* Employee Details */}
@@ -225,11 +266,14 @@ export function SalarySlip({ salary }: SalarySlipProps) {
             </div>
 
             {/* Footer */}
-            <div className="border-t pt-8 text-center text-xs text-gray-400">
-              <p>
-                This is a computer generated document and does not require
-                signature.
-              </p>
+            <div className="mt-8 pt-8">
+
+              <div className="flex items-center justify-between border-t border-gray-100 pt-4 text-[10px] text-gray-400">
+                <p>This document is computer generated and does not require signature.</p>
+                <div className="flex items-center gap-1">
+                  <Globe className="h-3 w-3" /> www.msns.edu.pk
+                </div>
+              </div>
             </div>
           </div>
 

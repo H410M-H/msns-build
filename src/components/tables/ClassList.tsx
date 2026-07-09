@@ -139,7 +139,10 @@ export const ClassList = ({ sessionId }: { sessionId: string }) => {
             <span className="hidden sm:inline">Refresh</span>
           </Button>
 
-          <ClassDeletionDialog classIds={Array.from(selectedClasses)} />
+          <ClassDeletionDialog
+            classIds={Array.from(selectedClasses)}
+            onSuccess={() => setSelectedClasses(new Set())}
+          />
           <ClassCreationDialog />
         </div>
       </div>

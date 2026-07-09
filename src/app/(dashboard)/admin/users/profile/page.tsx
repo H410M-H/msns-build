@@ -15,11 +15,13 @@ import {
   CheckCircle2,
   AlertCircle,
   Fingerprint,
+  Camera,
+  Settings2,
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { api } from "~/trpc/react";
-import { Avatar, AvatarFallback } from "~/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "~/components/ui/card";
@@ -27,6 +29,8 @@ import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
 import { Separator } from "~/components/ui/separator";
 import { Skeleton } from "~/components/ui/skeleton";
+import { Switch } from "~/components/ui/switch";
+import { Textarea } from "~/components/ui/textarea";
 import { getRoleTheme } from "~/lib/utils";
 import { toast } from "~/hooks/use-toast";
 import { PageHeader } from "~/components/blocks/nav/PageHeader";
@@ -82,9 +86,11 @@ function InfoChip({
 
 export default function ProfilePage() {
   const { data: session } = useSession();
+  const utils = api.useUtils();
   const { data: user, isLoading } = api.profile.getProfile.useQuery();
   const roleTheme = getRoleTheme(session?.user?.accountType ?? "");
 
+  // Password state
   const [showCurrent, setShowCurrent] = useState(false);
   const [showNew, setShowNew] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
@@ -92,6 +98,35 @@ export default function ProfilePage() {
   const [newPw, setNewPw] = useState("");
   const [confirmPw, setConfirmPw] = useState("");
   const [pwLoading, setPwLoading] = useState(false);
+
+  // Profile details state
+  const [username, setUsername] = useState("");
+  const [bio, setBio] = useState("");
+  const [profileLoading, setProfileLoading] = useState(false);
+
+  // Settings state
+  const [emailNotifs, setEmailNotifs] = useState(true);
+  const [pushNotifs, setPushNotifs] = useState(false);
+  const [marketing, setMarketing] = useState(false);
+  const [visibility, setVisibility] = useState(true);
+  const [twoFactor, setTwoFactor] = useState(false);
+  const [settingsLoading, setSettingsLoading] = useState(false);
+
+  // Avatar upload state
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (user) {
+      setUsername(user.username ?? "");
+      setBio(user.bio ?? "");
+      setEmailNotifs(user.emailNotifications);
+      setPushNotifs(user.pushNotifications);
+      setMarketing(user.marketingEmails);
+      setVisibility(user.profileVisibility);
+      setTwoFactor(user.twoFactorAuth);
+    }
+  }, [user]);
 
   const changePassword = api.profile.updateProfile.useMutation({
     onSuccess: () => {
@@ -101,9 +136,33 @@ export default function ProfilePage() {
       setConfirmPw("");
       setPwLoading(false);
     },
-    onError: (err: { message: string }) => {
+    onError: (err) => {
       toast({ title: "Error", description: err.message, variant: "destructive" });
       setPwLoading(false);
+    },
+  });
+
+  const updateProfile = api.profile.updateProfile.useMutation({
+    onSuccess: () => {
+      toast({ title: "Profile updated successfully." });
+      void utils.profile.getProfile.invalidate();
+      setProfileLoading(false);
+    },
+    onError: (err) => {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
+      setProfileLoading(false);
+    },
+  });
+
+  const updateSettings = api.profile.updateSettings.useMutation({
+    onSuccess: () => {
+      toast({ title: "Settings updated successfully." });
+      void utils.profile.getProfile.invalidate();
+      setSettingsLoading(false);
+    },
+    onError: (err) => {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
+      setSettingsLoading(false);
     },
   });
 
@@ -122,6 +181,60 @@ export default function ProfilePage() {
     }
     setPwLoading(true);
     changePassword.mutate({ username: user?.username ?? "", email: user?.email ?? "", currentPassword: currentPw, newPassword: newPw });
+  };
+
+  const handleUpdateProfile = () => {
+    setProfileLoading(true);
+    updateProfile.mutate({ username, bio, email: user?.email ?? "" });
+  };
+
+  const handleUpdateSettings = () => {
+    setSettingsLoading(true);
+    updateSettings.mutate({
+      emailNotifications: emailNotifs,
+      pushNotifications: pushNotifs,
+      marketingEmails: marketing,
+      profileVisibility: visibility,
+      twoFactorAuth: twoFactor,
+    });
+  };
+
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploadingAvatar(true);
+    const formData = new FormData();
+    formData.append("file", file);
+
+    try {
+      const res = await fetch("/api/v1/upload", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!res.ok) {
+        const errorData = (await res.json()) as { error?: string };
+        throw new Error(errorData.error ?? "Upload failed");
+      }
+
+      const data = (await res.json()) as { url: string };
+      const imageUrl = data.url;
+
+      // Update profile with new avatar URL
+      updateProfile.mutate({
+        username: user?.username ?? "",
+        email: user?.email ?? "",
+        profilePic: imageUrl,
+      });
+      
+    } catch (err) {
+      const error = err as Error;
+      toast({ title: "Upload Failed", description: error.message, variant: "destructive" });
+    } finally {
+      setUploadingAvatar(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
   };
 
   const breadcrumbs = [
@@ -163,30 +276,48 @@ export default function ProfilePage() {
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         {/* LEFT: Identity Card */}
         <Fade delay={0}>
-          <Card className="relative overflow-hidden border-slate-200 shadow-lg dark:border-border dark:bg-card">
+          <Card className="relative overflow-hidden border-slate-200 shadow-lg dark:border-border dark:bg-card h-full">
             {/* Gradient blob */}
             <div
               className={`pointer-events-none absolute -right-10 -top-10 h-48 w-48 rounded-full bg-gradient-to-br ${roleTheme.gradient} opacity-10 blur-2xl`}
             />
             <CardContent className="flex flex-col items-center gap-6 p-8">
               {/* Avatar */}
-              <div className="relative">
+              <div className="relative group cursor-pointer" onClick={() => fileInputRef.current?.click()}>
                 <div
-                  className={`absolute inset-0 rounded-full bg-gradient-to-br ${roleTheme.gradient} opacity-20 blur-xl`}
+                  className={`absolute inset-0 rounded-full bg-gradient-to-br ${roleTheme.gradient} opacity-20 blur-xl group-hover:opacity-40 transition-opacity`}
                 />
-                <div className="relative rounded-full border-4 border-white bg-slate-100 p-1 shadow-xl dark:border-border dark:bg-black/30">
+                <div className="relative rounded-full border-4 border-white bg-slate-100 p-1 shadow-xl dark:border-border dark:bg-black/30 overflow-hidden">
                   <Avatar className="h-24 w-24">
+                    {user.profilePic && user.profilePic !== "/user.jpg" && <AvatarImage src={user.profilePic} className="object-cover" />}
                     <AvatarFallback
                       className={`bg-gradient-to-br ${roleTheme.gradient} text-3xl font-black text-white`}
                     >
                       {initials}
                     </AvatarFallback>
                   </Avatar>
+                  
+                  {/* Hover overlay for upload */}
+                  <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded-full m-1">
+                    {uploadingAvatar ? (
+                      <Loader2 className="h-6 w-6 text-white animate-spin" />
+                    ) : (
+                      <Camera className="h-6 w-6 text-white" />
+                    )}
+                  </div>
                 </div>
                 {/* Online indicator */}
                 <div className="absolute bottom-1 right-1 flex h-5 w-5 items-center justify-center rounded-full border-2 border-white bg-emerald-500 dark:border-card">
                   <div className="h-2 w-2 animate-ping rounded-full bg-emerald-200 opacity-75" />
                 </div>
+                
+                <input 
+                  type="file" 
+                  ref={fileInputRef} 
+                  className="hidden" 
+                  accept="image/jpeg,image/png,image/webp,image/gif"
+                  onChange={handleAvatarUpload}
+                />
               </div>
 
               <div className="text-center">
@@ -235,56 +366,134 @@ export default function ProfilePage() {
           </Card>
         </Fade>
 
-        {/* RIGHT: Security */}
+        {/* RIGHT: Details & Security */}
         <div className="space-y-6 lg:col-span-2">
-          {/* Suggested Features Banner */}
+          
+          {/* Account Details & Bio */}
           <Fade delay={0.08}>
-            <Card className="border-amber-200/70 bg-amber-50/60 dark:border-amber-900/40 dark:bg-amber-950/20">
-              <CardContent className="flex items-start gap-4 p-4">
-                <div className="mt-0.5 rounded-full bg-amber-100 p-2 text-amber-600 dark:bg-amber-900/40 dark:text-amber-400">
-                  <AlertCircle className="h-5 w-5" />
+            <Card className="border-slate-200 shadow-sm dark:border-border dark:bg-card">
+              <CardHeader className="pb-4">
+                <CardTitle className="flex items-center gap-2 text-base">
+                  <User className="h-5 w-5 text-blue-500" />
+                  Account Details
+                </CardTitle>
+                <CardDescription>Update your personal information</CardDescription>
+              </CardHeader>
+              <CardContent className="grid grid-cols-1 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <Label className="text-xs text-muted-foreground">Username</Label>
+                    <Input 
+                      value={username} 
+                      onChange={(e) => setUsername(e.target.value)}
+                      className="bg-slate-50 dark:bg-black/20" 
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label className="text-xs text-muted-foreground">Email Address</Label>
+                    <Input value={user.email} readOnly className="bg-slate-50 dark:bg-black/20 opacity-70" />
+                  </div>
                 </div>
+                
+                <div className="space-y-1.5">
+                  <Label className="text-xs text-muted-foreground">Bio</Label>
+                  <Textarea 
+                    value={bio} 
+                    onChange={(e) => setBio(e.target.value)}
+                    placeholder="Tell us a little about yourself..."
+                    className="resize-none h-24 bg-slate-50 dark:bg-black/20" 
+                  />
+                </div>
+                
                 <div>
-                  <h4 className="text-sm font-semibold text-amber-800 dark:text-amber-300">
-                    Suggested Improvements
-                  </h4>
-                  <ul className="mt-1 space-y-1 text-xs text-amber-700 dark:text-amber-400">
-                    <li>• Enable 2-Factor Authentication for added security</li>
-                    <li>• Upload a profile picture to personalize your account</li>
-                    <li>• Set notification preferences for emails and alerts</li>
-                    <li>• Add a recovery email or phone number</li>
-                  </ul>
+                  <Button
+                    onClick={handleUpdateProfile}
+                    disabled={profileLoading || !username}
+                    className="mt-2 gap-2 bg-blue-600 text-white hover:bg-blue-700"
+                  >
+                    {profileLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+                    {profileLoading ? "Saving..." : "Save Profile"}
+                  </Button>
                 </div>
               </CardContent>
             </Card>
           </Fade>
-
-          {/* Account Info */}
+          
+          {/* Settings & Preferences */}
           <Fade delay={0.12}>
             <Card className="border-slate-200 shadow-sm dark:border-border dark:bg-card">
               <CardHeader className="pb-4">
                 <CardTitle className="flex items-center gap-2 text-base">
-                  <User className="h-5 w-5 text-emerald-500" />
-                  Account Details
+                  <Settings2 className="h-5 w-5 text-purple-500" />
+                  Preferences & Security
                 </CardTitle>
-                <CardDescription>Your account information (read-only)</CardDescription>
+                <CardDescription>Manage your account settings</CardDescription>
               </CardHeader>
-              <CardContent className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <div className="space-y-1.5">
-                  <Label className="text-xs text-muted-foreground">Username</Label>
-                  <Input value={user.username} readOnly className="bg-slate-50 dark:bg-black/20" />
+              <CardContent className="space-y-6">
+                
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                  {/* Notifications */}
+                  <div className="space-y-4">
+                    <h4 className="text-sm font-semibold text-slate-800 dark:text-slate-200">Notifications</h4>
+                    
+                    <div className="flex items-center justify-between">
+                      <div className="space-y-0.5">
+                        <Label className="text-sm font-medium">Email Notifications</Label>
+                        <p className="text-xs text-muted-foreground">Receive daily summaries.</p>
+                      </div>
+                      <Switch checked={emailNotifs} onCheckedChange={setEmailNotifs} />
+                    </div>
+                    
+                    <div className="flex items-center justify-between">
+                      <div className="space-y-0.5">
+                        <Label className="text-sm font-medium">Push Notifications</Label>
+                        <p className="text-xs text-muted-foreground">Get alerted immediately.</p>
+                      </div>
+                      <Switch checked={pushNotifs} onCheckedChange={setPushNotifs} />
+                    </div>
+                    
+                    <div className="flex items-center justify-between">
+                      <div className="space-y-0.5">
+                        <Label className="text-sm font-medium">Marketing Emails</Label>
+                        <p className="text-xs text-muted-foreground">Offers and newsletters.</p>
+                      </div>
+                      <Switch checked={marketing} onCheckedChange={setMarketing} />
+                    </div>
+                  </div>
+                  
+                  {/* Security & Privacy */}
+                  <div className="space-y-4">
+                    <h4 className="text-sm font-semibold text-slate-800 dark:text-slate-200">Privacy & Security</h4>
+                    
+                    <div className="flex items-center justify-between">
+                      <div className="space-y-0.5">
+                        <Label className="text-sm font-medium">Profile Visibility</Label>
+                        <p className="text-xs text-muted-foreground">Allow others to see your profile.</p>
+                      </div>
+                      <Switch checked={visibility} onCheckedChange={setVisibility} />
+                    </div>
+                    
+                    <div className="flex items-center justify-between">
+                      <div className="space-y-0.5 flex items-center gap-2">
+                        <Label className="text-sm font-medium">Two-Factor Auth</Label>
+                        <Badge variant="outline" className="text-[9px] px-1 py-0 h-4">Recommended</Badge>
+                      </div>
+                      <Switch checked={twoFactor} onCheckedChange={setTwoFactor} />
+                    </div>
+                  </div>
                 </div>
-                <div className="space-y-1.5">
-                  <Label className="text-xs text-muted-foreground">Email Address</Label>
-                  <Input value={user.email} readOnly className="bg-slate-50 dark:bg-black/20" />
-                </div>
-                <div className="space-y-1.5">
-                  <Label className="text-xs text-muted-foreground">Account Type</Label>
-                  <Input value={user.accountType} readOnly className="bg-slate-50 dark:bg-black/20" />
-                </div>
-                <div className="space-y-1.5">
-                  <Label className="text-xs text-muted-foreground">Account ID</Label>
-                  <Input value={user.accountId} readOnly className="font-mono text-xs bg-slate-50 dark:bg-black/20" />
+                
+                <Separator className="dark:bg-border" />
+                
+                <div>
+                  <Button
+                    onClick={handleUpdateSettings}
+                    disabled={settingsLoading}
+                    className="mt-2 gap-2 bg-purple-600 text-white hover:bg-purple-700"
+                  >
+                    {settingsLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+                    {settingsLoading ? "Saving..." : "Save Preferences"}
+                  </Button>
                 </div>
               </CardContent>
             </Card>

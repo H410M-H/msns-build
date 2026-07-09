@@ -14,6 +14,8 @@ import {
 import { Button } from "~/components/ui/button";
 import { Badge } from "~/components/ui/badge";
 import { Checkbox } from "~/components/ui/checkbox";
+import { Input } from "~/components/ui/input";
+import { Label } from "~/components/ui/label";
 import {
   CheckCircle,
   Clock,
@@ -101,6 +103,15 @@ export function PayrollTable({ month, year }: PayrollTableProps) {
   const [isDownloading, setIsDownloading] = useState(false);
   const [generatingId, setGeneratingId] = useState<string | null>(null);
   const [isBulkGenerating, setIsBulkGenerating] = useState(false);
+
+  // Pay Dialog State
+  const [payRecord, setPayRecord] = useState<SalaryRecord | null>(null);
+  const [payForm, setPayForm] = useState({
+    amount: 0,
+    allowances: 0,
+    deductions: 0,
+    bonus: 0,
+  });
 
   // State for Annual Summary
   const [annualEmployee, setAnnualEmployee] = useState<{
@@ -257,8 +268,65 @@ export function PayrollTable({ month, year }: PayrollTableProps) {
     }
   };
 
-  const handlePay = (id: string) => {
-    paySalaryMutation.mutate({ id, status: "PAID", paymentDate: new Date() });
+  const handlePayClick = (salary: SalaryRecord) => {
+    setPayRecord(salary);
+    setPayForm({
+      amount: salary.amount,
+      allowances: salary.allowances ?? 0,
+      deductions: salary.deductions ?? 0,
+      bonus: salary.bonus ?? 0,
+    });
+  };
+
+  const handleBaseChange = (val: string) => {
+    const amount = Number(val);
+    setPayForm((prev) => ({ ...prev, amount }));
+  };
+
+  const handleAllowancesChange = (val: string) => {
+    const allowances = Number(val);
+    setPayForm((prev) => ({ ...prev, allowances }));
+  };
+
+  const handleBonusChange = (val: string) => {
+    const bonus = Number(val);
+    setPayForm((prev) => ({ ...prev, bonus }));
+  };
+
+  const handleDeductionsChange = (val: string) => {
+    const deductions = Number(val);
+    setPayForm((prev) => ({ ...prev, deductions }));
+  };
+
+  const handleNetPayableChange = (val: string) => {
+    const newNet = Number(val);
+    const diff = newNet - (payForm.amount + payForm.allowances);
+    let bonus = 0;
+    let deductions = 0;
+    if (diff > 0) {
+      bonus = diff;
+    } else if (diff < 0) {
+      deductions = Math.abs(diff);
+    }
+    setPayForm((prev) => ({
+      ...prev,
+      bonus,
+      deductions,
+    }));
+  };
+
+  const handlePaySubmit = () => {
+    if (!payRecord) return;
+    paySalaryMutation.mutate({
+      id: payRecord.id,
+      status: "PAID",
+      paymentDate: new Date(),
+      amount: payForm.amount,
+      allowances: payForm.allowances,
+      deductions: payForm.deductions,
+      bonus: payForm.bonus,
+    });
+    setPayRecord(null);
   };
 
   const handleDelete = (id: string) => {
@@ -602,7 +670,7 @@ export function PayrollTable({ month, year }: PayrollTableProps) {
                                 size="sm"
                                 variant="outline"
                                 className="h-7 gap-1.5 border-emerald-200 bg-white text-xs text-emerald-600 hover:bg-emerald-50 hover:text-emerald-700 dark:border-emerald-500/30 dark:bg-transparent dark:text-emerald-400 dark:hover:bg-emerald-500/10 dark:hover:text-emerald-300"
-                                onClick={() => handlePay(salary.id)}
+                                onClick={() => handlePayClick(salary)}
                               >
                                 <Banknote className="h-3.5 w-3.5" />
                                 Pay
@@ -799,7 +867,65 @@ export function PayrollTable({ month, year }: PayrollTableProps) {
               ) : (
                 <Download className="h-4 w-4" />
               )}
-              Download PDF
+              {isDownloading ? "Generating..." : "Download PDF"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Pay Salary Dialog */}
+      <Dialog open={!!payRecord} onOpenChange={(open) => !open && setPayRecord(null)}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Process Salary Payment</DialogTitle>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid gap-2">
+              <Label>Base Salary (PKR)</Label>
+              <Input
+                type="number"
+                value={payForm.amount}
+                onChange={(e) => handleBaseChange(e.target.value)}
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label>Allowances (PKR)</Label>
+              <Input
+                type="number"
+                value={payForm.allowances}
+                onChange={(e) => handleAllowancesChange(e.target.value)}
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label>Bonus (PKR)</Label>
+              <Input
+                type="number"
+                value={payForm.bonus}
+                onChange={(e) => handleBonusChange(e.target.value)}
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label>Deductions (PKR)</Label>
+              <Input
+                type="number"
+                value={payForm.deductions}
+                onChange={(e) => handleDeductionsChange(e.target.value)}
+              />
+            </div>
+            <div className="grid gap-2 mt-2">
+              <Label className="text-emerald-700 font-semibold dark:text-emerald-400">Net Payable (PKR) - Auto Calculates Bonus/Deduction</Label>
+              <Input
+                type="number"
+                className="font-bold text-emerald-700 border-emerald-500/50 bg-emerald-50/50 dark:text-emerald-400 dark:bg-emerald-950/20"
+                value={payForm.amount + payForm.allowances + payForm.bonus - payForm.deductions}
+                onChange={(e) => handleNetPayableChange(e.target.value)}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setPayRecord(null)}>Cancel</Button>
+            <Button onClick={handlePaySubmit} className="bg-emerald-600 hover:bg-emerald-700 text-white">
+              Confirm Payment
             </Button>
           </DialogFooter>
         </DialogContent>

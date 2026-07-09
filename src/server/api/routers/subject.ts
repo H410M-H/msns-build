@@ -323,8 +323,18 @@ export const subjectRouter = createTRPCRouter({
           });
         }
 
-        await ctx.db.subject.delete({
-          where: { subjectId: input.subjectId },
+        await ctx.db.$transaction(async (tx) => {
+          await tx.subject.delete({
+            where: { subjectId: input.subjectId },
+          });
+
+          await tx.broadcast.create({
+            data: {
+              router: "subject.deleteSubject",
+              action: "DELETE",
+              message: `Deleted subject: ${existingSubject.subjectName}`,
+            },
+          });
         });
 
         return {

@@ -205,10 +205,70 @@ export const ClassRouter = createTRPCRouter({
     .input(z.object({ classIds: z.array(z.string().cuid()) }))
     .mutation<{ count: number }>(async ({ ctx, input }) => {
       try {
-        const result = await ctx.db.grades.deleteMany({
+        const classes = await ctx.db.grades.findMany({
           where: { classId: { in: input.classIds } },
         });
-        return { count: result.count };
+
+        let deletedCount = 0;
+
+        await ctx.db.$transaction(async (tx) => {
+          for (const classId of input.classIds) {
+            // Delete related Timetable entries
+            await tx.timetable.deleteMany({ where: { classId } });
+            
+            // Delete related ClassSubjects (Marks and ExamResults will fail if not deleted first)
+            const classSubjects = await tx.classSubject.findMany({ where: { classId } });
+            const csIds = classSubjects.map(cs => cs.csId);
+            if (csIds.length > 0) {
+              await tx.marks.deleteMany({ where: { classSubjectId: { in: csIds } } });
+              await tx.subjectDiary.deleteMany({ where: { classSubjectId: { in: csIds } } });
+              await tx.classSubject.deleteMany({ where: { classId } });
+            }
+
+            // Delete StudentClass relations
+            await tx.studentClass.deleteMany({ where: { classId } });
+
+            // Delete ReportCard
+            const reportCards = await tx.reportCard.findMany({ where: { classId } });
+            const rcIds = reportCards.map(rc => rc.reportCardId);
+            if (rcIds.length > 0) {
+              await tx.reportCardDetail.deleteMany({ where: { reportCardId: { in: rcIds } } });
+              await tx.reportCard.deleteMany({ where: { classId } });
+            }
+
+            // Delete PromotionHistory (as from or to)
+            await tx.promotionHistory.deleteMany({
+              where: { OR: [{ fromClassId: classId }, { toClassId: classId }] }
+            });
+            
+            // Delete BulkPromotionBatch (as from or to)
+            const bulkBatches = await tx.bulkPromotionBatch.findMany({
+              where: { OR: [{ fromClassId: classId }, { toClassId: classId }] }
+            });
+            const batchIds = bulkBatches.map(b => b.batchId);
+            if (batchIds.length > 0) {
+              await tx.bulkPromotionBatchItem.deleteMany({ where: { batchId: { in: batchIds } } });
+              await tx.bulkPromotionBatch.deleteMany({ where: { batchId: { in: batchIds } } });
+            }
+          }
+
+          const result = await tx.grades.deleteMany({
+            where: { classId: { in: input.classIds } },
+          });
+          deletedCount = result.count;
+
+          for (const cls of classes) {
+            await tx.broadcast.create({
+              data: {
+                router: "class.deleteClassesByIds",
+                action: "DELETE",
+                message: `Deleted class: ${cls.grade} ${cls.section}`,
+              },
+            });
+          }
+        });
+
+        return { count: deletedCount };
       } catch (error) {
         console.error("Error in deleteClassesByIds:", error);
         throw new TRPCError({
@@ -356,11 +416,56 @@ export const ClassRouter = createTRPCRouter({
     .input(z.object({ csId: z.string() }))
     .mutation(async ({ ctx, input }) => {
       try {
-        await ctx.db.classSubject.delete({
-          where: { csId: input.csId }
+        const existing = await ctx.db.classSubject.findUnique({
+          where: { csId: input.csId },
+          include: { Subject: true, Grades: true },
         });
+
+        if (!existing) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Assigned subject not found",
+          });
+        }
+
+        await ctx.db.$transaction(async (tx) => {
+          // 1. Delete associated Marks
+          await tx.marks.deleteMany({
+            where: { classSubjectId: input.csId },
+          });
+
+          // 2. Delete SubjectDiaries
+          await tx.subjectDiary.deleteMany({
+            where: { classSubjectId: input.csId },
+          });
+
+          // 4. Delete Timetables
+          await tx.timetable.deleteMany({
+            where: {
+              classId: existing.classId,
+              subjectId: existing.subjectId,
+              sessionId: existing.sessionId,
+            },
+          });
+
+          // 5. Delete the ClassSubject assignment
+          await tx.classSubject.delete({
+            where: { csId: input.csId },
+          });
+
+          // 6. Log the action in Broadcast
+          await tx.broadcast.create({
+            data: {
+              router: "class.removeAssignedSubject",
+              action: "DELETE",
+              message: `Unassigned subject ${existing.Subject.subjectName} from class ${existing.Grades.grade} ${existing.Grades.section}`,
+            },
+          });
+        });
+
         return { success: true };
       } catch (error) {
+        if (error instanceof TRPCError) throw error;
         console.error("Error removing assigned subject:", error);
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",

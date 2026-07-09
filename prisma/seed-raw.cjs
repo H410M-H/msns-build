@@ -6,7 +6,7 @@ const client = new Client({
 
 const dataset = [
   {
-    grade: "Play Group",
+    grade: "PLAYGROUP",
     section: "ROSE",
     category: "Montessori",
     incharge: "ZOYA NAZ",
@@ -35,7 +35,7 @@ const dataset = [
     ]
   },
   {
-    grade: "Nursery",
+    grade: "NURSERY",
     section: "ROSE",
     category: "Montessori",
     incharge: "MAHNOOR KHALID",
@@ -50,7 +50,7 @@ const dataset = [
     ]
   },
   {
-    grade: "Prep",
+    grade: "PREP",
     section: "NONE",
     category: "Montessori",
     incharge: "FARAH NAZ",
@@ -73,7 +73,7 @@ const dataset = [
     ]
   },
   {
-    grade: "Class One",
+    grade: "ONE",
     section: "ROSE",
     category: "Primary",
     incharge: "MEHRAB TABASSUM",
@@ -87,7 +87,7 @@ const dataset = [
     ]
   },
   {
-    grade: "Class Two",
+    grade: "TWO",
     section: "ROSE",
     category: "Primary",
     incharge: "MEHRAB TABASUM",
@@ -104,7 +104,7 @@ const dataset = [
     ]
   },
   {
-    grade: "Class Three",
+    grade: "THREE",
     section: "NONE",
     category: "Primary",
     incharge: "MALAIKA SHAHID",
@@ -120,7 +120,7 @@ const dataset = [
     ]
   },
   {
-    grade: "Class Four",
+    grade: "FOUR",
     section: "NONE",
     category: "Primary",
     incharge: "MALAIKA SHAHID",
@@ -140,7 +140,7 @@ const dataset = [
     ]
   },
   {
-    grade: "Class Five",
+    grade: "FIVE",
     section: "NONE",
     category: "Primary",
     incharge: "KINZA NOREEN",
@@ -158,7 +158,7 @@ const dataset = [
     ]
   },
   {
-    grade: "Class Six",
+    grade: "SIX",
     section: "ROSE",
     category: "Middle",
     incharge: "LARAIB SULTAN",
@@ -175,7 +175,7 @@ const dataset = [
     ]
   },
   {
-    grade: "Class Seven",
+    grade: "SEVEN",
     section: "ROSE",
     category: "Middle",
     incharge: "HAMNA RAZZAQ",
@@ -198,7 +198,7 @@ const dataset = [
     ]
   },
   {
-    grade: "9th Junior",
+    grade: "PRE NINE",
     section: "ROSE",
     category: "SSC_I",
     incharge: "SIR WAQAS",
@@ -214,7 +214,7 @@ const dataset = [
     ]
   },
   {
-    grade: "9th Junior",
+    grade: "PRE NINE",
     section: "TULIP",
     category: "SSC_I",
     incharge: "AMINAH NOOR",
@@ -236,7 +236,7 @@ const dataset = [
     ]
   },
   {
-    grade: "9th Senior",
+    grade: "NINE",
     section: "ROSE",
     category: "SSC_I",
     incharge: "ESHA MUNIR",
@@ -251,7 +251,7 @@ const dataset = [
     ]
   },
   {
-    grade: "9th Senior",
+    grade: "NINE",
     section: "TULIP",
     category: "SSC_I",
     incharge: "SHAGUFTA TAWAKUL",
@@ -273,7 +273,7 @@ const dataset = [
     ]
   },
   {
-    grade: "10th",
+    grade: "TEN",
     section: "ROSE",
     category: "SSC_II",
     incharge: "M. REHAN YOUNUS",
@@ -293,7 +293,7 @@ const dataset = [
     ]
   },
   {
-    grade: "10th",
+    grade: "TEN",
     section: "TULIP",
     category: "SSC_II",
     incharge: "FAIZA MUSHTAQ",
@@ -535,9 +535,9 @@ function getSubjectMaxMarks(className, subjectName) {
 
   if (normClass.includes("PLAY GROUP") || normClass.includes("NURSERY") || normClass.includes("PREP")) {
     if (
-      normName.includes("READING") || 
-      normName.includes("ORAL") || 
-      normName === "DRAWING" || 
+      normName.includes("READING") ||
+      normName.includes("ORAL") ||
+      normName === "DRAWING" ||
       normName.includes("WORLD AROUND ME")
     ) {
       return 50;
@@ -578,7 +578,7 @@ async function main() {
       )
     `);
     await client.query('DELETE FROM "Exam" WHERE "sessionId" = \'session-2025-2026\'');
-    
+
     await client.query('DELETE FROM "StudentClass" WHERE "sessionId" = \'session-2025-2026\'');
     await client.query('DELETE FROM "ClassSubject" WHERE "sessionId" = \'session-2025-2026\'');
     

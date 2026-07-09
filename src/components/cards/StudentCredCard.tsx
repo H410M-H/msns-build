@@ -19,13 +19,14 @@ import {
   Filter,
   ChevronLeft,
   ChevronRight,
+  User,
 } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Input } from "~/components/ui/input";
 import { Button } from "~/components/ui/button";
 import { CSVUploadDialog } from "../forms/student/FileInput";
 import { StudentEditDialog } from "../forms/student/StudentEdit";
 import Link from "next/link";
-import Image from "next/image";
 import type { Students } from "@prisma/client";
 import { toast } from "sonner";
 
@@ -143,15 +144,9 @@ export default function StudentCredDetails() {
   }
 
   return (
-    <div className="relative min-h-screen w-full bg-card">
-      {/* === GLOBAL GRID BACKGROUND === */}
-      <div className="pointer-events-none fixed inset-0 z-0 h-full w-full">
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(45,255,196,0.05)_1px,transparent_1px),linear-gradient(to_bottom,rgba(45,255,196,0.05)_1px,transparent_1px)] bg-[size:3rem_3rem] sm:bg-[size:4rem_4rem]" />
-        <div className="absolute inset-0 bg-gradient-to-br from-emerald-900/20 via-slate-950/80 to-slate-950" />
-      </div>
-
+    <div className="relative w-full">
       {/* === CONTENT === */}
-      <div className="relative z-10 w-full space-y-6 p-4 pb-20">
+      <div className="relative z-10 w-full space-y-6 pb-20">
         {/* === Header Controls === */}
         <div className="sticky top-4 z-40 flex flex-col items-stretch justify-between gap-4 rounded-2xl border border-emerald-500/20 bg-card p-4 shadow-2xl backdrop-blur-xl transition-all duration-300 lg:flex-row lg:items-center">
           {/* Search Bar */}
@@ -256,25 +251,21 @@ export default function StudentCredDetails() {
                       <div className="mb-5 flex items-start gap-4">
                         {/* Profile Image */}
                         <div className="relative shrink-0">
-                          {isValidImageSrc(student.profilePic) ? (
-                            <div className="relative h-16 w-16 overflow-hidden rounded-2xl border-2 border-emerald-500/20 shadow-lg transition-colors group-hover:border-emerald-500/50 sm:h-20 sm:w-20">
-                              <Image
+                          <Avatar className="h-16 w-16 rounded-2xl border-2 border-emerald-500/20 shadow-lg transition-all duration-300 group-hover:border-emerald-500/50 group-hover:shadow-emerald-500/20 sm:h-20 sm:w-20">
+                            {isValidImageSrc(student.profilePic) && (
+                              <AvatarImage
                                 src={student.profilePic!}
                                 alt={student.studentName}
-                                fill
                                 className="object-cover transition-transform duration-700 group-hover:scale-110"
                               />
-                            </div>
-                          ) : (
-                            <div className="flex h-16 w-16 items-center justify-center rounded-2xl border-2 border-slate-700 bg-muted shadow-inner transition-colors group-hover:border-emerald-500/30 sm:h-20 sm:w-20">
-                              <span className="text-2xl font-bold text-muted-foreground transition-colors group-hover:text-emerald-400">
-                                {student.studentName.charAt(0)}
-                              </span>
-                            </div>
-                          )}
+                            )}
+                            <AvatarFallback className="rounded-2xl bg-muted/80 backdrop-blur-sm">
+                              <User className="h-8 w-8 text-emerald-500/50 transition-colors group-hover:text-emerald-400" />
+                            </AvatarFallback>
+                          </Avatar>
                           {/* Status Indicator */}
                           <div
-                            className={`absolute -bottom-1 -right-1 h-4 w-4 rounded-full border-2 border-slate-900 shadow-sm ${student.isAssign ? "bg-emerald-500 shadow-emerald-500/50" : "bg-slate-500"}`}
+                            className={`absolute -bottom-1 -right-1 h-4 w-4 rounded-full border-2 border-card shadow-sm transition-colors ${student.isAssign ? "bg-emerald-500 shadow-emerald-500/50" : "bg-slate-500"}`}
                           />
                         </div>
 
@@ -339,25 +330,25 @@ export default function StudentCredDetails() {
                         <div className="flex gap-2">
                           {/* Edit Button */}
                           <Button
-                            size="sm"
+                            size="icon"
                             variant="ghost"
                             onClick={() => setEditingStudent(student)}
-                            className="h-8 w-8 rounded-lg border border-emerald-500/20 bg-emerald-900/10 p-0 text-emerald-400 transition-all hover:bg-emerald-600/20 hover:text-foreground"
+                            className="h-10 w-10 rounded-xl border border-emerald-500/20 bg-emerald-900/10 text-emerald-400 transition-all hover:bg-emerald-600/20 hover:text-foreground"
                           >
-                            <Pencil className="h-3.5 w-3.5" />
+                            <Pencil className="h-4 w-4" />
                           </Button>
                           {/* Delete Button */}
                           <Button
-                            size="sm"
+                            size="icon"
                             variant="ghost"
                             onClick={() => handleDelete(student.studentId, student.studentName)}
                             disabled={deleteMutation.isPending}
-                            className="h-8 w-8 rounded-lg border border-red-500/20 bg-red-900/10 p-0 text-red-400 transition-all hover:bg-red-600/20 hover:text-foreground disabled:opacity-50"
+                            className="h-10 w-10 rounded-xl border border-red-500/20 bg-red-900/10 text-red-400 transition-all hover:bg-red-600/20 hover:text-foreground disabled:opacity-50"
                           >
                             {deleteMutation.isPending ? (
-                              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                              <Loader2 className="h-4 w-4 animate-spin" />
                             ) : (
-                              <Trash2 className="h-3.5 w-3.5" />
+                              <Trash2 className="h-4 w-4" />
                             )}
                           </Button>
                         </div>

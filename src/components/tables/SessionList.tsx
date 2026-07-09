@@ -5,6 +5,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { cn } from "~/lib/utils";
 import { api } from "~/trpc/react";
+import { useToast } from "~/hooks/use-toast";
 
 // --- Components ---
 import { Button } from "~/components/ui/button";
@@ -32,6 +33,7 @@ import {
   CalendarClock,
   ClipboardList,
   FilterX,
+  Power,
 } from "lucide-react";
 
 // Helper to format dates cleanly
@@ -54,6 +56,29 @@ export const SessionList = () => {
     refetch,
     isRefetching,
   } = api.session.getSessions.useQuery();
+
+  const utils = api.useUtils();
+  const { toast } = useToast();
+
+  const completeSession = api.session.setSessionCompleted.useMutation({
+    onSuccess: () => {
+      toast({ title: "Success", description: "Session marked as completed." });
+      void utils.session.getSessions.invalidate();
+    },
+    onError: (error) => {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    }
+  });
+
+  const activateSession = api.session.setActiveSession.useMutation({
+    onSuccess: () => {
+      toast({ title: "Success", description: "Session activated successfully." });
+      void utils.session.getSessions.invalidate();
+    },
+    onError: (error) => {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    }
+  });
 
   const filteredSessions = sessionList.filter((session) =>
     session.sessionName.toLowerCase().includes(searchTerm.toLowerCase()),
@@ -181,12 +206,29 @@ export const SessionList = () => {
 
                 <div className="flex items-start justify-between pr-8">
                   <div className="space-y-2">
-                    <Badge
-                      variant="secondary"
-                      className="mb-1 border border-emerald-200 bg-emerald-100 px-2 py-0.5 text-[10px] uppercase tracking-wide text-emerald-700 hover:bg-emerald-200 dark:border-emerald-500/20 dark:bg-emerald-500/10 dark:text-emerald-400"
-                    >
-                      Active
-                    </Badge>
+                    <div className="flex items-center gap-2 mb-1">
+                      <Badge
+                        variant="secondary"
+                        className={cn(
+                          "border px-2 py-0.5 text-[10px] uppercase tracking-wide",
+                          session.isActive
+                            ? "border-emerald-200 bg-emerald-100 text-emerald-700 hover:bg-emerald-200 dark:border-emerald-500/20 dark:bg-emerald-500/10 dark:text-emerald-400"
+                            : "border-slate-200 bg-slate-100 text-slate-700 hover:bg-slate-200 dark:border-slate-500/20 dark:bg-slate-500/10 dark:text-slate-400"
+                        )}
+                      >
+                        {session.isActive ? "Active" : "Completed"}
+                      </Badge>
+                      <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        className="h-5 w-5 text-muted-foreground hover:text-emerald-600 dark:hover:text-emerald-400"
+                        onClick={() => session.isActive ? completeSession.mutate({ sessionId: session.sessionId }) : activateSession.mutate({ sessionId: session.sessionId })}
+                        disabled={completeSession.isPending || activateSession.isPending}
+                        title={session.isActive ? "Mark as Completed" : "Mark as Active"}
+                      >
+                        <Power className="h-3 w-3" />
+                      </Button>
+                    </div>
                     <h3 className="line-clamp-1 text-lg font-bold tracking-tight text-slate-900 transition-colors group-hover:text-emerald-700 dark:text-foreground dark:group-hover:text-emerald-300">
                       {session.sessionName}
                     </h3>

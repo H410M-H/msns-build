@@ -167,7 +167,10 @@ const data: NavigationConfig = {
 
   NONE: [],
   ALL: [],
-  WORKER: [],
+  WORKER: [
+    { title: "Dashboard", url: "/worker", icon: LayoutDashboard },
+    { title: "Profile", url: "/admin/users/profile", icon: User },
+  ],
 };
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {

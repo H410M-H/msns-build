@@ -1,7 +1,7 @@
 // File: src/components/tables/EmployeeTable.tsx
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { api } from "~/trpc/react";
@@ -215,8 +215,13 @@ export function EmployeeTable() {
     },
   ];
 
+  const activeEmployees = useMemo(() => {
+    if (!employees) return [];
+    return (employees as EmployeeData[]).filter((e) => e.status !== "Left");
+  }, [employees]);
+
   const table = useReactTable({
-    data: (employees as EmployeeData[]) ?? [],
+    data: activeEmployees,
     columns,
     onSortingChange: setSorting,
     getCoreRowModel: getCoreRowModel(),

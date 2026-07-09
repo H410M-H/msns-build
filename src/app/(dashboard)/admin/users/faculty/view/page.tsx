@@ -1,19 +1,47 @@
 "use client";
 
-import { useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { PageHeader } from "~/components/blocks/nav/PageHeader";
 import { EmployeeTable } from "~/components/tables/EmployeeTable";
-import SalaryPage from "../../../erp/revenue/salary/page";
-import AttendancePage from "../../../attendance/page";
+import { SalaryContent } from "../../../erp/revenue/salary/SalaryContent";
+import { EmployeeAttendanceContent } from "../../../sessions/attendance/employees/EmployeeAttendanceContent";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
-import { Users, UserCog, DollarSign, CheckCircle2Icon, ShieldCheck } from "lucide-react";
+import { Users, UserCog, DollarSign, CheckCircle2Icon, ShieldCheck, Calendar, BookOpen } from "lucide-react";
 import { api } from "~/trpc/react";
 import { GradientStatCard } from "~/components/shared/GradientStatCard";
 import { PageExportButton } from "~/components/shared/PageExportButton";
 import { Separator } from "~/components/ui/separator";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
+
+const MONTHS = [
+  { value: "1", label: "January" },
+  { value: "2", label: "February" },
+  { value: "3", label: "March" },
+  { value: "4", label: "April" },
+  { value: "5", label: "May" },
+  { value: "6", label: "June" },
+  { value: "7", label: "July" },
+  { value: "8", label: "August" },
+  { value: "9", label: "September" },
+  { value: "10", label: "October" },
+  { value: "11", label: "November" },
+  { value: "12", label: "December" },
+];
 
 export default function EmployeesDashboard() {
   const { data: employees, isLoading } = api.employee.getEmployees.useQuery();
+  const { data: activeSession } = api.session.getActiveSession.useQuery();
+  const { data: sessions } = api.session.getSessions.useQuery();
+
+  const [selectedMonth, setSelectedMonth] = useState<string>(String(new Date().getMonth() + 1));
+  const [selectedYear, setSelectedYear] = useState<string>(String(new Date().getFullYear()));
+  const [selectedSession, setSelectedSession] = useState<string>("");
+
+  useEffect(() => {
+    if (activeSession && !selectedSession) {
+      setSelectedSession(activeSession.sessionId);
+    }
+  }, [activeSession, selectedSession]);
 
   const breadcrumbs = [
     { href: "/admin", label: "Dashboard" },
@@ -82,7 +110,50 @@ export default function EmployeesDashboard() {
                 Centralized hub for managing faculty credentials, processing salaries, and tracking daily attendance records.
               </p>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex flex-col items-end gap-2 sm:flex-row sm:items-center">
+              <div className="flex flex-wrap items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 p-1.5 shadow-inner dark:border-emerald-500/20 dark:bg-card">
+                <Select value={selectedSession} onValueChange={setSelectedSession}>
+                  <SelectTrigger className="w-[160px] border-slate-200 bg-white text-slate-700 dark:border-emerald-500/20 dark:bg-card dark:text-foreground">
+                    <BookOpen className="mr-2 h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+                    <SelectValue placeholder="Session" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {sessions?.map((s) => (
+                      <SelectItem key={s.sessionId} value={s.sessionId}>
+                        {s.sessionName}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+
+                <Select value={selectedMonth} onValueChange={setSelectedMonth}>
+                  <SelectTrigger className="w-[130px] border-slate-200 bg-white text-slate-700 dark:border-emerald-500/20 dark:bg-card dark:text-foreground">
+                    <Calendar className="mr-2 h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+                    <SelectValue placeholder="Month" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {MONTHS.map((m) => (
+                      <SelectItem key={m.value} value={m.value}>
+                        {m.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+
+                <Select value={selectedYear} onValueChange={setSelectedYear}>
+                  <SelectTrigger className="w-[100px] border-slate-200 bg-white text-slate-700 dark:border-emerald-500/20 dark:bg-card dark:text-foreground">
+                    <SelectValue placeholder="Year" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {[2024, 2025, 2026, 2027].map((y) => (
+                      <SelectItem key={y} value={String(y)}>
+                        {y}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
               <PageExportButton exportData={exportData} csvFilename="faculty-directory" />
             </div>
           </div>
@@ -159,8 +230,12 @@ export default function EmployeesDashboard() {
                 value="salaries"
                 className="mt-0 duration-500 animate-in fade-in slide-in-from-bottom-4 focus-visible:outline-none"
               >
-                <div className="rounded-xl border border-emerald-500/20 bg-card p-4 shadow-xl backdrop-blur-md sm:p-6">
-                  <SalaryPage />
+                <div className="rounded-xl border border-emerald-500/20 bg-card p-4 shadow-xl backdrop-blur-md sm:p-6 overflow-hidden">
+                  <SalaryContent 
+                    externalMonth={selectedMonth} 
+                    externalYear={selectedYear} 
+                    externalSessionId={selectedSession} 
+                  />
                 </div>
               </TabsContent>
 
@@ -168,8 +243,12 @@ export default function EmployeesDashboard() {
                 value="attendance"
                 className="mt-0 duration-500 animate-in fade-in slide-in-from-bottom-4 focus-visible:outline-none"
               >
-                <div className="rounded-xl border border-emerald-500/20 bg-card p-4 shadow-xl backdrop-blur-md sm:p-6">
-                  <AttendancePage />
+                <div className="rounded-xl border border-emerald-500/20 bg-card p-4 shadow-xl backdrop-blur-md sm:p-6 overflow-hidden">
+                  <EmployeeAttendanceContent 
+                    externalMonth={selectedMonth} 
+                    externalYear={selectedYear} 
+                    externalSessionId={selectedSession} 
+                  />
                 </div>
               </TabsContent>
             </div>

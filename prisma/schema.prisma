@@ -17,6 +17,7 @@ model User {
   username           String      @unique
   email              String      @unique
   bio                String?     @default("")
+  profilePic         String?     @default("/user.jpg")
   emailNotifications Boolean     @default(true)
   marketingEmails    Boolean     @default(false)
   profileVisibility  Boolean     @default(true)
@@ -83,6 +84,7 @@ model Employees {
   profilePic                 String?                   @default("/user.jpg")
   cv                         String?
   status                     String                    @default("Active")
+  leftDate                   DateTime?
   // v1.6 relations
   BioMetric                  BioMetric?
   ClassSubject               ClassSubject[]
@@ -1424,4 +1426,12 @@ enum LeaveTypeEnum {
 enum CostCentreStatus {
   Active
   Inactive
+}
+
+model Broadcast {
+  id        String   @id @default(cuid())
+  router    String
+  action    String
+  message   String
+  createdAt DateTime @default(now())
 }

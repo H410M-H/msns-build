@@ -18,12 +18,22 @@ import {
   User,
   Clock,
   MoreHorizontal,
+  Edit,
+  UserCircle,
 } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Input } from "~/components/ui/input";
 import { Button } from "~/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "~/components/ui/dropdown-menu";
 import { CSVUploadDialog } from "../forms/student/FileInput"; // Assuming shared or similar path
 import Link from "next/link";
-import Image from "next/image";
 
 // Keep local type or import from Prisma if available
 type Employee = {
@@ -40,6 +50,8 @@ type Employee = {
   mobileNo: string;
   profilePic?: string | null;
   residentialAddress: string;
+  status: string;
+  leftDate?: Date | null;
 };
 
 export default function EmployeeCredDetails() {
@@ -98,15 +110,9 @@ export default function EmployeeCredDetails() {
   }
 
   return (
-    <div className="relative min-h-screen w-full bg-card">
-      {/* === GLOBAL GRID BACKGROUND === */}
-      <div className="pointer-events-none fixed inset-0 z-0 h-full w-full">
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(45,255,196,0.05)_1px,transparent_1px),linear-gradient(to_bottom,rgba(45,255,196,0.05)_1px,transparent_1px)] bg-[size:3rem_3rem] sm:bg-[size:4rem_4rem]" />
-        <div className="absolute inset-0 bg-gradient-to-br from-emerald-900/20 via-slate-950/80 to-slate-950" />
-      </div>
-
+    <div className="relative w-full">
       {/* === CONTENT === */}
-      <div className="relative z-10 w-full space-y-6 p-4 pb-20">
+      <div className="relative z-10 w-full space-y-6 pb-20">
         {/* === Header Controls === */}
         <div className="sticky top-4 z-40 flex flex-col items-stretch justify-between gap-4 rounded-2xl border border-emerald-500/20 bg-card p-4 shadow-2xl backdrop-blur-xl transition-all duration-300 lg:flex-row lg:items-center">
           {/* Search Bar */}
@@ -210,39 +216,35 @@ export default function EmployeeCredDetails() {
                       <div className="mb-5 flex items-start gap-4">
                         {/* Profile Image */}
                         <div className="relative shrink-0">
-                          {isValidImageSrc(employee.profilePic) ? (
-                            <div className="relative h-16 w-16 overflow-hidden rounded-2xl border-2 border-emerald-500/20 shadow-lg transition-colors group-hover:border-emerald-500/50 sm:h-20 sm:w-20">
-                              <Image
+                          <Avatar className="h-16 w-16 rounded-2xl border-2 border-emerald-500/20 shadow-lg transition-all duration-300 group-hover:border-emerald-500/50 group-hover:shadow-emerald-500/20 sm:h-20 sm:w-20">
+                            {isValidImageSrc(employee.profilePic) && (
+                              <AvatarImage
                                 src={employee.profilePic!}
                                 alt={employee.employeeName}
-                                fill
                                 className="object-cover transition-transform duration-700 group-hover:scale-110"
                               />
-                            </div>
-                          ) : (
-                            <div className="flex h-16 w-16 items-center justify-center rounded-2xl border-2 border-slate-700 bg-muted shadow-inner transition-colors group-hover:border-emerald-500/30 sm:h-20 sm:w-20">
-                              <span className="text-2xl font-bold text-muted-foreground transition-colors group-hover:text-emerald-400">
-                                {employee.employeeName.charAt(0)}
-                              </span>
-                            </div>
-                          )}
+                            )}
+                            <AvatarFallback className="rounded-2xl bg-muted/80 backdrop-blur-sm">
+                              <User className="h-8 w-8 text-emerald-500/50 transition-colors group-hover:text-emerald-400" />
+                            </AvatarFallback>
+                          </Avatar>
                           {/* Active Indicator (assuming all shown are active for now) */}
-                          <div className="absolute -bottom-1 -right-1 h-4 w-4 rounded-full border-2 border-slate-900 bg-emerald-500 shadow-sm shadow-emerald-500/50" />
+                          <div className="absolute -bottom-1 -right-1 h-4 w-4 rounded-full border-2 border-card bg-emerald-500 shadow-sm shadow-emerald-500/50" />
                         </div>
 
                         {/* Name & Designation */}
                         <div className="min-w-0 flex-1 space-y-1 pt-1">
-                          <h2 className="truncate text-lg font-bold leading-tight text-foreground transition-colors group-hover:text-emerald-300">
+                          <h2 className="truncate text-lg font-bold leading-tight text-foreground transition-colors group-hover:text-emerald-600 dark:group-hover:text-emerald-300">
                             {employee.employeeName}
                           </h2>
-                          <div className="flex items-center gap-1.5 truncate text-sm font-medium text-emerald-400">
+                          <div className="flex items-center gap-1.5 truncate text-sm font-medium text-emerald-600 dark:text-emerald-400">
                             <Briefcase className="h-3.5 w-3.5" />
                             {employee.designation}
                           </div>
                           <div className="flex flex-wrap gap-2 pt-1">
                             <Badge
                               variant="outline"
-                              className="h-5 border-emerald-500/20 bg-emerald-500/5 px-2 text-[15px] text-pink-300/50"
+                              className="h-5 border-emerald-500/20 bg-emerald-500/5 px-2 text-[15px] text-emerald-700 dark:text-emerald-300"
                             >
                               ID: {employee.admissionNumber}
                             </Badge>
@@ -254,24 +256,32 @@ export default function EmployeeCredDetails() {
                       <div className="mb-4 grid flex-1 grid-cols-2 content-start gap-3 text-sm">
                         {/* Education */}
                         <div className="group/item col-span-2 flex items-center gap-2 rounded-lg border border-border bg-card p-2 transition-colors hover:border-emerald-500/20">
-                          <GraduationCap className="h-3.5 w-3.5 text-emerald-500/70 group-hover/item:text-emerald-400" />
+                          <GraduationCap className="h-3.5 w-3.5 text-emerald-600/70 group-hover/item:text-emerald-600 dark:text-emerald-500/70 dark:group-hover/item:text-emerald-400" />
                           <span className="truncate text-xs text-foreground sm:text-sm">
                             {employee.education}
                           </span>
                         </div>
 
-                        {/* Joining Date */}
+                        {/* Joining/Leaving Date */}
                         <div className="group/item col-span-1 flex items-center gap-2 rounded-lg border border-border bg-card p-2 transition-colors hover:border-emerald-500/20">
-                          <Clock className="h-3.5 w-3.5 text-emerald-500/70 group-hover/item:text-emerald-400" />
+                          <Clock className="h-3.5 w-3.5 text-emerald-600/70 group-hover/item:text-emerald-600 dark:text-emerald-500/70 dark:group-hover/item:text-emerald-400" />
                           <span className="truncate text-xs text-foreground sm:text-sm">
-                            Joined:{" "}
-                            {new Date(employee.doj).toLocaleDateString()}
+                            {employee.status === "Left" ? (
+                              <span className="text-red-500 dark:text-red-400 font-medium">
+                                Left: {employee.leftDate ? new Date(employee.leftDate).toLocaleDateString() : "N/A"}
+                              </span>
+                            ) : (
+                              <>
+                                Joined:{" "}
+                                {new Date(employee.doj).toLocaleDateString()}
+                              </>
+                            )}
                           </span>
                         </div>
 
                         {/* Gender */}
                         <div className="group/item col-span-1 flex items-center gap-2 rounded-lg border border-border bg-card p-2 transition-colors hover:border-emerald-500/20">
-                          <User className="h-3.5 w-3.5 text-emerald-500/70 group-hover/item:text-emerald-400" />
+                          <User className="h-3.5 w-3.5 text-emerald-600/70 group-hover/item:text-emerald-600 dark:text-emerald-500/70 dark:group-hover/item:text-emerald-400" />
                           <span className="truncate text-xs capitalize text-foreground sm:text-sm">
                             {employee.gender.toLowerCase()}
                           </span>
@@ -279,7 +289,7 @@ export default function EmployeeCredDetails() {
 
                         {/* Address */}
                         <div className="group/item col-span-2 flex items-center gap-2 rounded-lg border border-border bg-card p-2 transition-colors hover:border-emerald-500/20">
-                          <MapPin className="h-3.5 w-3.5 shrink-0 text-emerald-500/70 group-hover/item:text-emerald-400" />
+                          <MapPin className="h-3.5 w-3.5 shrink-0 text-emerald-600/70 group-hover/item:text-emerald-600 dark:text-emerald-500/70 dark:group-hover/item:text-emerald-400" />
                           <span
                             className="truncate text-xs text-foreground sm:text-sm"
                             title={employee.residentialAddress}
@@ -291,13 +301,13 @@ export default function EmployeeCredDetails() {
 
                       {/* Footer: Contacts & Actions */}
                       <div className="mt-auto flex items-center justify-between border-t border-emerald-500/10 pt-4">
-                        <div className="flex flex-col gap-1 text-xs text-yellow-400/70">
+                        <div className="flex flex-col gap-1 text-xs text-muted-foreground">
                           <div className="flex items-center gap-2">
-                            <Phone className="h-3 w-3 text-emerald-500/50" />
+                            <Phone className="h-3 w-3 text-emerald-600/70 dark:text-emerald-500/50" />
                             <span>{employee.mobileNo}</span>
                           </div>
                           <div className="flex items-center gap-2">
-                            <Mail className="h-3 w-3 text-emerald-500/50" />
+                            <Mail className="h-3 w-3 text-emerald-600/70 dark:text-emerald-500/50" />
                             <span className="max-w-[120px] truncate sm:max-w-none">
                               {employee.admissionNumber
                                 ? `${employee.admissionNumber.toLowerCase().replace(/\s/g, ".")}@msns.edu.pk`
@@ -307,14 +317,39 @@ export default function EmployeeCredDetails() {
                         </div>
 
                         <div className="flex gap-2 self-end">
-                          {/* Placeholder for actions */}
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            className="h-8 w-8 rounded-lg border border-emerald-500/20 bg-emerald-900/10 p-0 text-emerald-400 transition-all hover:bg-emerald-600/20 hover:text-foreground"
-                          >
-                            <MoreHorizontal className="h-4 w-4" />
-                          </Button>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button
+                                size="icon"
+                                variant="ghost"
+                                className="h-10 w-10 rounded-xl border border-emerald-500/20 bg-emerald-900/10 text-emerald-600 transition-all hover:bg-emerald-600/20 hover:text-emerald-700 dark:text-emerald-400 dark:hover:text-foreground"
+                              >
+                                <MoreHorizontal className="h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="w-48 rounded-xl">
+                              <DropdownMenuLabel>Card Actions</DropdownMenuLabel>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem asChild className="cursor-pointer">
+                                <Link href={`/admin/users/faculty/${employee.employeeId}/profile`}>
+                                  <UserCircle className="mr-2 h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+                                  <span>View Profile</span>
+                                </Link>
+                              </DropdownMenuItem>
+                              <DropdownMenuItem asChild className="cursor-pointer">
+                                <Link href={`/admin/users/faculty/${employee.employeeId}/profile`}>
+                                  <Edit className="mr-2 h-4 w-4 text-amber-600 dark:text-amber-400" />
+                                  <span>Edit Details</span>
+                                </Link>
+                              </DropdownMenuItem>
+                              <DropdownMenuItem asChild className="cursor-pointer">
+                                <Link href={`/admin/users/faculty/${employee.employeeId}`}>
+                                  <Clock className="mr-2 h-4 w-4 text-sky-600 dark:text-sky-400" />
+                                  <span>Attendance History</span>
+                                </Link>
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
                         </div>
                       </div>
                     </CardContent>

@@ -587,15 +587,41 @@ export const salaryRouter = createTRPCRouter({
         }
       }
 
+      let latestAssignments: { id: string }[];
+
+      if (searchTerm) {
+        latestAssignments = await ctx.db.$queryRaw`
+          SELECT DISTINCT ON ("employeeId") id
+          FROM "SalaryAssignment"
+          WHERE "employeeId" IN (
+            SELECT "employeeId" FROM "Employees" WHERE "employeeName" ILIKE ${'%' + searchTerm + '%'}
+          )
+          ORDER BY "employeeId", "assignedDate" DESC
+        `;
+      } else {
+        latestAssignments = await ctx.db.$queryRaw`
+          SELECT DISTINCT ON ("employeeId") id
+          FROM "SalaryAssignment"
+          ORDER BY "employeeId", "assignedDate" DESC
+        `;
+      }
+
+      const latestIds = latestAssignments.map((a) => a.id);
+      const filteredWhere: Prisma.SalaryAssignmentWhereInput = {
+        id: { in: latestIds },
+      };
+
       const [salaries, totalCount] = await Promise.all([
         ctx.db.salaryAssignment.findMany({
-          where,
+          where: filteredWhere,
           take: pageSize,
           skip: (page - 1) * pageSize,
           orderBy,
           include: { Employees: true, Sessions: true },
         }),
-        ctx.db.salaryAssignment.count({ where }),
+        ctx.db.salaryAssignment.count({
+          where: filteredWhere,
+        }),
       ]);
 
       return { salaries, totalCount };
