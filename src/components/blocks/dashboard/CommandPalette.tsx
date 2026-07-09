@@ -14,9 +14,49 @@ import {
   CommandShortcut,
 } from "~/components/ui/command";
 
+import { useSession } from "next-auth/react";
+
 export function CommandPalette() {
   const [open, setOpen] = React.useState(false);
   const router = useRouter();
+  const { data: session } = useSession();
+
+  const role = session?.user?.accountType ?? "NONE";
+
+  // Mapped URLs based on role to prevent 404s and permission issues
+  const sessionsUrl = React.useMemo(() => {
+    switch (role) {
+      case "ADMIN":
+      case "HEAD":
+      case "PRINCIPAL":
+        return "/admin/sessions";
+      case "CLERK":
+        return "/clerk/sessions";
+      case "TEACHER":
+        return "/teacher";
+      case "STUDENT":
+        return "/student/sessions/class";
+      default:
+        return "/";
+    }
+  }, [role]);
+
+  const revenueUrl = React.useMemo(() => {
+    switch (role) {
+      case "ADMIN":
+      case "HEAD":
+      case "PRINCIPAL":
+        return "/admin/erp/revenue";
+      case "CLERK":
+        return "/clerk/sessions/fee";
+      default:
+        return null;
+    }
+  }, [role]);
+
+  const profileUrl = React.useMemo(() => {
+    return role === "CLERK" ? "/clerk/users/profile" : "/admin/users/profile";
+  }, [role]);
 
   React.useEffect(() => {
     const down = (e: KeyboardEvent) => {
@@ -53,15 +93,19 @@ export function CommandPalette() {
         <CommandList>
           <CommandEmpty>No results found.</CommandEmpty>
           <CommandGroup heading="Suggestions">
-            <CommandItem onSelect={() => runCommand(() => router.push("/clerk/sessions"))}>
-              <Calendar className="mr-2 h-4 w-4" />
-              <span>Calendar / Sessions</span>
-            </CommandItem>
-            <CommandItem onSelect={() => runCommand(() => router.push("/clerk/revenue"))}>
-              <CreditCard className="mr-2 h-4 w-4" />
-              <span>Revenue & Billing</span>
-            </CommandItem>
-            <CommandItem onSelect={() => runCommand(() => router.push("/admin/users/profile"))}>
+            {role !== "NONE" && role !== "WORKER" && (
+              <CommandItem onSelect={() => runCommand(() => router.push(sessionsUrl))}>
+                <Calendar className="mr-2 h-4 w-4" />
+                <span>Calendar / Sessions</span>
+              </CommandItem>
+            )}
+            {revenueUrl && (
+              <CommandItem onSelect={() => runCommand(() => router.push(revenueUrl))}>
+                <CreditCard className="mr-2 h-4 w-4" />
+                <span>Revenue & Billing</span>
+              </CommandItem>
+            )}
+            <CommandItem onSelect={() => runCommand(() => router.push(profileUrl))}>
               <User className="mr-2 h-4 w-4" />
               <span>Profile Settings</span>
             </CommandItem>
