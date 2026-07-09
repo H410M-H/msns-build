@@ -278,6 +278,43 @@ export function PayrollTable({ month, year }: PayrollTableProps) {
     });
   };
 
+  const handleBaseChange = (val: string) => {
+    const amount = Number(val);
+    setPayForm((prev) => ({ ...prev, amount }));
+  };
+
+  const handleAllowancesChange = (val: string) => {
+    const allowances = Number(val);
+    setPayForm((prev) => ({ ...prev, allowances }));
+  };
+
+  const handleBonusChange = (val: string) => {
+    const bonus = Number(val);
+    setPayForm((prev) => ({ ...prev, bonus }));
+  };
+
+  const handleDeductionsChange = (val: string) => {
+    const deductions = Number(val);
+    setPayForm((prev) => ({ ...prev, deductions }));
+  };
+
+  const handleNetPayableChange = (val: string) => {
+    const newNet = Number(val);
+    const diff = newNet - (payForm.amount + payForm.allowances);
+    let bonus = 0;
+    let deductions = 0;
+    if (diff > 0) {
+      bonus = diff;
+    } else if (diff < 0) {
+      deductions = Math.abs(diff);
+    }
+    setPayForm((prev) => ({
+      ...prev,
+      bonus,
+      deductions,
+    }));
+  };
+
   const handlePaySubmit = () => {
     if (!payRecord) return;
     paySalaryMutation.mutate({
@@ -848,7 +885,7 @@ export function PayrollTable({ month, year }: PayrollTableProps) {
               <Input
                 type="number"
                 value={payForm.amount}
-                onChange={(e) => setPayForm({ ...payForm, amount: Number(e.target.value) })}
+                onChange={(e) => handleBaseChange(e.target.value)}
               />
             </div>
             <div className="grid gap-2">
@@ -856,7 +893,7 @@ export function PayrollTable({ month, year }: PayrollTableProps) {
               <Input
                 type="number"
                 value={payForm.allowances}
-                onChange={(e) => setPayForm({ ...payForm, allowances: Number(e.target.value) })}
+                onChange={(e) => handleAllowancesChange(e.target.value)}
               />
             </div>
             <div className="grid gap-2">
@@ -864,7 +901,7 @@ export function PayrollTable({ month, year }: PayrollTableProps) {
               <Input
                 type="number"
                 value={payForm.bonus}
-                onChange={(e) => setPayForm({ ...payForm, bonus: Number(e.target.value) })}
+                onChange={(e) => handleBonusChange(e.target.value)}
               />
             </div>
             <div className="grid gap-2">
@@ -872,14 +909,17 @@ export function PayrollTable({ month, year }: PayrollTableProps) {
               <Input
                 type="number"
                 value={payForm.deductions}
-                onChange={(e) => setPayForm({ ...payForm, deductions: Number(e.target.value) })}
+                onChange={(e) => handleDeductionsChange(e.target.value)}
               />
             </div>
-            <div className="mt-4 flex items-center justify-between rounded-lg border bg-slate-50 p-3 dark:bg-slate-900">
-              <span className="font-semibold text-slate-700 dark:text-slate-300">Net Payable:</span>
-              <span className="text-lg font-bold text-emerald-600 dark:text-emerald-400">
-                PKR {(payForm.amount + payForm.allowances + payForm.bonus - payForm.deductions).toLocaleString()}
-              </span>
+            <div className="grid gap-2 mt-2">
+              <Label className="text-emerald-700 font-semibold dark:text-emerald-400">Net Payable (PKR) - Auto Calculates Bonus/Deduction</Label>
+              <Input
+                type="number"
+                className="font-bold text-emerald-700 border-emerald-500/50 bg-emerald-50/50 dark:text-emerald-400 dark:bg-emerald-950/20"
+                value={payForm.amount + payForm.allowances + payForm.bonus - payForm.deductions}
+                onChange={(e) => handleNetPayableChange(e.target.value)}
+              />
             </div>
           </div>
           <DialogFooter>
