@@ -18,10 +18,20 @@ import {
   User,
   Clock,
   MoreHorizontal,
+  Edit,
+  UserCircle,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Input } from "~/components/ui/input";
 import { Button } from "~/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "~/components/ui/dropdown-menu";
 import { CSVUploadDialog } from "../forms/student/FileInput"; // Assuming shared or similar path
 import Link from "next/link";
 
@@ -40,6 +50,8 @@ type Employee = {
   mobileNo: string;
   profilePic?: string | null;
   residentialAddress: string;
+  status: string;
+  leftDate?: Date | null;
 };
 
 export default function EmployeeCredDetails() {
@@ -222,17 +234,17 @@ export default function EmployeeCredDetails() {
 
                         {/* Name & Designation */}
                         <div className="min-w-0 flex-1 space-y-1 pt-1">
-                          <h2 className="truncate text-lg font-bold leading-tight text-foreground transition-colors group-hover:text-emerald-300">
+                          <h2 className="truncate text-lg font-bold leading-tight text-foreground transition-colors group-hover:text-emerald-600 dark:group-hover:text-emerald-300">
                             {employee.employeeName}
                           </h2>
-                          <div className="flex items-center gap-1.5 truncate text-sm font-medium text-emerald-400">
+                          <div className="flex items-center gap-1.5 truncate text-sm font-medium text-emerald-600 dark:text-emerald-400">
                             <Briefcase className="h-3.5 w-3.5" />
                             {employee.designation}
                           </div>
                           <div className="flex flex-wrap gap-2 pt-1">
                             <Badge
                               variant="outline"
-                              className="h-5 border-emerald-500/20 bg-emerald-500/5 px-2 text-[15px] text-pink-300/50"
+                              className="h-5 border-emerald-500/20 bg-emerald-500/5 px-2 text-[15px] text-emerald-700 dark:text-emerald-300"
                             >
                               ID: {employee.admissionNumber}
                             </Badge>
@@ -244,24 +256,32 @@ export default function EmployeeCredDetails() {
                       <div className="mb-4 grid flex-1 grid-cols-2 content-start gap-3 text-sm">
                         {/* Education */}
                         <div className="group/item col-span-2 flex items-center gap-2 rounded-lg border border-border bg-card p-2 transition-colors hover:border-emerald-500/20">
-                          <GraduationCap className="h-3.5 w-3.5 text-emerald-500/70 group-hover/item:text-emerald-400" />
+                          <GraduationCap className="h-3.5 w-3.5 text-emerald-600/70 group-hover/item:text-emerald-600 dark:text-emerald-500/70 dark:group-hover/item:text-emerald-400" />
                           <span className="truncate text-xs text-foreground sm:text-sm">
                             {employee.education}
                           </span>
                         </div>
 
-                        {/* Joining Date */}
+                        {/* Joining/Leaving Date */}
                         <div className="group/item col-span-1 flex items-center gap-2 rounded-lg border border-border bg-card p-2 transition-colors hover:border-emerald-500/20">
-                          <Clock className="h-3.5 w-3.5 text-emerald-500/70 group-hover/item:text-emerald-400" />
+                          <Clock className="h-3.5 w-3.5 text-emerald-600/70 group-hover/item:text-emerald-600 dark:text-emerald-500/70 dark:group-hover/item:text-emerald-400" />
                           <span className="truncate text-xs text-foreground sm:text-sm">
-                            Joined:{" "}
-                            {new Date(employee.doj).toLocaleDateString()}
+                            {employee.status === "Left" ? (
+                              <span className="text-red-500 dark:text-red-400 font-medium">
+                                Left: {employee.leftDate ? new Date(employee.leftDate).toLocaleDateString() : "N/A"}
+                              </span>
+                            ) : (
+                              <>
+                                Joined:{" "}
+                                {new Date(employee.doj).toLocaleDateString()}
+                              </>
+                            )}
                           </span>
                         </div>
 
                         {/* Gender */}
                         <div className="group/item col-span-1 flex items-center gap-2 rounded-lg border border-border bg-card p-2 transition-colors hover:border-emerald-500/20">
-                          <User className="h-3.5 w-3.5 text-emerald-500/70 group-hover/item:text-emerald-400" />
+                          <User className="h-3.5 w-3.5 text-emerald-600/70 group-hover/item:text-emerald-600 dark:text-emerald-500/70 dark:group-hover/item:text-emerald-400" />
                           <span className="truncate text-xs capitalize text-foreground sm:text-sm">
                             {employee.gender.toLowerCase()}
                           </span>
@@ -269,7 +289,7 @@ export default function EmployeeCredDetails() {
 
                         {/* Address */}
                         <div className="group/item col-span-2 flex items-center gap-2 rounded-lg border border-border bg-card p-2 transition-colors hover:border-emerald-500/20">
-                          <MapPin className="h-3.5 w-3.5 shrink-0 text-emerald-500/70 group-hover/item:text-emerald-400" />
+                          <MapPin className="h-3.5 w-3.5 shrink-0 text-emerald-600/70 group-hover/item:text-emerald-600 dark:text-emerald-500/70 dark:group-hover/item:text-emerald-400" />
                           <span
                             className="truncate text-xs text-foreground sm:text-sm"
                             title={employee.residentialAddress}
@@ -281,13 +301,13 @@ export default function EmployeeCredDetails() {
 
                       {/* Footer: Contacts & Actions */}
                       <div className="mt-auto flex items-center justify-between border-t border-emerald-500/10 pt-4">
-                        <div className="flex flex-col gap-1 text-xs text-yellow-400/70">
+                        <div className="flex flex-col gap-1 text-xs text-muted-foreground">
                           <div className="flex items-center gap-2">
-                            <Phone className="h-3 w-3 text-emerald-500/50" />
+                            <Phone className="h-3 w-3 text-emerald-600/70 dark:text-emerald-500/50" />
                             <span>{employee.mobileNo}</span>
                           </div>
                           <div className="flex items-center gap-2">
-                            <Mail className="h-3 w-3 text-emerald-500/50" />
+                            <Mail className="h-3 w-3 text-emerald-600/70 dark:text-emerald-500/50" />
                             <span className="max-w-[120px] truncate sm:max-w-none">
                               {employee.admissionNumber
                                 ? `${employee.admissionNumber.toLowerCase().replace(/\s/g, ".")}@msns.edu.pk`
@@ -297,14 +317,33 @@ export default function EmployeeCredDetails() {
                         </div>
 
                         <div className="flex gap-2 self-end">
-                          {/* Placeholder for actions */}
-                          <Button
-                            size="icon"
-                            variant="ghost"
-                            className="h-10 w-10 rounded-xl border border-emerald-500/20 bg-emerald-900/10 text-emerald-400 transition-all hover:bg-emerald-600/20 hover:text-foreground"
-                          >
-                            <MoreHorizontal className="h-4 w-4" />
-                          </Button>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button
+                                size="icon"
+                                variant="ghost"
+                                className="h-10 w-10 rounded-xl border border-emerald-500/20 bg-emerald-900/10 text-emerald-600 transition-all hover:bg-emerald-600/20 hover:text-emerald-700 dark:text-emerald-400 dark:hover:text-foreground"
+                              >
+                                <MoreHorizontal className="h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="w-48 rounded-xl">
+                              <DropdownMenuLabel>Card Actions</DropdownMenuLabel>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem asChild className="cursor-pointer">
+                                <Link href={`/admin/users/faculty/${employee.employeeId}/profile`}>
+                                  <UserCircle className="mr-2 h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+                                  <span>View Profile</span>
+                                </Link>
+                              </DropdownMenuItem>
+                              <DropdownMenuItem asChild className="cursor-pointer">
+                                <Link href={`/admin/users/faculty/${employee.employeeId}`}>
+                                  <Edit className="mr-2 h-4 w-4 text-amber-600 dark:text-amber-400" />
+                                  <span>Edit Details</span>
+                                </Link>
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
                         </div>
                       </div>
                     </CardContent>

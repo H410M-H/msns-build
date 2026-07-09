@@ -237,10 +237,32 @@ export const EmployeeRouter = createTRPCRouter({
       try {
         const { employeeId, ...data } = input;
 
+        const currentEmployee = await ctx.db.employees.findUnique({
+          where: { employeeId },
+          select: { status: true },
+        });
+
+        let leftDateUpdate = {};
+        if (currentEmployee) {
+          if (
+            data.status &&
+            data.status !== "Active" &&
+            currentEmployee.status === "Active"
+          ) {
+            leftDateUpdate = { leftDate: new Date() };
+          } else if (
+            data.status === "Active" &&
+            currentEmployee.status !== "Active"
+          ) {
+            leftDateUpdate = { leftDate: null };
+          }
+        }
+
         return await ctx.db.employees.update({
           where: { employeeId },
           data: {
             ...data,
+            ...leftDateUpdate,
           },
         });
       } catch (error) {
@@ -268,18 +290,35 @@ export const EmployeeRouter = createTRPCRouter({
         // Find the employee first to get their registrationNumber
         const existing = await ctx.db.employees.findUnique({
           where: { employeeId },
-          select: { registrationNumber: true },
+          select: { registrationNumber: true, status: true },
         });
 
         if (!existing) {
           throw new TRPCError({ code: "NOT_FOUND", message: "Employee not found" });
         }
 
+        let leftDateUpdate = {};
+        if (
+          employeeData.status &&
+          employeeData.status !== "Active" &&
+          existing.status === "Active"
+        ) {
+          leftDateUpdate = { leftDate: new Date() };
+        } else if (
+          employeeData.status === "Active" &&
+          existing.status !== "Active"
+        ) {
+          leftDateUpdate = { leftDate: null };
+        }
+
         // Run both updates in a transaction
         const [updatedEmployee] = await ctx.db.$transaction([
           ctx.db.employees.update({
             where: { employeeId },
-            data: employeeData,
+            data: {
+              ...employeeData,
+              ...leftDateUpdate,
+            },
           }),
           ...(username ?? email
             ? [
