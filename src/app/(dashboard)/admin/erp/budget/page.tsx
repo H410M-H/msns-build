@@ -23,7 +23,7 @@ export default function BudgetPage() {
   const [showCCDialog, setShowCCDialog] = useState(false);
   const [showPlanDialog, setShowPlanDialog] = useState(false);
   const [selectedPlanId, setSelectedPlanId] = useState("");
-  const [ccForm, setCCForm] = useState({ code: "", name: "" });
+  const [ccForm, setCCForm] = useState({ name: "" });
   const [planForm, setPlanForm] = useState({ name: "", sessionId: "" });
   const [allocations, setAllocations] = useState<{ costCentreId: string; expenseCategory: string; allocatedAmount: number }[]>([]);
 
@@ -124,16 +124,12 @@ export default function BudgetPage() {
               <DialogHeader><DialogTitle>New Cost Centre</DialogTitle></DialogHeader>
               <div className="space-y-3 pt-2">
                 <div className="space-y-1.5">
-                  <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Code</Label>
-                  <Input placeholder="e.g. CC-ADM-001" value={ccForm.code} onChange={e => setCCForm({ ...ccForm, code: e.target.value })} />
-                </div>
-                <div className="space-y-1.5">
                   <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Name</Label>
                   <Input placeholder="e.g. Administration" value={ccForm.name} onChange={e => setCCForm({ ...ccForm, name: e.target.value })} />
                 </div>
                 <Button
                   className="w-full bg-blue-600 text-white hover:bg-blue-700"
-                  disabled={createCC.isPending || !ccForm.code || !ccForm.name}
+                  disabled={createCC.isPending || !ccForm.name}
                   onClick={() => createCC.mutate(ccForm)}
                 >
                   {createCC.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Plus className="mr-2 h-4 w-4" />}

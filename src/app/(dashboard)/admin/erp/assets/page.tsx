@@ -32,7 +32,7 @@ export default function AssetsPage() {
   const [showMaintenanceDialog, setShowMaintenanceDialog] = useState<string | null>(null);
   const [showDisposeDialog, setShowDisposeDialog] = useState<string | null>(null);
   const [assetForm, setAssetForm] = useState({
-    assetTag: "", assetName: "", assetCategoryId: "", purchaseCost: 0,
+    assetName: "", assetCategoryId: "", purchaseCost: 0,
     condition: "New" as const, location: "", usefulLifeYears: 5, depreciationMethod: "StraightLine" as const,
   });
   const [mxForm, setMxForm] = useState({ maintenanceType: "Preventive" as const, scheduledDate: "", vendorName: "", cost: 0 });
@@ -126,9 +126,9 @@ export default function AssetsPage() {
             <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
               <DialogHeader><DialogTitle>Register New Asset</DialogTitle></DialogHeader>
               <div className="space-y-3 pt-2">
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="space-y-1.5"><Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Asset Tag</Label><Input value={assetForm.assetTag} onChange={e => setAssetForm({ ...assetForm, assetTag: e.target.value })} placeholder="e.g. AST-2026-001" /></div>
-                  <div className="space-y-1.5"><Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Asset Name</Label><Input value={assetForm.assetName} onChange={e => setAssetForm({ ...assetForm, assetName: e.target.value })} /></div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Asset Name</Label>
+                  <Input value={assetForm.assetName} onChange={e => setAssetForm({ ...assetForm, assetName: e.target.value })} />
                 </div>
                 <div className="space-y-1.5">
                   <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Category</Label>
@@ -161,7 +161,7 @@ export default function AssetsPage() {
                   </div>
                 </div>
                 <div className="space-y-1.5"><Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Location</Label><Input value={assetForm.location} onChange={e => setAssetForm({ ...assetForm, location: e.target.value })} placeholder="e.g. Principal's Office" /></div>
-                <Button className="w-full bg-emerald-600 text-white hover:bg-emerald-700" disabled={createAsset.isPending || !assetForm.assetTag || !assetForm.assetName || !assetForm.assetCategoryId} onClick={() => createAsset.mutate(assetForm)}>
+                <Button className="w-full bg-emerald-600 text-white hover:bg-emerald-700" disabled={createAsset.isPending || !assetForm.assetName || !assetForm.assetCategoryId} onClick={() => createAsset.mutate(assetForm)}>
                   {createAsset.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Plus className="mr-2 h-4 w-4" />} Register Asset
                 </Button>
               </div>

@@ -16,7 +16,6 @@ export const assetsRouter = createTRPCRouter({
   createAsset: protectedProcedure
     .input(
       z.object({
-        assetTag: z.string().min(1).max(100),
         serialNumber: z.string().optional(),
         assetName: z.string().min(1).max(200),
         assetCategoryId: z.string().cuid(),
@@ -32,7 +31,11 @@ export const assetsRouter = createTRPCRouter({
         usefulLifeYears: z.number().int().min(1).default(5),
       }),
     )
-    .mutation(({ ctx, input }) => ctx.db.asset.create({ data: input })),
+    .mutation(async ({ ctx, input }) => {
+      const count = await ctx.db.asset.count();
+      const assetTag = `AST-${new Date().getFullYear()}-${String(count + 1).padStart(3, "0")}`;
+      return ctx.db.asset.create({ data: { ...input, assetTag } });
+    }),
 
   updateAsset: protectedProcedure
     .input(

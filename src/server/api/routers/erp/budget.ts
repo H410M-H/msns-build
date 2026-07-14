@@ -7,13 +7,14 @@ export const budgetRouter = createTRPCRouter({
   createCostCentre: protectedProcedure
     .input(
       z.object({
-        code: z.string().min(1).max(20),
         name: z.string().min(1).max(100),
         managerId: z.string().cuid().optional(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      return ctx.db.costCentre.create({ data: input });
+      const count = await ctx.db.costCentre.count();
+      const code = `CC-${input.name.substring(0, 3).toUpperCase()}-${String(count + 1).padStart(3, "0")}`;
+      return ctx.db.costCentre.create({ data: { ...input, code } });
     }),
 
   updateCostCentre: protectedProcedure
