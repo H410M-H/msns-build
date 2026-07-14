@@ -866,8 +866,11 @@ export default function GalleryUploader({
   };
 
   const getFolderColor = (folderPath: string) => {
-    const colorName = folderColors[folderPath] ?? "emerald";
-    return FOLDER_COLORS.find((c) => c.name === colorName) ?? FOLDER_COLORS[0]!;
+    const colorVal = folderColors[folderPath] ?? "emerald";
+    if (colorVal.startsWith("#")) {
+      return { isCustom: true, hex: colorVal, name: "custom", label: "Custom", text: "", bg: "", border: "", hoverBorder: "" };
+    }
+    return { ...(FOLDER_COLORS.find((c) => c.name === colorVal) ?? FOLDER_COLORS[0]!), isCustom: false, hex: "" };
   };
 
   const handleFolderRename = async () => {
@@ -1557,7 +1560,7 @@ export default function GalleryUploader({
                           }}
                           className="flex-1 flex items-center gap-2 px-2 py-1.5 min-w-0 text-left"
                         >
-                          <Folder className={`h-3.5 w-3.5 ${folderColor.text} shrink-0`} />
+                          <Folder className={`h-3.5 w-3.5 ${folderColor.text} shrink-0`} style={folderColor.isCustom ? { color: folderColor.hex } : undefined} />
                           <span className="truncate">{name}</span>
                         </button>
                         
@@ -1609,21 +1612,33 @@ export default function GalleryUploader({
 
                             <DropdownMenuSub>
                               <DropdownMenuSubTrigger className="cursor-pointer flex items-center gap-2 text-xs focus:bg-accent focus:text-accent-foreground">
-                                <span className={`h-3 w-3 rounded-full border ${folderColor.border} ${folderColor.bg}`} />
+                                <span className={`h-3 w-3 rounded-full border ${folderColor.border} ${folderColor.bg}`} style={folderColor.isCustom ? { backgroundColor: folderColor.hex, borderColor: folderColor.hex } : undefined} />
                                 <span>Change Color</span>
                               </DropdownMenuSubTrigger>
                               <DropdownMenuSubContent className="bg-card border-border text-foreground backdrop-blur-md">
-                                <div className="grid grid-cols-4 gap-1 p-2 w-32">
+                                <div className="grid grid-cols-5 gap-1.5 p-2 w-40">
                                   {FOLDER_COLORS.map((c) => (
                                     <button
                                       key={c.name}
-                                      onClick={() => saveFolderColor(folder, c.name)}
-                                      className={`h-5 w-5 rounded-full ${c.bg} ${c.border} border hover:scale-110 active:scale-95 transition-transform flex items-center justify-center`}
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        saveFolderColor(folder, c.name);
+                                      }}
+                                      className={`h-6 w-6 rounded-full ${c.bg} ${c.border} border hover:scale-110 active:scale-95 transition-transform flex items-center justify-center`}
                                       title={c.label}
                                     >
-                                      <span className={`h-2.5 w-2.5 rounded-full ${c.text.replace('text-', 'bg-')}`} />
+                                      <span className={`h-3 w-3 rounded-full ${c.text.replace('text-', 'bg-')}`} />
                                     </button>
                                   ))}
+                                  <div className="relative h-6 w-6 rounded-full border border-border hover:scale-110 active:scale-95 transition-transform flex items-center justify-center overflow-hidden" style={{ background: 'conic-gradient(red, yellow, lime, aqua, blue, magenta, red)' }} title="Custom RGB Color">
+                                    <input 
+                                      type="color" 
+                                      value={folderColor.isCustom ? folderColor.hex : "#ffffff"} 
+                                      onChange={(e) => saveFolderColor(folder, e.target.value)}
+                                      onClick={(e) => e.stopPropagation()}
+                                      className="absolute -inset-2 opacity-0 cursor-pointer w-10 h-10"
+                                    />
+                                  </div>
                                 </div>
                               </DropdownMenuSubContent>
                             </DropdownMenuSub>
@@ -1960,7 +1975,7 @@ export default function GalleryUploader({
                                     openFolderWindow(subPath);
                                   }}
                                 >
-                                  <Folder className={`h-6 w-6 ${folderColor.text} group-hover:scale-105 transition-transform shrink-0`} />
+                                  <Folder className={`h-6 w-6 ${folderColor.text} group-hover:scale-105 transition-transform shrink-0`} style={folderColor.isCustom ? { color: folderColor.hex } : undefined} />
                                   <div className="min-w-0 flex-1">
                                     <p className="text-xs font-semibold text-foreground truncate">
                                       {folderName}
@@ -2025,21 +2040,33 @@ export default function GalleryUploader({
 
                                         <DropdownMenuSub>
                                           <DropdownMenuSubTrigger className="cursor-pointer flex items-center gap-2 text-xs focus:bg-accent focus:text-accent-foreground">
-                                            <span className={`h-3 w-3 rounded-full border ${folderColor.border} ${folderColor.bg}`} />
+                                            <span className={`h-3 w-3 rounded-full border ${folderColor.border} ${folderColor.bg}`} style={folderColor.isCustom ? { backgroundColor: folderColor.hex, borderColor: folderColor.hex } : undefined} />
                                             <span>Change Color</span>
                                           </DropdownMenuSubTrigger>
                                           <DropdownMenuSubContent className="bg-card border-border text-foreground backdrop-blur-md">
-                                            <div className="grid grid-cols-4 gap-1 p-2 w-32">
+                                            <div className="grid grid-cols-5 gap-1.5 p-2 w-40">
                                               {FOLDER_COLORS.map((c) => (
                                                 <button
                                                   key={c.name}
-                                                  onClick={() => saveFolderColor(subPath, c.name)}
-                                                  className={`h-5 w-5 rounded-full ${c.bg} ${c.border} border hover:scale-110 active:scale-95 transition-transform flex items-center justify-center`}
+                                                  onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    saveFolderColor(subPath, c.name);
+                                                  }}
+                                                  className={`h-6 w-6 rounded-full ${c.bg} ${c.border} border hover:scale-110 active:scale-95 transition-transform flex items-center justify-center`}
                                                   title={c.label}
                                                 >
-                                                  <span className={`h-2.5 w-2.5 rounded-full ${c.text.replace('text-', 'bg-')}`} />
+                                                  <span className={`h-3 w-3 rounded-full ${c.text.replace('text-', 'bg-')}`} />
                                                 </button>
                                               ))}
+                                              <div className="relative h-6 w-6 rounded-full border border-border hover:scale-110 active:scale-95 transition-transform flex items-center justify-center overflow-hidden" style={{ background: 'conic-gradient(red, yellow, lime, aqua, blue, magenta, red)' }} title="Custom RGB Color">
+                                                <input 
+                                                  type="color" 
+                                                  value={folderColor.isCustom ? folderColor.hex : "#ffffff"} 
+                                                  onChange={(e) => saveFolderColor(subPath, e.target.value)}
+                                                  onClick={(e) => e.stopPropagation()}
+                                                  className="absolute -inset-2 opacity-0 cursor-pointer w-10 h-10"
+                                                />
+                                              </div>
                                             </div>
                                           </DropdownMenuSubContent>
                                         </DropdownMenuSub>
