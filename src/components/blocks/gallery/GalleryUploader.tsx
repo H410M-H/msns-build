@@ -64,7 +64,11 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubTrigger,
+  DropdownMenuSubContent,
 } from "~/components/ui/dropdown-menu";
+
 
 interface GalleryImage {
   key: string;
@@ -123,6 +127,74 @@ const ACCEPTED_TYPES = {
   "video/ogg": [".ogg"],
   "video/quicktime": [".mov"],
 };
+
+const FOLDER_COLORS = [
+  {
+    name: "emerald",
+    label: "Emerald",
+    text: "text-emerald-400",
+    bg: "bg-emerald-500/10",
+    border: "border-emerald-500/20",
+    hoverBorder: "hover:border-emerald-500/50",
+  },
+  {
+    name: "blue",
+    label: "Blue",
+    text: "text-blue-400",
+    bg: "bg-blue-500/10",
+    border: "border-blue-500/20",
+    hoverBorder: "hover:border-blue-500/50",
+  },
+  {
+    name: "indigo",
+    label: "Indigo",
+    text: "text-indigo-400",
+    bg: "bg-indigo-500/10",
+    border: "border-indigo-500/20",
+    hoverBorder: "hover:border-indigo-500/50",
+  },
+  {
+    name: "violet",
+    label: "Violet",
+    text: "text-violet-400",
+    bg: "bg-violet-500/10",
+    border: "border-violet-500/20",
+    hoverBorder: "hover:border-violet-500/50",
+  },
+  {
+    name: "rose",
+    label: "Rose",
+    text: "text-rose-400",
+    bg: "bg-rose-500/10",
+    border: "border-rose-500/20",
+    hoverBorder: "hover:border-rose-500/50",
+  },
+  {
+    name: "amber",
+    label: "Amber",
+    text: "text-amber-400",
+    bg: "bg-amber-500/10",
+    border: "border-amber-500/20",
+    hoverBorder: "hover:border-amber-500/50",
+  },
+  {
+    name: "orange",
+    label: "Orange",
+    text: "text-orange-400",
+    bg: "bg-orange-500/10",
+    border: "border-orange-500/20",
+    hoverBorder: "hover:border-orange-500/50",
+  },
+  {
+    name: "cyan",
+    label: "Cyan",
+    text: "text-cyan-400",
+    bg: "bg-cyan-500/10",
+    border: "border-cyan-500/20",
+    hoverBorder: "hover:border-cyan-500/50",
+  },
+];
+
 
 interface GalleryUploaderProps {
   canDelete?: boolean;
@@ -185,6 +257,16 @@ export default function GalleryUploader({
   // Single-Folder Delete States
   const [isFolderDeleteDialogOpen, setIsFolderDeleteDialogOpen] = useState(false);
   const [folderToDelete, setFolderToDelete] = useState<string | null>(null);
+
+  // Folder Color, Rename, and Move States
+  const [folderColors, setFolderColors] = useState<Record<string, string>>({});
+  const [isFolderRenameDialogOpen, setIsFolderRenameDialogOpen] = useState(false);
+  const [folderToRename, setFolderToRename] = useState<string | null>(null);
+  const [folderRenameValue, setFolderRenameValue] = useState("");
+  const [isFolderMoveDialogOpen, setIsFolderMoveDialogOpen] = useState(false);
+  const [folderToMove, setFolderToMove] = useState<string | null>(null);
+  const [folderMoveTargetFolder, setFolderMoveTargetFolder] = useState("root");
+
 
 
   // Lightbox State
@@ -763,6 +845,100 @@ export default function GalleryUploader({
       }
     }
   };
+
+  // Load folder colors on mount
+  useEffect(() => {
+    const saved = localStorage.getItem("gallery_folder_colors");
+    if (saved) {
+      try {
+        setFolderColors(JSON.parse(saved) as Record<string, string>);
+      } catch (e) {
+        console.error("Failed to parse folder colors", e);
+      }
+    }
+  }, []);
+
+  const saveFolderColor = (folderPath: string, colorName: string) => {
+    const updated = { ...folderColors, [folderPath]: colorName };
+    setFolderColors(updated);
+    localStorage.setItem("gallery_folder_colors", JSON.stringify(updated));
+    toast.success("Folder color updated");
+  };
+
+  const getFolderColor = (folderPath: string) => {
+    const colorName = folderColors[folderPath] ?? "emerald";
+    return FOLDER_COLORS.find((c) => c.name === colorName) ?? FOLDER_COLORS[0]!;
+  };
+
+  const handleFolderRename = async () => {
+    if (!folderToRename || !folderRenameValue.trim()) return;
+
+    try {
+      setActionLoading(true);
+      const res = await fetch("/api/gallery/folder", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          folderPath: folderToRename,
+          newFolderPath: folderRenameValue.trim(),
+        }),
+      });
+
+      const data = (await res.json()) as { success: boolean; error?: string };
+      if (!res.ok) {
+        throw new Error(data.error ?? "Failed to rename folder");
+      }
+
+      toast.success("Folder renamed successfully");
+      setIsFolderRenameDialogOpen(false);
+      setFolderToRename(null);
+      await fetchImages();
+    } catch (err) {
+      toast.error((err as Error).message || "Failed to rename folder");
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleFolderMove = async () => {
+    if (!folderToMove) return;
+
+    const targetParent = folderMoveTargetFolder === "root" ? "" : folderMoveTargetFolder;
+    const folderNameOnly = folderToMove.split("/").pop()!;
+    const newPath = targetParent ? `${targetParent}/${folderNameOnly}` : folderNameOnly;
+
+    if (newPath === folderToMove) {
+      setIsFolderMoveDialogOpen(false);
+      return;
+    }
+
+    try {
+      setActionLoading(true);
+      const res = await fetch("/api/gallery/folder", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          folderPath: folderToMove,
+          newFolderPath: newPath,
+        }),
+      });
+
+      const data = (await res.json()) as { success: boolean; error?: string };
+      if (!res.ok) {
+        throw new Error(data.error ?? "Failed to move folder");
+      }
+
+      toast.success("Folder moved successfully");
+      setIsFolderMoveDialogOpen(false);
+      setFolderToMove(null);
+      await fetchImages();
+    } catch (err) {
+      toast.error((err as Error).message || "Failed to move folder");
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
 
   const formatFileSize = (bytes: number) => {
     if (bytes < 1024) return `${bytes} B`;
@@ -1367,6 +1543,7 @@ export default function GalleryUploader({
                   {existingFolders.map((folder) => {
                     const depth = folder.split("/").length - 1;
                     const name = folder.split("/").pop()!;
+                    const folderColor = getFolderColor(folder);
                     return (
                       <div
                         key={folder}
@@ -1380,21 +1557,91 @@ export default function GalleryUploader({
                           }}
                           className="flex-1 flex items-center gap-2 px-2 py-1.5 min-w-0 text-left"
                         >
-                          <Folder className="h-3.5 w-3.5 text-emerald-400/80 shrink-0" />
+                          <Folder className={`h-3.5 w-3.5 ${folderColor.text} shrink-0`} />
                           <span className="truncate">{name}</span>
                         </button>
-                        {canDelete && (
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              void triggerDeleteFolder(folder);
-                            }}
-                            className="opacity-0 group-hover:opacity-100 p-1 hover:bg-destructive/10 rounded text-muted-foreground hover:text-destructive transition-all shrink-0 mr-1.5"
-                            title="Delete folder"
-                          >
-                            <Trash2 className="h-3 w-3" />
-                          </button>
-                        )}
+                        
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <button
+                              onClick={(e) => e.stopPropagation()}
+                              className="opacity-0 group-hover:opacity-100 p-1 hover:bg-muted rounded text-muted-foreground hover:text-foreground transition-all shrink-0 mr-1.5"
+                              title="Folder Actions"
+                            >
+                              <MoreVertical className="h-3 w-3" />
+                            </button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end" className="w-40 bg-card border-border text-foreground backdrop-blur-md">
+                            <DropdownMenuItem
+                              className="cursor-pointer flex items-center gap-2 text-xs"
+                              onClick={() => {
+                                openFolderWindow(folder);
+                                if (isMobile) setSidebarOpen(false);
+                              }}
+                            >
+                              <FolderOpen className="h-3.5 w-3.5 text-emerald-400" />
+                              <span>Open Folder</span>
+                            </DropdownMenuItem>
+
+                            <DropdownMenuItem
+                              className="cursor-pointer flex items-center gap-2 text-xs"
+                              onClick={() => {
+                                setFolderToRename(folder);
+                                setFolderRenameValue(name);
+                                setIsFolderRenameDialogOpen(true);
+                              }}
+                            >
+                              <Edit2 className="h-3.5 w-3.5 text-emerald-400" />
+                              <span>Rename</span>
+                            </DropdownMenuItem>
+
+                            <DropdownMenuItem
+                              className="cursor-pointer flex items-center gap-2 text-xs"
+                              onClick={() => {
+                                setFolderToMove(folder);
+                                setFolderMoveTargetFolder("root");
+                                setIsFolderMoveDialogOpen(true);
+                              }}
+                            >
+                              <MoveRight className="h-3.5 w-3.5 text-emerald-400" />
+                              <span>Move</span>
+                            </DropdownMenuItem>
+
+                            <DropdownMenuSub>
+                              <DropdownMenuSubTrigger className="cursor-pointer flex items-center gap-2 text-xs focus:bg-accent focus:text-accent-foreground">
+                                <span className={`h-3 w-3 rounded-full border ${folderColor.border} ${folderColor.bg}`} />
+                                <span>Change Color</span>
+                              </DropdownMenuSubTrigger>
+                              <DropdownMenuSubContent className="bg-card border-border text-foreground backdrop-blur-md">
+                                <div className="grid grid-cols-4 gap-1 p-2 w-32">
+                                  {FOLDER_COLORS.map((c) => (
+                                    <button
+                                      key={c.name}
+                                      onClick={() => saveFolderColor(folder, c.name)}
+                                      className={`h-5 w-5 rounded-full ${c.bg} ${c.border} border hover:scale-110 active:scale-95 transition-transform flex items-center justify-center`}
+                                      title={c.label}
+                                    >
+                                      <span className={`h-2.5 w-2.5 rounded-full ${c.text.replace('text-', 'bg-')}`} />
+                                    </button>
+                                  ))}
+                                </div>
+                              </DropdownMenuSubContent>
+                            </DropdownMenuSub>
+
+                            {canDelete && (
+                              <>
+                                <DropdownMenuSeparator className="bg-border" />
+                                <DropdownMenuItem
+                                  className="cursor-pointer flex items-center gap-2 text-xs text-destructive focus:text-destructive focus:bg-destructive/10"
+                                  onClick={() => void triggerDeleteFolder(folder)}
+                                >
+                                  <Trash2 className="h-3.5 w-3.5" />
+                                  <span>Delete</span>
+                                </DropdownMenuItem>
+                              </>
+                            )}
+                          </DropdownMenuContent>
+                        </DropdownMenu>
                       </div>
                     );
                   })}
@@ -1698,6 +1945,7 @@ export default function GalleryUploader({
                               const folderName =
                                 subPath.split("/").pop() ?? subPath;
                               const count = getFilesCountForPath(subPath);
+                              const folderColor = getFolderColor(subPath);
 
                               return (
                                 <div
@@ -1705,14 +1953,14 @@ export default function GalleryUploader({
                                   onClick={() => navigateWindow(w.id, subPath)}
                                   onDragOver={handleDragOver}
                                   onDrop={(e) => handleFolderDrop(e, subPath)}
-                                  className="flex items-center gap-2.5 p-2.5 rounded-xl border border-border bg-muted/30 hover:border-emerald-500/50 hover:bg-muted/50 cursor-pointer transition-all duration-200 group relative select-none"
+                                  className={`flex items-center gap-2.5 p-2.5 rounded-xl border border-border bg-muted/30 ${folderColor.hoverBorder} hover:bg-muted/50 cursor-pointer transition-all duration-200 group relative select-none`}
                                   title="Double click to open in new window"
                                   onDoubleClick={(e) => {
                                     e.stopPropagation();
                                     openFolderWindow(subPath);
                                   }}
                                 >
-                                  <Folder className="h-6 w-6 text-emerald-400 group-hover:scale-105 transition-transform shrink-0" />
+                                  <Folder className={`h-6 w-6 ${folderColor.text} group-hover:scale-105 transition-transform shrink-0`} />
                                   <div className="min-w-0 flex-1">
                                     <p className="text-xs font-semibold text-foreground truncate">
                                       {folderName}
@@ -1722,29 +1970,94 @@ export default function GalleryUploader({
                                     </p>
                                   </div>
 
-                                  <div className="flex items-center gap-0.5 shrink-0">
-                                    <button
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        openFolderWindow(subPath);
-                                      }}
-                                      className="opacity-0 group-hover:opacity-100 p-1 hover:bg-muted rounded text-muted-foreground hover:text-foreground transition-all shrink-0"
-                                      title="Open in new window"
-                                    >
-                                      <Maximize2 className="h-3 w-3" />
-                                    </button>
-                                    {canDelete && (
-                                      <button
-                                        onClick={(e) => {
-                                          e.stopPropagation();
-                                          void triggerDeleteFolder(subPath);
-                                        }}
-                                        className="opacity-0 group-hover:opacity-100 p-1 hover:bg-destructive/10 rounded text-muted-foreground hover:text-destructive transition-all shrink-0"
-                                        title="Delete folder"
-                                      >
-                                        <Trash2 className="h-3 w-3" />
-                                      </button>
-                                    )}
+                                  <div className="flex items-center gap-0.5 shrink-0" onClick={(e) => e.stopPropagation()}>
+                                    <DropdownMenu>
+                                      <DropdownMenuTrigger asChild>
+                                        <Button
+                                          variant="ghost"
+                                          size="icon"
+                                          className="opacity-0 group-hover:opacity-100 h-6 w-6 hover:bg-muted text-muted-foreground hover:text-foreground rounded-md transition-all shrink-0"
+                                          title="Folder Actions"
+                                        >
+                                          <MoreVertical className="h-3.5 w-3.5" />
+                                        </Button>
+                                      </DropdownMenuTrigger>
+                                      <DropdownMenuContent align="end" className="w-40 bg-card border-border text-foreground backdrop-blur-md">
+                                        <DropdownMenuItem
+                                          className="cursor-pointer flex items-center gap-2 text-xs"
+                                          onClick={() => navigateWindow(w.id, subPath)}
+                                        >
+                                          <FolderOpen className="h-3.5 w-3.5 text-emerald-400" />
+                                          <span>Open here</span>
+                                        </DropdownMenuItem>
+
+                                        <DropdownMenuItem
+                                          className="cursor-pointer flex items-center gap-2 text-xs"
+                                          onClick={() => openFolderWindow(subPath)}
+                                        >
+                                          <Maximize2 className="h-3.5 w-3.5 text-emerald-400" />
+                                          <span>Open new window</span>
+                                        </DropdownMenuItem>
+
+                                        <DropdownMenuItem
+                                          className="cursor-pointer flex items-center gap-2 text-xs"
+                                          onClick={() => {
+                                            setFolderToRename(subPath);
+                                            setFolderRenameValue(folderName);
+                                            setIsFolderRenameDialogOpen(true);
+                                          }}
+                                        >
+                                          <Edit2 className="h-3.5 w-3.5 text-emerald-400" />
+                                          <span>Rename</span>
+                                        </DropdownMenuItem>
+
+                                        <DropdownMenuItem
+                                          className="cursor-pointer flex items-center gap-2 text-xs"
+                                          onClick={() => {
+                                            setFolderToMove(subPath);
+                                            setFolderMoveTargetFolder("root");
+                                            setIsFolderMoveDialogOpen(true);
+                                          }}
+                                        >
+                                          <MoveRight className="h-3.5 w-3.5 text-emerald-400" />
+                                          <span>Move</span>
+                                        </DropdownMenuItem>
+
+                                        <DropdownMenuSub>
+                                          <DropdownMenuSubTrigger className="cursor-pointer flex items-center gap-2 text-xs focus:bg-accent focus:text-accent-foreground">
+                                            <span className={`h-3 w-3 rounded-full border ${folderColor.border} ${folderColor.bg}`} />
+                                            <span>Change Color</span>
+                                          </DropdownMenuSubTrigger>
+                                          <DropdownMenuSubContent className="bg-card border-border text-foreground backdrop-blur-md">
+                                            <div className="grid grid-cols-4 gap-1 p-2 w-32">
+                                              {FOLDER_COLORS.map((c) => (
+                                                <button
+                                                  key={c.name}
+                                                  onClick={() => saveFolderColor(subPath, c.name)}
+                                                  className={`h-5 w-5 rounded-full ${c.bg} ${c.border} border hover:scale-110 active:scale-95 transition-transform flex items-center justify-center`}
+                                                  title={c.label}
+                                                >
+                                                  <span className={`h-2.5 w-2.5 rounded-full ${c.text.replace('text-', 'bg-')}`} />
+                                                </button>
+                                              ))}
+                                            </div>
+                                          </DropdownMenuSubContent>
+                                        </DropdownMenuSub>
+
+                                        {canDelete && (
+                                          <>
+                                            <DropdownMenuSeparator className="bg-border" />
+                                            <DropdownMenuItem
+                                              className="cursor-pointer flex items-center gap-2 text-xs text-destructive focus:text-destructive focus:bg-destructive/10"
+                                              onClick={() => void triggerDeleteFolder(subPath)}
+                                            >
+                                              <Trash2 className="h-3.5 w-3.5" />
+                                              <span>Delete</span>
+                                            </DropdownMenuItem>
+                                          </>
+                                        )}
+                                      </DropdownMenuContent>
+                                    </DropdownMenu>
                                   </div>
                                 </div>
                               );
@@ -1899,6 +2212,125 @@ export default function GalleryUploader({
                 <Trash2 className="h-4 w-4 mr-2" />
               )}
               Delete Selected
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Folder Rename Dialog */}
+      <Dialog
+        open={isFolderRenameDialogOpen}
+        onOpenChange={(open) => {
+          setIsFolderRenameDialogOpen(open);
+          if (!open) {
+            setFolderToRename(null);
+            setFolderRenameValue("");
+          }
+        }}
+      >
+        <DialogContent className="bg-card border-border text-foreground backdrop-blur-xl sm:max-w-md shadow-2xl select-none">
+          <DialogHeader>
+            <DialogTitle className="text-foreground font-semibold">
+              Rename Folder
+            </DialogTitle>
+          </DialogHeader>
+          <div className="py-4">
+            <Input
+              value={folderRenameValue}
+              onChange={(e) => setFolderRenameValue(e.target.value)}
+              placeholder="Enter new folder name"
+              className="bg-background border-border text-foreground placeholder-muted-foreground focus-visible:ring-emerald-500/50 focus-visible:border-emerald-500/30"
+              disabled={actionLoading}
+            />
+          </div>
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button
+              variant="outline"
+              onClick={() => setIsFolderRenameDialogOpen(false)}
+              className="border-border hover:bg-accent text-foreground bg-transparent"
+              disabled={actionLoading}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={() => void handleFolderRename()}
+              disabled={!folderRenameValue.trim() || actionLoading}
+              className="bg-emerald-600 hover:bg-emerald-700 text-white shadow-md"
+            >
+              {actionLoading ? (
+                <Loader2 className="h-4 w-4 animate-spin mr-2" />
+              ) : null}
+              Rename
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Folder Move Dialog */}
+      <Dialog
+        open={isFolderMoveDialogOpen}
+        onOpenChange={(open) => {
+          setIsFolderMoveDialogOpen(open);
+          if (!open) {
+            setFolderToMove(null);
+            setFolderMoveTargetFolder("root");
+          }
+        }}
+      >
+        <DialogContent className="bg-card border-border text-foreground backdrop-blur-xl sm:max-w-md shadow-2xl select-none">
+          <DialogHeader>
+            <DialogTitle className="text-foreground font-semibold">
+              Move Folder &quot;{folderToMove?.split("/").pop()}&quot;
+            </DialogTitle>
+          </DialogHeader>
+          <div className="py-4 space-y-4">
+            <span className="text-xs text-muted-foreground">Select parent folder:</span>
+            <Select
+              value={folderMoveTargetFolder}
+              onValueChange={setFolderMoveTargetFolder}
+            >
+              <SelectTrigger className="bg-background border-border text-foreground focus-visible:ring-emerald-500/50">
+                <SelectValue placeholder="Select target folder" />
+              </SelectTrigger>
+              <SelectContent className="bg-card border-border text-foreground">
+                <SelectItem value="root" className="text-muted-foreground">
+                  No Folder (Root)
+                </SelectItem>
+                {existingFolders
+                  .filter((f) => f !== folderToMove && !f.startsWith(folderToMove + "/"))
+                  .map((f) => {
+                    const parts = f.split("/");
+                    const depth = parts.length - 1;
+                    const name = parts[parts.length - 1]!;
+                    const label = "\u00A0\u00A0".repeat(depth) + name;
+                    return (
+                      <SelectItem key={f} value={f}>
+                        {label}
+                      </SelectItem>
+                    );
+                  })}
+              </SelectContent>
+            </Select>
+          </div>
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button
+              variant="outline"
+              onClick={() => setIsFolderMoveDialogOpen(false)}
+              className="border-border hover:bg-accent text-foreground bg-transparent"
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={() => void handleFolderMove()}
+              disabled={actionLoading}
+              className="bg-emerald-600 hover:bg-emerald-700 text-white"
+            >
+              {actionLoading ? (
+                <Loader2 className="h-4 w-4 animate-spin mr-2" />
+              ) : (
+                <MoveRight className="h-4 w-4 mr-2" />
+              )}
+              Move
             </Button>
           </DialogFooter>
         </DialogContent>

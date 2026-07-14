@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { createS3Folder, deleteS3Folder } from "~/lib/s3";
+import { createS3Folder, deleteS3Folder, renameS3Folder } from "~/lib/s3";
 import { auth } from "~/server/auth";
 
 const ALLOWED_ROLES = ["ADMIN", "PRINCIPAL", "HEAD", "CLERK", "TEACHER"];
@@ -68,5 +68,40 @@ export async function DELETE(req: Request) {
   } catch (error) {
     console.error("Error deleting folders:", error);
     return NextResponse.json({ error: "Failed to delete folders" }, { status: 500 });
+  }
+}
+
+export async function PATCH(req: Request) {
+  try {
+    const session = await auth();
+    if (!session?.user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const userRole = session.user.accountType;
+    if (!ALLOWED_ROLES.includes(userRole)) {
+      return NextResponse.json(
+        { error: "You do not have permission to modify gallery folders" },
+        { status: 403 },
+      );
+    }
+
+    const body = (await req.json()) as { folderPath?: string; newFolderPath?: string };
+    const folderPath = body.folderPath;
+    const newFolderPath = body.newFolderPath;
+
+    if (!folderPath || !newFolderPath) {
+      return NextResponse.json(
+        { error: "folderPath and newFolderPath are required" },
+        { status: 400 },
+      );
+    }
+
+    await renameS3Folder(folderPath, newFolderPath);
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error("Error renaming/moving folder:", error);
+    return NextResponse.json({ error: "Failed to rename/move folder" }, { status: 500 });
   }
 }

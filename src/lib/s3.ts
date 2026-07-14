@@ -157,7 +157,7 @@ export async function copyS3Object(sourceKey: string, destinationKey: string): P
   const s3 = getS3Client();
   const command = new CopyObjectCommand({
     Bucket: getBucket(),
-    CopySource: `${getBucket()}/${sourceKey}`,
+    CopySource: `${getBucket()}/${encodeURI(sourceKey)}`,
     Key: destinationKey,
   });
   await s3.send(command);
@@ -221,3 +221,60 @@ export async function deleteS3Folder(folderName: string): Promise<void> {
     continuationToken = response.NextContinuationToken;
   }
 }
+
+function getFolderPrefix(folderName: string): string {
+  if (folderName === "videos" || folderName.startsWith("videos/")) {
+    return folderName.endsWith('/') ? folderName : folderName + '/';
+  } else {
+    return `gallery/${folderName.endsWith('/') ? folderName : folderName + '/'}`;
+  }
+}
+
+export async function renameS3Folder(oldFolder: string, newFolder: string): Promise<void> {
+  const oldPrefix = getFolderPrefix(oldFolder);
+  const newPrefix = getFolderPrefix(newFolder);
+  if (oldPrefix === newPrefix) return;
+
+  const s3 = getS3Client();
+  const bucket = getBucket();
+  let isTruncated = true;
+  let continuationToken: string | undefined = undefined;
+
+  while (isTruncated) {
+    const listCmd: ListObjectsV2Command = new ListObjectsV2Command({
+      Bucket: bucket,
+      Prefix: oldPrefix,
+      ContinuationToken: continuationToken,
+    });
+    const listResponse = await s3.send(listCmd);
+    if (!listResponse.Contents || listResponse.Contents.length === 0) break;
+
+    // Move each object
+    for (const obj of listResponse.Contents) {
+      if (!obj.Key) continue;
+      const relativePart = obj.Key.substring(oldPrefix.length);
+      const newKey = newPrefix + relativePart;
+
+      // Copy
+      await s3.send(new CopyObjectCommand({
+        Bucket: bucket,
+        CopySource: `${bucket}/${encodeURI(obj.Key)}`,
+        Key: newKey,
+      }));
+    }
+
+    // Delete original objects
+    const delCmd = new DeleteObjectsCommand({
+      Bucket: bucket,
+      Delete: {
+        Objects: listResponse.Contents.map((obj) => ({ Key: obj.Key! })),
+        Quiet: true,
+      },
+    });
+    await s3.send(delCmd);
+
+    isTruncated = listResponse.IsTruncated ?? false;
+    continuationToken = listResponse.NextContinuationToken;
+  }
+}
+
