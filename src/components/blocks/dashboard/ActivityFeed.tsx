@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Activity, UserPlus, CheckCircle2, BookOpen, Loader2, ChevronDown } from "lucide-react";
+import { Activity, UserPlus, CheckCircle2, BookOpen, Loader2, ChevronDown, UserCheck, ShoppingCart, Wallet, CalendarClock } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { api } from "~/trpc/react";
 import { formatDistanceToNow } from "date-fns";
@@ -13,6 +13,10 @@ const iconMap = {
   student: { icon: UserPlus, color: "bg-blue-500", textClass: "text-blue-500" },
   fee: { icon: CheckCircle2, color: "bg-emerald-500", textClass: "text-emerald-500" },
   diary: { icon: BookOpen, color: "bg-purple-500", textClass: "text-purple-500" },
+  leave: { icon: UserCheck, color: "bg-indigo-500", textClass: "text-indigo-500" },
+  po: { icon: ShoppingCart, color: "bg-orange-500", textClass: "text-orange-500" },
+  ledger: { icon: Wallet, color: "bg-rose-500", textClass: "text-rose-500" },
+  event: { icon: CalendarClock, color: "bg-amber-500", textClass: "text-amber-500" },
 };
 
 export function ActivityFeed() {
@@ -69,7 +73,15 @@ export function ActivityFeed() {
                             ? "Registration"
                             : activity.type === "fee"
                               ? "Fee Payment"
-                              : "Class Diary"}
+                              : activity.type === "leave"
+                                ? "HR Management"
+                                : activity.type === "po"
+                                  ? "Purchasing"
+                                  : activity.type === "ledger"
+                                    ? "Accounts & Finance"
+                                    : activity.type === "event"
+                                      ? "Calendar Event"
+                                      : "Class Diary"}
                         </p>
                       </div>
                       <time className="shrink-0 font-mono text-[10px] text-slate-400">
