@@ -41,10 +41,15 @@ export const assetsRouter = createTRPCRouter({
     .input(
       z.object({
         assetId: z.string().cuid(),
+        assetName: z.string().min(1).max(200).optional(),
+        assetCategoryId: z.string().cuid().optional(),
+        purchaseCost: z.number().min(0).optional(),
         condition: z.enum(["New", "Good", "Fair", "Poor", "UnderMaintenance"]).optional(),
         location: z.string().optional(),
         assignedToId: z.string().optional(),
         photoUrl: z.string().optional(),
+        depreciationMethod: z.enum(["StraightLine", "DecliningBalance"]).optional(),
+        usefulLifeYears: z.number().int().min(1).optional(),
       }),
     )
     .mutation(({ ctx, input }) => {

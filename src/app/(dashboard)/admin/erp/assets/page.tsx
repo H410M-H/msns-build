@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "~/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "~/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
-import { Landmark, Plus, Loader2, AlertTriangle, Wrench, CircleDot, Tag } from "lucide-react";
+import { Landmark, Plus, Loader2, AlertTriangle, Wrench, CircleDot, Tag, Pencil } from "lucide-react";
 import { toast } from "sonner";
 import { GradientStatCard } from "~/components/shared/GradientStatCard";
 import { PageExportButton } from "~/components/shared/PageExportButton";
@@ -29,6 +29,7 @@ const CONDITION_COLORS: Record<string, string> = {
 
 export default function AssetsPage() {
   const [showAssetDialog, setShowAssetDialog] = useState(false);
+  const [editingAssetId, setEditingAssetId] = useState<string | null>(null);
   const [showMaintenanceDialog, setShowMaintenanceDialog] = useState<string | null>(null);
   const [showDisposeDialog, setShowDisposeDialog] = useState<string | null>(null);
   const [assetForm, setAssetForm] = useState({
@@ -45,6 +46,10 @@ export default function AssetsPage() {
   const createCategory = api.erp.assets.createCategory.useMutation({ onSuccess: () => void refetchCats() });
   const createAsset = api.erp.assets.createAsset.useMutation({
     onSuccess: () => { toast.success("Asset registered"); setShowAssetDialog(false); void refetch(); },
+    onError: e => toast.error(e.message),
+  });
+  const updateAsset = api.erp.assets.updateAsset.useMutation({
+    onSuccess: () => { toast.success("Asset updated"); setShowAssetDialog(false); void refetch(); },
     onError: e => toast.error(e.message),
   });
   const computeDepreciation = api.erp.assets.computeDepreciation.useMutation({
@@ -117,14 +122,20 @@ export default function AssetsPage() {
         </div>
         <div className="flex items-center gap-2">
           <PageExportButton exportData={exportData} csvFilename="asset-register" />
-          <Dialog open={showAssetDialog} onOpenChange={setShowAssetDialog}>
+          <Dialog open={showAssetDialog} onOpenChange={(open) => {
+            setShowAssetDialog(open);
+            if (!open) {
+              setEditingAssetId(null);
+              setAssetForm({ assetName: "", assetCategoryId: "", purchaseCost: 0, condition: "New" as const, location: "", usefulLifeYears: 5, depreciationMethod: "StraightLine" as const });
+            }
+          }}>
             <DialogTrigger asChild>
               <Button className="bg-emerald-600 text-white hover:bg-emerald-700 shadow-md shadow-emerald-200 dark:shadow-emerald-900/20">
                 <Plus className="mr-2 h-4 w-4" /> Register Asset
               </Button>
             </DialogTrigger>
             <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
-              <DialogHeader><DialogTitle>Register New Asset</DialogTitle></DialogHeader>
+              <DialogHeader><DialogTitle>{editingAssetId ? "Edit Asset" : "Register New Asset"}</DialogTitle></DialogHeader>
               <div className="space-y-3 pt-2">
                 <div className="space-y-1.5">
                   <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Asset Name</Label>
@@ -161,8 +172,8 @@ export default function AssetsPage() {
                   </div>
                 </div>
                 <div className="space-y-1.5"><Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Location</Label><Input value={assetForm.location} onChange={e => setAssetForm({ ...assetForm, location: e.target.value })} placeholder="e.g. Principal's Office" /></div>
-                <Button className="w-full bg-emerald-600 text-white hover:bg-emerald-700" disabled={createAsset.isPending || !assetForm.assetName || !assetForm.assetCategoryId} onClick={() => createAsset.mutate(assetForm)}>
-                  {createAsset.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Plus className="mr-2 h-4 w-4" />} Register Asset
+                <Button className="w-full bg-emerald-600 text-white hover:bg-emerald-700" disabled={createAsset.isPending || updateAsset.isPending || !assetForm.assetName || !assetForm.assetCategoryId} onClick={() => editingAssetId ? updateAsset.mutate({ assetId: editingAssetId, ...assetForm }) : createAsset.mutate(assetForm)}>
+                  {createAsset.isPending || updateAsset.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : editingAssetId ? <Pencil className="mr-2 h-4 w-4" /> : <Plus className="mr-2 h-4 w-4" />} {editingAssetId ? "Update Asset" : "Register Asset"}
                 </Button>
               </div>
             </DialogContent>
@@ -246,6 +257,21 @@ export default function AssetsPage() {
                         <TableCell className="font-mono text-sm">PKR {asset.purchaseCost.toLocaleString()}</TableCell>
                         <TableCell>
                           <div className="flex items-center gap-1">
+                            <Button size="sm" variant="ghost" onClick={() => {
+                              setEditingAssetId(asset.assetId);
+                              setAssetForm({
+                                assetName: asset.assetName,
+                                assetCategoryId: asset.assetCategoryId,
+                                purchaseCost: asset.purchaseCost,
+                                condition: asset.condition as any,
+                                location: asset.location || "",
+                                usefulLifeYears: asset.usefulLifeYears,
+                                depreciationMethod: asset.depreciationMethod as any,
+                              });
+                              setShowAssetDialog(true);
+                            }} className="h-7 px-2 text-xs text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-500/10">
+                              <Pencil className="mr-1 h-3 w-3" /> Edit
+                            </Button>
                             <Button size="sm" variant="ghost" onClick={() => computeDepreciation.mutate({ assetId: asset.assetId, period: currentPeriod })} className="h-7 px-2 text-xs text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-500/10">Depreciate</Button>
                             <Button size="sm" variant="ghost" onClick={() => setShowMaintenanceDialog(asset.assetId)} className="h-7 px-2 text-xs text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-500/10">
                               <Wrench className="mr-1 h-3 w-3" /> Maint.
