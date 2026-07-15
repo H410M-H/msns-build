@@ -8,6 +8,7 @@ import {
   Search,
   Filter,
   ArrowUpDown,
+  Loader2,
 } from "lucide-react";
 import { Button } from "~/components/ui/button";
 import {
@@ -20,9 +21,11 @@ import {
 import { Input } from "~/components/ui/input";
 import { api } from "~/trpc/react";
 import { useSession } from "next-auth/react";
+import { toast } from "sonner";
 
 // Types and Schemas
 import { type CreateEventInput } from "~/lib/event-schemas";
+import { type FrontendEventData } from "~/lib/event-helpers";
 import EventModal, { type EventFormData } from "./event-modal";
 import EventColorLegend from "./event-color-legend";
 import EventDetailsModal, { type EventDetails } from "./event-details-modal";
@@ -47,11 +50,36 @@ const MONTHS = [
 
 const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
-// Sample data to prevent crashes before data loads
-const SAMPLE_EVENTS_DATA: EventDetails[] = [];
+/** Transform backend FrontendEventData → local EventDetails for sub-components */
+function transformToEventDetails(e: FrontendEventData): EventDetails {
+  const start = new Date(e.startDateTime);
+  const end = new Date(e.endDateTime);
+  return {
+    id: e.id,
+    title: e.title,
+    description: e.description,
+    type: e.type,
+    date: start.toISOString().split("T")[0] ?? "",
+    startTime: start.toTimeString().slice(0, 5),
+    endTime: end.toTimeString().slice(0, 5),
+    location: e.location,
+    attendees: e.maxAttendees,
+    priority: e.priority.toLowerCase() as EventDetails["priority"],
+    recurring: e.recurring.toLowerCase(),
+    organizer: e.organizer?.username ?? undefined,
+    status: e.status.toLowerCase() as EventDetails["status"],
+    notes: e.notes,
+  };
+}
 
-export default function EventsCalendar() {
+interface EventsCalendarProps {
+  /** When provided, fetches events scoped to this session (+ global events) */
+  sessionId?: string;
+}
+
+export default function EventsCalendar({ sessionId }: EventsCalendarProps) {
   const session = useSession();
+  const utils = api.useUtils();
 
   // -- State --
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -67,7 +95,7 @@ export default function EventsCalendar() {
   const [searchQuery, setSearchQuery] = useState("");
 
   // Modals
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isEventModalOpen, setIsEventModalOpen] = useState(false);
   const [isEventDetailsOpen, setIsEventDetailsOpen] = useState(false);
   const [dateEventsModalOpen, setDateEventsModalOpen] = useState(false);
 
@@ -76,17 +104,60 @@ export default function EventsCalendar() {
     useState<EventDetails | null>(null);
   const [selectedDateForEvents, setSelectedDateForEvents] =
     useState<Date | null>(null);
-  const [events, setEvents] = useState<EventDetails[]>(SAMPLE_EVENTS_DATA);
+  const [editingEvent, setEditingEvent] = useState<EventDetails | null>(null);
+
+  // -- Data Fetching --
+  const { data: eventsData, isLoading } = api.event.getBySession.useQuery(
+    {
+      sessionId,
+      type: courseFilter !== "all" ? (courseFilter.toUpperCase() as CreateEventInput["type"]) : undefined,
+      search: searchQuery || undefined,
+    },
+    {
+      staleTime: 2 * 60 * 1000,
+    },
+  );
+
+  // Transform backend data to component format
+  const events: EventDetails[] = useMemo(() => {
+    if (!eventsData?.events) return [];
+    return eventsData.events.map(transformToEventDetails);
+  }, [eventsData]);
 
   // -- Mutations --
   const createEventMutation = api.event.create.useMutation({
     onSuccess: () => {
-      setIsCreateModalOpen(false);
-      // In a real app, you would invalidate queries here: ctx.event.getAll.invalidate()
+      setIsEventModalOpen(false);
+      void utils.event.getBySession.invalidate();
+      toast.success("Event created successfully");
     },
     onError: (error) => {
       console.error("Failed to create event:", error);
-      alert(`Failed to create event: ${error.message}`);
+      toast.error(`Failed to create event: ${error.message}`);
+    },
+  });
+
+  const updateEventMutation = api.event.update.useMutation({
+    onSuccess: () => {
+      setIsEventModalOpen(false);
+      void utils.event.getBySession.invalidate();
+      toast.success("Event updated successfully");
+    },
+    onError: (error) => {
+      console.error("Failed to update event:", error);
+      toast.error(`Failed to update event: ${error.message}`);
+    },
+  });
+
+  const deleteEventMutation = api.event.delete.useMutation({
+    onSuccess: () => {
+      setIsEventDetailsOpen(false);
+      void utils.event.getBySession.invalidate();
+      toast.success("Event deleted successfully");
+    },
+    onError: (error) => {
+      console.error("Failed to delete event:", error);
+      toast.error(`Failed to delete event: ${error.message}`);
     },
   });
 
@@ -130,7 +201,7 @@ export default function EventsCalendar() {
         !formData.endTime ||
         !formData.title
       ) {
-        alert("Please fill in all required fields.");
+        toast.error("Please fill in all required fields.");
         return;
       }
 
@@ -141,7 +212,7 @@ export default function EventsCalendar() {
         endDateTime: `${formData.date}T${formData.endTime}:00Z`,
         timezone: "UTC",
         location: formData.location ?? undefined,
-        isOnline: formData.location.toLowerCase() === "online",
+        isOnline: formData.location?.toLowerCase() === "online",
         type: formData.eventType.toUpperCase() as CreateEventInput["type"],
         priority:
           formData.priority.toUpperCase() as CreateEventInput["priority"],
@@ -156,33 +227,67 @@ export default function EventsCalendar() {
         reminders: [],
         attendees: [],
         creatorId: session.data?.user.accountId ?? "default_user",
+        sessionId: sessionId,
       };
 
       createEventMutation.mutate(eventData);
     },
-    [createEventMutation, session.data?.user.accountId],
+    [createEventMutation, session.data?.user.accountId, sessionId],
+  );
+
+  const handleEditEvent = useCallback(
+    (eventId: string, formData: EventFormData): void => {
+      if (
+        !formData.date ||
+        !formData.startTime ||
+        !formData.endTime ||
+        !formData.title
+      ) {
+        toast.error("Please fill in all required fields.");
+        return;
+      }
+
+      const eventData = {
+        id: eventId,
+        title: formData.title,
+        description: formData.description ?? undefined,
+        startDateTime: `${formData.date}T${formData.startTime}:00Z`,
+        endDateTime: `${formData.date}T${formData.endTime}:00Z`,
+        timezone: "UTC",
+        location: formData.location ?? undefined,
+        isOnline: formData.location?.toLowerCase() === "online",
+        type: formData.eventType.toUpperCase() as CreateEventInput["type"],
+        priority:
+          formData.priority.toUpperCase() as CreateEventInput["priority"],
+        status: "CONFIRMED" as const,
+        recurring:
+          formData.recurring.toUpperCase() as CreateEventInput["recurring"],
+        maxAttendees: formData.attendees
+          ? Number(formData.attendees)
+          : undefined,
+        isPublic: false,
+        tagIds: [],
+        reminders: [],
+        attendees: [],
+        creatorId: session.data?.user.accountId ?? "default_user",
+        sessionId: sessionId,
+      };
+
+      updateEventMutation.mutate(eventData);
+    },
+    [updateEventMutation, session.data?.user.accountId, sessionId],
+  );
+
+  const handleDeleteEvent = useCallback(
+    (eventId: string): void => {
+      deleteEventMutation.mutate({ id: eventId });
+    },
+    [deleteEventMutation],
   );
 
   // -- Filtering Logic --
   const filteredEvents = useMemo((): EventDetails[] => {
     let filtered = events;
-
-    // Filter by Type
-    if (courseFilter !== "all") {
-      filtered = filtered.filter(
-        (event) => event.type.toLowerCase() === courseFilter,
-      );
-    }
-
-    // Filter by Search
-    if (searchQuery) {
-      const q = searchQuery.toLowerCase();
-      filtered = filtered.filter(
-        (event) =>
-          event.title.toLowerCase().includes(q) ||
-          event.type.toLowerCase().includes(q),
-      );
-    }
 
     // Filter by Time
     const now = new Date();
@@ -207,7 +312,7 @@ export default function EventsCalendar() {
         a.date.localeCompare(b.date) || a.startTime.localeCompare(b.startTime)
       );
     });
-  }, [events, courseFilter, searchQuery, timelineFilter, sortBy]);
+  }, [events, timelineFilter, sortBy]);
 
   // -- Render Helpers --
   const renderCalendarGrid = useMemo(() => {
@@ -312,8 +417,11 @@ export default function EventsCalendar() {
             />
           </div>
           <Button
-            onClick={() => setIsCreateModalOpen(true)}
-            className="bg-blue-600 text-foreground shadow-md shadow-blue-200 hover:bg-blue-700"
+            onClick={() => {
+              setEditingEvent(null);
+              setIsEventModalOpen(true);
+            }}
+            className="bg-emerald-600 text-white shadow-md shadow-emerald-200 hover:bg-emerald-700"
           >
             <Plus className="mr-2 h-4 w-4" />
             <span className="hidden sm:inline">Add Event</span>
@@ -333,10 +441,17 @@ export default function EventsCalendar() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Types</SelectItem>
-              <SelectItem value="class">Class</SelectItem>
-              <SelectItem value="exam">Exam</SelectItem>
-              <SelectItem value="assignment">Assignment</SelectItem>
-              <SelectItem value="holiday">Holiday</SelectItem>
+              <SelectItem value="EXAM">Exam</SelectItem>
+              <SelectItem value="HOLIDAY">Holiday</SelectItem>
+              <SelectItem value="ASSIGNMENT">Assignment</SelectItem>
+              <SelectItem value="CLASS">Class</SelectItem>
+              <SelectItem value="PTM">PTM</SelectItem>
+              <SelectItem value="CEREMONY">Ceremony</SelectItem>
+              <SelectItem value="SPORTS">Sports</SelectItem>
+              <SelectItem value="MEETING">Meeting</SelectItem>
+              <SelectItem value="WORKSHOP">Workshop</SelectItem>
+              <SelectItem value="TRAINING">Training</SelectItem>
+              <SelectItem value="OTHER">Other</SelectItem>
             </SelectContent>
           </Select>
 
@@ -367,10 +482,16 @@ export default function EventsCalendar() {
         </div>
 
         <div className="hidden items-center gap-2 rounded-full border border-gray-100 bg-gray-50 px-3 py-1.5 text-xs text-gray-500 sm:flex">
-          <span className="font-medium text-gray-700">
-            {filteredEvents.length}
-          </span>{" "}
-          events
+          {isLoading ? (
+            <Loader2 className="h-3 w-3 animate-spin" />
+          ) : (
+            <>
+              <span className="font-medium text-gray-700">
+                {filteredEvents.length}
+              </span>{" "}
+              events
+            </>
+          )}
         </div>
       </div>
 
@@ -391,7 +512,16 @@ export default function EventsCalendar() {
 
         {/* Date Cells */}
         <div className="grid auto-rows-fr grid-cols-7">
-          {renderCalendarGrid}
+          {isLoading ? (
+            <div className="col-span-7 flex h-96 items-center justify-center">
+              <div className="flex flex-col items-center gap-3">
+                <Loader2 className="h-8 w-8 animate-spin text-emerald-500" />
+                <span className="text-sm text-gray-500">Loading events...</span>
+              </div>
+            </div>
+          ) : (
+            renderCalendarGrid
+          )}
         </div>
       </div>
 
@@ -402,8 +532,11 @@ export default function EventsCalendar() {
 
       {/* -- Dialogs -- */}
       <EventModal
-        isOpen={isCreateModalOpen}
-        onClose={() => setIsCreateModalOpen(false)}
+        isOpen={isEventModalOpen}
+        onClose={() => {
+          setIsEventModalOpen(false);
+          setEditingEvent(null);
+        }}
         selectedDate={
           new Date(
             currentDate.getFullYear(),
@@ -412,6 +545,8 @@ export default function EventsCalendar() {
           )
         }
         onCreate={handleCreateEvent}
+        onEdit={handleEditEvent}
+        initialData={editingEvent}
       />
 
       <DateEventsModal
@@ -431,8 +566,12 @@ export default function EventsCalendar() {
         isOpen={isEventDetailsOpen}
         onClose={() => setIsEventDetailsOpen(false)}
         event={selectedEventDetails}
-        onEdit={(e) => console.log("Edit", e)}
-        onDelete={(id) => setEvents((prev) => prev.filter((e) => e.id !== id))}
+        onEdit={(e) => {
+          setEditingEvent(e);
+          setIsEventDetailsOpen(false);
+          setIsEventModalOpen(true);
+        }}
+        onDelete={handleDeleteEvent}
         onDuplicate={(e) => console.log("Duplicate", e)}
       />
     </div>

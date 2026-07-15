@@ -5,6 +5,7 @@ import {
   AttendeeStatusSchema,
   CreateEventSchema,
   EventStatusSchema,
+  EventTypeSchema,
   UpdateEventSchema,
 } from "~/lib/event-schemas";
 import {
@@ -22,6 +23,7 @@ export const EventRouter = createTRPCRouter({
         data: {
           ...eventData,
           User: { connect: { id: input.creatorId } },
+          ...(input.sessionId ? { Session: { connect: { sessionId: input.sessionId } } } : {}),
           tags: input.tagIds
             ? {
               create: input.tagIds.map((tagId: string) => ({
@@ -65,6 +67,7 @@ export const EventRouter = createTRPCRouter({
         data: {
           ...eventData,
           User: { connect: { id: input.creatorId } },
+          ...(input.sessionId ? { Session: { connect: { sessionId: input.sessionId } } } : {}),
           tags: input.tagIds
             ? {
               deleteMany: {},
@@ -174,6 +177,64 @@ export const EventRouter = createTRPCRouter({
         return {
           events: events.map(safeTransformEventForFrontend),
           total,
+        };
+      },
+    ),
+
+  getBySession: protectedProcedure
+    .input(
+      z.object({
+        sessionId: z.string().optional(),
+        search: z.string().optional(),
+        type: EventTypeSchema.optional(),
+      }),
+    )
+    .query(
+      async ({
+        ctx,
+        input,
+      }): Promise<{ events: FrontendEventData[] }> => {
+        const where: Prisma.EventWhereInput = {
+          AND: [
+            input.sessionId
+              ? {
+                  OR: [
+                    { sessionId: input.sessionId },
+                    { sessionId: null },
+                  ],
+                }
+              : {},
+            input.type ? { type: input.type } : {},
+            input.search
+              ? {
+                  OR: [
+                    { title: { contains: input.search, mode: "insensitive" } },
+                    {
+                      description: {
+                        contains: input.search,
+                        mode: "insensitive",
+                      },
+                    },
+                  ],
+                }
+              : {},
+          ],
+        };
+
+        const events = await ctx.db.event.findMany({
+          where,
+          include: {
+            User: true,
+            tags: { include: { tag: true } },
+            attendees: { include: { user: true } },
+            reminders: true,
+          },
+          orderBy: { startDateTime: "asc" },
+          take: 500,
+        });
+
+        return {
+          events: events.map(safeTransformEventForFrontend),
         };
       },
     ),

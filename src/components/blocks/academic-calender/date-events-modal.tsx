@@ -55,7 +55,7 @@ export default function DateEventsModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-h-[80vh] max-w-lg overflow-y-auto border-gray-700 bg-gray-800 text-foreground">
+      <DialogContent className="max-h-[80vh] max-w-lg overflow-y-auto border-slate-200 bg-white text-slate-900 dark:border-gray-700 dark:bg-gray-800 dark:text-foreground">
         <DialogHeader>
           <DialogTitle className="flex items-center justify-between text-xl font-semibold">
             <div className="flex items-center gap-2">
@@ -76,11 +76,11 @@ export default function DateEventsModal({
           {sortedEvents.length === 0 ? (
             <div className="py-8 text-center">
               <Calendar className="mx-auto mb-3 h-12 w-12 text-gray-500" />
-              <p className="text-gray-400">No events scheduled for this date</p>
+              <p className="text-slate-500 dark:text-gray-400">No events scheduled for this date</p>
             </div>
           ) : (
             <>
-              <div className="mb-4 text-sm text-gray-400">
+              <div className="mb-4 text-sm text-slate-500 dark:text-gray-400">
                 {sortedEvents.length} event
                 {sortedEvents.length !== 1 ? "s" : ""} scheduled
               </div>
@@ -100,7 +100,7 @@ export default function DateEventsModal({
                         >
                           {event.title}
                         </div>
-                        <div className="mb-2 flex items-center gap-4 text-xs text-gray-400">
+                        <div className="mb-2 flex items-center gap-4 text-xs text-slate-500 dark:text-gray-400">
                           <div className="flex items-center gap-1">
                             <Clock className="h-3 w-3" />
                             {formatTime(event.startTime)} -{" "}
@@ -114,7 +114,7 @@ export default function DateEventsModal({
                           )}
                         </div>
                         {event.description && (
-                          <p className="line-clamp-2 text-xs leading-relaxed text-gray-500">
+                          <p className="line-clamp-2 text-xs leading-relaxed text-slate-500 dark:text-gray-500">
                             {event.description}
                           </p>
                         )}

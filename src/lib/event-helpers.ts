@@ -36,6 +36,7 @@ export interface FrontendEventData {
   reminders: { type: string; value: number }[];
   attendees: { userId: string; status: string }[];
   recurrenceEnd?: string;
+  sessionId?: string;
 }
 
 export function splitDateTime(dateTime: Date): { date: string; time: string } {
@@ -90,6 +91,7 @@ export function safeTransformEventForDatabase(
     maxAttendees: data.maxAttendees,
     isPublic: data.isPublic,
     recurrenceEnd,
+    ...(data.sessionId ? { Session: { connect: { sessionId: data.sessionId } } } : {}),
     User: { connect: { id: data.creatorId } },
     tags: data.tagIds
       ? {
@@ -152,5 +154,6 @@ export function safeTransformEventForFrontend(
       status: a.status,
     })),
     recurrenceEnd,
+    sessionId: (event as unknown as { sessionId?: string }).sessionId ?? undefined,
   };
 }

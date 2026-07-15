@@ -95,11 +95,29 @@ function getEventColor(type: string) {
     case "exam":
       return "bg-red-100 text-red-700";
     case "assignment":
-      return "bg-orange-100 text-orange-700";
+      return "bg-amber-100 text-amber-700";
     case "holiday":
-      return "bg-green-100 text-green-700";
+      return "bg-emerald-100 text-emerald-700";
     case "class":
       return "bg-blue-100 text-blue-700";
+    case "ceremony":
+      return "bg-violet-100 text-violet-700";
+    case "sports":
+      return "bg-teal-100 text-teal-700";
+    case "ptm":
+      return "bg-rose-100 text-rose-700";
+    case "meeting":
+      return "bg-blue-100 text-blue-700";
+    case "workshop":
+      return "bg-purple-100 text-purple-700";
+    case "conference":
+      return "bg-green-100 text-green-700";
+    case "training":
+      return "bg-orange-100 text-orange-700";
+    case "webinar":
+      return "bg-cyan-100 text-cyan-700";
+    case "social":
+      return "bg-pink-100 text-pink-700";
     default:
       return "bg-gray-100 text-gray-700";
   }
@@ -110,11 +128,29 @@ function getEventDotColor(type: string) {
     case "exam":
       return "bg-red-500";
     case "assignment":
-      return "bg-orange-500";
+      return "bg-amber-500";
     case "holiday":
-      return "bg-green-500";
+      return "bg-emerald-500";
     case "class":
       return "bg-blue-500";
+    case "ceremony":
+      return "bg-violet-500";
+    case "sports":
+      return "bg-teal-500";
+    case "ptm":
+      return "bg-rose-500";
+    case "meeting":
+      return "bg-blue-500";
+    case "workshop":
+      return "bg-purple-500";
+    case "conference":
+      return "bg-green-500";
+    case "training":
+      return "bg-orange-500";
+    case "webinar":
+      return "bg-cyan-500";
+    case "social":
+      return "bg-pink-500";
     default:
       return "bg-gray-400";
   }

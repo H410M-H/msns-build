@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useMemo } from "react";
+import { useCallback, useMemo } from "react";
 import {
   Calendar,
   Clock,
@@ -10,6 +10,8 @@ import {
   User,
   FileText,
   X,
+  Edit2,
+  Trash2,
 } from "lucide-react";
 import { Button } from "~/components/ui/button";
 import {
@@ -24,7 +26,7 @@ import EventIndicator from "./event-indicator";
 import { getEventTypeColor, type EventType } from "./event-colors";
 
 export interface EventDetails {
-  id: number;
+  id: string;
   title: string;
   description?: string;
   type: string;
@@ -46,7 +48,7 @@ interface EventDetailsModalProps {
   onClose: () => void;
   event: EventDetails | null;
   onEdit?: (event: EventDetails) => void;
-  onDelete?: (eventId: number) => void;
+  onDelete?: (eventId: string) => void;
   onDuplicate?: (event: EventDetails) => void;
 }
 
@@ -54,8 +56,10 @@ export default function EventDetailsModal({
   isOpen,
   onClose,
   event,
+  onEdit,
+  onDelete,
 }: EventDetailsModalProps) {
-  const [] = useState(false);
+
 
   const formatDate = useCallback((dateString: string): string => {
     const date = new Date(dateString);
@@ -150,19 +154,41 @@ export default function EventDetailsModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto border-gray-700 bg-gray-800 text-foreground">
+      <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto border-slate-200 bg-white text-slate-900 dark:border-gray-700 dark:bg-gray-800 dark:text-foreground">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-3 text-xl font-semibold">
             <EventIndicator eventType={event.type} size="md" />
             <span className="flex-1">{event.title}</span>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onClose}
-              className="text-gray-400 hover:text-foreground"
-            >
-              <X className="h-4 w-4" />
-            </Button>
+            <div className="flex items-center gap-1">
+              {onEdit && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => onEdit(event)}
+                  className="text-gray-400 hover:text-blue-500"
+                >
+                  <Edit2 className="h-4 w-4" />
+                </Button>
+              )}
+              {onDelete && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => onDelete(event.id)}
+                  className="text-gray-400 hover:text-red-500"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              )}
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={onClose}
+                className="text-gray-400 hover:text-foreground"
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
           </DialogTitle>
         </DialogHeader>
         <div className="space-y-6">
@@ -185,7 +211,7 @@ export default function EventDetailsModal({
               </div>
             </div>
             {event.description && (
-              <p className="text-sm leading-relaxed text-gray-300">
+              <p className="text-sm leading-relaxed text-slate-600 dark:text-gray-300">
                 {event.description}
               </p>
             )}
@@ -199,26 +225,26 @@ export default function EventDetailsModal({
               <div className="space-y-3 text-sm">
                 <div className="flex items-center gap-3">
                   <Calendar className="h-4 w-4 text-gray-400" />
-                  <span className="text-gray-300">
+                  <span className="text-slate-600 dark:text-gray-300">
                     {formatDate(event.date)}
                   </span>
                 </div>
                 <div className="flex items-center gap-3">
                   <Clock className="h-4 w-4 text-gray-400" />
-                  <span className="text-gray-300">
+                  <span className="text-slate-600 dark:text-gray-300">
                     {formatTime(event.startTime)} - {formatTime(event.endTime)}
                   </span>
                 </div>
                 <div className="flex items-center gap-3">
                   <div className="h-4 w-4" />
-                  <span className="text-gray-400">
+                  <span className="text-slate-500 dark:text-gray-400">
                     Duration: {getDuration()}
                   </span>
                 </div>
                 {event.recurring !== "none" && (
                   <div className="flex items-center gap-3">
                     <div className="h-4 w-4" />
-                    <span className="text-gray-400">
+                    <span className="text-slate-500 dark:text-gray-400">
                       Repeats:{" "}
                       {event.recurring.charAt(0).toUpperCase() +
                         event.recurring.slice(1)}
@@ -236,13 +262,13 @@ export default function EventDetailsModal({
                 {event.location && (
                   <div className="flex items-center gap-3">
                     <MapPin className="h-4 w-4 text-gray-400" />
-                    <span className="text-gray-300">{event.location}</span>
+                    <span className="text-slate-600 dark:text-gray-300">{event.location}</span>
                   </div>
                 )}
                 {event.attendees && (
                   <div className="flex items-center gap-3">
                     <Users className="h-4 w-4 text-gray-400" />
-                    <span className="text-gray-300">
+                    <span className="text-slate-600 dark:text-gray-300">
                       {event.attendees} attendees expected
                     </span>
                   </div>
@@ -250,7 +276,7 @@ export default function EventDetailsModal({
                 {event.organizer && (
                   <div className="flex items-center gap-3">
                     <User className="h-4 w-4 text-gray-400" />
-                    <span className="text-gray-300">
+                    <span className="text-slate-600 dark:text-gray-300">
                       Organized by {event.organizer}
                     </span>
                   </div>
@@ -260,7 +286,7 @@ export default function EventDetailsModal({
           </div>
           {(event.reminders?.length ?? event.notes) && (
             <>
-              <Separator className="bg-gray-700" />
+              <Separator className="bg-slate-200 dark:bg-gray-700" />
               <div className="space-y-4">
                 <h3 className="flex items-center gap-2 text-lg font-semibold text-foreground">
                   <FileText className="h-5 w-5 text-blue-400" />
@@ -270,11 +296,11 @@ export default function EventDetailsModal({
                   <div className="space-y-2">
                     <div className="flex items-center gap-2 text-sm">
                       <Bell className="h-4 w-4 text-gray-400" />
-                      <span className="text-gray-300">Reminders:</span>
+                      <span className="text-slate-600 dark:text-gray-300">Reminders:</span>
                     </div>
                     <div className="ml-6 space-y-1">
                       {event.reminders.map((reminder, index) => (
-                        <div key={index} className="text-sm text-gray-400">
+                        <div key={index} className="text-sm text-slate-500 dark:text-gray-400">
                           • {reminder}
                         </div>
                       ))}
@@ -285,9 +311,9 @@ export default function EventDetailsModal({
                   <div className="space-y-2">
                     <div className="flex items-center gap-2 text-sm">
                       <FileText className="h-4 w-4 text-gray-400" />
-                      <span className="text-gray-300">Notes:</span>
+                      <span className="text-slate-600 dark:text-gray-300">Notes:</span>
                     </div>
-                    <div className="ml-6 text-sm leading-relaxed text-gray-400">
+                    <div className="ml-6 text-sm leading-relaxed text-slate-500 dark:text-gray-400">
                       {event.notes}
                     </div>
                   </div>

@@ -21,6 +21,7 @@ import {
   DialogTitle,
 } from "~/components/ui/dialog";
 import { EVENT_TYPES, getEventTypeColor } from "./event-colors";
+import { type EventDetails } from "./event-details-modal";
 
 export interface EventFormData {
   title: string;
@@ -39,7 +40,9 @@ interface EventModalProps {
   isOpen: boolean;
   onClose: () => void;
   selectedDate: Date;
-  onCreate: (formData: EventFormData) => void;
+  onCreate?: (formData: EventFormData) => void;
+  onEdit?: (id: string, formData: EventFormData) => void;
+  initialData?: EventDetails | null;
 }
 
 export default function EventModal({
@@ -47,6 +50,8 @@ export default function EventModal({
   onClose,
   selectedDate,
   onCreate,
+  onEdit,
+  initialData,
 }: EventModalProps) {
   const [formData, setFormData] = useState<EventFormData>({
     title: "",
@@ -60,6 +65,39 @@ export default function EventModal({
     priority: "medium",
     recurring: "none",
   });
+
+  // Populate form when initialData changes or modal opens
+  React.useEffect(() => {
+    if (isOpen) {
+      if (initialData) {
+        setFormData({
+          title: initialData.title ?? "",
+          description: initialData.description ?? "",
+          date: initialData.date ?? dayjs(selectedDate).format("YYYY-MM-DD"),
+          startTime: initialData.startTime ?? "",
+          endTime: initialData.endTime ?? "",
+          location: initialData.location ?? "",
+          eventType: initialData.type ?? "",
+          attendees: initialData.attendees ? String(initialData.attendees) : "",
+          priority: initialData.priority ?? "medium",
+          recurring: initialData.recurring ?? "none",
+        });
+      } else {
+        setFormData({
+          title: "",
+          description: "",
+          date: dayjs(selectedDate).format("YYYY-MM-DD"),
+          startTime: "",
+          endTime: "",
+          location: "",
+          eventType: "",
+          attendees: "",
+          priority: "medium",
+          recurring: "none",
+        });
+      }
+    }
+  }, [isOpen, initialData, selectedDate]);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -79,28 +117,20 @@ export default function EventModal({
       setIsSubmitting(true);
 
       try {
-        onCreate(formData);
-        setFormData({
-          title: "",
-          description: "",
-          date: dayjs(selectedDate).format("YYYY-MM-DD"),
-          startTime: "",
-          endTime: "",
-          location: "",
-          eventType: "",
-          attendees: "",
-          priority: "medium",
-          recurring: "none",
-        });
+        if (initialData && onEdit) {
+          onEdit(initialData.id, formData);
+        } else if (onCreate) {
+          onCreate(formData);
+        }
         onClose();
       } catch (error) {
-        console.error("Error creating event:", error);
-        alert("Failed to create event. Please try again.");
+        console.error("Error saving event:", error);
+        alert("Failed to save event. Please try again.");
       } finally {
         setIsSubmitting(false);
       }
     },
-    [formData, selectedDate, onCreate, onClose],
+    [formData, initialData, onCreate, onEdit, onClose],
   );
 
   const formatDate = useCallback((date: Date): string => {
@@ -129,7 +159,7 @@ export default function EventModal({
               <div className={`font-medium ${eventColor.color}`}>
                 {formData.title || "Event Title"}
               </div>
-              <div className="text-xs text-gray-400">
+              <div className="text-xs text-slate-500 dark:text-gray-400">
                 {formData.date} • {formData.startTime} - {formData.endTime}
               </div>
             </div>
@@ -141,11 +171,10 @@ export default function EventModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto border-gray-700 bg-gray-800 text-foreground">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 text-xl font-semibold">
-            <Calendar className="h-5 w-5 text-blue-400" />
-            Create New Event
+      <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto border-slate-200 bg-white text-slate-900 dark:border-gray-700 dark:bg-gray-800 dark:text-foreground">
+        <DialogHeader className="border-b border-gray-700 pb-4">
+          <DialogTitle className="text-xl font-semibold">
+            {initialData ? "Edit Event" : "Create New Event"}
           </DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -156,7 +185,7 @@ export default function EventModal({
               value={formData.title}
               onChange={(e) => handleInputChange("title", e.target.value)}
               placeholder="Enter event title"
-              className="border-gray-600 bg-gray-700 focus:border-blue-500"
+              className="border-slate-300 bg-white focus:border-blue-500 dark:border-gray-600 dark:bg-gray-700"
               required
             />
           </div>
@@ -167,7 +196,7 @@ export default function EventModal({
               value={formData.description}
               onChange={(e) => handleInputChange("description", e.target.value)}
               placeholder="Enter event description"
-              className="min-h-[100px] border-gray-600 bg-gray-700 focus:border-blue-500"
+              className="min-h-[100px] border-slate-300 bg-white focus:border-blue-500 dark:border-gray-600 dark:bg-gray-700"
               rows={4}
             />
           </div>
@@ -182,10 +211,10 @@ export default function EventModal({
                 type="date"
                 value={formData.date}
                 onChange={(e) => handleInputChange("date", e.target.value)}
-                className="border-gray-600 bg-gray-700 focus:border-blue-500"
+                className="border-slate-300 bg-white focus:border-blue-500 dark:border-gray-600 dark:bg-gray-700"
                 required
               />
-              <p className="text-xs text-gray-400">
+              <p className="text-xs text-slate-500 dark:text-gray-400">
                 {formatDate(new Date(formData.date))}
               </p>
             </div>
@@ -199,7 +228,7 @@ export default function EventModal({
                 type="time"
                 value={formData.startTime}
                 onChange={(e) => handleInputChange("startTime", e.target.value)}
-                className="border-gray-600 bg-gray-700 focus:border-blue-500"
+                className="border-slate-300 bg-white focus:border-blue-500 dark:border-gray-600 dark:bg-gray-700"
                 required
               />
             </div>
@@ -213,7 +242,7 @@ export default function EventModal({
                 type="time"
                 value={formData.endTime}
                 onChange={(e) => handleInputChange("endTime", e.target.value)}
-                className="border-gray-600 bg-gray-700 focus:border-blue-500"
+                className="border-slate-300 bg-white focus:border-blue-500 dark:border-gray-600 dark:bg-gray-700"
                 required
               />
             </div>
@@ -228,7 +257,7 @@ export default function EventModal({
               value={formData.location}
               onChange={(e) => handleInputChange("location", e.target.value)}
               placeholder="Enter location or 'Online'"
-              className="border-gray-600 bg-gray-700 focus:border-blue-500"
+              className="border-slate-300 bg-white focus:border-blue-500 dark:border-gray-600 dark:bg-gray-700"
             />
           </div>
           <div className="space-y-2">
@@ -240,10 +269,10 @@ export default function EventModal({
               value={formData.eventType}
               onValueChange={(value) => handleInputChange("eventType", value)}
             >
-              <SelectTrigger className="border-gray-600 bg-gray-700 focus:border-blue-500">
+              <SelectTrigger className="border-slate-300 bg-white focus:border-blue-500 dark:border-gray-600 dark:bg-gray-700">
                 <SelectValue placeholder="Select event type" />
               </SelectTrigger>
-              <SelectContent className="border-gray-600 bg-gray-700">
+              <SelectContent className="border-slate-200 bg-white dark:border-gray-600 dark:bg-gray-700">
                 {EVENT_TYPES.map((type) => (
                   <SelectItem key={type.id} value={type.id}>
                     {type.label}
@@ -263,7 +292,7 @@ export default function EventModal({
               value={formData.attendees}
               onChange={(e) => handleInputChange("attendees", e.target.value)}
               placeholder="Enter max attendees"
-              className="border-gray-600 bg-gray-700 focus:border-blue-500"
+              className="border-slate-300 bg-white focus:border-blue-500 dark:border-gray-600 dark:bg-gray-700"
             />
           </div>
           <div className="space-y-2">
@@ -272,10 +301,10 @@ export default function EventModal({
               value={formData.priority}
               onValueChange={(value) => handleInputChange("priority", value)}
             >
-              <SelectTrigger className="border-gray-600 bg-gray-700 focus:border-blue-500">
+              <SelectTrigger className="border-slate-300 bg-white focus:border-blue-500 dark:border-gray-600 dark:bg-gray-700">
                 <SelectValue placeholder="Select priority" />
               </SelectTrigger>
-              <SelectContent className="border-gray-600 bg-gray-700">
+              <SelectContent className="border-slate-200 bg-white dark:border-gray-600 dark:bg-gray-700">
                 <SelectItem value="low">Low</SelectItem>
                 <SelectItem value="medium">Medium</SelectItem>
                 <SelectItem value="high">High</SelectItem>
@@ -289,10 +318,10 @@ export default function EventModal({
               value={formData.recurring}
               onValueChange={(value) => handleInputChange("recurring", value)}
             >
-              <SelectTrigger className="border-gray-600 bg-gray-700 focus:border-blue-500">
+              <SelectTrigger className="border-slate-300 bg-white focus:border-blue-500 dark:border-gray-600 dark:bg-gray-700">
                 <SelectValue placeholder="Select recurrence" />
               </SelectTrigger>
-              <SelectContent className="border-gray-600 bg-gray-700">
+              <SelectContent className="border-slate-200 bg-white dark:border-gray-600 dark:bg-gray-700">
                 <SelectItem value="none">None</SelectItem>
                 <SelectItem value="daily">Daily</SelectItem>
                 <SelectItem value="weekly">Weekly</SelectItem>
@@ -306,16 +335,16 @@ export default function EventModal({
               type="button"
               variant="outline"
               onClick={onClose}
-              className="border-gray-600 bg-gray-700 text-foreground hover:bg-gray-600"
+              className="border-slate-300 bg-slate-100 text-slate-700 hover:bg-slate-200 dark:border-gray-600 dark:bg-gray-700 dark:text-foreground dark:hover:bg-gray-600"
             >
               Cancel
             </Button>
             <Button
               type="submit"
-              disabled={isSubmitting}
-              className="bg-blue-600 hover:bg-blue-700"
+              disabled={isSubmitting || !formData.title || !formData.date || !formData.startTime || !formData.endTime || !formData.eventType}
+              className="bg-blue-600 text-white hover:bg-blue-700"
             >
-              Create Event
+              {isSubmitting ? "Saving..." : initialData ? "Save Changes" : "Create Event"}
             </Button>
           </div>
         </form>

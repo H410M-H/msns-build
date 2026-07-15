@@ -27,7 +27,7 @@ export default function EventColorLegend({
           <div className={`font-medium ${eventType.color}`}>
             {eventType.label}
           </div>
-          <div className="mt-1 text-xs text-gray-400">
+          <div className="mt-1 text-xs text-slate-500 dark:text-gray-400">
             {eventType.description}
           </div>
         </div>
@@ -50,7 +50,7 @@ export default function EventColorLegend({
   }, []);
 
   return (
-    <Card className="border-gray-700 bg-gray-800">
+    <Card className="border-slate-200 bg-white dark:border-gray-700 dark:bg-gray-800">
       {showTitle && (
         <CardHeader className="pb-3">
           <CardTitle className="flex items-center gap-2 text-lg font-semibold text-foreground">
