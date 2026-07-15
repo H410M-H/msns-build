@@ -1,7 +1,7 @@
 "use client";
 
-import { motion, useMotionValue, useTransform } from "framer-motion";
-import { useRef } from "react";
+import { motion, useMotionValue, useTransform, useSpring } from "framer-motion";
+import { useRef, useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Zap, ArrowRight, Shield, GraduationCap, LogIn } from "lucide-react";
@@ -50,16 +50,53 @@ const TiltCard = ({
 };
 
 export default function HomeClient() {
+  const mouseX = useMotionValue(typeof window !== "undefined" ? window.innerWidth / 2 : 0);
+  const mouseY = useMotionValue(typeof window !== "undefined" ? window.innerHeight / 2 : 0);
+  
+  // Custom cursor smooth springs
+  const cursorX = useSpring(mouseX, { damping: 25, stiffness: 120 });
+  const cursorY = useSpring(mouseY, { damping: 25, stiffness: 120 });
+
+  // 3D background tilt
+  const [winSize, setWinSize] = useState({ w: 1000, h: 1000 });
+  useEffect(() => {
+    setWinSize({ w: window.innerWidth, h: window.innerHeight });
+    const handleMouseMove = (e: MouseEvent) => {
+      mouseX.set(e.clientX);
+      mouseY.set(e.clientY);
+    };
+    window.addEventListener("mousemove", handleMouseMove);
+    return () => window.removeEventListener("mousemove", handleMouseMove);
+  }, [mouseX, mouseY]);
+
+  const bgRotateX = useTransform(mouseY, [0, winSize.h], [8, -8]);
+  const bgRotateY = useTransform(mouseX, [0, winSize.w], [-8, 8]);
+  const bgZ = useTransform(mouseY, [0, winSize.h], [0, 50]);
+
   return (
     // 🌗 Container with h-dvh for full screen feel without scroll on load
-    <div className="relative min-h-dvh w-full overflow-hidden bg-white text-slate-900 transition-colors duration-500 dark:bg-[#02131b] dark:text-foreground">
-      {/* 🌐 Background System */}
-      <div className="pointer-events-none absolute inset-0 z-0">
+    <div className="relative min-h-dvh w-full overflow-hidden bg-white text-slate-900 transition-colors duration-500 dark:bg-[#02131b] dark:text-foreground cursor-none">
+      
+      {/* 🔴 Custom Cursor Tracker */}
+      <motion.div
+        className="pointer-events-none fixed left-0 top-0 z-[100] hidden h-10 w-10 items-center justify-center rounded-full border border-emerald-500/30 bg-emerald-500/10 backdrop-blur-[2px] sm:flex"
+        style={{ x: useTransform(cursorX, x => x - 20), y: useTransform(cursorY, y => y - 20) }}
+      />
+      <motion.div
+        className="pointer-events-none fixed left-0 top-0 z-[100] hidden h-2 w-2 rounded-full bg-emerald-500 shadow-[0_0_10px_2px_rgba(16,185,129,0.5)] sm:block"
+        style={{ x: useTransform(mouseX, x => x - 4), y: useTransform(mouseY, y => y - 4) }}
+      />
+
+      {/* 🌐 3D Background System */}
+      <div className="pointer-events-none absolute inset-0 z-0 [perspective:1000px]">
         {/* Base Gradient */}
         <div className="absolute inset-0 bg-gradient-to-br from-emerald-50/50 via-white to-cyan-50/50 dark:from-emerald-950/20 dark:via-[#02131b] dark:to-cyan-950/20" />
 
-        {/* Grid Pattern */}
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(16,185,129,0.05)_1px,transparent_1px),linear-gradient(to_bottom,rgba(16,185,129,0.05)_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] dark:bg-[linear-gradient(to_right,rgba(45,255,196,0.04)_1px,transparent_1px),linear-gradient(to_bottom,rgba(45,255,196,0.04)_1px,transparent_1px)]" />
+        {/* 3D Animated Grid Pattern */}
+        <motion.div 
+          className="absolute inset-[-20%] h-[140%] w-[140%] bg-[linear-gradient(to_right,rgba(16,185,129,0.06)_1px,transparent_1px),linear-gradient(to_bottom,rgba(16,185,129,0.06)_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_70%_70%_at_50%_50%,#000_60%,transparent_100%)] dark:bg-[linear-gradient(to_right,rgba(45,255,196,0.04)_1px,transparent_1px),linear-gradient(to_bottom,rgba(45,255,196,0.04)_1px,transparent_1px)]" 
+          style={{ rotateX: bgRotateX, rotateY: bgRotateY, z: bgZ, transformStyle: "preserve-3d" }}
+        />
       </div>
 
       {/* 💫 Animated Orbs */}
