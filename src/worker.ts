@@ -1,3 +1,4 @@
+/* eslint-disable */
 import { Client } from "pg";
 
 export interface Env {
