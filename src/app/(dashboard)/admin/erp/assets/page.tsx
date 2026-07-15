@@ -32,9 +32,19 @@ export default function AssetsPage() {
   const [editingAssetId, setEditingAssetId] = useState<string | null>(null);
   const [showMaintenanceDialog, setShowMaintenanceDialog] = useState<string | null>(null);
   const [showDisposeDialog, setShowDisposeDialog] = useState<string | null>(null);
-  const [assetForm, setAssetForm] = useState({
+  type AssetFormCondition = "New" | "Good" | "Fair" | "Poor" | "UnderMaintenance";
+  type AssetFormDepreciation = "StraightLine" | "DecliningBalance";
+  const [assetForm, setAssetForm] = useState<{
+    assetName: string;
+    assetCategoryId: string;
+    purchaseCost: number;
+    condition: AssetFormCondition;
+    location: string;
+    usefulLifeYears: number;
+    depreciationMethod: AssetFormDepreciation;
+  }>({
     assetName: "", assetCategoryId: "", purchaseCost: 0,
-    condition: "New" as const, location: "", usefulLifeYears: 5, depreciationMethod: "StraightLine" as const,
+    condition: "New", location: "", usefulLifeYears: 5, depreciationMethod: "StraightLine",
   });
   const [mxForm, setMxForm] = useState({ maintenanceType: "Preventive" as const, scheduledDate: "", vendorName: "", cost: 0 });
   const [disposeForm, setDisposeForm] = useState({ disposalDate: "", disposalMethod: "Sale" as const, proceedsReceived: 0, notes: "" });
@@ -126,7 +136,7 @@ export default function AssetsPage() {
             setShowAssetDialog(open);
             if (!open) {
               setEditingAssetId(null);
-              setAssetForm({ assetName: "", assetCategoryId: "", purchaseCost: 0, condition: "New" as const, location: "", usefulLifeYears: 5, depreciationMethod: "StraightLine" as const });
+              setAssetForm({ assetName: "", assetCategoryId: "", purchaseCost: 0, condition: "New", location: "", usefulLifeYears: 5, depreciationMethod: "StraightLine" });
             }
           }}>
             <DialogTrigger asChild>
@@ -263,10 +273,10 @@ export default function AssetsPage() {
                                 assetName: asset.assetName,
                                 assetCategoryId: asset.assetCategoryId,
                                 purchaseCost: asset.purchaseCost,
-                                condition: asset.condition as any,
-                                location: asset.location || "",
+                                condition: asset.condition as AssetFormCondition,
+                                location: asset.location ?? "",
                                 usefulLifeYears: asset.usefulLifeYears,
-                                depreciationMethod: asset.depreciationMethod as any,
+                                depreciationMethod: asset.depreciationMethod as AssetFormDepreciation,
                               });
                               setShowAssetDialog(true);
                             }} className="h-7 px-2 text-xs text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-500/10">
