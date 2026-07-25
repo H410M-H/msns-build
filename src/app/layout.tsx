@@ -25,6 +25,11 @@ export const metadata: Metadata = {
   metadataBase: new URL("https://lms.msns.edu.pk"),
   title: "MSNS-LMS Portal | M. S. NAZ HIGH SCHOOL®",
   description: "Access the M.S. Naz High School Learning Management System. Sign in to view grades, assignments, fee structures, and administrative dashboard panels.",
+  icons: {
+    icon: "/api/images/logos/Official_LOGO_grn_ic9ldd.png",
+    shortcut: "/api/images/logos/Official_LOGO_grn_ic9ldd.png",
+    apple: "/api/images/logos/Official_LOGO_grn_ic9ldd.png",
+  },
   verification: {
     google: "UEssQjRtMsHt_ioT8H5RUA2Rnl0_9QEl0d8tL6JBi1E",
   },
