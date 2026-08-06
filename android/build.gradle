@@ -1,0 +1,45 @@
+// Top-level build file where you can add configuration options common to all sub-projects/modules.
+
+buildscript {
+    
+    repositories {
+        google()
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:8.13.0'
+        classpath 'com.google.gms:google-services:4.4.4'
+
+        // NOTE: Do not place your application dependencies here; they belong
+        // in the individual module build.gradle files
+    }
+}
+
+apply from: "variables.gradle"
+
+allprojects {
+    repositories {
+        google()
+        mavenCentral()
+    }
+    tasks.configureEach { task ->
+        if (task.name.contains("Resource") || task.name.contains("Manifest") || task.name.contains("Aapt")) {
+            task.doFirst {
+                def systemAapt2 = file("/data/data/com.termux/files/usr/bin/aapt2")
+                if (systemAapt2.exists()) {
+                    fileTree(dir: "${System.getProperty('user.home')}/.gradle/caches", include: "**/aapt2").each { f ->
+                        if (f.isFile() && f.name == "aapt2" && f.length() != systemAapt2.length()) {
+                            try {
+                                f.bytes = systemAapt2.bytes
+                            } catch (Exception ignored) {}
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+task clean(type: Delete) {
+    delete rootProject.buildDir
+}

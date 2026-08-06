@@ -43,3 +43,18 @@
 2026-06-27 22:52:14.092 PKT [9027] LOG:  checkpoint complete: wrote 379 buffers (2.3%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 0 recycled; write=38.160 s, sync=0.054 s, total=38.246 s; sync files=44, longest=0.006 s, average=0.002 s; distance=3570 kB, estimate=3604 kB; lsn=0/34C6298, redo lsn=0/34C6208
 2026-06-27 22:56:35.112 PKT [9027] LOG:  checkpoint starting: time
 2026-06-27 22:56:36.004 PKT [9027] LOG:  checkpoint complete: wrote 8 buffers (0.0%), wrote 0 SLRU buffers; 0 WAL file(s) added, 0 removed, 0 recycled; write=0.813 s, sync=0.015 s, total=0.893 s; sync files=5, longest=0.006 s, average=0.003 s; distance=45 kB, estimate=3248 kB; lsn=0/34D16C0, redo lsn=0/34D1668
+2026-07-10 07:25:03.658 PKT [8156] LOG:  starting PostgreSQL 18.2 on aarch64-unknown-linux-android, compiled by Android (13989888, +pgo, +bolt, +lto, +mlgo, based on r563880c) clang version 21.0.0 (https://android.googlesource.com/toolchain/llvm-project 5e96669f06077099aa41290cdb4c5e6fa0f59349), 64-bit
+2026-07-10 07:25:03.661 PKT [8156] LOG:  listening on IPv4 address "127.0.0.1", port 5432
+2026-07-10 07:25:03.664 PKT [8156] LOG:  listening on Unix socket "/data/data/com.termux/files/usr/tmp/.s.PGSQL.5432"
+2026-07-10 07:25:03.673 PKT [8164] LOG:  database system was interrupted; last known up at 2026-06-27 22:56:36 PKT
+2026-07-10 07:25:04.586 PKT [8164] LOG:  database system was not properly shut down; automatic recovery in progress
+2026-07-10 07:25:04.595 PKT [8164] LOG:  redo starts at 0/34D1668
+2026-07-10 07:25:04.595 PKT [8164] LOG:  invalid record length at 0/34D1770: expected at least 24, got 0
+2026-07-10 07:25:04.595 PKT [8164] LOG:  redo done at 0/34D1738 system usage: CPU: user: 0.00 s, system: 0.00 s, elapsed: 0.00 s
+2026-07-10 07:25:04.611 PKT [8162] LOG:  checkpoint starting: end-of-recovery immediate wait
+2026-07-10 07:25:04.636 PKT [8162] LOG:  checkpoint complete: wrote 0 buffers (0.0%), wrote 3 SLRU buffers; 0 WAL file(s) added, 0 removed, 0 recycled; write=0.008 s, sync=0.003 s, total=0.026 s; sync files=2, longest=0.002 s, average=0.002 s; distance=0 kB, estimate=0 kB; lsn=0/34D1770, redo lsn=0/34D1770
+2026-07-10 07:25:04.643 PKT [8156] LOG:  database system is ready to accept connections
+2026-07-10 07:25:09.926 PKT [8196] ERROR:  column "status" does not exist at character 53
+2026-07-10 07:25:09.926 PKT [8196] STATEMENT:  SELECT "employeeId", "employeeName", "designation", "status" FROM "Employees" LIMIT 5
+2026-07-10 07:30:04.636 PKT [8162] LOG:  checkpoint starting: time
+2026-07-10 07:30:06.189 PKT [8162] LOG:  checkpoint complete: wrote 15 buffers (0.1%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 0 recycled; write=1.515 s, sync=0.013 s, total=1.553 s; sync files=11, longest=0.005 s, average=0.002 s; distance=95 kB, estimate=95 kB; lsn=0/34F1F40, redo lsn=0/34E96B8
