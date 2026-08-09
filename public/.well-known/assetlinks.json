@@ -1,0 +1,17 @@
+[
+  {
+    "relation": [
+      "delegate_permission/common.handle_all_urls",
+      "delegate_permission/common.get_login_creds"
+    ],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.msns.lms",
+      "sha256_cert_fingerprints": [
+        "9A:72:AF:7F:6A:D5:0A:A5:29:61:3D:FA:9F:75:13:95:E8:51:37:C0:2F:8C:D3:0A:3C:F4:94:BB:6D:78:0F:A0",
+        "BD:FF:B8:FD:F2:9D:4C:04:9B:59:B9:A1:BD:D7:90:07:B3:60:3A:6D:F2:64:33:7C:15:A0:51:11:AD:FE:CD:BD",
+        "D3:4B:30:15:97:DB:D6:95:FD:98:15:1E:FD:FE:33:2A:30:A2:97:D9:8D:5E:C0:A6:6B:3C:2F:1B:1C:48:33:FD"
+      ]
+    }
+  }
+]
