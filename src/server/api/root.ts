@@ -24,6 +24,8 @@ import { subjectDiaryRouter } from "./routers/subjectDiary";
 import { erpRouter } from "./routers/erp";
 import { markingCentreRouter } from "./routers/markingCentre";
 import { bulkSalaryRouter } from "./routers/bulkSalary";
+import { mobileRouter } from "./routers/mobile";
+import { parentRouter } from "./routers/parent";
 
 export const appRouter = createTRPCRouter({
   user: UserRouter,
@@ -51,6 +53,8 @@ export const appRouter = createTRPCRouter({
   erp: erpRouter,
   markingCentre: markingCentreRouter,
   bulkSalary: bulkSalaryRouter,
+  mobile: mobileRouter,
+  parent: parentRouter,
 });
 
 export type AppRouter = typeof appRouter;

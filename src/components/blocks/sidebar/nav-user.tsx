@@ -42,6 +42,12 @@ export const NavUser = () => {
 
   const handleSignOut = async () => {
     setIsLoggingOut(true);
+    try {
+      const { clearAllMobileState } = await import("~/lib/mobile/native-service");
+      await clearAllMobileState();
+    } catch (err) {
+      console.error("Failed to clear mobile state during sign out:", err);
+    }
     await signOut({ redirect: true, callbackUrl: "/sign-in" });
   };
 

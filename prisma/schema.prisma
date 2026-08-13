@@ -25,6 +25,7 @@ model User {
   twoFactorAuth      Boolean     @default(false)
   EventAttendee      Attendee[]
   Event              Event[]     @relation("EventCreator")
+  DeviceRegistration DeviceRegistration[]
 }
 
 model Timetable {
@@ -1169,6 +1170,7 @@ model ParentGuardian {
   isActive          Boolean  @default(true)
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
+  DeviceRegistration DeviceRegistration[]
 }
 
 // Enums
@@ -1434,4 +1436,17 @@ model Broadcast {
   action    String
   message   String
   createdAt DateTime @default(now())
+}
+
+model DeviceRegistration {
+  id               String          @id @default(cuid())
+  token            String          @unique
+  platform         String
+  userId           String?
+  parentGuardianId String?
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+
+  User             User?           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  ParentGuardian   ParentGuardian? @relation(fields: [parentGuardianId], references: [guardentId], onDelete: Cascade)
 }

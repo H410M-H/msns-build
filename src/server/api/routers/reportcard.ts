@@ -134,6 +134,28 @@ export const reportCardRouter = createTRPCRouter({
           generatedCount++;
         }
 
+        // Run FCM alerts asynchronously
+        void (async () => {
+          try {
+            const studentIds = students.map((s) => s.studentId);
+            const parents = await ctx.db.parentGuardian.findMany({
+              where: { linkedStudentIds: { hasSome: studentIds } },
+              select: { guardentId: true, linkedStudentIds: true },
+            });
+            for (const parent of parents) {
+              const matchedStudent = await ctx.db.students.findFirst({
+                where: { studentId: { in: parent.linkedStudentIds.filter((id) => studentIds.includes(id)) } },
+                select: { studentName: true },
+              });
+              const name = matchedStudent?.studentName ?? "Student";
+              const { sendPushNotification } = await import("~/server/mobile/fcm");
+              await sendPushNotification([], [parent.guardentId], "Report Card Published", `The report card for ${name} has been published for ${exam.examTypeEnum}.`);
+            }
+          } catch (err) {
+            console.error("Failed to send report card push notification:", err);
+          }
+        })();
+
         return {
           success: true,
           message: `Generated ${generatedCount} report cards, skipped ${skippedCount} students due to incomplete marks.`,
@@ -288,6 +310,28 @@ export const reportCardRouter = createTRPCRouter({
             include: { ReportCardDetail: true },
           });
         }
+
+        // Run FCM alerts asynchronously
+        void (async () => {
+          try {
+            const student = await ctx.db.students.findUnique({
+              where: { studentId: input.studentId },
+              select: { studentName: true },
+            });
+            const name = student?.studentName ?? "Student";
+            const parents = await ctx.db.parentGuardian.findMany({
+              where: { linkedStudentIds: { has: input.studentId } },
+              select: { guardentId: true },
+            });
+            const parentIds = parents.map((p) => p.guardentId);
+            if (parentIds.length > 0) {
+              const { sendPushNotification } = await import("~/server/mobile/fcm");
+              await sendPushNotification([], parentIds, "Report Card Published", `The report card for ${name} has been published for ${exam.examTypeEnum}.`);
+            }
+          } catch (err) {
+            console.error("Failed to send report card push notification:", err);
+          }
+        })();
 
         return {
           success: true,

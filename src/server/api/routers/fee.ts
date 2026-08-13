@@ -236,6 +236,39 @@ export const feeRouter = createTRPCRouter({
           assignedCount++;
         }
 
+        // Run FCM alerts asynchronously
+        void (async () => {
+          try {
+            const studentIds = studentClasses.map((sc) => sc.studentId);
+            const parents = await ctx.db.parentGuardian.findMany({
+              where: { linkedStudentIds: { hasSome: studentIds } },
+              select: { guardentId: true, linkedStudentIds: true },
+            });
+            const feeRecord = await ctx.db.fees.findUnique({
+              where: { feeId: input.feeId },
+              select: { type: true },
+            });
+            const feeType = feeRecord?.type === "MonthlyFee" ? "Monthly Fee" : "Annual Fee";
+            
+            for (const parent of parents) {
+              const matchedStudent = await ctx.db.students.findFirst({
+                where: { studentId: { in: parent.linkedStudentIds.filter((id) => studentIds.includes(id)) } },
+                select: { studentName: true },
+              });
+              const name = matchedStudent?.studentName ?? "Student";
+              const { sendPushNotification } = await import("~/server/mobile/fcm");
+              await sendPushNotification(
+                [],
+                [parent.guardentId],
+                "Fee Due Notification",
+                `Dear Parent, the ${feeType} for ${name} is due for ${input.month}/${input.year}.`
+              );
+            }
+          } catch (err) {
+            console.error("Failed to send fee due push notification:", err);
+          }
+        })();
+
         return { assignedCount, skippedCount };
       } catch (error) {
         throw new TRPCError({

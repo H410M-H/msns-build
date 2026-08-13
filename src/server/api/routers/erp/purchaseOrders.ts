@@ -89,10 +89,35 @@ export const purchaseOrdersRouter = createTRPCRouter({
       if (po.status !== "Draft") {
         throw new TRPCError({ code: "BAD_REQUEST", message: "Only Draft POs can be submitted" });
       }
-      return ctx.db.purchaseOrder.update({
+      const updated = await ctx.db.purchaseOrder.update({
         where: { poId: input.poId },
         data: { status: "PendingApprovalL1" },
       });
+
+      void (async () => {
+        try {
+          const approvers = await ctx.db.user.findMany({
+            where: {
+              accountType: { in: ["ADMIN", "PRINCIPAL", "HEAD"] }
+            },
+            select: { id: true }
+          });
+          const approverIds = approvers.map((u) => u.id);
+          if (approverIds.length > 0) {
+            const { sendPushNotification } = await import("~/server/mobile/fcm");
+            await sendPushNotification(
+              approverIds,
+              [],
+              "ERP Approval Required",
+              `Purchase Order ${po.poNumber} requires review and L1 approval.`
+            );
+          }
+        } catch (err) {
+          console.error("Failed to send PO approval push notification:", err);
+        }
+      })();
+
+      return updated;
     }),
 
   // FR-ERP-07: L1 Approval
@@ -133,6 +158,31 @@ export const purchaseOrdersRouter = createTRPCRouter({
           },
         }),
       ]);
+
+      if (nextStatus === "PendingApprovalL2") {
+        void (async () => {
+          try {
+            const approvers = await ctx.db.user.findMany({
+              where: {
+                accountType: { in: ["ADMIN", "PRINCIPAL"] }
+              },
+              select: { id: true }
+            });
+            const approverIds = approvers.map((u) => u.id);
+            if (approverIds.length > 0) {
+              const { sendPushNotification } = await import("~/server/mobile/fcm");
+              await sendPushNotification(
+                approverIds,
+                [],
+                "ERP L2 Approval Required",
+                `Purchase Order ${po.poNumber} exceeds PKR 10,000 and requires L2 approval.`
+              );
+            }
+          } catch (err) {
+            console.error("Failed to send PO L2 approval push notification:", err);
+          }
+        })();
+      }
 
       return { success: true, po: updatedPO };
     }),

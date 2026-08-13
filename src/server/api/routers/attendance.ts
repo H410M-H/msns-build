@@ -87,6 +87,32 @@ export const attendanceRouter = createTRPCRouter({
           }),
         );
         await Promise.all(upsertPromises);
+
+        // Run FCM alerts asynchronously
+        void (async () => {
+          try {
+            const absentRecords = input.records.filter((r) => r.status === "A");
+            for (const record of absentRecords) {
+              const student = await ctx.db.students.findUnique({
+                where: { studentId: record.studentId },
+                select: { studentName: true },
+              });
+              const name = student?.studentName ?? "Student";
+              const parents = await ctx.db.parentGuardian.findMany({
+                where: { linkedStudentIds: { has: record.studentId } },
+                select: { guardentId: true },
+              });
+              const parentIds = parents.map((p) => p.guardentId);
+              if (parentIds.length > 0) {
+                const { sendPushNotification } = await import("~/server/mobile/fcm");
+                await sendPushNotification([], parentIds, "Attendance Alert", `${name} was marked ABSENT today (${input.date}).`);
+              }
+            }
+          } catch (err) {
+            console.error("Failed to send student attendance push notification:", err);
+          }
+        })();
+
         return { success: true };
       } catch (error) {
         console.error("Error marking student attendance:", error);
