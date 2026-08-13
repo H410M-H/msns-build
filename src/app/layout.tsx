@@ -1,6 +1,8 @@
 // src/app/layout.tsx
 import "~/styles/globals.css";
 
+export const dynamic = "force-dynamic";
+
 import { Geist_Mono, Inter } from "next/font/google";
 import { type Metadata } from "next";
 import Script from "next/script";
