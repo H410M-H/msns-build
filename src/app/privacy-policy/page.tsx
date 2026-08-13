@@ -20,7 +20,7 @@ export default function PrivacyPolicyPage() {
         <section>
           <h2 className="text-xl font-semibold text-white mb-2">1. Overview</h2>
           <p>
-            M.S. Naz High School ("MSNS LMS", "we", "us", or "our") operates the
+            M.S. Naz High School (&quot;MSNS LMS&quot;, &quot;we&quot;, &quot;us&quot;, or &quot;our&quot;) operates the
             MSNS Learning Management System mobile application and web portal.
             This page informs users of our policies regarding the collection, use,
             and disclosure of Personal Information.

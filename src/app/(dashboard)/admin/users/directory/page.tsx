@@ -5,12 +5,22 @@ import { api } from "~/trpc/react";
 import { Search, Phone, Droplet, ShieldCheck } from "lucide-react";
 import { Input } from "~/components/ui/input";
 
+interface StudentDirectoryItem {
+  studentId: string;
+  studentName: string;
+  registrationNumber: string;
+  fatherName: string;
+  fatherMobile: string;
+  currentAddress: string;
+  bloodGroup?: string | null;
+}
+
 export default function EmergencyDirectoryPage() {
   const [searchTerm, setSearchTerm] = useState("");
 
   const { data: students, isLoading } = api.student.getStudents.useQuery();
 
-  const filteredStudents = students?.filter((s: any) =>
+  const filteredStudents = (students as StudentDirectoryItem[] | undefined)?.filter((s) =>
     s.studentName.toLowerCase().includes(searchTerm.toLowerCase()) ||
     s.registrationNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
     s.fatherMobile.toLowerCase().includes(searchTerm.toLowerCase())
@@ -42,11 +52,11 @@ export default function EmergencyDirectoryPage() {
         </div>
       ) : !filteredStudents || filteredStudents.length === 0 ? (
         <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-8 text-center text-slate-400">
-          No directory records matching "{searchTerm}".
+          No directory records matching &quot;{searchTerm}&quot;.
         </div>
       ) : (
         <div className="grid gap-3 sm:grid-cols-2">
-          {filteredStudents.map((s: any) => (
+          {filteredStudents.map((s) => (
             <div key={s.studentId} className="rounded-xl border border-slate-800 bg-slate-900/60 p-4 space-y-3 backdrop-blur-md">
               <div className="flex items-center justify-between">
                 <div>
@@ -54,7 +64,7 @@ export default function EmergencyDirectoryPage() {
                   <p className="text-xs text-slate-400">Reg: {s.registrationNumber}</p>
                 </div>
                 <span className="px-2.5 py-1 text-xs font-bold rounded-lg bg-rose-500/10 text-rose-400 border border-rose-500/20 flex items-center gap-1">
-                  <Droplet className="h-3.5 w-3.5 fill-rose-400" /> {s.bloodGroup || "O+"}
+                  <Droplet className="h-3.5 w-3.5 fill-rose-400" /> {s.bloodGroup ?? "O+"}
                 </span>
               </div>
 

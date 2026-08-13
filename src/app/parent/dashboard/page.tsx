@@ -16,11 +16,48 @@ import {
 } from "lucide-react";
 import { Button } from "~/components/ui/button";
 
+interface FeeItem {
+  sfcId: string;
+  tuitionPaid: boolean;
+  month: number;
+  year: number;
+  fees?: {
+    level?: string;
+    tuitionFee?: number;
+  } | null;
+}
+
+interface ReportCardItem {
+  reportCardId: string;
+  examId: string;
+  status: string;
+  totalObtainedMarks: number;
+  totalMaxMarks: number;
+  percentage: number;
+  Exam?: {
+    examTypeEnum?: string;
+  } | null;
+}
+
+interface DiaryItem {
+  subjectDiaryId: string;
+  date: string | number | Date;
+  content: string;
+  Teacher?: {
+    employeeName?: string;
+  } | null;
+  ClassSubject?: {
+    Subject?: {
+      subjectName?: string;
+    } | null;
+  } | null;
+}
+
 export default function ParentDashboardPage() {
   const { data: students, isLoading: loadingStudents } = api.parent.getLinkedStudents.useQuery();
   const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null);
 
-  const activeStudentId = selectedStudentId || students?.[0]?.studentId || "";
+  const activeStudentId = selectedStudentId ?? students?.[0]?.studentId ?? "";
 
   const { data: dashboardData, isLoading: loadingDashboard } = api.parent.getStudentDashboardData.useQuery(
     { studentId: activeStudentId },
@@ -47,7 +84,7 @@ export default function ParentDashboardPage() {
     );
   }
 
-  const { student, attendance, reportCards, fees, diaries } = dashboardData || {};
+  const { student, attendance, reportCards, fees, diaries } = dashboardData ?? {};
 
   return (
     <div className="space-y-6">
@@ -60,7 +97,7 @@ export default function ParentDashboardPage() {
           <div>
             <h2 className="text-sm font-semibold text-slate-400 uppercase tracking-wider">Select Student</h2>
             <p className="text-base font-bold text-white">
-              {student?.studentName || "Select a child"}
+              {student?.studentName ?? "Select a child"}
             </p>
           </div>
         </div>
@@ -109,24 +146,24 @@ export default function ParentDashboardPage() {
                       className="text-emerald-500 transition-all duration-1000 ease-out" 
                       fill="transparent"
                       strokeDasharray={2 * Math.PI * 38}
-                      strokeDashoffset={2 * Math.PI * 38 * (1 - (attendance?.rate || 0) / 100)}
+                      strokeDashoffset={2 * Math.PI * 38 * (1 - (attendance?.rate ?? 0) / 100)}
                       strokeLinecap="round"
                     />
                   </svg>
-                  <span className="absolute text-xl font-bold text-white">{attendance?.rate || 0}%</span>
+                  <span className="absolute text-xl font-bold text-white">{attendance?.rate ?? 0}%</span>
                 </div>
                 <div className="space-y-1 text-xs">
                   <div className="flex items-center gap-1.5 text-emerald-400">
                     <CheckCircle2 className="h-3.5 w-3.5" />
-                    <span>Present: {attendance?.present || 0}</span>
+                    <span>Present: {attendance?.present ?? 0}</span>
                   </div>
                   <div className="flex items-center gap-1.5 text-rose-400">
                     <XCircle className="h-3.5 w-3.5" />
-                    <span>Absent: {attendance?.absent || 0}</span>
+                    <span>Absent: {attendance?.absent ?? 0}</span>
                   </div>
                   <div className="flex items-center gap-1.5 text-amber-400">
                     <Clock className="h-3.5 w-3.5" />
-                    <span>Leave: {attendance?.leaves || 0}</span>
+                    <span>Leave: {attendance?.leaves ?? 0}</span>
                   </div>
                 </div>
               </div>
@@ -136,7 +173,7 @@ export default function ParentDashboardPage() {
             <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-5 backdrop-blur-md flex flex-col justify-between">
               <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Registration Number</span>
               <div className="my-2">
-                <p className="text-2xl font-black text-white tracking-tight">{student?.registrationNumber || "N/A"}</p>
+                <p className="text-2xl font-black text-white tracking-tight">{student?.registrationNumber ?? "N/A"}</p>
                 <p className="text-xs text-slate-400 mt-1">Roll / Ref Identity</p>
               </div>
               <div className="text-xs text-emerald-400 flex items-center gap-1 font-medium">
@@ -147,7 +184,7 @@ export default function ParentDashboardPage() {
             <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-5 backdrop-blur-md flex flex-col justify-between">
               <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Blood Group</span>
               <div className="my-2">
-                <p className="text-2xl font-black text-rose-400 tracking-tight">{student?.bloodGroup || "O+"}</p>
+                <p className="text-2xl font-black text-rose-400 tracking-tight">{student?.bloodGroup ?? "O+"}</p>
                 <p className="text-xs text-slate-400 mt-1">Medical Record</p>
               </div>
               <div className="text-xs text-slate-400">Verified</div>
@@ -156,7 +193,7 @@ export default function ParentDashboardPage() {
             <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-5 backdrop-blur-md flex flex-col justify-between">
               <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Reports Published</span>
               <div className="my-2">
-                <p className="text-2xl font-black text-teal-400 tracking-tight">{reportCards?.length || 0}</p>
+                <p className="text-2xl font-black text-teal-400 tracking-tight">{reportCards?.length ?? 0}</p>
                 <p className="text-xs text-slate-400 mt-1">Examinations</p>
               </div>
               <div className="text-xs text-emerald-400 font-medium">Up to date</div>
@@ -176,7 +213,7 @@ export default function ParentDashboardPage() {
               <p className="text-sm text-slate-400 italic">No fee bills issued for this student currently.</p>
             ) : (
               <div className="grid gap-3 sm:grid-cols-2">
-                {fees.map((item: any) => {
+                {(fees as FeeItem[]).map((item) => {
                   const isPaid = item.tuitionPaid;
                   return (
                     <div key={item.sfcId} className="flex items-center justify-between rounded-xl border border-slate-800 bg-slate-950/50 p-4">
@@ -187,10 +224,10 @@ export default function ParentDashboardPage() {
                           }`}>
                             {isPaid ? "PAID" : "PENDING"}
                           </span>
-                          <span className="text-xs text-slate-400 font-medium">{item.fees?.level || "Standard Level"}</span>
+                          <span className="text-xs text-slate-400 font-medium">{item.fees?.level ?? "Standard Level"}</span>
                         </div>
                         <p className="text-base font-bold text-white mt-1.5">
-                          PKR {(item.fees?.tuitionFee || 0).toLocaleString()}
+                          PKR {(item.fees?.tuitionFee ?? 0).toLocaleString()}
                         </p>
                         <p className="text-xs text-slate-400">Month: {item.month} / {item.year}</p>
                       </div>
@@ -199,7 +236,7 @@ export default function ParentDashboardPage() {
                         size="sm"
                         variant="outline"
                         onClick={() => {
-                          alert(`Downloading Fee Voucher PDF for ${student?.studentName} (${item.month}/${item.year})`);
+                          alert(`Downloading Fee Voucher PDF for ${student?.studentName ?? "Student"} (${item.month}/${item.year})`);
                         }}
                         className="border-slate-800 bg-slate-900 text-xs text-slate-300 hover:bg-slate-800 hover:text-white"
                       >
@@ -226,7 +263,7 @@ export default function ParentDashboardPage() {
               <p className="text-sm text-slate-400 italic">No examination report cards published yet.</p>
             ) : (
               <div className="grid gap-3 sm:grid-cols-2">
-                {reportCards.map((rc: any) => (
+                {(reportCards as ReportCardItem[]).map((rc) => (
                   <div key={rc.reportCardId} className="flex items-center justify-between rounded-xl border border-slate-800 bg-slate-950/50 p-4">
                     <div>
                       <span className={`px-2 py-0.5 text-xs font-bold rounded-md ${
@@ -234,14 +271,14 @@ export default function ParentDashboardPage() {
                       }`}>
                         {rc.status}
                       </span>
-                      <p className="text-base font-bold text-white mt-1.5">{rc.Exam?.name || "Term Exam"}</p>
+                      <p className="text-base font-bold text-white mt-1.5">{rc.Exam?.examTypeEnum ?? "Term Exam"}</p>
                       <p className="text-xs text-slate-400">Score: {rc.totalObtainedMarks} / {rc.totalMaxMarks} ({Math.round(rc.percentage)}%)</p>
                     </div>
 
                     <Button
                       size="sm"
                       onClick={() => {
-                        window.location.href = `/parent/reports/${rc.examId}?studentId=${student?.studentId}`;
+                        window.location.href = `/parent/reports/${rc.examId}?studentId=${student?.studentId ?? ""}`;
                       }}
                       className="bg-emerald-600 hover:bg-emerald-500 text-slate-950 text-xs font-bold"
                     >
@@ -264,14 +301,14 @@ export default function ParentDashboardPage() {
               <p className="text-sm text-slate-400 italic">No class diary entries posted recently.</p>
             ) : (
               <div className="space-y-3">
-                {diaries.map((d: any) => (
+                {(diaries as DiaryItem[]).map((d) => (
                   <div key={d.subjectDiaryId} className="rounded-xl border border-slate-800 bg-slate-950/50 p-4 space-y-1.5">
                     <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold text-emerald-400">{d.ClassSubject?.Subject?.subjectName || "Subject"}</span>
+                      <span className="text-xs font-bold text-emerald-400">{d.ClassSubject?.Subject?.subjectName ?? "Subject"}</span>
                       <span className="text-xs text-slate-400">{new Date(d.date).toLocaleDateString()}</span>
                     </div>
                     <p className="text-sm text-slate-200">{d.content}</p>
-                    <p className="text-xs text-slate-400 italic">Teacher: {d.Teacher?.employeeName || "Faculty"}</p>
+                    <p className="text-xs text-slate-400 italic">Teacher: {d.Teacher?.employeeName ?? "Faculty"}</p>
                   </div>
                 ))}
               </div>

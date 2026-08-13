@@ -67,7 +67,7 @@ export const authConfig = {
             const parent = await db.parentGuardian.findUnique({
               where: { username: email },
             });
-            if (!parent || !parent.isActive) throw new Error("Invalid credentials");
+            if (!parent?.isActive) throw new Error("Invalid credentials");
 
             const isValidPassword = await compare(password, parent.passwordHash);
             if (!isValidPassword) throw new Error("Invalid credentials");

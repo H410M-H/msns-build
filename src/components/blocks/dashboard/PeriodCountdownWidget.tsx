@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Clock, MapPin, BookOpen, AlertCircle } from "lucide-react";
+import { Clock, MapPin, BookOpen } from "lucide-react";
 
 export const PeriodCountdownWidget = () => {
   const [now, setNow] = useState(new Date());

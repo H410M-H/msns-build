@@ -5,11 +5,22 @@ import { api } from "~/trpc/react";
 import { ArrowLeft, Download, FileText, CheckCircle2, Award } from "lucide-react";
 import { Button } from "~/components/ui/button";
 
+interface ReportDetail {
+  reportCardDetailId: string;
+  totalMarks: number;
+  obtainedMarks: number;
+  percentage: number;
+  remarks?: string | null;
+  Subject?: {
+    subjectName?: string;
+  } | null;
+}
+
 export default function ReportCardViewerPage() {
   const params = useParams();
   const searchParams = useSearchParams();
   const examId = params.examId as string;
-  const studentId = searchParams.get("studentId") || "";
+  const studentId = searchParams.get("studentId") ?? "";
 
   const { data: activeCard, isLoading } = api.reportCard.getStudentReportCard.useQuery(
     { studentId, examId },
@@ -57,7 +68,7 @@ export default function ReportCardViewerPage() {
             <div>
               <div className="flex items-center gap-2">
                 <Award className="h-5 w-5 text-emerald-400" />
-                <h2 className="text-xl font-bold text-white">{activeCard.Exam?.examTypeEnum || "Official Examination Card"}</h2>
+                <h2 className="text-xl font-bold text-white">{activeCard.Exam?.examTypeEnum ?? "Official Examination Card"}</h2>
               </div>
               <p className="text-xs text-slate-400 mt-1">M.S. Naz High School® — Academic Evaluation</p>
             </div>
@@ -88,9 +99,9 @@ export default function ReportCardViewerPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-800/60">
-                {activeCard.ReportCardDetail?.map((detail: any) => (
-                  <tr key={detail.reportDetailId} className="hover:bg-slate-900/40">
-                    <td className="px-4 py-3 font-semibold text-white">{detail.Subject?.subjectName || "Subject"}</td>
+                {(activeCard.ReportCardDetail as unknown as ReportDetail[] | undefined)?.map((detail) => (
+                  <tr key={detail.reportCardDetailId} className="hover:bg-slate-900/40">
+                    <td className="px-4 py-3 font-semibold text-white">{detail.Subject?.subjectName ?? "Subject"}</td>
                     <td className="px-4 py-3">{detail.totalMarks}</td>
                     <td className="px-4 py-3 font-bold text-emerald-400">{detail.obtainedMarks}</td>
                     <td className="px-4 py-3">{Math.round(detail.percentage)}%</td>
@@ -98,7 +109,7 @@ export default function ReportCardViewerPage() {
                       <span className={`px-2 py-0.5 text-xs font-semibold rounded ${
                         detail.percentage >= 45 ? "bg-emerald-500/10 text-emerald-400" : "bg-rose-500/10 text-rose-400"
                       }`}>
-                        {detail.remarks || (detail.percentage >= 45 ? "Passed" : "Failed")}
+                        {detail.remarks ?? (detail.percentage >= 45 ? "Passed" : "Failed")}
                       </span>
                     </td>
                   </tr>

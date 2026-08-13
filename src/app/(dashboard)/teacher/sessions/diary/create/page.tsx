@@ -39,8 +39,9 @@ export default function CreateDiaryEntryPage() {
       alert("Class Diary published successfully!");
       setContent("");
       setPhotoBase64(null);
-    } catch (err: any) {
-      alert(`Failed to create diary: ${err.message}`);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "An error occurred";
+      alert(`Failed to create diary: ${message}`);
     } finally {
       setSubmitting(false);
     }

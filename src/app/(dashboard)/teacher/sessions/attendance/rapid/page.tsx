@@ -5,6 +5,23 @@ import { api } from "~/trpc/react";
 import { Check, X, Clock, Send, Sparkles, UserCheck } from "lucide-react";
 import { Button } from "~/components/ui/button";
 
+interface ClassItem {
+  classId: string;
+  grade: string;
+  section: string;
+}
+
+interface SessionItem {
+  sessionId: string;
+  name: string;
+}
+
+interface StudentItem {
+  studentId: string;
+  studentName: string;
+  registrationNumber: string;
+}
+
 export default function RapidAttendancePage() {
   const [classId, setClassId] = useState("");
   const [sessionId, setSessionId] = useState("");
@@ -14,8 +31,8 @@ export default function RapidAttendancePage() {
   const { data: classes } = api.class.getClasses.useQuery();
   const { data: sessions } = api.session.getSessions.useQuery();
 
-  const activeClassId = classId || classes?.[0]?.classId || "";
-  const activeSessionId = sessionId || sessions?.[0]?.sessionId || "";
+  const activeClassId = classId !== "" ? classId : (classes as ClassItem[] | undefined)?.[0]?.classId ?? "";
+  const activeSessionId = sessionId !== "" ? sessionId : (sessions as SessionItem[] | undefined)?.[0]?.sessionId ?? "";
 
   const { data: students, isLoading } = api.student.getStudentsByClassAndSession.useQuery(
     { classId: activeClassId, sessionId: activeSessionId },
@@ -26,7 +43,7 @@ export default function RapidAttendancePage() {
 
   const handleToggle = (studentId: string) => {
     setRecords((prev) => {
-      const current = prev[studentId] || "P";
+      const current = prev[studentId] ?? "P";
       const next = current === "P" ? "A" : current === "A" ? "L" : "P";
       return { ...prev, [studentId]: next };
     });
@@ -35,7 +52,7 @@ export default function RapidAttendancePage() {
   const handleSetAll = (status: "P" | "A" | "L") => {
     if (!students) return;
     const newRecords: Record<string, "P" | "A" | "L"> = {};
-    students.forEach((s: any) => {
+    (students as StudentItem[]).forEach((s) => {
       newRecords[s.studentId] = status;
     });
     setRecords(newRecords);
@@ -45,9 +62,9 @@ export default function RapidAttendancePage() {
     if (!students || students.length === 0) return;
     setSubmitting(true);
     try {
-      const formattedRecords = students.map((s: any) => ({
+      const formattedRecords = (students as StudentItem[]).map((s) => ({
         studentId: s.studentId,
-        status: records[s.studentId] || "P",
+        status: records[s.studentId] ?? "P",
       }));
 
       await markAttendanceMutation.mutateAsync({
@@ -58,8 +75,9 @@ export default function RapidAttendancePage() {
       });
 
       alert("Rapid attendance recorded successfully!");
-    } catch (err: any) {
-      alert(`Attendance save failed: ${err.message}`);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "An unknown error occurred";
+      alert(`Attendance save failed: ${message}`);
     } finally {
       setSubmitting(false);
     }
@@ -101,7 +119,7 @@ export default function RapidAttendancePage() {
             onChange={(e) => setClassId(e.target.value)}
             className="w-full mt-1 bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-emerald-500"
           >
-            {classes?.map((c: any) => (
+            {(classes as ClassItem[] | undefined)?.map((c) => (
               <option key={c.classId} value={c.classId}>
                 {c.grade} - {c.section}
               </option>
@@ -116,7 +134,7 @@ export default function RapidAttendancePage() {
             onChange={(e) => setSessionId(e.target.value)}
             className="w-full mt-1 bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-emerald-500"
           >
-            {sessions?.map((s: any) => (
+            {(sessions as SessionItem[] | undefined)?.map((s) => (
               <option key={s.sessionId} value={s.sessionId}>
                 {s.name}
               </option>
@@ -135,8 +153,8 @@ export default function RapidAttendancePage() {
         </div>
       ) : (
         <div className="space-y-3">
-          {students.map((student: any) => {
-            const status = records[student.studentId] || "P";
+          {(students as StudentItem[]).map((student) => {
+            const status = records[student.studentId] ?? "P";
             return (
               <div
                 key={student.studentId}
@@ -169,7 +187,7 @@ export default function RapidAttendancePage() {
           })}
 
           <Button
-            onClick={handleSubmit}
+            onClick={() => void handleSubmit()}
             disabled={submitting}
             className="w-full bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-bold py-6 text-base shadow-lg shadow-emerald-600/25 mt-4"
           >

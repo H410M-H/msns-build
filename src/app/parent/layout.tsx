@@ -48,7 +48,7 @@ export default function ParentLayout({ children }: { children: React.ReactNode }
           <div className="flex items-center gap-2">
             <div className="hidden sm:flex items-center gap-2 text-xs text-slate-400 bg-slate-900 px-3 py-1.5 rounded-lg border border-slate-800">
               <User className="h-3.5 w-3.5 text-emerald-400" />
-              <span>{session?.user?.username || "Parent"}</span>
+              <span>{session?.user?.username ?? "Parent"}</span>
             </div>
             <Button
               variant="outline"

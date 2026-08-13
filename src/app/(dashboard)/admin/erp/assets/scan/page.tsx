@@ -2,8 +2,19 @@
 
 import { useState } from "react";
 import { api } from "~/trpc/react";
-import { QrCode, Search, CheckCircle2, Package, ShieldCheck } from "lucide-react";
+import { QrCode, Search, Package, ShieldCheck } from "lucide-react";
 import { Button } from "~/components/ui/button";
+
+interface AssetRegisterItem {
+  assetId: string;
+  assetTag: string;
+  assetName: string;
+  location?: string | null;
+  purchaseCost?: number | null;
+  AssetCategory?: {
+    name?: string;
+  } | null;
+}
 
 export default function AssetBarcodeScanPage() {
   const [scannedTag, setScannedTag] = useState<string | null>(null);
@@ -18,8 +29,8 @@ export default function AssetBarcodeScanPage() {
     }
   };
 
-  const matchedAsset = assets?.assets?.find(
-    (a: any) => a.assetTag === scannedTag || a.assetId === scannedTag
+  const matchedAsset = (assets?.assets as AssetRegisterItem[] | undefined)?.find(
+    (a) => a.assetTag === scannedTag || a.assetId === scannedTag
   );
 
   return (
@@ -58,17 +69,17 @@ export default function AssetBarcodeScanPage() {
           </div>
 
           {!matchedAsset ? (
-            <p className="text-sm text-slate-400 italic">No asset record found matching tag "{scannedTag}".</p>
+            <p className="text-sm text-slate-400 italic">No asset record found matching tag &quot;{scannedTag}&quot;.</p>
           ) : (
             <div className="space-y-2 text-sm text-slate-200">
               <div className="flex items-center gap-2">
                 <Package className="h-4 w-4 text-emerald-400" />
                 <span className="font-bold text-white">{matchedAsset.assetName}</span>
               </div>
-              <p className="text-xs text-slate-400">Category: {matchedAsset.AssetCategory?.name || "General Asset"}</p>
-              <p className="text-xs text-slate-400">Location: {matchedAsset.location || "Main Facility"}</p>
+              <p className="text-xs text-slate-400">Category: {matchedAsset.AssetCategory?.name ?? "General Asset"}</p>
+              <p className="text-xs text-slate-400">Location: {matchedAsset.location ?? "Main Facility"}</p>
               <div className="flex items-center justify-between border-t border-slate-800 pt-2 text-xs">
-                <span>Purchase Cost: PKR {(matchedAsset.purchaseCost || 0).toLocaleString()}</span>
+                <span>Purchase Cost: PKR {(matchedAsset.purchaseCost ?? 0).toLocaleString()}</span>
                 <span className="text-emerald-400 font-bold flex items-center gap-1">
                   <ShieldCheck className="h-3.5 w-3.5" /> Verified
                 </span>
