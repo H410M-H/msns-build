@@ -55,6 +55,34 @@ export function TRPCReactProvider(props: { children: React.ReactNode }) {
             headers.set("x-trpc-source", "nextjs-react");
             return headers;
           },
+          fetch: async (url, options) => {
+            let response = await fetch(url, options);
+            if (response.status === 401) {
+              console.log("[tRPC Client] 401 Intercepted. Attempting silent-refresh...");
+              try {
+                const refreshResponse = await fetch(getBaseUrl() + "/api/auth/session");
+                if (refreshResponse.ok) {
+                  const sessionData = await refreshResponse.json() as Record<string, any>;
+                  if (sessionData && Object.keys(sessionData).length > 0) {
+                    console.log("[tRPC Client] Silent-refresh succeeded. Retrying request...");
+                    response = await fetch(url, options);
+                  } else {
+                    throw new Error("Expired or empty session");
+                  }
+                } else {
+                  throw new Error("Session fetch returned non-200 status");
+                }
+              } catch (refreshErr) {
+                console.error("[tRPC Client] Silent-refresh failed:", refreshErr);
+                if (typeof window !== "undefined") {
+                  const { clearAllMobileState } = await import("~/lib/mobile/native-service");
+                  await clearAllMobileState();
+                  window.location.href = "/";
+                }
+              }
+            }
+            return response;
+          }
         }),
       ],
     }),

@@ -1,5 +1,7 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
+const isProduction = process.env.NODE_ENV === 'production';
+
 const config: CapacitorConfig = {
   appId: 'com.msns.lms',
   appName: 'MSNS LMS',
@@ -7,13 +9,13 @@ const config: CapacitorConfig = {
   server: {
     // Live LMS production server domain
     url: 'https://lms.msns.edu.pk',
-    cleartext: true,
+    cleartext: !isProduction,
     androidScheme: 'https'
   },
   android: {
     allowMixedContent: true,
     captureInput: true,
-    webContentsDebuggingEnabled: false
+    webContentsDebuggingEnabled: !isProduction
   },
   plugins: {
     SplashScreen: {
@@ -22,8 +24,22 @@ const config: CapacitorConfig = {
       showSpinner: true,
       androidSpinnerStyle: 'large',
       spinnerColor: '#10b981'
+    },
+    CapacitorSQLite: {
+      iosIsEncryption: true,
+      iosBiometric: {
+        biometricAuth: true,
+        biometricTitle: "MSNS Secure Cache Unlock"
+      },
+      androidIsEncryption: true,
+      androidBiometric: {
+        biometricAuth: true,
+        biometricTitle: "MSNS Secure Cache Unlock",
+        biometricSubTitle: "Please verify biometrics to decrypt offline roster data"
+      }
     }
   }
 };
 
 export default config;
+

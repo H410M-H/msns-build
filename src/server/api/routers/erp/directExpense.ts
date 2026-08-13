@@ -38,6 +38,31 @@ export const directExpenseRouter = createTRPCRouter({
         },
       });
 
+      if (!autoApprove) {
+        void (async () => {
+          try {
+            const approvers = await ctx.db.user.findMany({
+              where: {
+                accountType: { in: ["ADMIN", "PRINCIPAL", "HEAD"] }
+              },
+              select: { id: true }
+            });
+            const approverIds = approvers.map((u) => u.id);
+            if (approverIds.length > 0) {
+              const { sendPushNotification } = await import("~/server/mobile/fcm");
+              await sendPushNotification(
+                approverIds,
+                [],
+                "Direct Expense Approval Required",
+                `Direct Expense for PKR ${input.amount} ("${input.description}") requires approval.`
+              );
+            }
+          } catch (err) {
+            console.error("Failed to send direct expense approval push notification:", err);
+          }
+        })();
+      }
+
       return { success: true, expense, autoApproved: autoApprove };
     }),
 

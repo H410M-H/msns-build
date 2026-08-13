@@ -68,6 +68,16 @@ export const StudentRouter = createTRPCRouter({
     }
   }),
 
+  getStudentsByClassAndSession: protectedProcedure
+    .input(z.object({ classId: z.string(), sessionId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const studentClasses = await ctx.db.studentClass.findMany({
+        where: { classId: input.classId, sessionId: input.sessionId },
+        include: { Students: true },
+      });
+      return studentClasses.map((sc) => sc.Students);
+    }),
+
   getUnAllocateStudents: protectedProcedure
     .input(
       z.object({

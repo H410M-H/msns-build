@@ -46,21 +46,40 @@ export const authConfig = {
           if (!email || !password) {
             throw new Error("Missing credentials");
           }
-          const account = await db.user.findUnique({
-            where: { email: email },
-          });
-          if (!account) throw new Error("Invalid credentials");
 
-          const isValidPassword = await compare(password, account.password);
-          if (!isValidPassword) throw new Error("Invalid credentials");
+          if (email.includes("@")) {
+            const account = await db.user.findUnique({
+              where: { email: email },
+            });
+            if (!account) throw new Error("Invalid credentials");
 
-          return {
-            id: account.id,
-            email: account.email,
-            username: account.username,
-            accountId: account.accountId,
-            accountType: account.accountType,
-          };
+            const isValidPassword = await compare(password, account.password);
+            if (!isValidPassword) throw new Error("Invalid credentials");
+
+            return {
+              id: account.id,
+              email: account.email,
+              username: account.username,
+              accountId: account.accountId,
+              accountType: account.accountType,
+            };
+          } else {
+            const parent = await db.parentGuardian.findUnique({
+              where: { username: email },
+            });
+            if (!parent || !parent.isActive) throw new Error("Invalid credentials");
+
+            const isValidPassword = await compare(password, parent.passwordHash);
+            if (!isValidPassword) throw new Error("Invalid credentials");
+
+            return {
+              id: parent.guardentId,
+              email: "",
+              username: parent.username,
+              accountId: parent.guardentId,
+              accountType: "PARENT",
+            };
+          }
         } catch (error) {
           console.error("Auth error:", error);
           return null;

@@ -595,4 +595,47 @@ interface StudentMarkRow {
 
 ---
 
-*Document generated for MSNS LMS v2.0 — ERP Edition | lms.msns.edu.pk | BISE Gujranwala Affiliated*
+## SECTION 4: MOBILE ERP EDITION (v2.1) CAPACITOR BRIDGING ARCHITECTURE
+
+### 4.1 Hybrid Remote-URL Architecture & Bridge Layer
+The v2.1 Mobile ERP Edition implements mobile support as a high-performance Capacitor 8 hybrid wrapper layered over the existing Next.js App Router/tRPC monolithic application (`com.msns.lms`), maintaining zero duplicate UI codebase divergence between web and mobile platforms.
+
+```
++-----------------------------------------------------------------------------------------------+
+| MSNS LMS v2.1 MOBILE ENVIRONMENT                                                             |
++-----------------------------------------------------------------------------------------------+
+|                                                                                               |
+|  +-----------------------------------+     Capacitor Bridge    +---------------------------+  |
+|  | Next.js App Router (Remote-URL)  | <====================>  | Native Service Layer      |  |
+|  | - React 18 UI Render             |   Capacitor.isNative  | (src/lib/mobile/native)   |  |
+|  +-----------------------------------+                        +---------------------------+  |
+|                  |                                                           |                |
+|         tRPC Protocol (HTTP/WS)                                      Native Android Plugins   |
+|                  v                                                           v                |
+|  +-----------------------------------+                        +---------------------------+  |
+|  | Railway Cloud Infrastructure      |                        | SQLite Encrypted Cache    |  |
+|  | - NextAuth & PostgreSQL Database  |                        | ML Kit Barcode Scanner    |  |
+|  | - S3-Compatible Volume Storage    |                        | FCM Push Notifications    |  |
+|  +-----------------------------------+                        +---------------------------+  |
++-----------------------------------------------------------------------------------------------+
+```
+
+- **Remote-URL Shell:** Configured in `capacitor.config.ts` targeting `https://lms.msns.edu.pk` with `androidScheme: 'https'` and HSTS security enforcement.
+- **Repository/Service Abstraction:** Native calls are mediated strictly via `src/lib/mobile/native-service.ts` to prevent raw `@capacitor/*` calls inside React components (NFR-MOB-08 compliance).
+- **Compilation Safety:** All native module imports are dynamically loaded (`await import(...)`), ensuring that Next.js server-side rendering (SSR) builds execute without `window is not defined` errors.
+
+### 4.2 Security, Biometrics & Local Storage
+- **Local SQLite Encryption:** Encrypted offline storage using `@capacitor-community/sqlite` SQLCipher engines. Passphrases are stored within Android EncryptedSharedPreferences via `@capacitor/preferences`.
+- **Biometric Unlock Gate:** Gated by `@capacitor-community/sqlite` native `androidBiometric` prompt configurations (`biometricAuth: true`).
+- **Token Silent-Refresh & Purging:** `src/trpc/react.tsx` fetch interceptor handles HTTP 401 response codes, attempting silent session refresh or executing full local storage/database purging on failure or explicit sign-out.
+
+### 4.3 Offline Synchronization Engine & Push Notifications
+- **Service Worker Asset Resilience:** `public/sw.js` caches static app shell resources (`/`, CSS, JS bundles) to avoid blank offline pages.
+- **Local Queue Storage:** Offline mutations (`SAVE_MARKS`, `CREATE_DIARY`) append tasks into the local SQLite `sync_queue` table.
+- **Network & State Reconnect Triggers:** `useSyncEngine.ts` processes queue execution upon network restoration (`@capacitor/network`) or app foregrounding (`@capacitor/app`).
+- **FCM Push Dispatch:** Firebase messaging tokens are registered via `mobile.registerDevice` tRPC mutation mapped to `DeviceRegistration` Prisma models. Server-side event triggers dispatch multicast notifications for absent students, report card publishing, fee challans, diary entries, and ERP approvals.
+- **Deep Link Navigation:** `useDeepLinks.ts` maps `msns://lms/reports/{examId}` and `msns://lms/approvals/{poId}` custom URI schemes directly to client-side router navigation paths.
+
+---
+
+*Document generated for MSNS LMS v2.1 — Mobile ERP Edition | lms.msns.edu.pk | BISE Gujranwala Affiliated*

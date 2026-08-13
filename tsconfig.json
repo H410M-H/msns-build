@@ -39,5 +39,5 @@
     "**/*.js",
     ".next/types/**/*.ts"
   ],
-  "exclude": ["node_modules", "scratch", "prisma"]
+  "exclude": ["node_modules", "scratch", "prisma", "android", "public"]
 }

@@ -15,7 +15,7 @@ export const subjectDiaryRouter = createTRPCRouter({
     )
     .mutation(async ({ ctx, input }) => {
       try {
-        return await ctx.db.subjectDiary.create({
+        const diary = await ctx.db.subjectDiary.create({
           data: {
             classSubjectId: input.classSubjectId,
             teacherId: input.teacherId,
@@ -24,6 +24,41 @@ export const subjectDiaryRouter = createTRPCRouter({
             attachments: input.attachments ?? [],
           },
         });
+
+        // Run FCM alerts asynchronously
+        void (async () => {
+          try {
+            const classSub = await ctx.db.classSubject.findUnique({
+              where: { csId: input.classSubjectId },
+              select: { classId: true, sessionId: true, Subject: { select: { subjectName: true } } },
+            });
+            if (classSub) {
+              const students = await ctx.db.studentClass.findMany({
+                where: { classId: classSub.classId, sessionId: classSub.sessionId },
+                select: { studentId: true },
+              });
+              const studentIds = students.map((s) => s.studentId);
+              const parents = await ctx.db.parentGuardian.findMany({
+                where: { linkedStudentIds: { hasSome: studentIds } },
+                select: { guardentId: true },
+              });
+              const parentIds = parents.map((p) => p.guardentId);
+              if (parentIds.length > 0) {
+                const { sendPushNotification } = await import("~/server/mobile/fcm");
+                await sendPushNotification(
+                  [],
+                  parentIds,
+                  "New Diary Published",
+                  `A new diary entry has been published for ${classSub.Subject.subjectName}.`
+                );
+              }
+            }
+          } catch (err) {
+            console.error("Failed to send diary push notification:", err);
+          }
+        })();
+
+        return diary;
       } catch (error) {
         console.error("Error creating subject diary:", error);
         throw new Error("Failed to create subject diary");
