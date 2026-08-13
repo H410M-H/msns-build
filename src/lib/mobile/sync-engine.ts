@@ -1,4 +1,4 @@
-import { getDb, isNative, onNetworkStatusChange } from "./native-service";
+import { getDb, isNative } from "./native-service";
 
 export interface SyncQueueItem {
   id: string;
@@ -8,7 +8,7 @@ export interface SyncQueueItem {
   status: string;
 }
 
-export const addToSyncQueue = async (action: string, payload: any) => {
+export const addToSyncQueue = async (action: string, payload: unknown) => {
   const payloadStr = JSON.stringify(payload);
   const id = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
   const createdAt = new Date().toISOString();
@@ -17,7 +17,8 @@ export const addToSyncQueue = async (action: string, payload: any) => {
   if (isNative()) {
     try {
       const db = await getDb();
-      await db.run(
+      const dbRun = db as unknown as { run(query: string, params: unknown[]): Promise<void> };
+      await dbRun.run(
         `INSERT INTO sync_queue (id, action, payload, createdAt, status) VALUES (?, ?, ?, ?, ?)`,
         [id, action, payloadStr, createdAt, status]
       );
@@ -27,7 +28,8 @@ export const addToSyncQueue = async (action: string, payload: any) => {
     }
   } else {
     if (typeof window !== 'undefined') {
-      const localQueue = JSON.parse(localStorage.getItem('sync_queue') || '[]');
+      const localQueueStr = localStorage.getItem('sync_queue') ?? '[]';
+      const localQueue = JSON.parse(localQueueStr) as SyncQueueItem[];
       localQueue.push({ id, action, payload: payloadStr, createdAt, status });
       localStorage.setItem('sync_queue', JSON.stringify(localQueue));
       console.log(`[SyncEngine] Added action ${action} to localStorage sync queue.`);
@@ -35,22 +37,37 @@ export const addToSyncQueue = async (action: string, payload: any) => {
   }
 };
 
-export const processSyncQueue = async (trpcClient: any) => {
+export interface TRPCClient {
+  marks: {
+    saveAllMarks: {
+      mutate(payload: unknown): Promise<void>;
+    };
+  };
+  subjectDiary: {
+    create: {
+      mutate(payload: unknown): Promise<void>;
+    };
+  };
+}
+
+export const processSyncQueue = async (trpcClient: TRPCClient) => {
   let items: SyncQueueItem[] = [];
 
   if (isNative()) {
     try {
       const db = await getDb();
-      const res = await db.query(`SELECT * FROM sync_queue WHERE status = 'PENDING' OR status = 'FAILED'`);
-      items = res.values || [];
+      const dbQuery = db as unknown as { query(query: string): Promise<{ values?: SyncQueueItem[] }> };
+      const res = await dbQuery.query(`SELECT * FROM sync_queue WHERE status = 'PENDING' OR status = 'FAILED'`);
+      items = res.values ?? [];
     } catch (err) {
       console.error('[SyncEngine] Failed to query sync queue from SQLite:', err);
       return;
     }
   } else {
     if (typeof window !== 'undefined') {
-      const localQueue = JSON.parse(localStorage.getItem('sync_queue') || '[]');
-      items = localQueue.filter((x: any) => x.status === 'PENDING' || x.status === 'FAILED');
+      const localQueueStr = localStorage.getItem('sync_queue') ?? '[]';
+      const localQueue = JSON.parse(localQueueStr) as SyncQueueItem[];
+      items = localQueue.filter((x) => x.status === 'PENDING' || x.status === 'FAILED');
     }
   }
 
@@ -60,7 +77,7 @@ export const processSyncQueue = async (trpcClient: any) => {
 
   for (const item of items) {
     try {
-      const payload = JSON.parse(item.payload);
+      const payload: unknown = JSON.parse(item.payload);
       
       if (item.action === 'SAVE_MARKS') {
         await trpcClient.marks.saveAllMarks.mutate(payload);
@@ -70,32 +87,29 @@ export const processSyncQueue = async (trpcClient: any) => {
       
       if (isNative()) {
         const db = await getDb();
-        await db.run(`DELETE FROM sync_queue WHERE id = ?`, [item.id]);
+        const dbRun = db as unknown as { run(query: string, params: unknown[]): Promise<void> };
+        await dbRun.run(`DELETE FROM sync_queue WHERE id = ?`, [item.id]);
       } else {
         if (typeof window !== 'undefined') {
-          const localQueue = JSON.parse(localStorage.getItem('sync_queue') || '[]');
-          const updated = localQueue.filter((x: any) => x.id !== item.id);
+          const localQueueStr = localStorage.getItem('sync_queue') ?? '[]';
+          const localQueue = JSON.parse(localQueueStr) as SyncQueueItem[];
+          const updated = localQueue.filter((x) => x.id !== item.id);
           localStorage.setItem('sync_queue', JSON.stringify(updated));
         }
       }
       console.log(`[SyncEngine] Successfully synced item ${item.id} (${item.action})`);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error(`[SyncEngine] Sync failed for item ${item.id}:`, error);
-      
-      if (error?.shape?.message?.includes('CONFLICT') || error?.message?.includes('conflict')) {
-        if (typeof window !== 'undefined') {
-          const event = new CustomEvent('sync-conflict', { detail: { item, error } });
-          window.dispatchEvent(event);
-        }
-      }
       
       if (isNative()) {
         const db = await getDb();
-        await db.run(`UPDATE sync_queue SET status = 'FAILED' WHERE id = ?`, [item.id]);
+        const dbRun = db as unknown as { run(query: string, params: unknown[]): Promise<void> };
+        await dbRun.run(`UPDATE sync_queue SET status = 'FAILED' WHERE id = ?`, [item.id]);
       } else {
         if (typeof window !== 'undefined') {
-          const localQueue = JSON.parse(localStorage.getItem('sync_queue') || '[]');
-          const target = localQueue.find((x: any) => x.id === item.id);
+          const localQueueStr = localStorage.getItem('sync_queue') ?? '[]';
+          const localQueue = JSON.parse(localQueueStr) as SyncQueueItem[];
+          const target = localQueue.find((x) => x.id === item.id);
           if (target) target.status = 'FAILED';
           localStorage.setItem('sync_queue', JSON.stringify(localQueue));
         }

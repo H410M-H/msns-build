@@ -12,17 +12,16 @@ export const useDeviceRegistration = () => {
 
     const initPush = async () => {
       await registerPushNotifications(
-        async (token) => {
+        (token) => {
           console.log("[PushNotifications] Registered FCM token:", token);
-          try {
-            await registerMutation.mutateAsync({
-              token,
-              platform: "android",
-            });
+          void registerMutation.mutateAsync({
+            token,
+            platform: "android",
+          }).then(() => {
             console.log("[PushNotifications] Device registered with server successfully.");
-          } catch (err) {
+          }).catch((err) => {
             console.error("[PushNotifications] Failed to register device with server:", err);
-          }
+          });
         },
         (notification) => {
           console.log("[PushNotifications] Received notification:", notification);
@@ -34,5 +33,5 @@ export const useDeviceRegistration = () => {
     };
 
     void initPush();
-  }, [session.status]);
+  }, [session.status, registerMutation]);
 };

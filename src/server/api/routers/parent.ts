@@ -61,8 +61,8 @@ export const parentRouter = createTRPCRouter({
         select: { scId: true, classId: true, sessionId: true },
       });
 
-      let fees: any[] = [];
-      let diaries: any[] = [];
+      let fees: unknown[] = [];
+      let diaries: unknown[] = [];
 
       if (studentClass) {
         fees = await ctx.db.feeStudentClass.findMany({

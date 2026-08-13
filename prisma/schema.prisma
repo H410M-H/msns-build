@@ -288,7 +288,6 @@ model Sessions {
   BulkPromotionToSession   BulkPromotionBatch[]      @relation("BulkPromotionToSession")
   BulkSalaryBatches        BulkSalaryCreationBatch[] @relation("BulkSalaryToSession")
   LeaveBalances            LeaveBalance[]
-  Events                   Event[]
 }
 
 model Event {
@@ -308,8 +307,6 @@ model Event {
   maxAttendees  Int?
   isPublic      Boolean        @default(false)
   notes         String?
-  sessionId     String?
-  Session       Sessions?      @relation(fields: [sessionId], references: [sessionId])
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
   attendees     Attendee[]
@@ -328,7 +325,7 @@ model Tag {
 model EventTag {
   eventId String
   tagId   String
-  event   Event  @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  event   Event  @relation(fields: [eventId], references: [id])
   tag     Tag    @relation(fields: [tagId], references: [id])
 
   @@id([eventId, tagId])
@@ -338,7 +335,7 @@ model Attendee {
   eventId String
   userId  String
   status  AttendeeStatus
-  event   Event          @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  event   Event          @relation(fields: [eventId], references: [id])
   user    User           @relation(fields: [userId], references: [id])
 
   @@id([eventId, userId])
@@ -349,7 +346,7 @@ model Reminder {
   minutesBefore Int
   type          ReminderType
   eventId       String
-  event         Event        @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  event         Event        @relation(fields: [eventId], references: [id])
 }
 
 model StudentClass {
@@ -1256,13 +1253,6 @@ enum EventType {
   WEBINAR
   SOCIAL
   OTHER
-  EXAM
-  HOLIDAY
-  ASSIGNMENT
-  CLASS
-  CEREMONY
-  SPORTS
-  PTM
 }
 
 enum Priority {

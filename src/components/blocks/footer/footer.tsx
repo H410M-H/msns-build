@@ -142,7 +142,7 @@ export const Footer = ({ className, ...props }: FooterProps) => {
               <div className="flex items-center space-x-2">
                 <Mail className="h-5 w-5 text-green-600" />
                 <Link
-                  href="mailto:info@msns.edu.pk"
+                  href="mailto:info@msnschool.edu.pk"
                   className="text-green-700 hover:text-pink-600"
                 >
                   info@msns.edu.pk

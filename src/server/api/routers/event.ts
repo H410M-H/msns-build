@@ -5,7 +5,6 @@ import {
   AttendeeStatusSchema,
   CreateEventSchema,
   EventStatusSchema,
-  EventTypeSchema,
   UpdateEventSchema,
 } from "~/lib/event-schemas";
 import {
@@ -23,7 +22,6 @@ export const EventRouter = createTRPCRouter({
         data: {
           ...eventData,
           User: { connect: { id: input.creatorId } },
-          ...(input.sessionId ? { Session: { connect: { sessionId: input.sessionId } } } : {}),
           tags: input.tagIds
             ? {
               create: input.tagIds.map((tagId: string) => ({
@@ -67,7 +65,6 @@ export const EventRouter = createTRPCRouter({
         data: {
           ...eventData,
           User: { connect: { id: input.creatorId } },
-          ...(input.sessionId ? { Session: { connect: { sessionId: input.sessionId } } } : {}),
           tags: input.tagIds
             ? {
               deleteMany: {},
@@ -181,64 +178,6 @@ export const EventRouter = createTRPCRouter({
       },
     ),
 
-  getBySession: protectedProcedure
-    .input(
-      z.object({
-        sessionId: z.string().optional(),
-        search: z.string().optional(),
-        type: EventTypeSchema.optional(),
-      }),
-    )
-    .query(
-      async ({
-        ctx,
-        input,
-      }): Promise<{ events: FrontendEventData[] }> => {
-        const where: Prisma.EventWhereInput = {
-          AND: [
-            input.sessionId
-              ? {
-                  OR: [
-                    { sessionId: input.sessionId },
-                    { sessionId: null },
-                  ],
-                }
-              : {},
-            input.type ? { type: input.type } : {},
-            input.search
-              ? {
-                  OR: [
-                    { title: { contains: input.search, mode: "insensitive" } },
-                    {
-                      description: {
-                        contains: input.search,
-                        mode: "insensitive",
-                      },
-                    },
-                  ],
-                }
-              : {},
-          ],
-        };
-
-        const events = await ctx.db.event.findMany({
-          where,
-          include: {
-            User: true,
-            tags: { include: { tag: true } },
-            attendees: { include: { user: true } },
-            reminders: true,
-          },
-          orderBy: { startDateTime: "asc" },
-          take: 500,
-        });
-
-        return {
-          events: events.map(safeTransformEventForFrontend),
-        };
-      },
-    ),
-
   delete: protectedProcedure
     .input(z.object({ id: z.string().min(1, "Event ID is required") }))
     .mutation(async ({ ctx, input }): Promise<{ success: boolean }> => {
@@ -304,15 +243,7 @@ export const EventRouter = createTRPCRouter({
     .query(async ({ ctx, input }) => {
       const perSource = Math.max(3, Math.ceil(input.limit / 2));
 
-      const [
-        recentStudents,
-        recentFees,
-        recentDiaries,
-        recentLeaves,
-        recentPOs,
-        recentLedger,
-        recentEvents,
-      ] = await Promise.all([
+      const [recentStudents, recentFees, recentDiaries] = await Promise.all([
         ctx.db.students.findMany({
           orderBy: { createdAt: "desc" },
           take: perSource,
@@ -344,33 +275,10 @@ export const EventRouter = createTRPCRouter({
             ClassSubject: { include: { Subject: { select: { subjectName: true } } } },
           },
         }),
-        ctx.db.leaveApplication.findMany({
-          orderBy: { createdAt: "desc" },
-          take: perSource,
-          include: {
-            Employee: { select: { employeeName: true } },
-            LeaveType: { select: { name: true } },
-          },
-        }),
-        ctx.db.purchaseOrder.findMany({
-          orderBy: { createdAt: "desc" },
-          take: perSource,
-          select: { poNumber: true, supplierName: true, createdAt: true },
-        }),
-        ctx.db.financialLedgerEntry.findMany({
-          orderBy: { createdAt: "desc" },
-          take: perSource,
-          select: { description: true, amount: true, createdAt: true },
-        }),
-        ctx.db.event.findMany({
-          orderBy: { createdAt: "desc" },
-          take: perSource,
-          select: { title: true, type: true, createdAt: true },
-        }),
       ]);
 
       type ActivityItem = {
-        type: "student" | "fee" | "diary" | "leave" | "po" | "ledger" | "event";
+        type: "student" | "fee" | "diary";
         text: string;
         time: Date;
       };
@@ -395,26 +303,6 @@ export const EventRouter = createTRPCRouter({
           type: "diary" as const,
           text: `${d.Teacher.employeeName} added a ${d.ClassSubject.Subject.subjectName} diary entry.`,
           time: d.createdAt,
-        })),
-        ...recentLeaves.map((l) => ({
-          type: "leave" as const,
-          text: `Leave requested: ${l.Employee.employeeName} (${l.LeaveType.name}).`,
-          time: l.createdAt,
-        })),
-        ...recentPOs.map((po) => ({
-          type: "po" as const,
-          text: `Purchase Order ${po.poNumber} created for ${po.supplierName}.`,
-          time: po.createdAt,
-        })),
-        ...recentLedger.map((l) => ({
-          type: "ledger" as const,
-          text: `Ledger entry: ${l.description} (Rs. ${l.amount.toLocaleString()}).`,
-          time: l.createdAt,
-        })),
-        ...recentEvents.map((e) => ({
-          type: "event" as const,
-          text: `New event scheduled: ${e.title} (${e.type.replace(/_/g, " ")}).`,
-          time: e.createdAt,
         })),
       ];
 

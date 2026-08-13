@@ -62,7 +62,7 @@ export function TRPCReactProvider(props: { children: React.ReactNode }) {
               try {
                 const refreshResponse = await fetch(getBaseUrl() + "/api/auth/session");
                 if (refreshResponse.ok) {
-                  const sessionData = await refreshResponse.json() as Record<string, any>;
+                  const sessionData = await refreshResponse.json() as Record<string, unknown>;
                   if (sessionData && Object.keys(sessionData).length > 0) {
                     console.log("[tRPC Client] Silent-refresh succeeded. Retrying request...");
                     response = await fetch(url, options);

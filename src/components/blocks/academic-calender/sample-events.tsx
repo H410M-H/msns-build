@@ -20,18 +20,14 @@ export default function SampleEvents() {
     setIsDetailsOpen(true);
   }, []);
 
-  const handleEdit = (event: EventDetails) => {
-    console.log("Edit event:", event.id);
-    alert(`Editing: ${event.title}`);
-  };
+  const handleEdit = useCallback((event: EventDetails): void => {
+    console.log("Edit event:", event);
+    setIsDetailsOpen(false);
+  }, []);
 
-  const handleDelete = (eventId: string) => {
+  const handleDelete = useCallback((eventId: number): void => {
     console.log("Delete event:", eventId);
-    if (confirm("Are you sure you want to delete this event?")) {
-      alert("Event deleted successfully!");
-      setIsDetailsOpen(false);
-    }
-  };
+  }, []);
 
   const handleDuplicate = useCallback((event: EventDetails): void => {
     console.log("Duplicate event:", event);

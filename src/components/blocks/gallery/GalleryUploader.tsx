@@ -1434,9 +1434,9 @@ export default function GalleryUploader({
   };
 
   return (
-    <div className="flex flex-1 flex-col space-y-4 h-full min-h-0">
+    <div className="space-y-4">
       {/* Workspace Dashboard Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-card border border-border p-4 rounded-2xl shadow-xl backdrop-blur-md shrink-0">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-card border border-border p-4 rounded-2xl shadow-xl backdrop-blur-md">
         <div className="flex items-center gap-3">
           <div className="rounded-lg bg-emerald-500/10 p-2 border border-emerald-500/20">
             <Images className="h-5 w-5 text-emerald-400" />
@@ -1485,7 +1485,7 @@ export default function GalleryUploader({
       </div>
 
       {/* Main Workspace Layout */}
-      <div className="flex flex-1 border border-border rounded-2xl overflow-hidden bg-card/45 backdrop-blur-md shadow-2xl relative min-h-[500px] h-full">
+      <div className="flex border border-border rounded-2xl overflow-hidden bg-card/45 backdrop-blur-md shadow-2xl relative min-h-[600px]">
         {/* Left Sidebar */}
         {sidebarOpen && (
           <div
@@ -1680,7 +1680,7 @@ export default function GalleryUploader({
 
         {/* Workspace Canvas / Windows Area */}
         <div
-          className="flex-1 relative bg-muted/5 min-h-[450px] h-full overflow-hidden p-4"
+          className="flex-1 relative bg-muted/5 min-h-[620px] overflow-hidden p-4"
           onDragOver={handleDragOver}
           onDrop={(e) => handleWindowDrop(e, "")}
         >

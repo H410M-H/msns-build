@@ -27,13 +27,6 @@ export const EventTypeSchema = z.enum([
   "WEBINAR",
   "SOCIAL",
   "OTHER",
-  "EXAM",
-  "HOLIDAY",
-  "ASSIGNMENT",
-  "CLASS",
-  "CEREMONY",
-  "SPORTS",
-  "PTM",
 ]);
 export const PrioritySchema = z.enum(["LOW", "MEDIUM", "HIGH", "URGENT"]);
 
@@ -54,7 +47,6 @@ export const CreateEventSchema = z.object({
   isPublic: z.boolean().default(false),
   notes: z.string().optional(),
   creatorId: z.string().min(1, "Creator ID is required"),
-  sessionId: z.string().optional(),
   tagIds: z.array(z.string()).optional(),
   reminders: z
     .array(

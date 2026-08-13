@@ -5,7 +5,7 @@ export const sendPushNotification = async (
   parentGuardianIds: string[],
   title: string,
   body: string,
-  data?: Record<string, string>
+  _data?: Record<string, string>
 ) => {
   console.log(`[FCM Push] Triggered alert: "${title}" - "${body}" for Users:`, userIds, "Parents:", parentGuardianIds);
 
