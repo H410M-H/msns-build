@@ -2,19 +2,33 @@
 import { TRPCReactProvider } from "~/trpc/react";
 import { SessionProvider } from "next-auth/react";
 import { ThemeProvider as NextThemesProvider } from "next-themes";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 import { isNative } from "~/lib/mobile/native-service";
 import { useSyncEngine } from "~/hooks/useSyncEngine";
 import { useDeviceRegistration } from "~/hooks/useDeviceRegistration";
 import { useDeepLinks } from "~/hooks/useDeepLinks";
 
-function MobileHooksWrapper({ children }: { children: React.ReactNode }) {
-  // These hooks all guard internally with isNative() checks,
-  // so they are safe no-ops on the desktop web dashboard.
+function NativeHooksInner({ children }: { children: React.ReactNode }) {
   useSyncEngine();
   useDeviceRegistration();
   useDeepLinks();
+  return <>{children}</>;
+}
+
+function MobileHooksWrapper({ children }: { children: React.ReactNode }) {
+  const [mountedNative, setMountedNative] = useState(false);
+
+  useEffect(() => {
+    if (isNative()) {
+      setMountedNative(true);
+    }
+  }, []);
+
+  if (mountedNative) {
+    return <NativeHooksInner>{children}</NativeHooksInner>;
+  }
+
   return <>{children}</>;
 }
 
@@ -36,13 +50,13 @@ export function Provider({ children }: { children: React.ReactNode }) {
 
   return (
     <TRPCReactProvider>
-      <MobileHooksWrapper>
-        <SessionProvider>
-          <NextThemesProvider attribute="class" defaultTheme="light" enableSystem>
+      <SessionProvider>
+        <NextThemesProvider attribute="class" defaultTheme="light" enableSystem>
+          <MobileHooksWrapper>
             {children}
-          </NextThemesProvider>
-        </SessionProvider>
-      </MobileHooksWrapper>
+          </MobileHooksWrapper>
+        </NextThemesProvider>
+      </SessionProvider>
     </TRPCReactProvider>
   );
 }
