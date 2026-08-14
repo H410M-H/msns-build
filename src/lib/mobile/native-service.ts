@@ -1,17 +1,12 @@
-let _isNative = false;
-
-try {
-  if (typeof window !== 'undefined') {
-    // Dynamic require to avoid crashing in environments where @capacitor/core isn't available
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const { Capacitor } = require('@capacitor/core') as { Capacitor: { isNativePlatform(): boolean } };
-    _isNative = Capacitor.isNativePlatform();
-  }
-} catch {
-  _isNative = false;
+interface CapacitorGlobal {
+  isNativePlatform(): boolean;
 }
 
-export const isNative = () => _isNative;
+export const isNative = (): boolean => {
+  if (typeof window === 'undefined') return false;
+  const cap = (window as unknown as Record<string, unknown>).Capacitor as CapacitorGlobal | undefined;
+  return !!cap?.isNativePlatform();
+};
 
 interface SQLiteDB {
   execute(query: string): Promise<void>;
