@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { onNetworkStatusChange } from "~/lib/mobile/native-service";
+import { isNative, onNetworkStatusChange } from "~/lib/mobile/native-service";
 import { processSyncQueue, type TRPCClient } from "~/lib/mobile/sync-engine";
 import { api } from "~/trpc/react";
 
@@ -11,6 +11,8 @@ export const useSyncEngine = () => {
   const utils = api.useUtils();
 
   useEffect(() => {
+    if (!isNative()) return;
+
     const trpcClient = utils as unknown as TRPCClient;
     void processSyncQueue(trpcClient);
 
@@ -34,6 +36,8 @@ export const useSyncEngine = () => {
       }).then((listener) => {
         appListener = listener;
       });
+    }).catch(() => {
+      // @capacitor/app not available on web — ignore
     });
 
     return () => {
