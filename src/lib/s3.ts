@@ -1,19 +1,31 @@
 import { S3Client, ListObjectsV2Command, DeleteObjectCommand, PutObjectCommand, GetObjectCommand, CopyObjectCommand, DeleteObjectsCommand } from "@aws-sdk/client-s3";
 
 
+const getEndpoint = () => {
+  const rawEndpoint = process.env.S3_ENDPOINT ?? process.env.AWS_ENDPOINT_URL ?? "https://c678cf5c0fc5ef3806edacc18e6a762d.r2.cloudflarestorage.com";
+  try {
+    const url = new URL(rawEndpoint);
+    if (url.pathname && url.pathname !== "/") {
+      return url.origin;
+    }
+  } catch (_e) {}
+  return rawEndpoint;
+};
+
 const getS3Client = () => {
+  const endpoint = getEndpoint();
   return new S3Client({
-    region: process.env.AWS_DEFAULT_REGION ?? "auto",
-    endpoint: process.env.AWS_ENDPOINT_URL,
+    region: process.env.S3_REGION ?? process.env.AWS_DEFAULT_REGION ?? "auto",
+    endpoint,
     credentials: {
-      accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
-      secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
+      accessKeyId: (process.env.S3_ACCESS_KEY_ID ?? process.env.AWS_ACCESS_KEY_ID)!,
+      secretAccessKey: (process.env.S3_SECRET_ACCESS_KEY ?? process.env.AWS_SECRET_ACCESS_KEY)!,
     },
     forcePathStyle: true,
   });
 };
 
-const getBucket = () => process.env.AWS_S3_BUCKET_NAME!;
+const getBucket = () => process.env.S3_BUCKET_NAME ?? process.env.AWS_S3_BUCKET_NAME ?? process.env.BUCKET ?? "msns";
 
 export interface GalleryImage {
   key: string;
