@@ -131,9 +131,18 @@ export function EmployeeEditDialog({
   initialUsername = "",
   initialEmail = "",
 }: Props) {
-  const { data: employeeData } = api.employee.getEmployeeWithUser.useQuery({
-    employeeId: employee.employeeId,
-  });
+  const fallbackUsername =
+    initialUsername ||
+    `MSN-${employee.designation}-${employee.registrationNumber.replace(/^MSN-[A-Z]-/, "")}`;
+  const fallbackEmail =
+    initialEmail ||
+    `${(employee.admissionNumber || "").toLowerCase()}@msns.edu.pk`;
+
+  const { data: employeeData, isLoading: isUserLoading } =
+    api.employee.getEmployeeWithUser.useQuery(
+      { employeeId: employee.employeeId },
+      { enabled: !!employee.employeeId }
+    );
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -150,19 +159,34 @@ export function EmployeeEditDialog({
       mobileNo: employee.mobileNo,
       additionalContact: employee.additionalContact ?? "",
       education: employee.education,
-      username: initialUsername,
-      email: initialEmail,
+      username: initialUsername || fallbackUsername,
+      email: initialEmail || fallbackEmail,
       status: (employee.status ?? "Active") as "Active" | "Retired" | "Left",
     },
   });
 
   // Sync when initialUsername/initialEmail or fetched user arrive
   useEffect(() => {
-    const usernameToSet = initialUsername || employeeData?.user?.username;
-    const emailToSet = initialEmail || employeeData?.user?.email;
-    if (usernameToSet) form.setValue("username", usernameToSet);
-    if (emailToSet) form.setValue("email", emailToSet);
-  }, [initialUsername, initialEmail, employeeData, form]);
+    if (employeeData) {
+      const usernameToSet =
+        initialUsername || employeeData.user?.username || fallbackUsername;
+      const emailToSet =
+        initialEmail || employeeData.user?.email || fallbackEmail;
+      if (usernameToSet) {
+        form.setValue("username", usernameToSet, { shouldDirty: false });
+      }
+      if (emailToSet) {
+        form.setValue("email", emailToSet, { shouldDirty: false });
+      }
+      if (employeeData.status) {
+        form.setValue(
+          "status",
+          (employeeData.status as "Active" | "Retired" | "Left") || "Active",
+          { shouldDirty: false }
+        );
+      }
+    }
+  }, [initialUsername, initialEmail, employeeData, fallbackUsername, fallbackEmail, form]);
 
   const updateEmployee = api.employee.updateEmployeeAndUser.useMutation({
     onSuccess: () => {

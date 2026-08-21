@@ -130,7 +130,7 @@ export const EmployeeRouter = createTRPCRouter({
   }),
 
   getEmployeeById: protectedProcedure
-    .input(z.object({ employeeId: z.string().cuid() }))
+    .input(z.object({ employeeId: z.string().min(1) }))
     .query(async ({ ctx, input }) => {
       const employee = await ctx.db.employees.findUnique({
         where: { employeeId: input.employeeId },
@@ -144,16 +144,22 @@ export const EmployeeRouter = createTRPCRouter({
 
   // Get employee profile with linked User account details
   getEmployeeWithUser: protectedProcedure
-    .input(z.object({ employeeId: z.string().cuid() }))
+    .input(z.object({ employeeId: z.string().min(1) }))
     .query(async ({ ctx, input }) => {
       const employee = await ctx.db.employees.findUnique({
         where: { employeeId: input.employeeId },
       });
       if (!employee) throw new TRPCError({ code: "NOT_FOUND", message: "Employee not found" });
 
-      // Find linked user via registrationNumber === accountId
-      const user = await ctx.db.user.findFirst({
-        where: { accountId: employee.registrationNumber },
+      // Find linked user via registrationNumber, username, or admission email
+      let user = await ctx.db.user.findFirst({
+        where: {
+          OR: [
+            { accountId: employee.registrationNumber },
+            { username: employee.registrationNumber },
+            { email: `${employee.admissionNumber.toLowerCase()}@msns.edu.pk` },
+          ],
+        },
         select: {
           id: true,
           username: true,
@@ -165,6 +171,21 @@ export const EmployeeRouter = createTRPCRouter({
         },
       });
 
+      // Fallback if User row doesn't exist yet
+      if (!user) {
+        const fallbackUsername = `MSN-${employee.designation}-${employee.registrationNumber.replace(/^MSN-[A-Z]-/, "")}`;
+        const fallbackEmail = `${employee.admissionNumber.toLowerCase()}@msns.edu.pk`;
+        user = {
+          id: "",
+          username: fallbackUsername,
+          email: fallbackEmail,
+          accountType: employee.designation,
+          accountId: employee.registrationNumber,
+          createdAt: new Date(),
+          profilePic: null,
+        };
+      }
+
       if (employee.profilePic?.startsWith("/uploads/")) {
         employee.profilePic = `/api${employee.profilePic}`;
       }
@@ -173,7 +194,7 @@ export const EmployeeRouter = createTRPCRouter({
         user.profilePic = `/api${user.profilePic}`;
       }
 
-      return { ...employee, user: user ?? null };
+      return { ...employee, user };
     }),
 
   getUnAllocateEmployees: protectedProcedure.query(async ({ ctx }) => {
@@ -232,7 +253,7 @@ export const EmployeeRouter = createTRPCRouter({
     }),
 
   updateEmployee: protectedProcedure
-    .input(employeeSchema.extend({ employeeId: z.string().cuid() }))
+    .input(employeeSchema.extend({ employeeId: z.string().min(1) }))
     .mutation(async ({ ctx, input }) => {
       try {
         const { employeeId, ...data } = input;
@@ -278,7 +299,7 @@ export const EmployeeRouter = createTRPCRouter({
   updateEmployeeAndUser: protectedProcedure
     .input(
       employeeSchema.extend({
-        employeeId: z.string().cuid(),
+        employeeId: z.string().min(1),
         username: z.string().min(2).max(100).optional(),
         email: z.string().email().optional(),
       }),
