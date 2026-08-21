@@ -7,11 +7,11 @@
 
 ### 1.1 Core System Architecture & Environment Realization
 
-The MSNS Learning Management System (LMS) v2.0 Enterprise Resource Planning (ERP) Edition is constructed as a type-safe, self-contained monolithic application leveraging the T3 Stack. The application is deployed entirely within a single infrastructure project on Railway Pro.
+The MSNS Learning Management System (LMS) v2.0 Enterprise Resource Planning (ERP) Edition is constructed as a type-safe, self-contained monolithic application leveraging the T3 Stack. The application is deployed entirely within a single infrastructure project on Vercel.
 
 ```
 +------------------------------------------------------------------------------------------------+
-| RAILWAY PRO PLATFORM                                                                           |
+| VERCEL PLATFORM                                                                                |
 +------------------------------------------------------------------------------------------------+
 |                                                                                                |
 |  +--------------------------+   tRPC Protocol   +---------------------------+                  |
@@ -29,7 +29,7 @@ The MSNS Learning Management System (LMS) v2.0 Enterprise Resource Planning (ERP
 |                              Internal Blob Operations                                          |
 |                                       v                                                        |
 |                              +---------------------------+                                     |
-|                              | Railway Volume Storage    |                                     |
+|                              | Vercel Blob Storage       |                                     |
 |                              | (S3-Compatible Object)    |                                     |
 |                              +---------------------------+                                     |
 +------------------------------------------------------------------------------------------------+
@@ -37,18 +37,18 @@ The MSNS Learning Management System (LMS) v2.0 Enterprise Resource Planning (ERP
 
 #### 1.1.1 Compute and Framework Runtime
 
-- **Runtime Environment:** Node.js LTS executed within an OCI-compliant container runtime managed automatically via Railway's Nixpacks build pipeline from the GitHub master branch.
+- **Runtime Environment:** Node.js LTS executed within an OCI-compliant container runtime managed automatically via Vercel's build pipeline from the GitHub master branch.
 - **Application Server:** Next.js utilizing the App Router architecture. Dynamic routes and core API endpoints utilize Server-Side Rendering (SSR) and streaming layout architectures to compress TTFB to <200ms.
 - **Type-Safe API Communication Layer:** End-to-end type safety is guaranteed across the client-server boundary by a monolithic tRPC architecture. The core API routers are localized within `src/server/api/routers/erp.ts` and structured as individual domain sub-routers via tRPC procedure mergers.
 
 #### 1.1.2 Database Engine & ORM
 
-- **Database Engine:** Managed PostgreSQL cluster hosted natively within the Railway Pro perimeter. Connection multiplexing and scaling are managed via an internal high-performance connection pooler.
+- **Database Engine:** Managed PostgreSQL cluster hosted natively within the Vercel perimeter. Connection multiplexing and scaling are managed via an internal high-performance connection pooler.
 - **Data Access Layer:** Prisma Client ORM (`@prisma/client`) provides runtime type verification against the underlying database catalog. All database migrations are declared via static SQL/Prisma schema snapshots, ensuring zero application changes modify existing relational structures destructively without explicit roll-forward scripts.
 
 #### 1.1.3 Storage & File Lifecycle Subsystem
 
-- **Storage Infrastructure:** A production-tier, S3-compatible Railway Volume Storage bucket is provisioned within the same internal sub-network as the compute service. This design eliminates cross-region data transfer charges, providing zero-egress internal data streaming.
+- **Storage Infrastructure:** A production-tier, S3-compatible Vercel Blob Storage bucket is provisioned within the same internal sub-network as the compute service. This design eliminates cross-region data transfer charges, providing zero-egress internal data streaming.
 - **Security & Asset Delivery:** Secure documents (including Purchase Order PDFs, Direct Expense receipt scans, and Asset audit images) are completely restricted from public read access. Access is authorized exclusively using the AWS S3 SDK to generate time-bound pre-signed URLs with a maximum lifespan of 15 minutes, tightly bound to the calling user's NextAuth session token metadata.
 
 #### 1.1.4 Parent Portal Session Isolation and Security Architecture

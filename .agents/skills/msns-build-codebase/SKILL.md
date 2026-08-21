@@ -15,9 +15,9 @@ description: >
 
 ## Technology Stack
 - **API Layer:** tRPC v11, TanStack React Query v5, SuperJSON, Zod.
-- **Database:** PostgreSQL (on Railway Pro), Prisma 6.16 (with singleton client).
+- **Database:** External PostgreSQL, Prisma 6.16 (with singleton client).
 - **Authentication:** NextAuth.js v5 (beta.29), bcryptjs, JWT sessions.
-- **File Storage:** AWS S3 SDK (via Railway Volume Storage).
+- **File Storage:** AWS S3 SDK (via External S3 Bucket).
 - **UI & Styling:** Tailwind CSS 3.4, shadcn/ui (51 components), Framer Motion, Lucide React, Recharts, Embla Carousel, Sonner, cmdk, vaul, react-resizable-panels.
 - **PDF/Export:** pdf-lib (server), jspdf + jspdf-autotable (client), html2canvas-pro, papaparse.
 - **State/Forms:** Zustand v5, react-hook-form + Zod.
@@ -78,7 +78,7 @@ description: >
 - `pdf-reports.ts`: pdf-lib generation.
 
 ## Environment & Deployment
-- **Deployment:** Railway Pro, Docker multi-stage (standalone output, non-root Alpine).
+- **Deployment:** Vercel, Next.js framework.
 - **Env Vars:** `DATABASE_URL`, `AUTH_SECRET`, S3 AWS variables.
 
 ## Important Conventions

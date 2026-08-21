@@ -4,7 +4,7 @@ async function main() {
   console.log('--- Cleaning Up Classes with No Students using Raw SQL ---');
   
   const client = new Client({
-    connectionString: process.env.DATABASE_URL || 'postgresql://u0_a535@localhost:5432/msns-auth'
+    connectionString: process.env.DATABASE_URL
   });
   
   await client.connect();

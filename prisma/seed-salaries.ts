@@ -8,7 +8,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // Connection String
-const connectionString = process.env.DATABASE_URL || 'postgresql://u0_a535@localhost:5432/msns-auth';
+const connectionString = process.env.DATABASE_URL;
 
 // Helper to convert Month name to number
 function getMonthNumber(monthName: string): number {

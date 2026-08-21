@@ -8,7 +8,6 @@ const nextConfig = {
     ],
     minimumCacheTTL: 86400,
   },
-  output: "standalone",
   async rewrites() {
     return [
       {

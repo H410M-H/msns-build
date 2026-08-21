@@ -261,7 +261,7 @@ Copy everything from your local .env.
 
 2. Set up a hosted SQL database
 
-(Neon, Railway, Supabase, PlanetScale, etc.)
+(Neon, Supabase, PlanetScale, etc.)
 
 Run:
 
