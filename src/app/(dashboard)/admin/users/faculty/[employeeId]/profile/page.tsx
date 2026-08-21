@@ -10,6 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { Skeleton } from "~/components/ui/skeleton";
 import { Separator } from "~/components/ui/separator";
 import { PageHeader } from "~/components/blocks/nav/PageHeader";
+import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import {
   User,
   Phone,
@@ -26,6 +27,7 @@ import {
   Heart,
   Clock,
   UserCheck,
+  Camera,
 } from "lucide-react";
 
 // --- Helper: InfoItem ---
@@ -148,9 +150,25 @@ export default function EmployeeProfilePage() {
 
           <div className="relative z-10 flex flex-col items-center gap-6 md:flex-row md:items-start">
             {/* Avatar */}
-            <div className="relative h-28 w-28 shrink-0 overflow-hidden rounded-full border-4 border-slate-700 bg-slate-700 shadow-xl ring-2 ring-emerald-500/30 sm:h-32 sm:w-32 md:h-40 md:w-40">
-              <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-emerald-600/30 to-slate-700 text-4xl font-black text-emerald-300 sm:text-5xl">
-                {initials}
+            <div
+              className="relative group cursor-pointer h-28 w-28 shrink-0 overflow-hidden rounded-full border-4 border-slate-700 bg-slate-800 shadow-xl ring-2 ring-emerald-500/30 sm:h-32 sm:w-32 md:h-40 md:w-40"
+              onClick={() => setEditOpen(true)}
+              title="Click to update photo"
+            >
+              <Avatar className="h-full w-full">
+                {(employee.profilePic || user?.profilePic) && (
+                  <AvatarImage
+                    src={employee.profilePic || user?.profilePic || ""}
+                    alt={employee.employeeName}
+                    className="object-cover h-full w-full"
+                  />
+                )}
+                <AvatarFallback className="flex h-full w-full items-center justify-center bg-gradient-to-br from-emerald-600/30 to-slate-700 text-4xl font-black text-emerald-300 sm:text-5xl">
+                  {initials}
+                </AvatarFallback>
+              </Avatar>
+              <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded-full">
+                <Camera className="h-8 w-8 text-white" />
               </div>
             </div>
 

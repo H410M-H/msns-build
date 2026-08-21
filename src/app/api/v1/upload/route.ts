@@ -1,7 +1,5 @@
 import { NextResponse } from "next/server";
-import path from "path";
-import { writeFile } from "fs/promises";
-import { existsSync, mkdirSync } from "fs";
+import { uploadToS3 } from "~/lib/s3";
 import { auth } from "~/server/auth";
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
@@ -60,34 +58,25 @@ export async function POST(request: Request) {
 
     const buffer = Buffer.from(await file.arrayBuffer());
 
-    // Ensure the directory exists
-    const uploadDir = path.join(process.cwd(), "public/uploads");
-    if (!existsSync(uploadDir)) {
-      mkdirSync(uploadDir, { recursive: true });
-    }
-
     // Sanitize filename — remove path traversal and special characters
-    const baseName = path.basename(file.name); // strip directory components
+    const baseName = file.name ? file.name.split("/").pop()?.split("\\").pop() ?? "file" : "file";
     const sanitizedName = baseName.replace(/[^a-zA-Z0-9._-]/g, "_");
-    const filename = `${Date.now()}_${sanitizedName}`;
-    const filepath = path.join(uploadDir, filename);
+    const key = `uploads/${Date.now()}_${sanitizedName}`;
 
-    // Double-check the resolved path is within the upload directory (prevent path traversal)
-    const resolvedPath = path.resolve(filepath);
-    const resolvedUploadDir = path.resolve(uploadDir);
-    if (!resolvedPath.startsWith(resolvedUploadDir)) {
-      return NextResponse.json(
-        { error: "Invalid file path" },
-        { status: 400 },
-      );
-    }
+    // Upload to Cloudflare R2 bucket
+    await uploadToS3(key, buffer, file.type);
 
-    await writeFile(filepath, buffer);
-    return NextResponse.json({ url: `/api/uploads/${filename}` });
+    return NextResponse.json({
+      url: `/api/images/${key}`,
+      key,
+      filename: file.name,
+      size: file.size,
+      contentType: file.type,
+    });
   } catch (error) {
-    console.error("Error saving file:", error);
+    console.error("Error uploading file to Cloudflare R2:", error);
     return NextResponse.json(
-      { error: "Failed to save file." },
+      { error: "Failed to upload file to Cloudflare R2." },
       { status: 500 },
     );
   }

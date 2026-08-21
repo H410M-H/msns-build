@@ -107,7 +107,7 @@ const ActionCell = ({ salary }: { salary: SalaryData }) => {
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem asChild>
-            <Link href={`/admin/erp/hr/employees/${salary.employeeId}`}>
+            <Link href={`/admin/users/faculty/${salary.employeeId}/profile`}>
               <User className="mr-2 h-4 w-4" />
               Employee Details
             </Link>

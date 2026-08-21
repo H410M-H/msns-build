@@ -136,7 +136,7 @@ export const ClassesCard = () => {
               asChild
             >
               <Link
-                href={`/admin/academics/classwiseDetail/${classItem.classId}`}
+                href={`/admin/sessions/class?classId=${classItem.classId}`}
               >
                 <Settings className="h-3.5 w-3.5" />
                 Manage
@@ -148,7 +148,7 @@ export const ClassesCard = () => {
               asChild
             >
               <Link
-                href={`/admin/academics/classwiseDetail/${classItem.category}`}
+                href="/admin/users/student/create"
               >
                 <UserPlus className="h-3.5 w-3.5" />
                 Enroll

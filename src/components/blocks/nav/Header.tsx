@@ -69,23 +69,23 @@ export default function Header({ className, ...props }: HeaderProps) {
           <ul className="flex space-x-4 font-bold text-black">
             <li>
               <Link href="/admin">
-                <Button variant="ghost">Home</Button>
+                <Button variant="ghost">Dashboard</Button>
               </Link>
             </li>
             <li>
-              <Link href="/admin/academics">
-                <Button variant="ghost">Academics</Button>
+              <Link href="/admin/sessions">
+                <Button variant="ghost">Sessions</Button>
               </Link>
             </li>
             <li>
-              <Link href="/contact">
+              <Link href="https://msns.edu.pk/contact">
                 <Button variant="ghost">Contact</Button>
               </Link>
             </li>
             {/* Moved Profile button here */}
             {isAuthenticated && (
               <li>
-                <Link href="/account">
+                <Link href="/admin/users/profile">
                   <Button variant="ghost">Profile</Button>
                 </Link>
               </li>
@@ -111,17 +111,17 @@ export default function Header({ className, ...props }: HeaderProps) {
                 className="rounded-lg bg-white shadow-lg ring-1 ring-black ring-opacity-5 transition-transform duration-300 ease-in-out"
               >
                 <DropdownMenuItem className="hover:bg-purple-100 focus:bg-purple-200">
-                  <Link href="/settings">Settings</Link>
+                  <Link href="/admin/users/profile">Profile</Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem className="hover:bg-purple-100 focus:bg-purple-200">
-                  <Link href="/login">Logout</Link>
+                  <Link href="/sign-in">Logout</Link>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           ) : (
             !isDashboard && (
-              <Link href="/signup">
-                <Button variant="outline">Join Now</Button>
+              <Link href="/sign-in">
+                <Button variant="outline">Sign In</Button>
               </Link>
             )
           )}

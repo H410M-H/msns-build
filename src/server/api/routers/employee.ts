@@ -341,19 +341,15 @@ export const EmployeeRouter = createTRPCRouter({
               ...leftDateUpdate,
             },
           }),
-          ...(username ?? email
-            ? [
-              ctx.db.user.updateMany({
-                where: { accountId: existing.registrationNumber },
-                data: {
-                  ...(username ? { username } : {}),
-                  ...(email ? { email: email.toLowerCase() } : {}),
-                  // Sync accountType if designation changed
-                  accountType: employeeData.designation as AccountTypeEnum,
-                },
-              }),
-            ]
-            : []),
+          ctx.db.user.updateMany({
+            where: { accountId: existing.registrationNumber },
+            data: {
+              ...(username ? { username } : {}),
+              ...(email ? { email: email.toLowerCase() } : {}),
+              ...(employeeData.profilePic ? { profilePic: employeeData.profilePic } : {}),
+              ...(employeeData.designation ? { accountType: employeeData.designation as AccountTypeEnum } : {}),
+            },
+          }),
         ]);
 
         return updatedEmployee;

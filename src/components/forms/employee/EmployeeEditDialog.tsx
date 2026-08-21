@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -19,7 +19,9 @@ import {
   ShieldCheck,
   Mail,
   AtSign,
+  Camera,
 } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Button } from "~/components/ui/button";
 import {
   Form,
@@ -72,6 +74,7 @@ const formSchema = z.object({
   mobileNo: z.string(),
   additionalContact: z.string().optional(),
   education: z.string(),
+  profilePic: z.string().optional(),
   username: z.string().min(2).max(100).optional(),
   email: z.string().email().optional().or(z.literal("")),
   status: z.enum(["Active", "Retired", "Left"]),
@@ -138,6 +141,9 @@ export function EmployeeEditDialog({
     initialEmail ||
     `${(employee.admissionNumber || "").toLowerCase()}@msns.edu.pk`;
 
+  const [uploadingPic, setUploadingPic] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   const { data: employeeData, isLoading: isUserLoading } =
     api.employee.getEmployeeWithUser.useQuery(
       { employeeId: employee.employeeId },
@@ -159,6 +165,7 @@ export function EmployeeEditDialog({
       mobileNo: employee.mobileNo,
       additionalContact: employee.additionalContact ?? "",
       education: employee.education,
+      profilePic: employee.profilePic ?? "",
       username: initialUsername || fallbackUsername,
       email: initialEmail || fallbackEmail,
       status: (employee.status ?? "Active") as "Active" | "Retired" | "Left",
@@ -185,8 +192,49 @@ export function EmployeeEditDialog({
           { shouldDirty: false }
         );
       }
+      if (employeeData.profilePic) {
+        form.setValue("profilePic", employeeData.profilePic, { shouldDirty: false });
+      }
     }
   }, [initialUsername, initialEmail, employeeData, fallbackUsername, fallbackEmail, form]);
+
+  const handlePicUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploadingPic(true);
+    const formData = new FormData();
+    formData.append("file", file);
+
+    try {
+      const res = await fetch("/api/v1/upload", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!res.ok) {
+        const errorData = (await res.json()) as { error?: string };
+        throw new Error(errorData.error ?? "Failed to upload photo");
+      }
+
+      const data = (await res.json()) as { url: string };
+      form.setValue("profilePic", data.url, { shouldDirty: true });
+      toast({
+        title: "Photo Uploaded",
+        description: "Profile picture uploaded to Cloudflare R2 storage.",
+      });
+    } catch (err) {
+      const error = err as Error;
+      toast({
+        title: "Upload Failed",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setUploadingPic(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  };
 
   const updateEmployee = api.employee.updateEmployeeAndUser.useMutation({
     onSuccess: () => {
@@ -211,8 +259,17 @@ export function EmployeeEditDialog({
       employeeId: employee.employeeId,
       username: values.username ?? undefined,
       email: values.email ?? undefined,
+      profilePic: values.profilePic ?? undefined,
     });
   };
+
+  const currentProfilePic = form.watch("profilePic");
+  const employeeInitials = (form.watch("employeeName") || employee.employeeName || "E")
+    .split(" ")
+    .map((n) => n[0])
+    .join("")
+    .toUpperCase()
+    .slice(0, 2);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 backdrop-blur-md">
@@ -251,9 +308,52 @@ export function EmployeeEditDialog({
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
 
-              {/* Personal Info */}
-              <div className="space-y-3">
-                <SectionHeader icon={User} label="Personal Information" />
+              {/* Profile Photo & Personal Info */}
+              <div className="space-y-4">
+                <SectionHeader icon={User} label="Personal Information & Photo" />
+
+                {/* Avatar Uploader Row */}
+                <div className="flex items-center gap-4 rounded-xl border border-slate-800 bg-slate-950/40 p-3">
+                  <div className="relative">
+                    <Avatar className="h-16 w-16 border-2 border-emerald-500/30">
+                      {currentProfilePic && <AvatarImage src={currentProfilePic} className="object-cover" />}
+                      <AvatarFallback className="bg-emerald-950 text-emerald-400 font-bold text-lg">
+                        {employeeInitials}
+                      </AvatarFallback>
+                    </Avatar>
+                  </div>
+                  <div className="flex-1 space-y-1">
+                    <p className="text-xs font-semibold text-slate-200">Profile Photo</p>
+                    <p className="text-[11px] text-slate-400">
+                      Upload photo to Cloudflare R2 bucket (JPEG, PNG, WebP)
+                    </p>
+                  </div>
+                  <div>
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp,image/gif"
+                      className="hidden"
+                      onChange={handlePicUpload}
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      disabled={uploadingPic}
+                      onClick={() => fileInputRef.current?.click()}
+                      className="h-8 border-slate-700 bg-slate-800 text-xs text-slate-200 hover:bg-slate-700 hover:text-white"
+                    >
+                      {uploadingPic ? (
+                        <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+                      ) : (
+                        <Camera className="mr-1.5 h-3.5 w-3.5 text-emerald-400" />
+                      )}
+                      {uploadingPic ? "Uploading..." : "Change Photo"}
+                    </Button>
+                  </div>
+                </div>
+
                 <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
                   <FormField
                     control={form.control}

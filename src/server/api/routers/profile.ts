@@ -134,6 +134,25 @@ export const ProfileRouter = createTRPCRouter({
           },
         });
 
+        // Sync profilePic to linked Employee or Student record
+        if (profilePic && updatedUser.accountId) {
+          await Promise.all([
+            ctx.db.employees.updateMany({
+              where: { registrationNumber: updatedUser.accountId },
+              data: { profilePic },
+            }),
+            ctx.db.students.updateMany({
+              where: {
+                OR: [
+                  { studentId: updatedUser.accountId },
+                  { admissionNumber: updatedUser.accountId },
+                ],
+              },
+              data: { profilePic },
+            }),
+          ]);
+        }
+
         return updatedUser;
       } catch (error) {
         if (error instanceof TRPCError) {
