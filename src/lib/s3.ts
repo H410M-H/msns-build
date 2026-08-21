@@ -8,7 +8,7 @@ const getEndpoint = () => {
     if (url.pathname && url.pathname !== "/") {
       return url.origin;
     }
-  } catch (_e) {}
+  } catch {}
   return rawEndpoint;
 };
 

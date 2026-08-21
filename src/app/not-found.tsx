@@ -3,7 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { motion } from "framer-motion";
-import { ArrowLeft, Home, Search, Users, Calendar, BarChart3, HelpCircle } from "lucide-react";
+import { ArrowLeft, Home, Users, Calendar, BarChart3 } from "lucide-react";
 import { Button } from "~/components/ui/button";
 
 export default function NotFound() {

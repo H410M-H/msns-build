@@ -144,7 +144,7 @@ export function EmployeeEditDialog({
   const [uploadingPic, setUploadingPic] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const { data: employeeData, isLoading: isUserLoading } =
+  const { data: employeeData } =
     api.employee.getEmployeeWithUser.useQuery(
       { employeeId: employee.employeeId },
       { enabled: !!employee.employeeId }

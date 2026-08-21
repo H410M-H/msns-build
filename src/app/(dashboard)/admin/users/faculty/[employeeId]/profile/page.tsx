@@ -156,9 +156,9 @@ export default function EmployeeProfilePage() {
               title="Click to update photo"
             >
               <Avatar className="h-full w-full">
-                {(employee.profilePic || user?.profilePic) && (
+                {(employee.profilePic ?? user?.profilePic) && (
                   <AvatarImage
-                    src={employee.profilePic || user?.profilePic || ""}
+                    src={employee.profilePic ?? user?.profilePic ?? ""}
                     alt={employee.employeeName}
                     className="object-cover h-full w-full"
                   />

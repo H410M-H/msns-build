@@ -30,7 +30,7 @@ export async function GET(
           headers.set("Cache-Control", "public, max-age=31536000, immutable");
           return new NextResponse(stream, { headers });
         }
-      } catch (_e) {
+      } catch {
         // NoSuchKey, continue to next fallback
       }
     }

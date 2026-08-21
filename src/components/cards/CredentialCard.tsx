@@ -27,7 +27,6 @@ import {
   Wrench,
   CheckCircle2,
   XCircle,
-  Eye,
   SlidersHorizontal,
   X,
 } from "lucide-react";
