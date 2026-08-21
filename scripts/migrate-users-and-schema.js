@@ -1,8 +1,10 @@
 import pg from 'pg';
 import { hash } from 'bcryptjs';
 import crypto from 'crypto';
+import dotenv from 'dotenv';
+dotenv.config();
 
-const pool = new pg.Pool({ connectionString: 'postgresql://u0_a535@localhost:5432/msns-auth' });
+const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL });
 
 async function migrate() {
   console.log('🚀 Starting schema patch and user data migration...');

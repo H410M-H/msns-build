@@ -47,3 +47,4 @@ yarn-error.log*
 .idea
 graphify-out/
 railway-lmsbackup.dump.sql
+.env*
