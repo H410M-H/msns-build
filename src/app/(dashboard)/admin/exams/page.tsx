@@ -285,12 +285,7 @@ export default function ExamManagementPage() {
 
   return (
     <div className="w-full space-y-6">
-      <PageHeader
-        breadcrumbs={[
-          { href: "/admin", label: "Admin" },
-          { href: "/admin/exams", label: "Exam Management", current: true },
-        ]}
-      />
+      {/* PageHeader in layout */}
 
       {/* --- Header Section --- */}
       <div className="flex flex-col justify-between gap-4 md:flex-row md:items-end">

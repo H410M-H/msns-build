@@ -43,9 +43,13 @@ import {
   FileText,
   Plus,
   LayoutGrid,
+  Fingerprint,
+  Shield,
 } from "lucide-react";
 import type { Employees } from "@prisma/client";
 import { EmployeeEditDialog } from "../forms/employee/EmployeeEditDialog";
+import { useAttendance } from "~/hooks/use-attendance";
+import { AttendanceModal } from "~/components/attendance/attendance/attendance-dialog";
 
 // Define the shape of data including relations
 type EmployeeData = Employees & {
@@ -58,6 +62,7 @@ export function EmployeeTable() {
   const [editingEmployee, setEditingEmployee] = useState<Employees | null>(
     null,
   );
+  const { setEmployee, setOpen } = useAttendance();
 
   const { data: employees, refetch } = api.employee.getEmployees.useQuery();
 
@@ -198,6 +203,28 @@ export function EmployeeTable() {
               >
                 <Eye className="mr-2 h-3.5 w-3.5" /> View Profile
               </Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              asChild
+              className="cursor-pointer hover:bg-slate-100 focus:bg-slate-100 dark:hover:bg-emerald-500/20 dark:focus:bg-emerald-500/20"
+            >
+              <Link
+                href={`/admin/users/faculty/bio-metric?employeeId=${row.original.employeeId}&employeeName=${encodeURIComponent(row.original.employeeName)}`}
+              >
+                <Shield className="mr-2 h-3.5 w-3.5 text-blue-600 dark:text-blue-400" /> Enroll Fingerprint
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={() => {
+                setEmployee({
+                  employeeId: row.original.employeeId,
+                  employeeName: row.original.employeeName,
+                });
+                setOpen(true);
+              }}
+              className="cursor-pointer hover:bg-slate-100 focus:bg-slate-100 dark:hover:bg-emerald-500/20 dark:focus:bg-emerald-500/20"
+            >
+              <Fingerprint className="mr-2 h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" /> Mark Biometric Attendance
             </DropdownMenuItem>
             {row.original.cv && (
               <DropdownMenuItem
@@ -390,6 +417,9 @@ export function EmployeeTable() {
           }}
         />
       )}
+
+      {/* Biometric Attendance Modal */}
+      <AttendanceModal />
     </div>
   );
 }

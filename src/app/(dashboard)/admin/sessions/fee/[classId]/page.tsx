@@ -32,7 +32,7 @@ export default async function FeeDetailsPage({ searchParams }: PageProps) {
 
   return (
     <div className="w-full space-y-6">
-      <PageHeader breadcrumbs={breadcrumbs} />
+      {/* PageHeader in layout */}
 
       <div className="pt-2 duration-500 animate-in fade-in slide-in-from-bottom-4">
         {/* Header Section */}

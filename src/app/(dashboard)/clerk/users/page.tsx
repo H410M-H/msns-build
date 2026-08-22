@@ -59,7 +59,7 @@ export default function RegistrationPage() {
       )}
 
       <div className="relative z-10 max-w-[100vw] px-4 py-6 sm:px-6 lg:px-8">
-        <PageHeader breadcrumbs={breadcrumbs} />
+        {/* PageHeader in layout */}
 
         <div className="flex flex-1 flex-col items-center justify-center py-12 sm:py-16 lg:py-20">
           {/* Hero Header */}

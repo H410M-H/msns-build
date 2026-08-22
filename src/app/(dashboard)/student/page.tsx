@@ -43,7 +43,7 @@ export default function StudentDashboard() {
 
   return (
     <div className="w-full space-y-8 p-6">
-      <PageHeader breadcrumbs={breadcrumbs} />
+      {/* PageHeader in layout */}
 
       {/* Top Section: Welcome & Profile */}
       <div className="grid w-full grid-cols-1 gap-6 lg:grid-cols-12">

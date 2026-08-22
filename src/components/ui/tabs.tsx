@@ -5,7 +5,70 @@ import * as TabsPrimitive from "@radix-ui/react-tabs";
 
 import { cn } from "~/lib/utils";
 
-const Tabs = TabsPrimitive.Root;
+const Tabs = React.forwardRef<
+  React.ElementRef<typeof TabsPrimitive.Root>,
+  React.ComponentPropsWithoutRef<typeof TabsPrimitive.Root>
+>(({ onTouchStart, onTouchEnd, ...props }, ref) => {
+  const containerRef = React.useRef<HTMLDivElement | null>(null);
+  const touchStartPos = React.useRef<{ x: number; y: number } | null>(null);
+
+  const handleTouchStart = (e: React.TouchEvent<HTMLDivElement>) => {
+    const touch = e.touches[0];
+    if (touch) {
+      touchStartPos.current = { x: touch.clientX, y: touch.clientY };
+    }
+    onTouchStart?.(e);
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent<HTMLDivElement>) => {
+    if (touchStartPos.current && containerRef.current && e.changedTouches[0]) {
+      const touch = e.changedTouches[0];
+      const deltaX = touch.clientX - touchStartPos.current.x;
+      const deltaY = touch.clientY - touchStartPos.current.y;
+
+      if (Math.abs(deltaX) > 40 && Math.abs(deltaX) > Math.abs(deltaY) * 1.5) {
+        const triggers = Array.from(
+          containerRef.current.querySelectorAll<HTMLButtonElement>(
+            '[role="tab"]:not([disabled])'
+          )
+        );
+
+        if (triggers.length > 1) {
+          const activeIndex = triggers.findIndex(
+            (t) => t.getAttribute("data-state") === "active"
+          );
+
+          if (activeIndex !== -1) {
+            if (deltaX < 0 && activeIndex < triggers.length - 1) {
+              triggers[activeIndex + 1]?.click();
+            } else if (deltaX > 0 && activeIndex > 0) {
+              triggers[activeIndex - 1]?.click();
+            }
+          }
+        }
+      }
+    }
+    touchStartPos.current = null;
+    onTouchEnd?.(e);
+  };
+
+  return (
+    <TabsPrimitive.Root
+      ref={(node) => {
+        containerRef.current = node;
+        if (typeof ref === "function") {
+          ref(node);
+        } else if (ref) {
+          (ref as React.MutableRefObject<HTMLDivElement | null>).current = node;
+        }
+      }}
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
+      {...props}
+    />
+  );
+});
+Tabs.displayName = TabsPrimitive.Root.displayName;
 
 const TabsList = React.forwardRef<
   React.ElementRef<typeof TabsPrimitive.List>,

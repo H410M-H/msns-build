@@ -19,7 +19,7 @@ export default async function FeeDetailsPage({ searchParams }: PageProps) {
   ];
   return (
     <div className="w-full">
-      <PageHeader breadcrumbs={breadcrumbs} />
+      {/* PageHeader in layout */}
       <div className="pt-20">
         <Card>
           <CardHeader>

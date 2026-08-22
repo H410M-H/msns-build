@@ -157,11 +157,7 @@ export default function MarkingCentrePage() {
 
   return (
     <div className="w-full space-y-5">
-      <PageHeader breadcrumbs={[
-        { href: "/admin", label: "Admin" },
-        { href: "/admin/exams", label: "Examinations" },
-        { href: "/admin/exams/marking-centre", label: "Marking Centre" },
-      ]} />
+      {/* PageHeader in layout */}
 
       {/* Header */}
       <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-end">

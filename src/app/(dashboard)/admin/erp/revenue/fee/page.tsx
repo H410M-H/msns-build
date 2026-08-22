@@ -15,7 +15,7 @@ export default function FeePage() {
 
   return (
     <div className="relative w-full space-y-6">
-      <PageHeader breadcrumbs={breadcrumbs} />
+      {/* PageHeader in layout */}
 
       {/* Animated background elements - Theme Adapted */}
       <div className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">

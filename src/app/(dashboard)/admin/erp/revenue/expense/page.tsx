@@ -26,7 +26,7 @@ export default function ExpensePage() {
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-green-50/50 to-teal-50/50 sm:px-6 sm:py-0 dark:from-slate-950 dark:to-slate-900">
-      <PageHeader breadcrumbs={breadcrumbs} />
+      {/* PageHeader in layout */}
 
       {/* Animated background elements */}
       <motion.div

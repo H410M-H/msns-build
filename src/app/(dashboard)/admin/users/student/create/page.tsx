@@ -26,7 +26,7 @@ export default function StudentRegistration() {
 
       <ScrollArea className="h-screen">
         <div className="relative z-10 mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-          <PageHeader breadcrumbs={breadcrumbs} />
+          {/* PageHeader in layout */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}

@@ -97,11 +97,7 @@ export default function AssetsPage() {
 
   return (
     <div className="w-full space-y-6">
-      <PageHeader breadcrumbs={[
-        { href: "/admin", label: "Admin" },
-        { href: "/admin/erp", label: "ERP" },
-        { href: "/admin/erp/assets", label: "Asset Management" },
-      ]} />
+      {/* PageHeader in layout */}
 
       <div className="flex flex-col justify-between gap-4 md:flex-row md:items-end">
         <div className="flex items-center gap-3">

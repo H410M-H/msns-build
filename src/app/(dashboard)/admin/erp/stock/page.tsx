@@ -91,11 +91,7 @@ export default function StockPage() {
 
   return (
     <div className="w-full space-y-6">
-      <PageHeader breadcrumbs={[
-        { href: "/admin", label: "Admin" },
-        { href: "/admin/erp", label: "ERP" },
-        { href: "/admin/erp/stock", label: "Inventory & Stock" },
-      ]} />
+      {/* PageHeader in layout */}
 
       {/* Header and Add Item */}
       <div className="flex flex-col justify-between gap-4 md:flex-row md:items-end">

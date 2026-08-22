@@ -163,13 +163,7 @@ export default function PromotionManagementPage() {
 
   return (
     <div className="w-full space-y-6">
-      <PageHeader
-        breadcrumbs={[
-          { href: "/admin", label: "Admin" },
-          { href: "/admin/exams", label: "Exams" },
-          { href: "/admin/exams/promotion", label: "Student Promotion" },
-        ]}
-      />
+      {/* PageHeader in layout */}
 
       {/* --- Header Section --- */}
       <div className="flex flex-col justify-between gap-4 md:flex-row md:items-end">

@@ -20,7 +20,7 @@ export default async function EmployeeRegistration(
 
   return (
     <ScrollArea className="items-center">
-      <PageHeader breadcrumbs={breadcrumbs} />
+      {/* PageHeader in layout */}
       <div className="pt-14">
         <RegisterEmployeeBioMetric
           employeeId={employeeId}

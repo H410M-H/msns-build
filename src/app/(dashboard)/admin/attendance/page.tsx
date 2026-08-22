@@ -104,7 +104,7 @@ function StudentAttendanceDashboardContent() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <GradientStatCard
           title="Total Students"
           value={stats.totalStudents}
@@ -223,7 +223,7 @@ export default function AttendancePage() {
 
   return (
     <div className="w-full space-y-6">
-      <PageHeader breadcrumbs={breadcrumbs} />
+      {/* PageHeader in layout */}
       <StudentAttendanceDashboardContent />
     </div>
   );

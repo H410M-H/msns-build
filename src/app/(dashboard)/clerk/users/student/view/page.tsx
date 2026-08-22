@@ -18,7 +18,7 @@ export default function StudentsTablePage() {
       {/* BACKGROUND END */}
 
       <div className="relative z-10 flex min-h-screen w-full flex-col">
-        <PageHeader breadcrumbs={breadcrumbs} />
+        {/* PageHeader in layout */}
 
         <div className="flex-1 p-4">
           <div className="w-full flex flex-col gap-8 duration-700 animate-in fade-in slide-in-from-bottom-4">
