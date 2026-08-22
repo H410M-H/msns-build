@@ -131,7 +131,7 @@ export const initDailyRoleNotifications = async (role = "ADMIN"): Promise<void> 
   if (typeof window === "undefined") return;
 
   const normalizedRole = role.toUpperCase();
-  const templates = ROLE_NOTIFICATIONS[normalizedRole] ?? ROLE_NOTIFICATIONS.ADMIN;
+  const templates: RoleNotificationTemplate[] = ROLE_NOTIFICATIONS[normalizedRole] ?? ROLE_NOTIFICATIONS.ADMIN ?? [];
   const todayStr = new Date().toISOString().split("T")[0];
   const lastKey = `msns_daily_notif_date_${normalizedRole}`;
   const lastDate = localStorage.getItem(lastKey);
