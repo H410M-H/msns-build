@@ -22,6 +22,9 @@ function WelcomeNotificationListener() {
         sessionStorage.setItem(sessionKey, "true");
         void sendWelcomeNotification(user.name ?? user.email ?? "User", user.accountType);
       }
+      void import("~/lib/mobile/daily-notifications").then(({ initDailyRoleNotifications }) => {
+        void initDailyRoleNotifications(user.accountType ?? "ADMIN");
+      });
     }
   }, [session]);
 

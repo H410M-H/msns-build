@@ -1,10 +1,13 @@
 import { isNative } from "./native-service";
 import { toast } from "sonner";
+import { addStoredNotification } from "./notification-store";
 
 export interface NotificationOptions {
   id?: number;
   title: string;
   body: string;
+  category?: "BROADCAST" | "DAILY_TASK" | "SYSTEM" | "FEATURE_EXPLORE";
+  actionUrl?: string;
   data?: Record<string, unknown>;
 }
 
@@ -41,9 +44,19 @@ export const sendLocalNotification = async ({
   id,
   title,
   body,
+  category = "SYSTEM",
+  actionUrl,
   data,
 }: NotificationOptions): Promise<void> => {
   const notifId = id ?? Math.floor(Math.random() * 1000000) + 1;
+
+  // Add to persistent in-app notification center store
+  addStoredNotification({
+    title,
+    body,
+    category,
+    actionUrl,
+  });
 
   // Always show a toast feedback inside the app
   toast.success(title, {
@@ -107,7 +120,26 @@ export const sendWelcomeNotification = async (
   await sendLocalNotification({
     title,
     body,
+    category: "SYSTEM",
+    actionUrl: "/admin",
     data: { type: "WELCOME", userName, role },
+  });
+};
+
+export const sendBroadcastNotification = async (
+  broadcastTitle: string,
+  message: string,
+  targetAudience?: string
+): Promise<void> => {
+  const title = `📢 Broadcast Announcement: ${broadcastTitle}`;
+  const body = `${targetAudience ? `[${targetAudience}] ` : ""}${message}`;
+
+  await sendLocalNotification({
+    title,
+    body,
+    category: "BROADCAST",
+    actionUrl: "/admin/events",
+    data: { type: "BROADCAST", broadcastTitle, targetAudience },
   });
 };
 
@@ -122,6 +154,7 @@ export const sendModuleActionNotification = async (
   await sendLocalNotification({
     title,
     body,
+    category: "SYSTEM",
     data: { type: "MODULE_ACTION", moduleName, actionName },
   });
 };
