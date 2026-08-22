@@ -61,6 +61,9 @@ export function FeeCreationDialog({}: FeeCreationDialogProps) {
         title: "Fee structure created successfully",
         description: "The new fee structure has been added to the system.",
       });
+      void import("~/lib/mobile/notification-service").then(({ sendModuleActionNotification }) => {
+        void sendModuleActionNotification("Fee Structure", "Fee Structure Created", `Fee structure created for level ${formData.level || 'General'}`);
+      });
       setOpen(false);
     },
     onError: (error) => {

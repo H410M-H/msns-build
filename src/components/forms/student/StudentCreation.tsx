@@ -90,6 +90,9 @@ export default function StudentCreationDialog() {
         title: "Success",
         description: "Student registered successfully",
       });
+      void import("~/lib/mobile/notification-service").then(({ sendModuleActionNotification }) => {
+        void sendModuleActionNotification("Student", "Student Registered", "New student record created successfully");
+      });
       form.reset();
       setUploadedImageUrl("");
     },

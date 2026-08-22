@@ -139,6 +139,10 @@ export const RegisterEmployeeBioMetric = ({
       toast.success("All captures completed!", {
         description: "Multiple thumb captures have been successfully stored.",
       });
+
+      void import("~/lib/mobile/notification-service").then(({ sendModuleActionNotification }) => {
+        void sendModuleActionNotification("Attendance & Biometrics", "Fingerprint Registered", `Biometric template updated for ${employeeName}`);
+      });
     } catch (error) {
       console.error("Fingerprint capture error:", error);
       setDeviceStatus("error");

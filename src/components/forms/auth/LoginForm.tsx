@@ -44,8 +44,17 @@ export const LoginForm = () => {
   });
 
   useEffect(() => {
-    if (session.data)
+    if (session.data) {
+      const user = session.data.user;
+      const sessionKey = `msns_welcome_notified_${user.id || user.email}`;
+      if (typeof window !== "undefined" && !sessionStorage.getItem(sessionKey)) {
+        sessionStorage.setItem(sessionKey, "true");
+        void import("~/lib/mobile/notification-service").then(({ sendWelcomeNotification }) => {
+          void sendWelcomeNotification(user.name ?? user.email ?? "User", user.accountType);
+        });
+      }
       router.push(RedirectMap[session.data?.user.accountType ?? "NONE"] ?? "/");
+    }
   }, [router, session]);
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
@@ -57,7 +66,13 @@ export const LoginForm = () => {
         password: values.password,
         redirect: false,
       });
-      if (signInData?.error) setAlert(true);
+      if (signInData?.error) {
+        setAlert(true);
+      } else {
+        void import("~/lib/mobile/notification-service").then(({ sendWelcomeNotification }) => {
+          void sendWelcomeNotification(values.email, "Chief");
+        });
+      }
     } finally {
       setSubmitting(false);
     }
