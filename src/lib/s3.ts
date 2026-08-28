@@ -118,10 +118,56 @@ export async function findImageByFilename(filename: string): Promise<string | nu
     ...(videosResponse.Contents ?? [])
   ];
 
+  // Sort newest first by LastModified
+  contents.sort((a, b) => {
+    if (a.LastModified && b.LastModified) {
+      return new Date(b.LastModified).getTime() - new Date(a.LastModified).getTime();
+    }
+    return 0;
+  });
+
+  const searchLower = filename.toLowerCase().trim();
+  const searchClean = searchLower.replace(/\.[^/.]+$/, "");
+
+  // 1. Exact basename match
   for (const obj of contents) {
     if (!obj.Key || obj.Key.endsWith("/")) continue;
     const basename = obj.Key.split("/").pop();
     if (basename === filename) {
+      return obj.Key;
+    }
+  }
+
+  // 2. Case-insensitive basename match (with or without extension)
+  for (const obj of contents) {
+    if (!obj.Key || obj.Key.endsWith("/")) continue;
+    const basename = obj.Key.split("/").pop() ?? "";
+    const baseLower = basename.toLowerCase();
+    const baseClean = baseLower.replace(/\.[^/.]+$/, "");
+    if (baseLower === searchLower || baseClean === searchClean) {
+      return obj.Key;
+    }
+  }
+
+  // 3. Special handling for notification social posts index (e.g. social_posts_1, social_posts_2)
+  if (searchClean.startsWith("social_posts_") || searchClean.startsWith("notification_")) {
+    const indexMatch = searchClean.match(/\d+$/);
+    const index = indexMatch ? parseInt(indexMatch[0], 10) - 1 : 0;
+    const matchingObjs = contents.filter((obj) => {
+      if (!obj.Key || obj.Key.endsWith("/")) return false;
+      const lower = obj.Key.toLowerCase();
+      return lower.includes("social_posts") || lower.includes("notifications") || lower.includes("notification");
+    });
+    if (matchingObjs[index]?.Key) {
+      return matchingObjs[index].Key;
+    }
+  }
+
+  // 4. Keyword / Substring match (e.g. "rehan", "ateeqa", "momina", "notification")
+  for (const obj of contents) {
+    if (!obj.Key || obj.Key.endsWith("/")) continue;
+    const keyLower = obj.Key.toLowerCase();
+    if (keyLower.includes(searchClean)) {
       return obj.Key;
     }
   }
