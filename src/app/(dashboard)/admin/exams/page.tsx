@@ -39,6 +39,7 @@ import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
 import { GradientStatCard } from "~/components/shared/GradientStatCard";
 import { PageExportButton } from "~/components/shared/PageExportButton";
+import { MultiSelectClassDropdown } from "~/components/shared/MultiSelectClassDropdown";
 
 import {
   AlertCircle,
@@ -56,7 +57,8 @@ import {
   GraduationCap,
   Clock,
   CheckSquare,
-  FileText
+  FileText,
+  Check
 } from "lucide-react";
 import Link from "next/link";
 
@@ -108,7 +110,8 @@ const EXAM_TYPES = [
 
 export default function ExamManagementPage() {
   const [selectedSession, setSelectedSession] = useState<string>("");
-  const [selectedClass, setSelectedClass] = useState<string>("");
+  const [selectedClasses, setSelectedClasses] = useState<string[]>([]);
+  const [createDialogClasses, setCreateDialogClasses] = useState<string[]>([]);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
 
   // Form states for new exam
@@ -126,16 +129,17 @@ export default function ExamManagementPage() {
   const { data: sessions } = api.session.getSessions.useQuery();
   const { data: examsForSession, refetch: refetchExams } =
     api.exam.getExamsForSession.useQuery(
-      { sessionId: selectedSession },
+      { sessionId: selectedSession, classIds: selectedClasses },
       { enabled: !!selectedSession },
     );
 
   const { data: classes } = api.class.getClasses.useQuery();
 
+  const primaryDialogClassId = createDialogClasses[0] ?? "";
   const { data: classSubjects, isLoading: subjectsLoading } =
     api.subject.getSubjectsByClass.useQuery(
-      { classId: selectedClass, sessionId: selectedSession },
-      { enabled: !!selectedClass && !!selectedSession },
+      { classId: primaryDialogClassId, sessionId: selectedSession },
+      { enabled: !!primaryDialogClassId && !!selectedSession },
     );
 
   React.useEffect(() => {
@@ -152,7 +156,16 @@ export default function ExamManagementPage() {
     } else {
       setDatesheet([]);
     }
-  }, [classSubjects, selectedClass, selectedSession]);
+  }, [classSubjects]);
+
+  const handleOpenCreateDialog = () => {
+    if (selectedClasses.length > 0) {
+      setCreateDialogClasses(selectedClasses);
+    } else if (classes && classes.length > 0) {
+      setCreateDialogClasses(classes.map((c) => c.classId));
+    }
+    setShowCreateDialog(true);
+  };
 
   // API mutations
   const createExamMutation = api.exam.createExam.useMutation();
@@ -160,19 +173,19 @@ export default function ExamManagementPage() {
   const utils = api.useUtils();
 
   const handleCreateExam = async () => {
-    if (!selectedSession || !selectedClass) {
-      alert("Please select session and class");
+    if (!selectedSession || createDialogClasses.length === 0) {
+      alert("Please select a session and at least one target class.");
       return;
     }
     if (!newExamData.startDate || !newExamData.endDate) {
-      alert("Please select exam start and end dates");
+      alert("Please select exam start and end dates.");
       return;
     }
 
     try {
-      await createExamMutation.mutateAsync({
+      const res = await createExamMutation.mutateAsync({
         sessionId: selectedSession,
-        classId: selectedClass,
+        classIds: createDialogClasses,
         examTypeEnum: newExamData.examType as "MIDTERM" | "FINAL" | "PHASE_1" | "PHASE_2" | "PHASE_3" | "PHASE_4" | "PHASE_5" | "PHASE_6",
         startDate: new Date(newExamData.startDate),
         endDate: new Date(newExamData.endDate),
@@ -197,10 +210,10 @@ export default function ExamManagementPage() {
         startDate: "",
         endDate: "",
       });
-
-    } catch (error) {
+      alert(res.message || "Exams created successfully!");
+    } catch (error: any) {
       console.error("Error creating exam:", error);
-      alert("Failed to create exam");
+      alert(error?.message || "Failed to create exam");
     }
   };
 
@@ -246,7 +259,6 @@ export default function ExamManagementPage() {
     }
   };
 
-  const selectedClassName = classes?.find((c: Class) => c.classId === selectedClass);
   const selectedSessionName = sessions?.find((s: Session) => s.sessionId === selectedSession);
 
   const stats = useMemo(() => {
@@ -315,8 +327,9 @@ export default function ExamManagementPage() {
             <DialogTrigger asChild>
               <Button
                 size="sm"
+                onClick={handleOpenCreateDialog}
                 className="bg-emerald-600 text-white hover:bg-emerald-700 gap-2"
-                disabled={!selectedSession || !selectedClass}
+                disabled={!selectedSession}
               >
                 <Plus className="h-4 w-4" />
                 Create Exam
@@ -329,14 +342,51 @@ export default function ExamManagementPage() {
                   Create New Exam
                 </DialogTitle>
                 <DialogDescription className="text-muted-foreground">
-                  {selectedClassName &&
-                    `Class ${selectedClassName.grade} ${selectedClassName.section}`}{" "}
-                  ·{" "}
-                  {selectedSessionName?.sessionName}
+                  Session: {selectedSessionName?.sessionName ?? "Select a Session"}
                 </DialogDescription>
               </DialogHeader>
 
               <div className="space-y-5 pt-2">
+                {/* Target Classes Selection with Checkmarks */}
+                <div className="rounded-xl border border-slate-200 p-4 dark:border-border space-y-3 bg-slate-50/50 dark:bg-white/5">
+                  <div className="flex items-center justify-between">
+                    <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                      Target Classes ({createDialogClasses.length} selected)
+                    </Label>
+                    <span className="text-[11px] text-emerald-600 dark:text-emerald-400 font-medium">
+                      Select multiple classes with check marks
+                    </span>
+                  </div>
+                  <MultiSelectClassDropdown
+                    classes={classes ?? []}
+                    selectedClassIds={createDialogClasses}
+                    onChange={setCreateDialogClasses}
+                    placeholder="Select target classes..."
+                  />
+                  {createDialogClasses.length > 0 ? (
+                    <div className="flex flex-wrap gap-1.5 pt-1">
+                      {createDialogClasses.map((id) => {
+                        const cls = classes?.find((c) => c.classId === id);
+                        if (!cls) return null;
+                        return (
+                          <Badge
+                            key={id}
+                            variant="outline"
+                            className="bg-emerald-50 text-emerald-700 border-emerald-200 text-xs py-0.5 dark:bg-emerald-500/10 dark:text-emerald-300 dark:border-emerald-500/20 gap-1"
+                          >
+                            <Check className="h-3 w-3 stroke-[3]" />
+                            {cls.grade} {cls.section}
+                          </Badge>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <p className="text-xs text-amber-600 dark:text-amber-400 font-medium">
+                      ⚠️ Please check mark at least one class to create exams.
+                    </p>
+                  )}
+                </div>
+
                 {/* Exam Basics */}
                 <div className="rounded-xl border border-slate-100 p-4 dark:border-border">
                   <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold text-slate-800 dark:text-foreground">
@@ -443,9 +493,9 @@ export default function ExamManagementPage() {
                 <div className="rounded-xl border border-slate-100 p-4 dark:border-border">
                   <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold text-slate-800 dark:text-foreground">
                     <CalendarDays className="h-4 w-4 text-blue-500" />
-                    Datesheet
+                    Datesheet Schedule
                     <span className="ml-auto text-xs font-normal text-muted-foreground">
-                      Subjects assigned to this class
+                      Applied across selected classes
                     </span>
                   </h3>
 
@@ -457,7 +507,7 @@ export default function ExamManagementPage() {
                     <div className="rounded-lg border border-dashed border-slate-200 dark:border-border bg-slate-50 dark:bg-black/10 p-6 text-center">
                       <BookOpen className="mx-auto mb-2 h-6 w-6 text-muted-foreground opacity-40" />
                       <p className="text-sm text-muted-foreground">
-                        No subjects assigned to this class yet. Assign subjects first.
+                        No subjects assigned yet. Exam schedule will be created without fixed subject datesheets.
                       </p>
                     </div>
                   ) : (
@@ -527,18 +577,23 @@ export default function ExamManagementPage() {
 
                 <Button
                   onClick={handleCreateExam}
-                  disabled={createExamMutation.isPending || !newExamData.startDate || !newExamData.endDate}
+                  disabled={
+                    createExamMutation.isPending ||
+                    createDialogClasses.length === 0 ||
+                    !newExamData.startDate ||
+                    !newExamData.endDate
+                  }
                   className="w-full bg-emerald-600 text-white shadow-md shadow-emerald-200 hover:bg-emerald-700 dark:shadow-emerald-900/20"
                 >
                   {createExamMutation.isPending ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Creating…
+                      Creating Exams for {createDialogClasses.length} class(es)...
                     </>
                   ) : (
                     <>
                       <Plus className="mr-2 h-4 w-4" />
-                      Create Exam
+                      Create Exams for {createDialogClasses.length} Class(es)
                     </>
                   )}
                 </Button>
@@ -611,51 +666,58 @@ export default function ExamManagementPage() {
             </div>
 
             <div className="space-y-1.5">
-              <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                Class
+              <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center justify-between">
+                <span>Class Filter</span>
+                {selectedClasses.length > 0 && (
+                  <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-normal">
+                    {selectedClasses.length} selected
+                  </span>
+                )}
               </Label>
-              <Select value={selectedClass} onValueChange={setSelectedClass}>
-                <SelectTrigger className="border-slate-200 bg-white text-sm transition-all focus:border-emerald-500/50 dark:border-border dark:bg-card dark:text-foreground">
-                  <SelectValue placeholder="Select class" />
-                </SelectTrigger>
-                <SelectContent>
-                  {classes?.map((cls: Class) => (
-                    <SelectItem key={cls.classId} value={cls.classId}>
-                      {cls.grade} {cls.section}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <MultiSelectClassDropdown
+                classes={classes ?? []}
+                selectedClassIds={selectedClasses}
+                onChange={setSelectedClasses}
+                placeholder="All Classes"
+              />
             </div>
           </div>
         </CardContent>
       </Card>
 
-      {/* --- Class + Subject overview when both are selected --- */}
-      {selectedClass && selectedSession && classSubjects && classSubjects.length > 0 && (
+      {/* --- Class overview when classes are selected --- */}
+      {selectedClasses.length > 0 && selectedSession && (
         <Card className="overflow-hidden border border-slate-200 bg-white/50 shadow-sm dark:border-border dark:bg-card">
           <CardHeader className="border-b border-slate-100 bg-slate-50/50 px-5 py-3 dark:border-border dark:bg-black/20">
             <CardTitle className="flex items-center gap-2 text-sm font-bold text-slate-900 dark:text-foreground">
               <BookOpen className="h-4 w-4 text-teal-500" />
-              Subjects in{" "}
-              {selectedClassName &&
-                `${selectedClassName.grade} ${selectedClassName.section}`}
-              <Badge variant="outline" className="ml-auto border-teal-500/20 bg-teal-500/10 text-teal-500 text-xs">
-                {classSubjects.length} subject{classSubjects.length !== 1 ? "s" : ""}
-              </Badge>
+              Selected Classes Filter ({selectedClasses.length})
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setSelectedClasses([])}
+                className="ml-auto h-6 text-xs text-muted-foreground hover:text-foreground"
+              >
+                Clear class filter
+              </Button>
             </CardTitle>
           </CardHeader>
           <CardContent className="p-3">
             <div className="flex flex-wrap gap-2">
-              {classSubjects.map((cs) => (
-                <Badge
-                  key={cs.Subject.subjectId}
-                  variant="outline"
-                  className="border-slate-200 bg-slate-50 text-slate-700 dark:border-border dark:bg-white/5 dark:text-foreground"
-                >
-                  {cs.Subject.subjectName}
-                </Badge>
-              ))}
+              {selectedClasses.map((id) => {
+                const cls = classes?.find((c) => c.classId === id);
+                if (!cls) return null;
+                return (
+                  <Badge
+                    key={id}
+                    variant="outline"
+                    className="border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-500/20 dark:bg-emerald-500/10 dark:text-emerald-300 gap-1"
+                  >
+                    <Check className="h-3 w-3 stroke-[3]" />
+                    {cls.grade} {cls.section}
+                  </Badge>
+                );
+              })}
             </div>
           </CardContent>
         </Card>

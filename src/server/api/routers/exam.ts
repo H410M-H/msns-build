@@ -5,7 +5,8 @@ import type { Prisma } from "@prisma/client";
 
 const createExamSchema = z.object({
   sessionId: z.string().cuid(),
-  classId: z.string().cuid(),
+  classId: z.string().cuid().optional(),
+  classIds: z.array(z.string().cuid()).optional(),
   examTypeEnum: z.enum([
     "MIDTERM",
     "FINAL",
@@ -44,85 +45,135 @@ export const examRouter = createTRPCRouter({
     .input(createExamSchema)
     .mutation(async ({ ctx, input }) => {
       try {
-        // Verify session and class exist
-        const [session, grades] = await Promise.all([
-          ctx.db.sessions.findUnique({ where: { sessionId: input.sessionId } }),
-          ctx.db.grades.findUnique({ where: { classId: input.classId } }),
-        ]);
+        const targetClassIds = input.classIds?.length
+          ? input.classIds
+          : input.classId
+          ? [input.classId]
+          : [];
 
-        if (!session || !grades) {
+        if (targetClassIds.length === 0) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "At least one class must be selected",
+          });
+        }
+
+        // Verify session exists
+        const session = await ctx.db.sessions.findUnique({
+          where: { sessionId: input.sessionId },
+        });
+
+        if (!session) {
           throw new TRPCError({
             code: "NOT_FOUND",
-            message: "Session or class not found",
+            message: "Session not found",
           });
         }
 
-        // Determine exam category based on grade and exam type
-        const isMatriculation =
-          grades.category === ("MATRICULATION" as typeof grades.category);
+        const createdExams = [];
         const isPhaseTest = input.examTypeEnum.startsWith("PHASE_");
 
-        if (isMatriculation && !isPhaseTest) {
+        for (const classId of targetClassIds) {
+          const grades = await ctx.db.grades.findUnique({
+            where: { classId },
+          });
+
+          if (!grades) continue;
+
+          // Determine exam category based on grade and exam type
+          const isMatriculation =
+            grades.category === ("MATRICULATION" as typeof grades.category);
+
+          if (isMatriculation && !isPhaseTest) {
+            // Skip or throw if only 1 class selected
+            if (targetClassIds.length === 1) {
+              throw new TRPCError({
+                code: "BAD_REQUEST",
+                message:
+                  "Matriculation students should have phase tests, not midterm/final",
+              });
+            }
+            continue;
+          }
+
+          if (!isMatriculation && isPhaseTest) {
+            if (targetClassIds.length === 1) {
+              throw new TRPCError({
+                code: "BAD_REQUEST",
+                message:
+                  "Non-matriculation students should have midterm/final, not phase tests",
+              });
+            }
+            continue;
+          }
+
+          // Get or create exam type
+          let examType = await ctx.db.examType.findFirst({
+            where: { name: input.examTypeEnum },
+          });
+
+          examType ??= await ctx.db.examType.create({
+            data: {
+              name: input.examTypeEnum,
+              category: isPhaseTest ? "PHASE_TEST" : "STANDARD",
+            },
+          });
+
+          // Find class subjects for this class to ensure datesheet entries are valid
+          const classSubjects = await ctx.db.classSubject.findMany({
+            where: { classId, sessionId: input.sessionId },
+            select: { subjectId: true },
+          });
+          const validSubjectIds = new Set(classSubjects.map((cs) => cs.subjectId));
+
+          const datesheetForClass = input.datesheet
+            ? input.datesheet.filter((ds) => validSubjectIds.has(ds.subjectId))
+            : [];
+
+          // Create exam for this class
+          const exam = await ctx.db.exam.create({
+            data: {
+              examTypeId: examType.examTypeId,
+              examTypeEnum: input.examTypeEnum,
+              sessionId: input.sessionId,
+              classId,
+              startDate: input.startDate,
+              endDate: input.endDate,
+              totalMarks: input.totalMarks,
+              passingMarks: input.passingMarks,
+              status: "SCHEDULED",
+              ...(datesheetForClass.length > 0 && {
+                ExamDatesheet: {
+                  create: datesheetForClass.map((ds) => ({
+                    subjectId: ds.subjectId,
+                    date: ds.date,
+                    startTime: ds.startTime,
+                    endTime: ds.endTime,
+                  })),
+                },
+              }),
+            },
+            include: {
+              ExamDatesheet: true,
+            },
+          });
+
+          createdExams.push(exam);
+        }
+
+        if (createdExams.length === 0) {
           throw new TRPCError({
             code: "BAD_REQUEST",
             message:
-              "Matriculation students should have phase tests, not midterm/final",
+              "No valid exams could be created for the selected classes (check matriculation vs phase test rules).",
           });
         }
-
-        if (!isMatriculation && isPhaseTest) {
-          throw new TRPCError({
-            code: "BAD_REQUEST",
-            message:
-              "Non-matriculation students should have midterm/final, not phase tests",
-          });
-        }
-
-        // Get or create exam type
-        let examType = await ctx.db.examType.findFirst({
-          where: { name: input.examTypeEnum },
-        });
-
-        examType ??= await ctx.db.examType.create({
-          data: {
-            name: input.examTypeEnum,
-            category: isPhaseTest ? "PHASE_TEST" : "STANDARD",
-          },
-        });
-
-        // Create exam
-        const exam = await ctx.db.exam.create({
-          data: {
-            examTypeId: examType.examTypeId,
-            examTypeEnum: input.examTypeEnum,
-            sessionId: input.sessionId,
-            classId: input.classId,
-            startDate: input.startDate,
-            endDate: input.endDate,
-            totalMarks: input.totalMarks,
-            passingMarks: input.passingMarks,
-            status: "SCHEDULED",
-            ...(input.datesheet &&
-              input.datesheet.length > 0 && {
-              ExamDatesheet: {
-                create: input.datesheet.map((ds) => ({
-                  subjectId: ds.subjectId,
-                  date: ds.date,
-                  startTime: ds.startTime,
-                  endTime: ds.endTime,
-                })),
-              },
-            }),
-          },
-          include: {
-            ExamDatesheet: true,
-          },
-        });
 
         return {
           success: true,
-          message: "Exam created successfully",
-          exam,
+          message: `Created ${createdExams.length} exam(s) successfully`,
+          count: createdExams.length,
+          exams: createdExams,
         };
       } catch (error) {
         console.error("Error creating exam:", error);
@@ -162,11 +213,24 @@ export const examRouter = createTRPCRouter({
     }),
 
   getExamsForSession: protectedProcedure
-    .input(z.object({ sessionId: z.string().cuid() }))
+    .input(
+      z.object({
+        sessionId: z.string().cuid(),
+        classIds: z.array(z.string().cuid()).optional(),
+      }),
+    )
     .query(async ({ ctx, input }) => {
       try {
+        const where: Prisma.ExamWhereInput = {
+          sessionId: input.sessionId,
+          ...(input.classIds &&
+            input.classIds.length > 0 && {
+              classId: { in: input.classIds },
+            }),
+        };
+
         const exams = await ctx.db.exam.findMany({
-          where: { sessionId: input.sessionId },
+          where,
           include: {
             Grades: { select: { grade: true, section: true } },
             ExamType: { select: { name: true } },
