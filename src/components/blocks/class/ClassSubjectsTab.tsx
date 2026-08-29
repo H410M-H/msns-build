@@ -4,7 +4,7 @@ import { useState } from "react";
 import { api } from "~/trpc/react";
 import { useSession } from "next-auth/react";
 import { toast } from "~/hooks/use-toast";
-import { BookOpen, Users, Plus, Trash2, Loader2 } from "lucide-react";
+import { BookOpen, Users, Plus, Trash2, Pencil, Loader2 } from "lucide-react";
 
 import {
   Table,
@@ -48,6 +48,16 @@ export function ClassSubjectsTab({ classId, sessionId }: ClassSubjectsTabProps) 
   const [selectedSubject, setSelectedSubject] = useState("");
   const [selectedEmployee, setSelectedEmployee] = useState("");
 
+  // Edit teacher modal state
+  const [editOpen, setEditOpen] = useState(false);
+  const [editingSubject, setEditingSubject] = useState<{
+    csId: string;
+    subjectId: string;
+    subjectName: string;
+    employeeId: string;
+  } | null>(null);
+  const [editEmployeeId, setEditEmployeeId] = useState("");
+
   const utils = api.useUtils();
 
   const { data: subjects = [], isLoading } = api.class.getAssignedSubjects.useQuery(
@@ -56,14 +66,17 @@ export function ClassSubjectsTab({ classId, sessionId }: ClassSubjectsTabProps) 
   );
 
   const globalSubjects = api.subject.getAllSubjects.useQuery(undefined, { enabled: open });
-  const globalEmployees = api.employee.getEmployees.useQuery(undefined, { enabled: open });
+  const globalEmployees = api.employee.getEmployees.useQuery(undefined, { enabled: open || editOpen });
 
   const assignMutation = api.class.assignSubject.useMutation({
     onSuccess: () => {
-      toast({ title: "Success", description: "Subject assigned to class successfully." });
+      toast({ title: "Success", description: "Subject assignment updated successfully." });
       setOpen(false);
+      setEditOpen(false);
       setSelectedSubject("");
       setSelectedEmployee("");
+      setEditingSubject(null);
+      setEditEmployeeId("");
       void utils.class.getAssignedSubjects.invalidate({ classId, sessionId });
     },
     onError: (e) => toast({ title: "Error", description: e.message, variant: "destructive" }),
@@ -83,6 +96,27 @@ export function ClassSubjectsTab({ classId, sessionId }: ClassSubjectsTabProps) 
       sessionId,
       subjectId: selectedSubject,
       employeeId: selectedEmployee,
+    });
+  };
+
+  const handleOpenEdit = (cs: (typeof subjects)[number]) => {
+    setEditingSubject({
+      csId: cs.csId,
+      subjectId: cs.subjectId,
+      subjectName: cs.Subject.subjectName,
+      employeeId: cs.employeeId,
+    });
+    setEditEmployeeId(cs.employeeId);
+    setEditOpen(true);
+  };
+
+  const handleSaveEdit = () => {
+    if (!editingSubject || !editEmployeeId) return;
+    assignMutation.mutate({
+      classId,
+      sessionId,
+      subjectId: editingSubject.subjectId,
+      employeeId: editEmployeeId,
     });
   };
 
@@ -117,8 +151,10 @@ export function ClassSubjectsTab({ classId, sessionId }: ClassSubjectsTabProps) 
                         <SelectValue placeholder="Select a subject" />
                       </SelectTrigger>
                       <SelectContent>
-                        {globalSubjects.data?.map(s => (
-                          <SelectItem key={s.subjectId} value={s.subjectId}>{s.subjectName}</SelectItem>
+                        {globalSubjects.data?.map((s) => (
+                          <SelectItem key={s.subjectId} value={s.subjectId}>
+                            {s.subjectName}
+                          </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
@@ -134,18 +170,24 @@ export function ClassSubjectsTab({ classId, sessionId }: ClassSubjectsTabProps) 
                         <SelectValue placeholder="Select a teacher" />
                       </SelectTrigger>
                       <SelectContent>
-                        {globalEmployees.data?.filter(e => e.designation !== "TEACHER" && e.employeeName !== "").map(e => (
-                          <SelectItem key={e.employeeId} value={e.employeeId}>{e.employeeName}</SelectItem>
-                        ))}
+                        {globalEmployees.data
+                          ?.filter((e) => e.employeeName && e.employeeName.trim() !== "")
+                          .map((e) => (
+                            <SelectItem key={e.employeeId} value={e.employeeId}>
+                              {e.employeeName} ({e.designation})
+                            </SelectItem>
+                          ))}
                       </SelectContent>
                     </Select>
                   )}
                 </div>
               </div>
               <footer className="flex justify-end gap-2">
-                <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
-                <Button 
-                  onClick={handleAssign} 
+                <Button variant="outline" onClick={() => setOpen(false)}>
+                  Cancel
+                </Button>
+                <Button
+                  onClick={handleAssign}
                   disabled={!selectedSubject || !selectedEmployee || assignMutation.isPending}
                 >
                   {assignMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : "Assign"}
@@ -155,6 +197,70 @@ export function ClassSubjectsTab({ classId, sessionId }: ClassSubjectsTabProps) 
           </Dialog>
         )}
       </div>
+
+      {/* Edit Teacher Dialog */}
+      <Dialog open={editOpen} onOpenChange={setEditOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Edit Assigned Teacher</DialogTitle>
+            <DialogDescription>
+              Change the teacher assigned to{" "}
+              <span className="font-semibold text-foreground">
+                {editingSubject?.subjectName}
+              </span>
+              .
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label>Subject</Label>
+              <div className="rounded-md border border-input bg-muted/50 px-3 py-2 text-sm font-medium text-foreground">
+                {editingSubject?.subjectName}
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label>Teacher</Label>
+              {globalEmployees.isLoading ? (
+                <Skeleton className="h-10 w-full" />
+              ) : (
+                <Select value={editEmployeeId} onValueChange={setEditEmployeeId}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select a teacher" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {globalEmployees.data
+                      ?.filter((e) => e.employeeName && e.employeeName.trim() !== "")
+                      .map((e) => (
+                        <SelectItem key={e.employeeId} value={e.employeeId}>
+                          {e.employeeName} ({e.designation})
+                        </SelectItem>
+                      ))}
+                  </SelectContent>
+                </Select>
+              )}
+            </div>
+          </div>
+          <footer className="flex justify-end gap-2">
+            <Button variant="outline" onClick={() => setEditOpen(false)}>
+              Cancel
+            </Button>
+            <Button
+              onClick={handleSaveEdit}
+              disabled={
+                !editEmployeeId ||
+                editEmployeeId === editingSubject?.employeeId ||
+                assignMutation.isPending
+              }
+            >
+              {assignMutation.isPending ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                "Save Changes"
+              )}
+            </Button>
+          </footer>
+        </DialogContent>
+      </Dialog>
 
       <div className="overflow-hidden rounded-xl border border-border">
         <Table>
@@ -193,15 +299,27 @@ export function ClassSubjectsTab({ classId, sessionId }: ClassSubjectsTabProps) 
                   </TableCell>
                   {isAdminOrHead && (
                     <TableCell className="text-right">
-                      <Button 
-                        variant="ghost" 
-                        size="sm" 
-                        onClick={() => removeMutation.mutate({ csId: cs.csId })}
-                        disabled={removeMutation.isPending}
-                        className="text-red-500 hover:text-red-700 hover:bg-red-50"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
+                      <div className="flex items-center justify-end gap-1">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleOpenEdit(cs)}
+                          title="Edit Teacher"
+                          className="text-blue-600 hover:text-blue-800 hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-950/50"
+                        >
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => removeMutation.mutate({ csId: cs.csId })}
+                          disabled={removeMutation.isPending}
+                          title="Remove Subject"
+                          className="text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/50"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </TableCell>
                   )}
                 </TableRow>
