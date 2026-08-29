@@ -139,7 +139,7 @@ export default function StockPage() {
       <Separator className="bg-amber-500/20" />
 
       {/* Metrics Cards */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-4 gap-1.5 sm:gap-4 w-full">
         <GradientStatCard
           title="Stock Items Value"
           value={isValuationLoading ? "..." : `PKR ${totalValue.toLocaleString()}`}

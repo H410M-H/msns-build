@@ -38,9 +38,9 @@ export function ClassStatsHeader({ classId, sessionId }: ClassStatsHeaderProps) 
 
   if (studentsLoading || subjectsLoading || classLoading) {
     return (
-      <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="mb-8 grid grid-cols-4 gap-1.5 sm:gap-4 w-full">
         {Array.from({ length: 4 }).map((_, i) => (
-          <Skeleton key={i} className="h-32 rounded-xl bg-slate-200 dark:bg-emerald-900/20" />
+          <Skeleton key={i} className="h-20 sm:h-32 rounded-xl bg-slate-200 dark:bg-emerald-900/20" />
         ))}
       </div>
     );
@@ -75,12 +75,12 @@ export function ClassStatsHeader({ classId, sessionId }: ClassStatsHeaderProps) 
           </Button>
           <Button size="sm" className="gap-2 bg-emerald-600 hover:bg-emerald-700 text-white">
             <Printer className="h-4 w-4" />
-            Print Timetable
+            Print Roster
           </Button>
         </div>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-4 gap-1.5 sm:gap-4 w-full">
         <GradientStatCard
           title="Enrolled Students"
           value={students?.data?.length ?? 0}

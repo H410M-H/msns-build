@@ -49,9 +49,9 @@ function StudentAttendanceDashboardContent() {
     return (
       <div className="w-full space-y-4">
         <div className="h-10 w-48 animate-pulse rounded-md bg-slate-200 dark:bg-emerald-900/20" />
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid grid-cols-4 gap-1.5 sm:gap-4 w-full">
           {Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="h-32 animate-pulse rounded-xl bg-slate-200 dark:bg-emerald-900/20" />
+            <div key={i} className="h-20 sm:h-32 animate-pulse rounded-xl bg-slate-200 dark:bg-emerald-900/20" />
           ))}
         </div>
         <div className="h-96 w-full animate-pulse rounded-xl bg-slate-200 dark:bg-emerald-900/20" />
@@ -104,7 +104,7 @@ function StudentAttendanceDashboardContent() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-4 gap-1.5 sm:gap-4 w-full">
         <GradientStatCard
           title="Total Students"
           value={stats.totalStudents}

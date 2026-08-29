@@ -195,7 +195,7 @@ export default function BudgetPage() {
       <Separator className="bg-blue-500/20" />
 
       {/* Stats Cards */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-4 gap-1.5 sm:gap-4 w-full">
         <GradientStatCard
           title="Total Allocated"
           value={isUtilLoading ? "..." : `PKR ${stats.totalAllocated.toLocaleString()}`}

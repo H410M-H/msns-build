@@ -169,7 +169,7 @@ export default function AssetsPage() {
       <Separator className="bg-emerald-500/20" />
 
       {/* Stats Cards */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-4 gap-1.5 sm:gap-4 w-full">
         <GradientStatCard
           title="Total Assets Value"
           value={isLoading ? "..." : `PKR ${stats.totalVal.toLocaleString()}`}

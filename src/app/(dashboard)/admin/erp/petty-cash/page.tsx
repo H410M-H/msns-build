@@ -153,7 +153,7 @@ export default function PettyCashPage() {
       {register && (
         <>
           {/* Stats Cards */}
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid grid-cols-4 gap-1.5 sm:gap-4 w-full">
             <GradientStatCard
               title="Current Balance"
               value={isLoading ? "..." : `PKR ${stats.current.toLocaleString()}`}

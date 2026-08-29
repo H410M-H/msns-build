@@ -157,7 +157,7 @@ export function FeeDashboard() {
       </div>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-4 gap-1.5 sm:gap-4 w-full">
         <SummaryCard
           title="Total Expected"
           value={grandTotals.totalExpected}
@@ -340,24 +340,24 @@ function SummaryCard({
   return (
     <Card
       className={cn(
-        "border transition-all duration-300 hover:-translate-y-1 hover:shadow-lg",
+        "border transition-all duration-300 hover:-translate-y-1 hover:shadow-lg min-w-0",
         colorClasses[color],
       )}
     >
-      <CardHeader className="flex flex-row items-center justify-between pb-2">
-        <CardTitle className="text-sm font-bold uppercase tracking-wider opacity-80">
+      <CardHeader className="flex flex-row items-center justify-between pb-1 sm:pb-2 pt-2 sm:pt-4 px-2 sm:px-4">
+        <CardTitle className="text-[10px] sm:text-xs md:text-sm font-bold uppercase tracking-wider opacity-80 truncate">
           {title}
         </CardTitle>
-        <div className={cn("rounded-lg p-2", iconColorClasses[color])}>
-          <Icon className="h-4 w-4" />
+        <div className={cn("rounded-md sm:rounded-lg p-1 sm:p-2 flex-shrink-0", iconColorClasses[color])}>
+          <Icon className="h-3 w-3 sm:h-4 sm:w-4" />
         </div>
       </CardHeader>
-      <CardContent>
+      <CardContent className="px-2 pb-2 sm:px-4 sm:pb-4">
         {isLoading ? (
-          <Skeleton className="h-8 w-24 bg-black/5 dark:bg-white/10" />
+          <Skeleton className="h-5 sm:h-8 w-16 sm:w-24 bg-black/5 dark:bg-white/10" />
         ) : (
-          <div className="flex items-baseline gap-2">
-            <span className="text-2xl font-bold">
+          <div className="flex items-baseline gap-1 sm:gap-2">
+            <span className="text-sm sm:text-xl md:text-2xl font-bold tracking-tight truncate">
               {isCurrency
                 ? `Rs. ${value.toLocaleString()}`
                 : value.toLocaleString()}
@@ -366,16 +366,16 @@ function SummaryCard({
               <Badge
                 variant={trend >= 70 ? "default" : "destructive"}
                 className={cn(
-                  "ml-auto text-xs",
+                  "ml-auto text-[9px] sm:text-xs px-1 sm:px-2 py-0",
                   trend >= 70
                     ? "bg-emerald-100 text-emerald-700 hover:bg-emerald-200 dark:bg-emerald-500/20 dark:text-emerald-400"
                     : "bg-red-100 text-red-700 hover:bg-red-200 dark:bg-red-500/20 dark:text-red-400",
                 )}
               >
                 {trend >= 70 ? (
-                  <TrendingUp className="mr-1 h-3 w-3" />
+                  <TrendingUp className="mr-0.5 sm:mr-1 h-2.5 w-2.5 sm:h-3 sm:w-3" />
                 ) : (
-                  <TrendingDown className="mr-1 h-3 w-3" />
+                  <TrendingDown className="mr-0.5 sm:mr-1 h-2.5 w-2.5 sm:h-3 sm:w-3" />
                 )}
                 {trend.toFixed(1)}%
               </Badge>
