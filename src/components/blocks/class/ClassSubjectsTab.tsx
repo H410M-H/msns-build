@@ -262,11 +262,73 @@ export function ClassSubjectsTab({ classId, sessionId }: ClassSubjectsTabProps) 
         </DialogContent>
       </Dialog>
 
-      <div className="overflow-hidden rounded-xl border border-border">
+      {/* Mobile / Responsive Subject Cards */}
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:hidden">
+        {isLoading ? (
+          Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="rounded-xl border border-border bg-card p-4 shadow-sm">
+              <Skeleton className="h-5 w-3/4 mb-3" />
+              <Skeleton className="h-4 w-1/2 mb-2" />
+              <Skeleton className="h-8 w-full mt-4" />
+            </div>
+          ))
+        ) : subjects && subjects.length > 0 ? (
+          subjects.map((cs) => (
+            <div
+              key={cs.csId}
+              className="flex flex-col justify-between rounded-xl border border-border bg-card p-4 shadow-sm transition-all hover:border-slate-300 dark:hover:border-slate-700"
+            >
+              <div>
+                <div className="flex items-start justify-between gap-2">
+                  <h3 className="font-semibold text-foreground text-base">
+                    {cs.Subject.subjectName}
+                  </h3>
+                </div>
+                <div className="mt-3 flex items-center gap-2 text-sm">
+                  <Users className="h-4 w-4 text-emerald-500 shrink-0" />
+                  <div>
+                    <p className="font-medium text-foreground">{cs.Employees.employeeName}</p>
+                    <p className="text-xs text-muted-foreground">{cs.Employees.designation}</p>
+                  </div>
+                </div>
+              </div>
+
+              {isAdminOrHead && (
+                <div className="mt-4 flex items-center justify-end gap-2 border-t border-border pt-3">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleOpenEdit(cs)}
+                    className="flex-1 gap-1.5 text-xs text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-950/50"
+                  >
+                    <Pencil className="h-3.5 w-3.5" /> Edit Teacher
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => removeMutation.mutate({ csId: cs.csId })}
+                    disabled={removeMutation.isPending}
+                    className="gap-1.5 text-xs text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/50"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" /> Remove
+                  </Button>
+                </div>
+              )}
+            </div>
+          ))
+        ) : (
+          <div className="col-span-full rounded-xl border border-border bg-card p-8 text-center text-muted-foreground">
+            <BookOpen className="h-8 w-8 mx-auto text-slate-300 mb-2" />
+            <p>No subjects assigned to this class yet.</p>
+          </div>
+        )}
+      </div>
+
+      {/* Desktop Table View (No Subject ID column) */}
+      <div className="hidden lg:block overflow-hidden rounded-xl border border-border">
         <Table>
           <TableHeader className="bg-slate-50 dark:bg-slate-900/50">
             <TableRow>
-              <TableHead>Subject Code</TableHead>
               <TableHead>Subject Name</TableHead>
               <TableHead>Assigned Teacher</TableHead>
               {isAdminOrHead && <TableHead className="text-right">Actions</TableHead>}
@@ -275,16 +337,13 @@ export function ClassSubjectsTab({ classId, sessionId }: ClassSubjectsTabProps) 
           <TableBody>
             {isLoading ? (
               <TableRow>
-                <TableCell colSpan={4} className="text-center py-8">
+                <TableCell colSpan={isAdminOrHead ? 3 : 2} className="text-center py-8">
                   <Skeleton className="h-8 w-[200px] mx-auto" />
                 </TableCell>
               </TableRow>
             ) : subjects && subjects.length > 0 ? (
               subjects.map((cs) => (
                 <TableRow key={cs.csId} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/50">
-                  <TableCell className="font-mono text-xs text-muted-foreground">
-                    {cs.Subject.subjectId}
-                  </TableCell>
                   <TableCell className="font-medium text-foreground">
                     {cs.Subject.subjectName}
                   </TableCell>
@@ -326,7 +385,7 @@ export function ClassSubjectsTab({ classId, sessionId }: ClassSubjectsTabProps) 
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={isAdminOrHead ? 4 : 3} className="text-center py-12 text-muted-foreground">
+                <TableCell colSpan={isAdminOrHead ? 3 : 2} className="text-center py-12 text-muted-foreground">
                   <BookOpen className="h-8 w-8 mx-auto text-slate-300 mb-2" />
                   <p>No subjects assigned to this class yet.</p>
                 </TableCell>
