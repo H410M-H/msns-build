@@ -4,6 +4,7 @@ import { TRPCError } from "@trpc/server";
 import { ClassCategory, type Grades } from "@prisma/client";
 import { generatePdf } from "~/lib/pdf-reports";
 import dayjs from "dayjs";
+import { assignDefaultSubjectsToClass } from "~/lib/constants/default-subjects";
 
 export type ClassProps = Grades & {
   studentCount?: number;
@@ -191,6 +192,14 @@ export const ClassRouter = createTRPCRouter({
             fee: true,
           },
         });
+
+        await assignDefaultSubjectsToClass(
+          ctx.db,
+          newClass.classId,
+          newClass.grade,
+          newClass.category
+        );
+
         return newClass;
       } catch (error) {
         console.error("Error in createClass:", error);

@@ -10,8 +10,8 @@ const createSubjectSchema = z.object({
     .min(2, "Subject name must be at least 2 characters")
     .max(50, "Subject name cannot exceed 50 characters")
     .regex(
-      /^[a-zA-Z0-9\s\-&.,()]+$/,
-      "Subject name contains invalid characters. Only letters, numbers, spaces, hyphens, ampersands, commas, periods, and parentheses are allowed.",
+      /^[a-zA-Z0-9\s\-&.,()/+'']+$/,
+      "Subject name contains invalid characters. Only letters, numbers, spaces, hyphens, ampersands, commas, periods, parentheses, plus signs, slashes, and apostrophes are allowed.",
     ),
   book: z
     .string()
