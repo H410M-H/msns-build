@@ -3,4 +3,14 @@
     <color name="colorPrimary">#020806</color>
     <color name="colorPrimaryDark">#020806</color>
     <color name="colorAccent">#10b981</color>
+
+    <!-- Splash Screen Colors -->
+    <color name="splash_background">#000000</color>
+    <color name="splash_emerald">#10b981</color>
+    <color name="splash_emerald_dark">#059669</color>
+    <color name="splash_emerald_glow">#4D10b981</color>
+    <color name="splash_text_primary">#FFFFFF</color>
+    <color name="splash_text_secondary">#10b981</color>
+    <color name="splash_dark_1">#020806</color>
+    <color name="splash_dark_2">#041210</color>
 </resources>

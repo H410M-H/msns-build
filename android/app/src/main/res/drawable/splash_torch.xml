@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="60dp"
+    android:height="70dp"
+    android:viewportWidth="60"
+    android:viewportHeight="70">
+
+    <!-- Torch Base & Handle -->
+    <path
+        android:pathData="M27,42 L33,42 L31,65 L29,65 Z"
+        android:fillColor="#10b981" />
+    <path
+        android:pathData="M24,37 L36,37 L34,42 L26,42 Z"
+        android:fillColor="#34d399" />
+    <path
+        android:pathData="M22,32 L38,32 L36,37 L24,37 Z"
+        android:fillColor="#10b981" />
+
+    <!-- Outer Flame -->
+    <path
+        android:pathData="M30,5 C30,5 42,16 42,26 C42,32 37,35 30,35 C23,35 18,32 18,26 C18,16 30,5 30,5 Z"
+        android:fillColor="#34d399" />
+
+    <!-- Inner Flame Glow -->
+    <path
+        android:pathData="M30,12 C30,12 37,20 37,26 C37,30 34,32 30,32 C26,32 23,30 23,26 C23,20 30,12 30,12 Z"
+        android:fillColor="#fbbf24" />
+
+    <!-- Flame Core Brightness -->
+    <path
+        android:pathData="M30,18 C30,18 34,23 34,27 C34,29 32,30 30,30 C28,30 26,29 26,27 C26,23 30,18 30,18 Z"
+        android:fillColor="#fffbeb" />
+</vector>

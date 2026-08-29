@@ -11,8 +11,11 @@ import { useDeviceRegistration } from "~/hooks/useDeviceRegistration";
 import { useDeepLinks } from "~/hooks/useDeepLinks";
 import { Toaster } from "sonner";
 
+import { usePersistentAuthSession } from "~/hooks/usePersistentAuthSession";
+
 function WelcomeNotificationListener() {
   const { data: session } = useSession();
+  usePersistentAuthSession();
 
   useEffect(() => {
     if (session?.user) {

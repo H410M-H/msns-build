@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/splash_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/splash_background">
+
+    <!-- Expanding Ripple Circle -->
+    <View
+        android:id="@+id/ripple_circle"
+        android:layout_width="160dp"
+        android:layout_height="160dp"
+        android:layout_gravity="center"
+        android:background="@drawable/splash_ripple"
+        android:visibility="invisible" />
+
+    <!-- Outer Glow Ring -->
+    <View
+        android:id="@+id/glow_ring"
+        android:layout_width="220dp"
+        android:layout_height="220dp"
+        android:layout_gravity="center"
+        android:background="@drawable/splash_glow_ring"
+        android:visibility="invisible" />
+
+    <!-- Centered Container for Crest & Logo Elements -->
+    <LinearLayout
+        android:id="@+id/logo_container"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:gravity="center"
+        android:orientation="vertical">
+
+        <!-- Shield with inner Flame and Book elements -->
+        <FrameLayout
+            android:layout_width="180dp"
+            android:layout_height="200dp"
+            android:layout_gravity="center">
+
+            <!-- Shield Outline -->
+            <ImageView
+                android:id="@+id/shield_outline"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:contentDescription="MSNS Crest Shield"
+                android:scaleType="fitCenter"
+                android:src="@drawable/splash_shield"
+                android:visibility="invisible" />
+
+            <!-- Torch / Flame (Upper center inside shield) -->
+            <ImageView
+                android:id="@+id/torch_icon"
+                android:layout_width="65dp"
+                android:layout_height="75dp"
+                android:layout_gravity="top|center_horizontal"
+                android:layout_marginTop="25dp"
+                android:contentDescription="MSNS Torch Flame"
+                android:scaleType="fitCenter"
+                android:src="@drawable/splash_torch"
+                android:visibility="invisible" />
+
+            <!-- Book (Lower center inside shield) -->
+            <ImageView
+                android:id="@+id/book_icon"
+                android:layout_width="80dp"
+                android:layout_height="45dp"
+                android:layout_gravity="bottom|center_horizontal"
+                android:layout_marginBottom="35dp"
+                android:contentDescription="MSNS Book"
+                android:scaleType="fitCenter"
+                android:src="@drawable/splash_book"
+                android:visibility="invisible" />
+
+        </FrameLayout>
+
+        <!-- Application Title -->
+        <TextView
+            android:id="@+id/app_name_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:fontFamily="sans-serif-medium"
+            android:text="MSNS LMS"
+            android:textColor="@color/splash_text_primary"
+            android:textSize="30sp"
+            android:textStyle="bold"
+            android:visibility="invisible" />
+
+        <!-- School Motto -->
+        <TextView
+            android:id="@+id/motto_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:fontFamily="sans-serif-light"
+            android:letterSpacing="0.25"
+            android:text="PURSUIT OF EXCELLENCE"
+            android:textColor="@color/splash_text_secondary"
+            android:textSize="12sp"
+            android:textStyle="bold"
+            android:visibility="invisible" />
+
+    </LinearLayout>
+
+</FrameLayout>

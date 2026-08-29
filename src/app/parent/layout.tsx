@@ -55,6 +55,8 @@ export default function ParentLayout({ children }: { children: React.ReactNode }
               size="sm"
               onClick={async () => {
                 const { clearAllMobileState } = await import("~/lib/mobile/native-service");
+                const { clearDeviceAuthSession } = await import("~/lib/mobile/device-auth");
+                await clearDeviceAuthSession();
                 await clearAllMobileState();
                 await signOut({ redirect: true, callbackUrl: "/" });
               }}
