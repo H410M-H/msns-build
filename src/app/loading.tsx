@@ -3,5 +3,5 @@
 import { AnimatedSplashScreen } from "~/components/splash/AnimatedSplashScreen";
 
 export default function Loading() {
-  return <AnimatedSplashScreen showProgress={true} durationMs={3500} />;
+  return <AnimatedSplashScreen />;
 }
