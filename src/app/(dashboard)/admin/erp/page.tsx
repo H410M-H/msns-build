@@ -281,7 +281,7 @@ export default function ErpHubPage() {
       )}
 
       {/* --- Key Metrics Grid --- */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-4 gap-1.5 sm:gap-4 w-full">
         <GradientStatCard
           title="Pending POs"
           value={pendingPOs?.total ?? 0}

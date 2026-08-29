@@ -85,7 +85,7 @@ export function FeeAnalyticsDashboard({
   return (
     <div className="space-y-6">
       {/* Summary Stats */}
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-4 gap-1.5 sm:gap-4 w-full">
         <StatCard
           title="Collection Rate"
           value={`${summary.collectionRate.toFixed(1)}%`}
@@ -272,17 +272,17 @@ function StatCard({ title, value, icon: Icon, trend, color }: StatCardProps) {
   };
 
   return (
-    <Card className={`border-2 ${colorClasses[color]}`}>
-      <CardContent className="pt-4">
+    <Card className={`border-2 min-w-0 ${colorClasses[color]}`}>
+      <CardContent className="p-2 sm:p-4 pt-2 sm:pt-4">
         <div className="flex items-center justify-between">
-          <div>
-            <p className="text-sm opacity-80">{title}</p>
-            <p className="mt-1 text-xl font-bold">{value}</p>
+          <div className="min-w-0">
+            <p className="text-[10px] sm:text-sm opacity-80 truncate">{title}</p>
+            <p className="mt-0.5 sm:mt-1 text-xs sm:text-xl font-bold truncate">{value}</p>
           </div>
-          <div className="flex items-center gap-1">
-            {trend === "up" && <TrendingUp className="h-5 w-5" />}
-            {trend === "down" && <TrendingDown className="h-5 w-5" />}
-            {!trend && <Icon className="h-5 w-5" />}
+          <div className="flex items-center gap-0.5 sm:gap-1 flex-shrink-0">
+            {trend === "up" && <TrendingUp className="h-3.5 w-3.5 sm:h-5 sm:w-5" />}
+            {trend === "down" && <TrendingDown className="h-3.5 w-3.5 sm:h-5 sm:w-5" />}
+            {!trend && <Icon className="h-3.5 w-3.5 sm:h-5 sm:w-5" />}
           </div>
         </div>
       </CardContent>

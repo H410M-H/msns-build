@@ -4,7 +4,51 @@ import { motion, useMotionValue, useTransform, useSpring } from "framer-motion";
 import { useRef, useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Zap, ArrowRight, Shield, GraduationCap, LogIn } from "lucide-react";
+import {
+  Zap,
+  ArrowRight,
+  Shield,
+  GraduationCap,
+  LogIn,
+  Facebook,
+  Instagram,
+  Twitter,
+  MessageCircle,
+  Youtube,
+} from "lucide-react";
+
+const SOCIAL_LINKS = [
+  {
+    name: "Facebook",
+    href: "https://www.facebook.com/msnazhighschool",
+    icon: Facebook,
+    color: "hover:text-blue-600 hover:border-blue-300 hover:bg-blue-50 dark:hover:bg-blue-950/30",
+  },
+  {
+    name: "Instagram",
+    href: "https://www.instagram.com/msnazhighschool",
+    icon: Instagram,
+    color: "hover:text-pink-600 hover:border-pink-300 hover:bg-pink-50 dark:hover:bg-pink-950/30",
+  },
+  {
+    name: "Twitter / X",
+    href: "https://twitter.com/msnazhighschool",
+    icon: Twitter,
+    color: "hover:text-sky-500 hover:border-sky-300 hover:bg-sky-50 dark:hover:bg-sky-950/30",
+  },
+  {
+    name: "WhatsApp",
+    href: "https://wa.me/923016233609",
+    icon: MessageCircle,
+    color: "hover:text-emerald-600 hover:border-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-950/30",
+  },
+  {
+    name: "YouTube",
+    href: "https://www.youtube.com/@msnazhighschool",
+    icon: Youtube,
+    color: "hover:text-red-600 hover:border-red-300 hover:bg-red-50 dark:hover:bg-red-950/30",
+  },
+];
 
 // 🌀 Tilt 3D Card Component
 const TiltCard = ({
@@ -212,26 +256,51 @@ export default function HomeClient() {
         </motion.div>
       </main>
 
-      {/* 🛡️ Footer CTA */}
+      {/* 🛡️ Footer CTA & Social Links */}
       <motion.footer
         initial={{ opacity: 0, y: 50 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.5, duration: 0.8 }}
-        className="fixed bottom-6 left-4 right-4 z-40 mx-auto hidden max-w-5xl md:block"
+        className="fixed bottom-4 left-3 right-3 sm:bottom-6 sm:left-4 sm:right-4 z-40 mx-auto max-w-5xl"
       >
-        <div className="flex items-center justify-between rounded-2xl border border-border bg-white/70 p-4 shadow-lg backdrop-blur-xl dark:border-border dark:bg-black/40">
-          <div className="flex items-center gap-3 px-2">
-            <div className="h-2 w-2 animate-pulse rounded-full bg-emerald-500" />
-            <p className="text-sm font-medium text-slate-600 dark:text-foreground">
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-border bg-white/80 p-3 sm:p-4 shadow-xl backdrop-blur-xl dark:border-border dark:bg-black/60">
+          {/* Admissions Status */}
+          <div className="flex items-center gap-2.5 px-1 sm:px-2">
+            <div className="h-2 w-2 animate-pulse rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.8)]" />
+            <p className="text-xs sm:text-sm font-medium text-slate-700 dark:text-foreground">
               Admissions open for {new Date().getFullYear()} session
             </p>
           </div>
+
+          {/* School Social Media Links */}
+          <div className="flex items-center gap-1.5 sm:gap-2">
+            {SOCIAL_LINKS.map((item) => {
+              const Icon = item.icon;
+              return (
+                <Link
+                  key={item.name}
+                  href={item.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={item.name}
+                  title={item.name}
+                  className={`group relative flex h-8 w-8 items-center justify-center rounded-full border border-slate-200/80 bg-white/80 text-slate-600 shadow-xs backdrop-blur-md transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md dark:border-border dark:bg-white/5 dark:text-slate-300 ${item.color}`}
+                >
+                  <Icon className="h-4 w-4 transition-transform group-hover:scale-110" />
+                </Link>
+              );
+            })}
+          </div>
+
+          {/* Official Website Link */}
           <Link
             href="https://msns.edu.pk"
             target="_blank"
-            className="text-xs font-bold uppercase tracking-wider text-emerald-600 hover:underline dark:text-emerald-400"
+            rel="noopener noreferrer"
+            className="flex items-center gap-1 text-xs font-bold uppercase tracking-wider text-emerald-600 hover:text-emerald-700 hover:underline dark:text-emerald-400 dark:hover:text-emerald-300"
           >
-            Visit Website →
+            <span>Visit Website</span>
+            <ArrowRight className="h-3.5 w-3.5" />
           </Link>
         </div>
       </motion.footer>
