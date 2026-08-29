@@ -30,7 +30,7 @@ export default function TeacherDashboard() {
 
   return (
     <div className="w-full space-y-6">
-      <PageHeader breadcrumbs={breadcrumbs} />
+      {/* PageHeader in layout */}
 
       {/* Welcome Banner */}
       <motion.div

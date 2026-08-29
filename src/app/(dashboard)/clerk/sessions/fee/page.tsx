@@ -12,7 +12,7 @@ export default async function FeeDetailsPage({ searchParams }: PageProps) {
   const breadcrumbs = [{ href: "/clerk", label: "Dashboard" }];
   return (
     <div className="w-full">
-      <PageHeader breadcrumbs={breadcrumbs} />
+      {/* PageHeader in layout */}
       <div className="pt-20">
         <Card>
           <CardHeader>

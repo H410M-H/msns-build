@@ -89,7 +89,7 @@ export default function StudentsTablePage() {
   return (
     <section className="relative w-full space-y-5">
       <div className="relative z-10 flex min-h-screen w-full flex-col">
-        <PageHeader breadcrumbs={breadcrumbs} />
+        {/* PageHeader in layout */}
 
         <div className="flex-1 p-4 space-y-6">
           {/* Header Section */}

@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="70dp"
+    android:height="40dp"
+    android:viewportWidth="70"
+    android:viewportHeight="40">
+
+    <!-- Book Left Page -->
+    <path
+        android:pathData="M35,32 C25,28 12,28 5,31 L5,8 C12,5 25,5 35,9 Z"
+        android:fillColor="#ffffff"
+        android:strokeColor="#10b981"
+        android:strokeWidth="1.5" />
+
+    <!-- Book Right Page -->
+    <path
+        android:pathData="M35,32 C45,28 58,28 65,31 L65,8 C58,5 45,5 35,9 Z"
+        android:fillColor="#e2e8f0"
+        android:strokeColor="#10b981"
+        android:strokeWidth="1.5" />
+
+    <!-- Spine / Center seam -->
+    <path
+        android:pathData="M35,9 L35,33"
+        android:strokeColor="#059669"
+        android:strokeWidth="2" />
+
+    <!-- Page lines left -->
+    <path
+        android:pathData="M10,13 C18,11 26,11 31,13 M10,18 C18,16 26,16 31,18 M10,23 C18,21 26,21 31,23"
+        android:strokeColor="#94a3b8"
+        android:strokeWidth="1" />
+
+    <!-- Page lines right -->
+    <path
+        android:pathData="M39,13 C44,11 52,11 60,13 M39,18 C44,16 52,16 60,18 M39,23 C44,21 52,21 60,23"
+        android:strokeColor="#94a3b8"
+        android:strokeWidth="1" />
+</vector>

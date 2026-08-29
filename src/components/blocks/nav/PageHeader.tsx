@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { usePathname } from "next/navigation";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -16,7 +17,7 @@ import { NotificationBell } from "~/components/blocks/dashboard/NotificationBell
 import { CommandPalette } from "~/components/blocks/dashboard/CommandPalette";
 
 interface PageHeaderProps {
-  breadcrumbs: Array<{
+  breadcrumbs?: Array<{
     href: string;
     label: string;
     current?: boolean;
@@ -25,19 +26,44 @@ interface PageHeaderProps {
 
 export function PageHeader({ breadcrumbs }: PageHeaderProps) {
   const { data: session } = useSession();
+  const pathname = usePathname();
+
+  const computedBreadcrumbs = React.useMemo(() => {
+    if (breadcrumbs && breadcrumbs.length > 0) return breadcrumbs;
+    if (!pathname) return [{ href: "/", label: "Dashboard", current: true }];
+
+    const segments = pathname.split("/").filter(Boolean);
+    const crumbs: Array<{ href: string; label: string; current?: boolean }> = [
+      { href: "/", label: "Home" },
+    ];
+
+    let accumPath = "";
+    segments.forEach((seg, idx) => {
+      accumPath += `/${seg}`;
+      const label =
+        seg.charAt(0).toUpperCase() + seg.slice(1).replace(/-/g, " ");
+      crumbs.push({
+        href: accumPath,
+        label,
+        current: idx === segments.length - 1,
+      });
+    });
+
+    return crumbs;
+  }, [breadcrumbs, pathname]);
 
   return (
-    <div className="sticky top-0 z-30 mb-6 flex w-full flex-col items-center">
-      <header className="flex h-16 w-full items-center justify-between gap-4 rounded-xl border border-slate-200 bg-white/80 px-4 shadow-sm backdrop-blur-xl transition-all dark:border-border dark:bg-card dark:shadow-none md:px-6">
-        <div className="flex items-center gap-4">
-          <SidebarTrigger className="text-slate-600 hover:bg-slate-100 dark:text-foreground dark:hover:bg-white/10" />
+    <div className="sticky top-0 z-40 mb-4 flex w-full flex-col items-center pt-2 sm:pt-3">
+      <header className="flex h-14 sm:h-16 w-full items-center justify-between gap-3 sm:gap-4 rounded-xl border border-slate-200/90 bg-white/85 px-3 sm:px-6 shadow-sm backdrop-blur-xl transition-all dark:border-border dark:bg-card/90 dark:shadow-none">
+        <div className="flex items-center gap-2 sm:gap-4 overflow-hidden">
+          <SidebarTrigger className="text-slate-600 hover:bg-slate-100 dark:text-foreground dark:hover:bg-white/10 shrink-0" />
 
-          <Breadcrumb className="hidden sm:block">
+          <Breadcrumb className="hidden sm:block overflow-hidden text-ellipsis whitespace-nowrap">
             <BreadcrumbList>
-              {breadcrumbs.map((crumb, index) => (
-                <React.Fragment key={crumb.href}>
+              {computedBreadcrumbs.map((crumb, index) => (
+                <React.Fragment key={crumb.href + index}>
                   <BreadcrumbItem>
-                    {index === breadcrumbs.length - 1 ? (
+                    {index === computedBreadcrumbs.length - 1 ? (
                       <BreadcrumbPage className="font-semibold text-slate-900 dark:text-foreground">
                         {crumb.label}
                       </BreadcrumbPage>
@@ -50,7 +76,7 @@ export function PageHeader({ breadcrumbs }: PageHeaderProps) {
                       </BreadcrumbLink>
                     )}
                   </BreadcrumbItem>
-                  {index < breadcrumbs.length - 1 && (
+                  {index < computedBreadcrumbs.length - 1 && (
                     <BreadcrumbSeparator className="text-muted-foreground dark:text-slate-600" />
                   )}
                 </React.Fragment>
@@ -59,13 +85,13 @@ export function PageHeader({ breadcrumbs }: PageHeaderProps) {
           </Breadcrumb>
         </div>
 
-        <div className="flex items-center gap-4">
-          <div className="hidden md:flex align-center justfiy-center">
+        <div className="flex items-center gap-2 sm:gap-4 shrink-0">
+          <div className="hidden md:flex items-center justify-center">
             <CommandPalette />
           </div>
           <NotificationBell />
           {session?.user && (
-            <div className="flex flex-col items-end gap-0.5">
+            <div className="hidden sm:flex flex-col items-end gap-0.5">
               <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground dark:text-muted-foreground">
                 ID:{" "}
                 <span className="font-mono text-slate-700 dark:text-foreground">

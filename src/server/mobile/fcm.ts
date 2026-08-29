@@ -10,7 +10,8 @@ export const sendPushNotification = async (
   console.log(`[FCM Push] Triggered alert: "${title}" - "${body}" for Users:`, userIds, "Parents:", parentGuardianIds);
 
   try {
-    const registrations = await db.deviceRegistration.findMany({
+    const prismaDb = db as unknown as { deviceRegistration: { findMany: (args: any) => Promise<{ token: string }[]> } };
+    const registrations = await prismaDb.deviceRegistration.findMany({
       where: {
         OR: [
           { userId: { in: userIds.filter(Boolean) } },
@@ -20,7 +21,7 @@ export const sendPushNotification = async (
       select: { token: true }
     });
 
-    const tokens = registrations.map((r) => r.token);
+    const tokens = registrations.map((r: { token: string }) => r.token);
     if (tokens.length === 0) {
       console.log("[FCM Push] No registered device tokens found for target recipients.");
       return;

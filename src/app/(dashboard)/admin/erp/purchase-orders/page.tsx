@@ -115,11 +115,7 @@ export default function PurchaseOrdersPage() {
 
   return (
     <div className="w-full space-y-6">
-      <PageHeader breadcrumbs={[
-        { href: "/admin", label: "Admin" },
-        { href: "/admin/erp", label: "ERP" },
-        { href: "/admin/erp/purchase-orders", label: "Purchase Orders" },
-      ]} />
+      {/* PageHeader in layout */}
 
       {/* Header */}
       <div className="flex flex-col justify-between gap-4 md:flex-row md:items-end">

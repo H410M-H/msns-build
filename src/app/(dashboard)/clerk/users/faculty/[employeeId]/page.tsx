@@ -88,7 +88,7 @@ export default function EmployeeAttendanceDetails() {
       </div>
 
       <div className="relative z-10 flex min-h-screen flex-col">
-        <PageHeader breadcrumbs={breadcrumbs} />
+        {/* PageHeader in layout */}
 
         <div className="container mx-auto flex-1 px-4 py-8 pt-20 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-4">

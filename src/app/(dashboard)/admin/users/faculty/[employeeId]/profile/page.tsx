@@ -139,7 +139,7 @@ export default function EmployeeProfilePage() {
 
   return (
     <div className="min-h-screen w-full bg-slate-50/50 dark:bg-card">
-      <PageHeader breadcrumbs={breadcrumbs} />
+      {/* PageHeader in layout */}
 
       <div className="mx-auto max-w-7xl space-y-6 p-4 pt-20 duration-500 animate-in fade-in sm:p-6 lg:p-8">
         {/* ── Banner ── */}

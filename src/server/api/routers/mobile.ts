@@ -15,7 +15,8 @@ export const mobileRouter = createTRPCRouter({
       const isParent = accountType === "PARENT";
 
       try {
-        const registration = await ctx.db.deviceRegistration.upsert({
+        const db = ctx.db as unknown as { deviceRegistration: { upsert: (args: any) => Promise<any> } };
+        const registration = await db.deviceRegistration.upsert({
           where: { token: input.token },
           update: {
             platform: input.platform,

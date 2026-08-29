@@ -229,7 +229,7 @@ export default function SessionFeePage() {
   return (
     // ⚡️ COMPACT: space-y-4 is tighter than standard space-y-6 or 8
     <div className="w-full space-y-4">
-      <PageHeader breadcrumbs={breadcrumbs} />
+      {/* PageHeader in layout */}
 
       {/* --- Header Section (Reduced Margins) --- */}
       <div className="flex flex-col justify-between gap-2 md:flex-row md:items-end">

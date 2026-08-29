@@ -23,7 +23,7 @@ export default function StudentCred() {
 
       {/* Main Content Wrapper */}
       <div className="relative z-10 flex min-h-screen flex-col">
-        <PageHeader breadcrumbs={breadcrumbs} />
+        {/* PageHeader in layout */}
 
         <div className="container mx-auto flex-1 px-4 py-12 pt-24 sm:px-6 lg:px-8">
           <div className="mx-auto flex max-w-7xl flex-col gap-8">

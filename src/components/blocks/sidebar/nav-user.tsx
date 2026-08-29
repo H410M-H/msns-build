@@ -44,6 +44,8 @@ export const NavUser = () => {
     setIsLoggingOut(true);
     try {
       const { clearAllMobileState } = await import("~/lib/mobile/native-service");
+      const { clearDeviceAuthSession } = await import("~/lib/mobile/device-auth");
+      await clearDeviceAuthSession();
       await clearAllMobileState();
     } catch (err) {
       console.error("Failed to clear mobile state during sign out:", err);

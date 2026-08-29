@@ -32,7 +32,7 @@ export default async function TeacherClassDetailsPage({ searchParams }: PageProp
 
   return (
     <div className="w-full space-y-6">
-      <PageHeader breadcrumbs={breadcrumbs} />
+      {/* PageHeader in layout */}
 
       <div className="duration-500 animate-in fade-in">
         <Tabs defaultValue="roster" className="w-full">

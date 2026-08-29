@@ -224,7 +224,7 @@ export default function AttendancePage() {
   return (
     <div className="w-full space-y-6 bg-card">
       <div className="px-4 py-6 sm:px-6">
-        <PageHeader breadcrumbs={breadcrumbs} />
+        {/* PageHeader in layout */}
         <div className="mt-6">
           <StudentAttendanceDashboardContent />
         </div>

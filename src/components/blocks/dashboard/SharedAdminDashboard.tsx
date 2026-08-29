@@ -4,7 +4,6 @@ import { lazy, Suspense } from "react";
 import { motion } from "framer-motion";
 import { BarChart3, Settings, Calendar, Plus } from "lucide-react";
 
-import { PageHeader } from "~/components/blocks/nav/PageHeader";
 import { WelcomeSection } from "~/components/blocks/dashboard/welcome";
 import { StatsCards } from "~/components/cards/StatCard";
 import { RevenueAnalyticsChart } from "~/components/blocks/dashboard/AnalyticsCharts";
@@ -43,13 +42,8 @@ type Props = {
 };
 
 export function SharedAdminDashboard({ role, ManagementSection }: Props) {
-  const base = `/${role}`;
-  const breadcrumbs = [{ href: base, label: "Dashboard", current: true }];
-
   return (
     <div className="w-full space-y-4">
-      <PageHeader breadcrumbs={breadcrumbs} />
-
       {/* Welcome – compact on lg */}
       <Fade delay={0}>
         <WelcomeSection />

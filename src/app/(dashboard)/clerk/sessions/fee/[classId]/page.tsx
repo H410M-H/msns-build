@@ -35,7 +35,7 @@ export default async function FeeDetailsPage({ searchParams }: PageProps) {
       </div>
 
       <div className="relative z-10 flex min-h-screen flex-col">
-        <PageHeader breadcrumbs={breadcrumbs} />
+        {/* PageHeader in layout */}
 
         <div className="flex-1 p-4">
           <div className="w-full space-y-6 duration-700 animate-in fade-in slide-in-from-bottom-4">

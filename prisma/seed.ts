@@ -40,7 +40,7 @@ const dataset: ClassInput[] = [
     incharge: "ZOYA NAZ",
     examType: ExamTypeEnum.FINAL,
     examCategory: ExamCategory.STANDARD,
-    subjects: ["ENGLISH", "ENGLISH READING", "URDU", "URDU READING", "MATH", "MATH ORAL", "DRAWING", "SPOKEN ENGLISH", "ISLAMIYAT", "WORLD AROUND ME", "SUMMER VACTION TAST"],
+    subjects: ["English", "Urdu (Khushkhati)", "Urdu (Kalian)", "Spoken English + Sounds", "Lunch", "World Around Me/Drawing", "Math", "Rhymes", "Movies/Games"],
     students: [
       { name: "JANNAT NAZIA", marks: [100, 48, 100, 50, 100, 45, 50, 100, 100, 50, 100], gender: "FEMALE", attendance: 66, position: "1st" },
       { name: "HARRAM NOOR", marks: [100, 50, 100, 50, 100, 50, 50, 100, 100, 50, 100], gender: "FEMALE", attendance: 77, position: "1st" },

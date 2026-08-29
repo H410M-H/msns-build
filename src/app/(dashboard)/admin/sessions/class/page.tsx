@@ -38,7 +38,7 @@ export default async function ClassDetailsPage({ searchParams }: PageProps) {
   return (
     // Wrapper: Full width, standard spacing
     <div className="w-full space-y-6">
-      <PageHeader breadcrumbs={breadcrumbs} />
+      {/* PageHeader in layout */}
 
       <ClassStatsHeader classId={searchProps.classId} sessionId={searchProps.sessionId} />
 

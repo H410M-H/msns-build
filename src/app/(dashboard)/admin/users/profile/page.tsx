@@ -245,7 +245,7 @@ export default function ProfilePage() {
   if (isLoading || !user) {
     return (
       <div className="w-full space-y-6">
-        <PageHeader breadcrumbs={breadcrumbs} />
+        {/* PageHeader in layout */}
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
           <Skeleton className="h-72 rounded-2xl" />
           <div className="space-y-4 lg:col-span-2">
@@ -271,7 +271,7 @@ export default function ProfilePage() {
 
   return (
     <div className="w-full space-y-6">
-      <PageHeader breadcrumbs={breadcrumbs} />
+      {/* PageHeader in layout */}
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         {/* LEFT: Identity Card */}

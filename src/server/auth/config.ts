@@ -22,6 +22,10 @@ declare module "next-auth" {
 }
 
 export const authConfig = {
+  session: {
+    strategy: "jwt",
+    maxAge: 365 * 24 * 60 * 60, // 1 year session duration until manual logout
+  },
   providers: [
     CredentialsProvider({
       name: "Credentials",

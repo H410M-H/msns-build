@@ -144,7 +144,7 @@ export default function RevenuePage() {
       </div>
 
       <div className="relative z-10 flex min-h-screen flex-col">
-        <PageHeader breadcrumbs={breadcrumbs} />
+        {/* PageHeader in layout */}
 
         <motion.div
           className="container mx-auto space-y-8 px-4 py-8 pt-20 sm:px-6 lg:px-8"

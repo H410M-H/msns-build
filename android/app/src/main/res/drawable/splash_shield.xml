@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="160dp"
+    android:height="180dp"
+    android:viewportWidth="160"
+    android:viewportHeight="180">
+
+    <!-- Outer shield contour -->
+    <path
+        android:pathData="M80,10 C120,10 145,25 150,55 C150,115 105,155 80,170 C55,155 10,115 10,55 C15,25 40,10 80,10 Z"
+        android:strokeColor="#10b981"
+        android:strokeWidth="3.5"
+        android:fillColor="#0D10b981" />
+
+    <!-- Inner decorative border -->
+    <path
+        android:pathData="M80,18 C115,18 138,31 142,58 C142,110 101,146 80,160 C59,146 18,110 18,58 C22,31 45,18 80,18 Z"
+        android:strokeColor="#3310b981"
+        android:strokeWidth="1.5"
+        android:fillColor="#00000000" />
+</vector>

@@ -155,13 +155,7 @@ export default function MarksUploadPage() {
 
   return (
     <div className="w-full space-y-6">
-      <PageHeader
-        breadcrumbs={[
-          { href: "/teacher", label: "Teacher" },
-          { href: "/teacher/exams", label: "Exams" },
-          { href: "/teacher/exams/marks", label: "Upload Marks" },
-        ]}
-      />
+      {/* PageHeader in layout */}
 
       {/* --- Header Section --- */}
       <div className="flex flex-col justify-between gap-4 md:flex-row md:items-end">

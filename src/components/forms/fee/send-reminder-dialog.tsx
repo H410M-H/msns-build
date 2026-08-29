@@ -78,6 +78,10 @@ School Administration`;
     setSent(true);
     toast.success(`Reminder sent via ${method === "sms" ? "SMS" : "WhatsApp"}`);
 
+    void import("~/lib/mobile/notification-service").then(({ sendModuleActionNotification }) => {
+      void sendModuleActionNotification("Fee & Communication", "Reminder Sent", `Fee reminder sent for ${studentName} via ${method.toUpperCase()}`);
+    });
+
     setTimeout(() => {
       setOpen(false);
       setSent(false);

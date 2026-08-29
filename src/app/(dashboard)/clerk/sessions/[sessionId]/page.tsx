@@ -34,7 +34,7 @@ export default function SessionDetailPage() {
   return (
     // Wrapper: Full width, standard spacing
     <div className="w-full space-y-6">
-      <PageHeader breadcrumbs={breadcrumbs} />
+      {/* PageHeader in layout */}
 
       <motion.div
         initial={{ opacity: 0, y: 20 }}

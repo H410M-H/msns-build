@@ -1,6 +1,6 @@
 {
   "name": "msns-lms",
-  "version": "1.1.0",
+  "version": "1.4.3",
   "private": true,
   "type": "module",
   "scripts": {
@@ -25,7 +25,8 @@
     "db:seed:salaries": "node --import tsx prisma/seed-salaries.ts",
     "cap:sync": "node node_modules/@capacitor/cli/bin/capacitor sync android",
     "android:build": "node node_modules/@capacitor/cli/bin/capacitor sync android && cd android && ./gradlew bundleRelease",
-    "android:keystore": "./generate-release-keystore.sh"
+    "android:keystore": "./generate-release-keystore.sh",
+    "media:avif": "node scripts/convert-to-avif.js"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1046.0",
@@ -35,6 +36,7 @@
     "@capacitor/app": "^8.1.1",
     "@capacitor/camera": "^8.2.2",
     "@capacitor/core": "^8.5.0",
+    "@capacitor/local-notifications": "^8.3.1",
     "@capacitor/network": "^8.0.1",
     "@capacitor/preferences": "^8.0.1",
     "@capacitor/push-notifications": "^8.1.2",

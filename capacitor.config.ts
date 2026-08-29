@@ -19,11 +19,10 @@ const config: CapacitorConfig = {
   },
   plugins: {
     SplashScreen: {
-      launchShowDuration: 2000,
+      launchShowDuration: 0,
+      launchAutoHide: true,
       backgroundColor: '#020806',
-      showSpinner: true,
-      androidSpinnerStyle: 'large',
-      spinnerColor: '#10b981'
+      showSpinner: false
     },
     CapacitorSQLite: {
       iosIsEncryption: true,

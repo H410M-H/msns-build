@@ -57,7 +57,7 @@ export default function StudentFeesPage() {
   if (!profile) {
     return (
       <div className="p-6">
-        <PageHeader breadcrumbs={breadcrumbs} />
+        {/* PageHeader in layout */}
         <Card className="mt-6 border-red-500/20 bg-red-500/5">
           <CardContent className="flex items-center gap-3 p-6 text-red-200">
             <AlertCircle className="h-5 w-5 text-red-500" />
@@ -72,7 +72,7 @@ export default function StudentFeesPage() {
 
   return (
     <div className="w-full space-y-8 p-6 font-sans">
-      <PageHeader breadcrumbs={breadcrumbs} />
+      {/* PageHeader in layout */}
 
       <motion.div
         initial={{ opacity: 0, y: 20 }}

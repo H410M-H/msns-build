@@ -1,13 +1,38 @@
 "use client";
 import { TRPCReactProvider } from "~/trpc/react";
-import { SessionProvider } from "next-auth/react";
+import { SessionProvider, useSession } from "next-auth/react";
 import { ThemeProvider as NextThemesProvider } from "next-themes";
 import { useEffect, useState } from "react";
 
 import { isNative } from "~/lib/mobile/native-service";
+import { sendWelcomeNotification, triggerTestWelcomeNotification } from "~/lib/mobile/notification-service";
 import { useSyncEngine } from "~/hooks/useSyncEngine";
 import { useDeviceRegistration } from "~/hooks/useDeviceRegistration";
 import { useDeepLinks } from "~/hooks/useDeepLinks";
+import { Toaster } from "sonner";
+
+import { usePersistentAuthSession } from "~/hooks/usePersistentAuthSession";
+
+function WelcomeNotificationListener() {
+  const { data: session } = useSession();
+  usePersistentAuthSession();
+
+  useEffect(() => {
+    if (session?.user) {
+      const user = session.user;
+      const sessionKey = `msns_welcome_notified_${user.id || user.email}`;
+      if (typeof window !== "undefined" && !sessionStorage.getItem(sessionKey)) {
+        sessionStorage.setItem(sessionKey, "true");
+        void sendWelcomeNotification(user.name ?? user.email ?? "User", user.accountType);
+      }
+      void import("~/lib/mobile/daily-notifications").then(({ initDailyRoleNotifications }) => {
+        void initDailyRoleNotifications(user.accountType ?? "ADMIN");
+      });
+    }
+  }, [session]);
+
+  return null;
+}
 
 function NativeHooksInner({ children }: { children: React.ReactNode }) {
   useSyncEngine();
@@ -34,6 +59,11 @@ function MobileHooksWrapper({ children }: { children: React.ReactNode }) {
 
 export function Provider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
+    if (typeof window !== "undefined") {
+      // Expose test notification trigger on window object for easy manual testing
+      (window as unknown as Record<string, unknown>).triggerTestWelcomeNotification = triggerTestWelcomeNotification;
+    }
+
     if ("serviceWorker" in navigator && isNative()) {
       window.addEventListener("load", () => {
         navigator.serviceWorker.register("/sw.js").then(
@@ -53,7 +83,9 @@ export function Provider({ children }: { children: React.ReactNode }) {
       <SessionProvider>
         <NextThemesProvider attribute="class" defaultTheme="light" enableSystem>
           <MobileHooksWrapper>
+            <WelcomeNotificationListener />
             {children}
+            <Toaster position="top-right" richColors />
           </MobileHooksWrapper>
         </NextThemesProvider>
       </SessionProvider>
