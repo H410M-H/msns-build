@@ -4,6 +4,7 @@ import { type Prisma } from "@prisma/client";
 import {
   createTRPCRouter,
   protectedProcedure,
+  clerkProcedure,
 } from "~/server/api/trpc";
 
 // --- Input Schemas ---
@@ -135,7 +136,7 @@ const calculatePaidAmount = (
 export const feeRouter = createTRPCRouter({
   // --- CRUD Operations ---
 
-  createFee: protectedProcedure
+  createFee: clerkProcedure
     .input(feeInputSchema)
     .mutation(async ({ ctx, input }) => {
       try {
@@ -148,7 +149,7 @@ export const feeRouter = createTRPCRouter({
       }
     }),
 
-  updateFee: protectedProcedure
+  updateFee: clerkProcedure
     .input(feeUpdateSchema)
     .mutation(async ({ ctx, input }) => {
       try {
@@ -165,7 +166,7 @@ export const feeRouter = createTRPCRouter({
       }
     }),
 
-  deleteFeesByIds: protectedProcedure
+  deleteFeesByIds: clerkProcedure
     .input(z.object({ feeIds: z.array(z.string()) }))
     .mutation(async ({ ctx, input }) => {
       try {
@@ -184,7 +185,7 @@ export const feeRouter = createTRPCRouter({
   getAllFees: protectedProcedure.query(async ({ ctx }) => {
     return await ctx.db.fees.findMany({ orderBy: { level: "asc" } });
   }),
-  assignFeeToClass: protectedProcedure
+  assignFeeToClass: clerkProcedure
     .input(
       z.object({
         feeId: z.string(),
@@ -278,7 +279,7 @@ export const feeRouter = createTRPCRouter({
       }
     }),
 
-  updateFeePayment: protectedProcedure
+  updateFeePayment: clerkProcedure
     .input(paymentUpdateSchema)
     .mutation(async ({ ctx, input }) => {
       try {
@@ -338,7 +339,7 @@ export const feeRouter = createTRPCRouter({
       }
     }),
 
-  removeFeeAssignment: protectedProcedure
+  removeFeeAssignment: clerkProcedure
     .input(z.object({ feeStudentClassId: z.string() }))
     .mutation(async ({ ctx, input }) => {
       try {
@@ -354,7 +355,7 @@ export const feeRouter = createTRPCRouter({
       }
     }),
 
-  applyLateFee: protectedProcedure
+  applyLateFee: clerkProcedure
     .input(z.object({ sfcId: z.string(), lateFeeAmount: z.number() }))
     .mutation(async ({ ctx, input }) => {
       try {

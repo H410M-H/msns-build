@@ -80,13 +80,8 @@ export const WelcomeSection = () => {
                 className={`relative rounded-full border border-slate-100 bg-white p-1 shadow-lg dark:border-border dark:bg-black/40`}
               >
                 <Avatar className="h-14 w-14 sm:h-16 sm:w-16">
-                  {user.profilePic && user.profilePic !== "/user.jpg" ? (
+                  {user.profilePic && user.profilePic !== "/user.jpg" && (
                     <AvatarImage src={user.profilePic} className="object-cover" />
-                  ) : (
-                    <AvatarImage
-                      src={`/placeholder-422db.png?height=112&width=112&query=profile picture for ${user.username}`}
-                      className="object-cover"
-                    />
                   )}
                   <AvatarFallback className="bg-slate-50 text-3xl font-bold text-slate-700 dark:bg-black dark:text-emerald-400">
                     {user.username?.charAt(0).toUpperCase()}

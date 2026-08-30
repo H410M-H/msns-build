@@ -1,5 +1,5 @@
 import { TRPCError } from "@trpc/server";
-import { createTRPCRouter, protectedProcedure } from "../trpc";
+import { createTRPCRouter, protectedProcedure, clerkProcedure } from "../trpc";
 import { z } from "zod";
 import { generatePdf } from "~/lib/pdf-reports";
 import { type Prisma } from "@prisma/client";
@@ -211,7 +211,7 @@ export const StudentRouter = createTRPCRouter({
     }
   }),
 
-  createStudent: protectedProcedure
+  createStudent: clerkProcedure
     .input(studentSchema)
     .mutation(async ({ ctx, input }) => {
       try {
@@ -310,7 +310,7 @@ export const StudentRouter = createTRPCRouter({
       }
     }),
 
-  updateStudent: protectedProcedure
+  updateStudent: clerkProcedure
     .input(
       studentSchema
         .omit({
@@ -341,7 +341,7 @@ export const StudentRouter = createTRPCRouter({
       }
     }),
 
-  bulkCreate: protectedProcedure
+  bulkCreate: clerkProcedure
     .input(z.array(studentCSVSchema))
     .mutation(async ({ ctx, input }) => {
       try {
@@ -428,7 +428,7 @@ export const StudentRouter = createTRPCRouter({
       }
     }),
 
-  deleteStudentsByIds: protectedProcedure
+  deleteStudentsByIds: clerkProcedure
     .input(z.object({ studentIds: z.array(z.string().cuid()) }))
     .mutation(async ({ ctx, input }) => {
       try {

@@ -1,5 +1,5 @@
 import { TRPCError } from "@trpc/server";
-import { createTRPCRouter, protectedProcedure } from "../trpc";
+import { createTRPCRouter, protectedProcedure, managementProcedure } from "../trpc";
 import { z } from "zod";
 
 const promoteStudentSchema = z.object({
@@ -20,7 +20,7 @@ const batchPromoteSchema = z.object({
 });
 
 export const promotionRouter = createTRPCRouter({
-  promoteStudent: protectedProcedure
+  promoteStudent: managementProcedure
     .input(promoteStudentSchema)
     .mutation(async ({ ctx, input }) => {
       try {
@@ -124,7 +124,7 @@ export const promotionRouter = createTRPCRouter({
       }
     }),
 
-  batchPromoteStudents: protectedProcedure
+  batchPromoteStudents: managementProcedure
     .input(batchPromoteSchema)
     .mutation(async ({ ctx, input }) => {
       try {
@@ -396,7 +396,7 @@ export const promotionRouter = createTRPCRouter({
   // ================================================================
 
   // FR-PRM-07: Manage promotion eligibility rules per exam type
-  upsertEligibilityRule: protectedProcedure
+  upsertEligibilityRule: managementProcedure
     .input(
       z.object({
         examTypeEnum: z.string().min(1),
@@ -424,7 +424,7 @@ export const promotionRouter = createTRPCRouter({
   ),
 
   // FR-PRM-05/06/08: Compute and store eligibility results for all students in an exam
-  computeEligibility: protectedProcedure
+  computeEligibility: managementProcedure
     .input(
       z.object({
         examId: z.string().cuid(),
@@ -577,7 +577,7 @@ export const promotionRouter = createTRPCRouter({
     }),
 
   // FR-PRM-09/10/11/12/13: Execute bulk promotion
-  executeBulkPromotion: protectedProcedure
+  executeBulkPromotion: managementProcedure
     .input(
       z.object({
         examId: z.string().cuid(),
@@ -742,7 +742,7 @@ export const promotionRouter = createTRPCRouter({
     }),
 
   // FR-PRM-16: Promotion reversal (within 30-day window)
-  reversePromotion: protectedProcedure
+  reversePromotion: managementProcedure
     .input(
       z.object({
         studentId: z.string().cuid(),

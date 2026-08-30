@@ -1,5 +1,5 @@
 import { TRPCError } from "@trpc/server";
-import { createTRPCRouter, protectedProcedure } from "../trpc";
+import { createTRPCRouter, protectedProcedure, managementProcedure } from "../trpc";
 import { z } from "zod";
 import { generatePdf } from "~/lib/pdf-reports";
 import { userReg } from "~/lib/utils";
@@ -214,7 +214,7 @@ export const EmployeeRouter = createTRPCRouter({
     }
   }),
 
-  createEmployee: protectedProcedure
+  createEmployee: managementProcedure
     .input(employeeSchema)
     .mutation(async ({ ctx, input }) => {
       try {
@@ -252,7 +252,7 @@ export const EmployeeRouter = createTRPCRouter({
       }
     }),
 
-  updateEmployee: protectedProcedure
+  updateEmployee: managementProcedure
     .input(employeeSchema.extend({ employeeId: z.string().min(1) }))
     .mutation(async ({ ctx, input }) => {
       try {
@@ -296,7 +296,7 @@ export const EmployeeRouter = createTRPCRouter({
     }),
 
   // Update both employee record and linked User account (username + email + designation)
-  updateEmployeeAndUser: protectedProcedure
+  updateEmployeeAndUser: managementProcedure
     .input(
       employeeSchema.extend({
         employeeId: z.string().min(1),
@@ -363,7 +363,7 @@ export const EmployeeRouter = createTRPCRouter({
       }
     }),
 
-  deleteEmployeesByIds: protectedProcedure
+  deleteEmployeesByIds: managementProcedure
     .input(
       z.object({
         employeeIds: z.string().array(),

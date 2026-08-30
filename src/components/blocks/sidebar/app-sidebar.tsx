@@ -104,7 +104,7 @@ const data: NavigationConfig = {
     { title: "Sessions", url: "/admin/sessions", icon: Calendar },
     { title: "Faculty", url: "/admin/users/faculty/view", icon: Briefcase },
     { title: "Students", url: "/admin/users/student/view", icon: GraduationCap },
-    { title: "Profile", url: "/admin/users/profile", icon: User },
+    { title: "Profile", url: "/head/profile", icon: User },
     { title: "Gallery", url: "/head/gallery", icon: Images },
   ],
 
@@ -113,7 +113,7 @@ const data: NavigationConfig = {
     { title: "Sessions", url: "/admin/sessions", icon: Calendar },
     { title: "Faculty", url: "/admin/users/faculty/view", icon: Briefcase },
     { title: "Students", url: "/admin/users/student/view", icon: GraduationCap },
-    { title: "Profile", url: "/admin/users/profile", icon: User },
+    { title: "Profile", url: "/principal/profile", icon: User },
     { title: "Gallery", url: "/principal/gallery", icon: Images },
   ],
 
@@ -155,21 +155,21 @@ const data: NavigationConfig = {
         { title: "Marking Centre", url: "/teacher/exams/marking-centre" },
       ],
     },
-    { title: "Profile", url: "/admin/users/profile", icon: User },
+    { title: "Profile", url: "/teacher/profile", icon: User },
     { title: "Gallery", url: "/teacher/gallery", icon: Images },
   ],
 
   STUDENT: [
     { title: "Dashboard", url: "/student", icon: LayoutDashboard },
     { title: "My Class", url: "/student/sessions/class", icon: BookOpen },
-    { title: "Profile", url: "/admin/users/profile", icon: User },
+    { title: "Profile", url: "/student/profile", icon: User },
   ],
 
   NONE: [],
   ALL: [],
   WORKER: [
     { title: "Dashboard", url: "/worker", icon: LayoutDashboard },
-    { title: "Profile", url: "/admin/users/profile", icon: User },
+    { title: "Profile", url: "/worker/profile", icon: User },
   ],
 };
 

@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { createTRPCRouter, protectedProcedure } from "../../trpc";
+import { createTRPCRouter, protectedProcedure, managementProcedure } from "../../trpc";
 import { TRPCError } from "@trpc/server";
 
 const poLineItemSchema = z.object({
@@ -31,7 +31,7 @@ const grnLineItemSchema = z.object({
 
 export const purchaseOrdersRouter = createTRPCRouter({
   // FR-ERP-06: Create Purchase Order Request
-  create: protectedProcedure
+  create: managementProcedure
     .input(createPOSchema)
     .mutation(async ({ ctx, input }) => {
       const employeeRecord = await ctx.db.employees.findFirst({
@@ -81,7 +81,7 @@ export const purchaseOrdersRouter = createTRPCRouter({
     }),
 
   // FR-ERP-07: Submit for approval (Draft → PendingApprovalL1)
-  submitForApproval: protectedProcedure
+  submitForApproval: managementProcedure
     .input(z.object({ poId: z.string().cuid() }))
     .mutation(async ({ ctx, input }) => {
       const po = await ctx.db.purchaseOrder.findUnique({ where: { poId: input.poId } });
@@ -121,7 +121,7 @@ export const purchaseOrdersRouter = createTRPCRouter({
     }),
 
   // FR-ERP-07: L1 Approval
-  approveL1: protectedProcedure
+  approveL1: managementProcedure
     .input(z.object({ poId: z.string().cuid(), comments: z.string().optional() }))
     .mutation(async ({ ctx, input }) => {
       const employeeRecord = await ctx.db.employees.findFirst({
@@ -188,7 +188,7 @@ export const purchaseOrdersRouter = createTRPCRouter({
     }),
 
   // FR-ERP-07: L2 Approval
-  approveL2: protectedProcedure
+  approveL2: managementProcedure
     .input(z.object({ poId: z.string().cuid(), comments: z.string().optional() }))
     .mutation(async ({ ctx, input }) => {
       const employeeRecord = await ctx.db.employees.findFirst({
@@ -227,7 +227,7 @@ export const purchaseOrdersRouter = createTRPCRouter({
     }),
 
   // FR-ERP-07: Reject PO
-  reject: protectedProcedure
+  reject: managementProcedure
     .input(z.object({ poId: z.string().cuid(), reason: z.string().min(1) }))
     .mutation(async ({ ctx, input }) => {
       const employeeRecord = await ctx.db.employees.findFirst({
@@ -259,7 +259,7 @@ export const purchaseOrdersRouter = createTRPCRouter({
     }),
 
   // FR-ERP-09: Update PO status (Approved → Ordered, Ordered → Received, etc.)
-  updateStatus: protectedProcedure
+  updateStatus: managementProcedure
     .input(
       z.object({
         poId: z.string().cuid(),
@@ -274,7 +274,7 @@ export const purchaseOrdersRouter = createTRPCRouter({
     }),
 
   // FR-ERP-10: Record Goods Receipt Note
-  recordGRN: protectedProcedure
+  recordGRN: managementProcedure
     .input(
       z.object({
         poId: z.string().cuid(),

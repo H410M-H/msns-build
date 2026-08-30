@@ -11,7 +11,16 @@ const ALLOWED_TYPES = [
   "image/avif",
   "application/pdf",
 ];
-const ALLOWED_ROLES = ["ADMIN", "PRINCIPAL", "HEAD", "CLERK", "TEACHER"];
+const ALLOWED_ROLES = [
+  "ADMIN",
+  "PRINCIPAL",
+  "HEAD",
+  "CLERK",
+  "TEACHER",
+  "WORKER",
+  "STUDENT",
+  "FACULTY",
+];
 
 export async function POST(request: Request) {
   try {

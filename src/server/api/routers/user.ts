@@ -1,6 +1,6 @@
 // File: user.ts (unchanged, as no errors reported)
 import { TRPCError } from "@trpc/server";
-import { createTRPCRouter, protectedProcedure } from "../trpc";
+import { createTRPCRouter, protectedProcedure, adminProcedure } from "../trpc";
 import { z } from "zod";
 import { generatePdf } from "~/lib/pdf-reports";
 
@@ -92,7 +92,7 @@ export const UserRouter = createTRPCRouter({
     }
   }),
 
-  createUser: protectedProcedure
+  createUser: adminProcedure
     .input(userSchema)
     .mutation(async ({ ctx, input }) => {
       try {
@@ -120,7 +120,7 @@ export const UserRouter = createTRPCRouter({
       }
     }),
 
-  deleteEmployeesByIds: protectedProcedure
+  deleteEmployeesByIds: adminProcedure
     .input(
       z.object({
         employeeIds: z.string().array(),

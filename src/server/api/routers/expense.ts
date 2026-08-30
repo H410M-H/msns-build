@@ -1,4 +1,4 @@
-import { createTRPCRouter, protectedProcedure } from "../trpc";
+import { createTRPCRouter, protectedProcedure, managementProcedure } from "../trpc";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { type Prisma } from "@prisma/client";
@@ -30,7 +30,7 @@ const expenseSchema = z.object({
 
 export const expensesRouter = createTRPCRouter({
   // Create expense
-  createExpense: protectedProcedure
+  createExpense: managementProcedure
     .input(expenseSchema)
     .mutation(async ({ ctx, input }) => {
       try {
@@ -139,7 +139,7 @@ export const expensesRouter = createTRPCRouter({
     }),
 
   // Update expense
-  updateExpense: protectedProcedure
+  updateExpense: managementProcedure
     .input(
       z.object({
         id: z.string(),
@@ -163,7 +163,7 @@ export const expensesRouter = createTRPCRouter({
     }),
 
   // Delete single expense
-  deleteExpense: protectedProcedure
+  deleteExpense: managementProcedure
     .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
       try {
@@ -181,7 +181,7 @@ export const expensesRouter = createTRPCRouter({
     }),
 
   // Bulk Delete
-  deleteExpensesByIds: protectedProcedure
+  deleteExpensesByIds: managementProcedure
     .input(z.object({ ids: z.array(z.string()) }))
     .mutation(async ({ ctx, input }) => {
       try {

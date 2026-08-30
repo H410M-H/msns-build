@@ -57,13 +57,13 @@ export default function ProfileCard() {
         <div className="mb-4 flex justify-center">
           <div className="rounded-full bg-gradient-to-br from-emerald-400 to-cyan-400 p-1 shadow-lg shadow-emerald-500/20">
             <Avatar className="h-28 w-28 border-4 border-white dark:border-black/50">
-              <AvatarImage
-                src={`/placeholder-422db.png?height=112&width=112&query=profile picture for ${user.username}`}
-                className="object-cover"
-              />
-              <AvatarFallback className="bg-slate-100 text-3xl font-bold text-slate-700 dark:bg-emerald-950 dark:text-emerald-400">
-                {user.username.charAt(0).toUpperCase()}
-              </AvatarFallback>
+              {user.profilePic && user.profilePic !== "/user.jpg" ? (
+                <AvatarImage src={user.profilePic} className="object-cover" />
+              ) : (
+                <AvatarFallback className="bg-slate-100 text-3xl font-bold text-slate-700 dark:bg-emerald-950 dark:text-emerald-400">
+                  {user.username.charAt(0).toUpperCase()}
+                </AvatarFallback>
+              )}
             </Avatar>
           </div>
         </div>

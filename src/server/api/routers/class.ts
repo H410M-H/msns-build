@@ -1,4 +1,4 @@
-import { createTRPCRouter, protectedProcedure } from "../trpc";
+import { createTRPCRouter, protectedProcedure, managementProcedure } from "../trpc";
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
 import { ClassCategory, type Grades } from "@prisma/client";
@@ -178,7 +178,7 @@ export const ClassRouter = createTRPCRouter({
     },
   ),
 
-  createClass: protectedProcedure
+  createClass: managementProcedure
     .input(classSchema)
     .mutation<ClassProps>(async ({ ctx, input }) => {
       try {
@@ -210,7 +210,7 @@ export const ClassRouter = createTRPCRouter({
       }
     }),
 
-  deleteClassesByIds: protectedProcedure
+  deleteClassesByIds: managementProcedure
     .input(z.object({ classIds: z.array(z.string().cuid()) }))
     .mutation<{ count: number }>(async ({ ctx, input }) => {
       try {
@@ -379,7 +379,7 @@ export const ClassRouter = createTRPCRouter({
       }
     }),
 
-  assignSubject: protectedProcedure
+  assignSubject: managementProcedure
     .input(z.object({
       classId: z.string(),
       sessionId: z.string(),
@@ -421,7 +421,7 @@ export const ClassRouter = createTRPCRouter({
       }
     }),
 
-  removeAssignedSubject: protectedProcedure
+  removeAssignedSubject: managementProcedure
     .input(z.object({ csId: z.string() }))
     .mutation(async ({ ctx, input }) => {
       try {

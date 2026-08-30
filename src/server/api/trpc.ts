@@ -63,3 +63,45 @@ export const protectedProcedure = t.procedure
       },
     });
   });
+
+/** Enforces that the user is logged in and possesses one of the allowed account types/roles. */
+export const enforceRoles = (allowedRoles: string[]) =>
+  t.middleware(({ ctx, next }) => {
+    if (!ctx.session?.user) {
+      throw new TRPCError({ code: "UNAUTHORIZED" });
+    }
+    const role = (ctx.session.user.accountType ?? "").toUpperCase();
+    if (!allowedRoles.includes(role)) {
+      throw new TRPCError({
+        code: "FORBIDDEN",
+        message: `Action not permitted for role ${role}`,
+      });
+    }
+    return next({
+      ctx: {
+        session: { ...ctx.session, user: ctx.session.user },
+      },
+    });
+  });
+
+/** Procedures restricted by role */
+export const adminProcedure = protectedProcedure.use(
+  enforceRoles(["ADMIN"])
+);
+
+export const managementProcedure = protectedProcedure.use(
+  enforceRoles(["ADMIN", "PRINCIPAL", "HEAD"])
+);
+
+export const clerkProcedure = protectedProcedure.use(
+  enforceRoles(["ADMIN", "PRINCIPAL", "HEAD", "CLERK"])
+);
+
+export const teacherProcedure = protectedProcedure.use(
+  enforceRoles(["ADMIN", "PRINCIPAL", "HEAD", "TEACHER"])
+);
+
+export const staffProcedure = protectedProcedure.use(
+  enforceRoles(["ADMIN", "PRINCIPAL", "HEAD", "CLERK", "TEACHER"])
+);
+

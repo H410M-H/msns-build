@@ -1,5 +1,5 @@
 import { TRPCError } from "@trpc/server";
-import { createTRPCRouter, protectedProcedure } from "../trpc";
+import { createTRPCRouter, protectedProcedure, managementProcedure } from "../trpc";
 import { z } from "zod";
 
 interface SessionProps {
@@ -124,7 +124,7 @@ export const SessionRouter = createTRPCRouter({
     }
   }),
 
-  createSession: protectedProcedure
+  createSession: managementProcedure
     .input(
       z.object({
         sessionName: z.string().min(1, "Session name is required"),
@@ -179,7 +179,7 @@ export const SessionRouter = createTRPCRouter({
       }
     }),
 
-  deleteSessionsByIds: protectedProcedure
+  deleteSessionsByIds: managementProcedure
     .input(z.object({ sessionIds: z.array(z.string()) }))
     .mutation<{ count: number }>(async ({ ctx, input }) => {
       try {
@@ -287,7 +287,7 @@ export const SessionRouter = createTRPCRouter({
       }
     }),
 
-  setActiveSession: protectedProcedure
+  setActiveSession: managementProcedure
     .input(z.object({ sessionId: z.string() }))
     .mutation<SessionProps>(async ({ ctx, input }) => {
       try {
@@ -336,7 +336,7 @@ export const SessionRouter = createTRPCRouter({
       }
     }),
 
-  setSessionCompleted: protectedProcedure
+  setSessionCompleted: managementProcedure
     .input(z.object({ sessionId: z.string() }))
     .mutation<SessionProps>(async ({ ctx, input }) => {
       try {

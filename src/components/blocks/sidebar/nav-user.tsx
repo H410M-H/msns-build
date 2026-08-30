@@ -107,7 +107,23 @@ export const NavUser = () => {
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
               <DropdownMenuItem asChild>
-                <Link href="/admin/users/profile">
+                <Link
+                  href={
+                    session.data?.user.accountType === "CLERK"
+                      ? "/clerk/users/profile"
+                      : session.data?.user.accountType === "PRINCIPAL"
+                      ? "/principal/profile"
+                      : session.data?.user.accountType === "HEAD"
+                      ? "/head/profile"
+                      : session.data?.user.accountType === "TEACHER"
+                      ? "/teacher/profile"
+                      : session.data?.user.accountType === "WORKER"
+                      ? "/worker/profile"
+                      : session.data?.user.accountType === "STUDENT"
+                      ? "/student/profile"
+                      : "/admin/users/profile"
+                  }
+                >
                   <Settings className="mr-2 size-4" />
                   <span>Settings</span>
                 </Link>

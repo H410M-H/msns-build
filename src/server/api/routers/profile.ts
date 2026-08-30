@@ -135,17 +135,32 @@ export const ProfileRouter = createTRPCRouter({
         });
 
         // Sync profilePic to linked Employee or Student record
-        if (profilePic && updatedUser.accountId) {
+        if (profilePic && (updatedUser.accountId || ctx.session.user.id)) {
           await Promise.all([
             ctx.db.employees.updateMany({
-              where: { registrationNumber: updatedUser.accountId },
+              where: {
+                OR: [
+                  ...(updatedUser.accountId
+                    ? [
+                        { registrationNumber: updatedUser.accountId },
+                        { admissionNumber: updatedUser.accountId },
+                        { employeeId: updatedUser.accountId },
+                      ]
+                    : []),
+                ],
+              },
               data: { profilePic },
             }),
             ctx.db.students.updateMany({
               where: {
                 OR: [
-                  { studentId: updatedUser.accountId },
-                  { admissionNumber: updatedUser.accountId },
+                  ...(updatedUser.accountId
+                    ? [
+                        { registrationNumber: updatedUser.accountId },
+                        { admissionNumber: updatedUser.accountId },
+                        { studentId: updatedUser.accountId },
+                      ]
+                    : []),
                 ],
               },
               data: { profilePic },

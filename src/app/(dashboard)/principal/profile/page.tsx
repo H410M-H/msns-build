@@ -2,6 +2,6 @@
 
 import UserProfilePage from "~/components/blocks/profile/UserProfilePage";
 
-export default function AdminProfilePage() {
+export default function PrincipalProfilePage() {
   return <UserProfilePage />;
 }

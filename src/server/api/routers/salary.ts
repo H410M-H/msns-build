@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { createTRPCRouter, protectedProcedure } from "../trpc";
+import { createTRPCRouter, protectedProcedure, managementProcedure } from "../trpc";
 import { TRPCError } from "@trpc/server";
 import { type Prisma } from "@prisma/client";
 
@@ -81,7 +81,7 @@ export const salaryRouter = createTRPCRouter({
   // Monthly Salary Records (The "Salary" Model) - PAYROLL
   // ----------------------------------------------------------------
 
-  create: protectedProcedure
+  create: managementProcedure
     .input(salaryCreateSchema)
     .mutation(async ({ ctx, input }) => {
       const existing = await ctx.db.salary.findFirst({
@@ -134,7 +134,7 @@ export const salaryRouter = createTRPCRouter({
       });
     }),
 
-  update: protectedProcedure
+  update: managementProcedure
     .input(salaryUpdateSchema)
     .mutation(async ({ ctx, input }) => {
       return ctx.db.salary.update({
@@ -150,14 +150,14 @@ export const salaryRouter = createTRPCRouter({
       });
     }),
 
-  delete: protectedProcedure
+  delete: managementProcedure
     .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
       return ctx.db.salary.delete({ where: { id: input.id } });
     }),
 
   // Used for Payroll Table Bulk Delete
-  bulkDelete: protectedProcedure
+  bulkDelete: managementProcedure
     .input(bulkDeleteSchema)
     .mutation(async ({ ctx, input }) => {
       return ctx.db.salary.deleteMany({
@@ -220,7 +220,7 @@ export const salaryRouter = createTRPCRouter({
       });
     }),
 
-  bulkPaySalaries: protectedProcedure
+  bulkPaySalaries: managementProcedure
     .input(bulkPaySchema)
     .mutation(async ({ ctx, input }) => {
       const paymentDate = input.paymentDate ?? new Date();
@@ -233,7 +233,7 @@ export const salaryRouter = createTRPCRouter({
       return { updatedCount: updated.count };
     }),
 
-  generateMonthlySalaries: protectedProcedure
+  generateMonthlySalaries: managementProcedure
     .input(generateMonthlySalariesSchema)
     .mutation(async ({ ctx, input }) => {
       const { month, year, sessionId } = input;
@@ -439,7 +439,7 @@ export const salaryRouter = createTRPCRouter({
   // ----------------------------------------------------------------
 
   // NEW: This fixes the client error in SalaryTable
-  deleteSalariesByIds: protectedProcedure
+  deleteSalariesByIds: managementProcedure
     .input(z.object({ ids: z.string().array() }))
     .mutation(async ({ ctx, input }) => {
       return ctx.db.salaryAssignment.deleteMany({
@@ -447,7 +447,7 @@ export const salaryRouter = createTRPCRouter({
       });
     }),
 
-  assignSalary: protectedProcedure
+  assignSalary: managementProcedure
     .input(salaryAssignmentSchema)
     .mutation(async ({ ctx, input }) => {
       return ctx.db.salaryAssignment.create({
@@ -462,7 +462,7 @@ export const salaryRouter = createTRPCRouter({
       });
     }),
 
-  updateSalaryAssignment: protectedProcedure
+  updateSalaryAssignment: managementProcedure
     .input(salaryAssignmentUpdateSchema)
     .mutation(async ({ ctx, input }) => {
       const current = await ctx.db.salaryAssignment.findUnique({
@@ -489,13 +489,13 @@ export const salaryRouter = createTRPCRouter({
       });
     }),
 
-  deleteSalaryAssignment: protectedProcedure
+  deleteSalaryAssignment: managementProcedure
     .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
       return ctx.db.salaryAssignment.delete({ where: { id: input.id } });
     }),
 
-  deleteBulkSalaryAssignments: protectedProcedure
+  deleteBulkSalaryAssignments: managementProcedure
     .input(z.object({ ids: z.array(z.string()) }))
     .mutation(async ({ ctx, input }) => {
       return ctx.db.salaryAssignment.deleteMany({
@@ -512,7 +512,7 @@ export const salaryRouter = createTRPCRouter({
       });
     }),
 
-  addSalaryIncrement: protectedProcedure
+  addSalaryIncrement: managementProcedure
     .input(salaryIncrementSchema)
     .mutation(async ({ ctx, input }) => {
       const currentAssignment = await ctx.db.salaryAssignment.findFirst({
