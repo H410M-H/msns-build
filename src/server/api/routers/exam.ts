@@ -8,6 +8,7 @@ const createExamSchema = z.object({
   classId: z.string().cuid().optional(),
   classIds: z.array(z.string().cuid()).optional(),
   examTypeEnum: z.enum([
+    "FIRST_TIME",
     "MIDTERM",
     "FINAL",
     "PHASE_1",

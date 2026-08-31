@@ -98,6 +98,7 @@ interface DatesheetEntry {
 }
 
 const EXAM_TYPES = [
+  { value: "FIRST_TIME", label: "First Time" },
   { value: "MIDTERM", label: "Mid-Term" },
   { value: "FINAL", label: "Final" },
   { value: "PHASE_1", label: "Phase 1" },
@@ -186,7 +187,7 @@ export default function ExamManagementPage() {
       const res = await createExamMutation.mutateAsync({
         sessionId: selectedSession,
         classIds: createDialogClasses,
-        examTypeEnum: newExamData.examType as "MIDTERM" | "FINAL" | "PHASE_1" | "PHASE_2" | "PHASE_3" | "PHASE_4" | "PHASE_5" | "PHASE_6",
+        examTypeEnum: newExamData.examType as "FIRST_TIME" | "MIDTERM" | "FINAL" | "PHASE_1" | "PHASE_2" | "PHASE_3" | "PHASE_4" | "PHASE_5" | "PHASE_6",
         startDate: new Date(newExamData.startDate),
         endDate: new Date(newExamData.endDate),
         totalMarks: newExamData.totalMarks,

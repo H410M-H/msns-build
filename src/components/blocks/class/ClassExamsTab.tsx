@@ -29,6 +29,7 @@ import {
 import { Button } from "~/components/ui/button";
 
 const EXAM_TYPE_LABELS: Record<string, string> = {
+  FIRST_TIME: "First Time",
   MIDTERM: "Mid-Term",
   FINAL: "Final",
   PHASE_1: "Phase 1",

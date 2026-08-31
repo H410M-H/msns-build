@@ -1306,6 +1306,7 @@ enum ExamCategory {
 }
 
 enum ExamTypeEnum {
+  FIRST_TIME
   MIDTERM
   FINAL
   PHASE_1
