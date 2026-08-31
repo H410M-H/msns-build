@@ -7,6 +7,8 @@ import { Geist_Mono, Inter } from "next/font/google";
 import { type Metadata } from "next";
 import Script from "next/script";
 import { Provider } from "./provider";
+import { Analytics } from "@vercel/analytics/react";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 
 // SEO component – uncomment and fix path if needed
 // import { SchoolSchema } from "~/components/SEOSchema";
@@ -84,7 +86,11 @@ export default function RootLayout({
       <body
         className={`${inter.variable} ${geistMono.variable} h-full font-sans antialiased`}
       >
-        <Provider>{children}</Provider>
+        <Provider>
+          {children}
+          <Analytics />
+          <SpeedInsights />
+        </Provider>
       </body>
     </html>
   );
