@@ -53,9 +53,9 @@ export function ExamResultsAnalyticsTab({
     { enabled: !sessionId },
   );
 
-  const effectiveSessionId = sessionId ?? activeSession?.sessionId;
+  const effectiveSessionId = sessionId || activeSession?.sessionId || "";
 
-  const { data: classes } = api.class.getAllClasses.useQuery(undefined, {
+  const { data: classes } = api.class.getClasses.useQuery(undefined, {
     enabled: true,
   });
 
@@ -65,7 +65,7 @@ export function ExamResultsAnalyticsTab({
 
   const { data: analytics, isLoading } = api.exam.getResultsAnalytics.useQuery(
     {
-      sessionId: effectiveSessionId ?? "",
+      sessionId: effectiveSessionId,
       classId: activeFilterClass === "all" ? undefined : activeFilterClass,
     },
     { enabled: !!effectiveSessionId },

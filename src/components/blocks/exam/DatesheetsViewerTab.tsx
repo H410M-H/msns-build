@@ -13,7 +13,7 @@ import {
   GraduationCap,
 } from "lucide-react";
 import { api } from "~/trpc/react";
-import { format } from "date-fns";
+import { format, isValid } from "date-fns";
 import { cn } from "~/lib/utils";
 
 interface DatesheetsViewerTabProps {
@@ -32,15 +32,15 @@ export function DatesheetsViewerTab({
     { enabled: !sessionId },
   );
 
-  const effectiveSessionId = sessionId ?? activeSession?.sessionId;
+  const effectiveSessionId = sessionId || activeSession?.sessionId || "";
 
-  const { data: classes } = api.class.getAllClasses.useQuery(undefined, {
+  const { data: classes } = api.class.getClasses.useQuery(undefined, {
     enabled: true,
   });
 
   const { data: datesheets, isLoading } = api.exam.getAllDatesheets.useQuery(
     {
-      sessionId: effectiveSessionId ?? "",
+      sessionId: effectiveSessionId,
       classId: selectedClassId ?? undefined,
     },
     { enabled: !!effectiveSessionId },
@@ -57,6 +57,13 @@ export function DatesheetsViewerTab({
 
   const handlePrint = () => {
     window.print();
+  };
+
+  const formatPaperDate = (dateVal: string | Date | null | undefined) => {
+    if (!dateVal) return "Date TBD";
+    const d = new Date(dateVal);
+    if (!isValid(d)) return "Date TBD";
+    return format(d, "EEEE, dd MMM yyyy");
   };
 
   return (
@@ -220,12 +227,12 @@ export function DatesheetsViewerTab({
                             </div>
                             <div>
                               <p className="text-xs font-bold text-slate-900 dark:text-foreground">
-                                {paper.Subject?.subjectName}
+                                {paper.Subject?.subjectName ?? "Subject"}
                               </p>
                               <div className="flex items-center gap-2 text-[11px] text-muted-foreground mt-0.5">
                                 <span className="flex items-center gap-1 font-medium text-slate-700 dark:text-muted-foreground">
                                   <CalendarDays className="h-3 w-3 text-emerald-600 opacity-70" />
-                                  {format(new Date(paper.date), "EEEE, dd MMM yyyy")}
+                                  {formatPaperDate(paper.date)}
                                 </span>
                               </div>
                             </div>

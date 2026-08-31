@@ -15,6 +15,7 @@ import { SidebarTrigger } from "~/components/ui/sidebar";
 import { Badge } from "~/components/ui/badge";
 import { NotificationBell } from "~/components/blocks/dashboard/NotificationBell";
 import { CommandPalette } from "~/components/blocks/dashboard/CommandPalette";
+import { api } from "~/trpc/react";
 
 interface PageHeaderProps {
   breadcrumbs?: Array<{
@@ -24,33 +25,115 @@ interface PageHeaderProps {
   }>;
 }
 
+const KNOWN_ROLES = ["admin", "clerk", "teacher", "student", "principal", "head", "worker"];
+
+const LABEL_MAP: Record<string, string> = {
+  erp: "ERP",
+  "bio-metric": "Biometric",
+  fee: "Fee",
+  timetable: "Timetable",
+  attendance: "Attendance",
+  exams: "Exams",
+  sessions: "Sessions",
+  users: "Users",
+  revenue: "Revenue",
+  expense: "Expense",
+  gallery: "Gallery",
+  events: "Events",
+  faculty: "Faculty",
+  classes: "Classes",
+};
+
 export function PageHeader({ breadcrumbs }: PageHeaderProps) {
   const { data: session } = useSession();
   const pathname = usePathname();
+
+  // Fetch session & class metadata to resolve dynamic IDs in breadcrumbs
+  const { data: sessions } = api.session.getSessions.useQuery(undefined, {
+    staleTime: 1000 * 60 * 5,
+  });
+  const { data: classes } = api.class.getClasses.useQuery(undefined, {
+    staleTime: 1000 * 60 * 5,
+  });
 
   const computedBreadcrumbs = React.useMemo(() => {
     if (breadcrumbs && breadcrumbs.length > 0) return breadcrumbs;
     if (!pathname) return [{ href: "/", label: "Dashboard", current: true }];
 
     const segments = pathname.split("/").filter(Boolean);
-    const crumbs: Array<{ href: string; label: string; current?: boolean }> = [
-      { href: "/", label: "Home" },
-    ];
+    if (segments.length === 0) {
+      return [{ href: "/", label: "Dashboard", current: true }];
+    }
 
+    const crumbs: Array<{ href: string; label: string; current?: boolean }> = [];
     let accumPath = "";
+
     segments.forEach((seg, idx) => {
       accumPath += `/${seg}`;
+      const isFirst = idx === 0;
+      const isLast = idx === segments.length - 1;
+
+      // First segment is role dashboard -> label "Dashboard"
+      if (isFirst && KNOWN_ROLES.includes(seg.toLowerCase())) {
+        crumbs.push({
+          href: accumPath,
+          label: "Dashboard",
+          current: isLast,
+        });
+        return;
+      }
+
+      // Check if seg is a known sessionId
+      const matchingSession = sessions?.find((s) => s.sessionId === seg);
+      if (matchingSession) {
+        crumbs.push({
+          href: accumPath,
+          label: matchingSession.sessionName,
+          current: isLast,
+        });
+        return;
+      }
+
+      // Check if seg is a known classId
+      const matchingClass = classes?.find((c) => c.classId === seg);
+      if (matchingClass) {
+        crumbs.push({
+          href: accumPath,
+          label: `${matchingClass.grade} - ${matchingClass.section}`,
+          current: isLast,
+        });
+        return;
+      }
+
+      // Check if it's a CUID / UUID
+      const isCuidOrUuid =
+        (seg.length >= 20 && seg.startsWith("c")) ||
+        /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(seg);
+
+      if (isCuidOrUuid) {
+        crumbs.push({
+          href: accumPath,
+          label: "Details",
+          current: isLast,
+        });
+        return;
+      }
+
+      // Standard label formatting
+      const lower = seg.toLowerCase();
       const label =
+        LABEL_MAP[lower] ??
         seg.charAt(0).toUpperCase() + seg.slice(1).replace(/-/g, " ");
+
       crumbs.push({
         href: accumPath,
         label,
-        current: idx === segments.length - 1,
+        current: isLast,
       });
     });
 
     return crumbs;
-  }, [breadcrumbs, pathname]);
+  }, [breadcrumbs, pathname, sessions, classes]);
 
   return (
     <div className="sticky top-0 z-40 mb-4 flex w-full flex-col items-center pt-2 sm:pt-3">

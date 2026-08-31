@@ -879,17 +879,17 @@ export default function ExamManagementPage() {
 
         <TabsContent value="datesheets" className="m-0 duration-300 animate-in fade-in-50">
           <DatesheetsViewerTab
-            sessionId={selectedSessionId}
-            selectedClassId={selectedClassId}
-            onSelectClass={setSelectedClassId}
+            sessionId={selectedSession}
+            selectedClassId={selectedClasses[0] ?? null}
+            onSelectClass={(clsId) => setSelectedClasses(clsId ? [clsId] : [])}
           />
         </TabsContent>
 
         <TabsContent value="results" className="m-0 duration-300 animate-in fade-in-50">
           <ExamResultsAnalyticsTab
-            sessionId={selectedSessionId}
-            selectedClassId={selectedClassId}
-            onSelectClass={setSelectedClassId}
+            sessionId={selectedSession}
+            selectedClassId={selectedClasses[0] ?? null}
+            onSelectClass={(clsId) => setSelectedClasses(clsId ? [clsId] : [])}
           />
         </TabsContent>
       </Tabs>

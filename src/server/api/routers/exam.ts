@@ -440,12 +440,13 @@ export const examRouter = createTRPCRouter({
   getAllDatesheets: protectedProcedure
     .input(
       z.object({
-        sessionId: z.string().cuid(),
-        classId: z.string().cuid().optional(),
+        sessionId: z.string().optional(),
+        classId: z.string().optional(),
       }),
     )
     .query(async ({ ctx, input }) => {
       try {
+        if (!input.sessionId) return [];
         return await ctx.db.exam.findMany({
           where: {
             sessionId: input.sessionId,
@@ -473,14 +474,24 @@ export const examRouter = createTRPCRouter({
   getResultsAnalytics: protectedProcedure
     .input(
       z.object({
-        sessionId: z.string().cuid(),
-        classId: z.string().cuid().optional(),
-        examId: z.string().cuid().optional(),
+        sessionId: z.string().optional(),
+        classId: z.string().optional(),
+        examId: z.string().optional(),
       }),
     )
     .query(async ({ ctx, input }) => {
       try {
-        const exams = await ctx.db.exam.findMany({
+        if (!input.sessionId) {
+          return {
+            totalExams: 0,
+            totalStudents: 0,
+            totalMarksCount: 0,
+            averageScorePct: 0,
+            subjectStats: [],
+            topStudents: [],
+            gradeDistribution: [],
+          };
+        }
           where: {
             sessionId: input.sessionId,
             ...(input.classId ? { classId: input.classId } : {}),

@@ -37,9 +37,9 @@ interface AcademicCalendarTabProps {
 export function AcademicCalendarTab({ initialDate = new Date() }: AcademicCalendarTabProps) {
   const [currentMonth, setCurrentMonth] = useState<Date>(initialDate);
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
-  const [filterType, setFilterType] = useState<"ALL" | "SESSION" | "EVENT" | "EXAM">("ALL");
+  const [filterType, setFilterType] = useState<"ALL" | "SESSION" | "EVENT">("ALL");
 
-  const { data: sessions } = api.session.getAllSessions.useQuery();
+  const { data: sessions } = api.session.getSessions.useQuery();
   const { data: eventsData } = api.event.getAll.useQuery({
     limit: 100,
     offset: 0,
@@ -59,7 +59,7 @@ export function AcademicCalendarTab({ initialDate = new Date() }: AcademicCalend
     const items: Array<{
       id: string;
       title: string;
-      type: "SESSION" | "EVENT" | "EXAM";
+      type: "SESSION" | "EVENT";
       description?: string;
       color: string;
     }> = [];
