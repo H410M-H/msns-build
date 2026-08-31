@@ -11,10 +11,10 @@ export default function AdminGalleryPage() {
   ];
 
   return (
-    <div className="w-full space-y-6">
+    <div className="flex flex-1 flex-col space-y-4 h-full min-h-0 w-full">
       {/* PageHeader in layout */}
 
-      <div className="flex flex-col justify-between gap-4 md:flex-row md:items-end">
+      <div className="flex flex-col justify-between gap-4 md:flex-row md:items-end shrink-0">
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-foreground sm:text-3xl">
             School Gallery
@@ -33,7 +33,7 @@ export default function AdminGalleryPage() {
         </div>
       </div>
 
-      <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-border dark:bg-card">
+      <div className="flex-1 flex flex-col min-h-0">
         <GalleryUploader canDelete={true} />
       </div>
 
