@@ -492,6 +492,8 @@ export const examRouter = createTRPCRouter({
             gradeDistribution: [],
           };
         }
+
+        const exams = await ctx.db.exam.findMany({
           where: {
             sessionId: input.sessionId,
             ...(input.classId ? { classId: input.classId } : {}),
