@@ -11,9 +11,6 @@ import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
-import android.view.WindowInsets;
-import android.view.WindowInsetsController;
-import android.view.WindowManager;
 import android.view.animation.AccelerateDecelerateInterpolator;
 import android.view.animation.DecelerateInterpolator;
 import android.view.animation.OvershootInterpolator;
@@ -21,7 +18,13 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowCompat;
+import androidx.core.view.WindowInsetsCompat;
+import androidx.core.view.WindowInsetsControllerCompat;
 
 public class SplashActivity extends AppCompatActivity {
 
@@ -37,12 +40,11 @@ public class SplashActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        // Enable edge-to-edge display for backward compatibility across entry points
+        EdgeToEdge.enable(this);
         super.onCreate(savedInstanceState);
         
         setContentView(R.layout.activity_splash);
-
-        // Enable fullscreen / edge-to-edge
-        makeFullScreen();
 
         // Bind Views
         splashRoot = findViewById(R.id.splash_root);
@@ -55,33 +57,30 @@ public class SplashActivity extends AppCompatActivity {
         appNameText = findViewById(R.id.app_name_text);
         mottoText = findViewById(R.id.motto_text);
 
+        // Configure edge-to-edge fullscreen with modern WindowInsetsControllerCompat APIs
+        setupEdgeToEdgeAndInsets();
+
         // Start animation sequence
         startSplashAnimation();
     }
 
-    private void makeFullScreen() {
+    private void setupEdgeToEdgeAndInsets() {
         try {
             if (getWindow() == null) return;
-            View decorView = getWindow().getDecorView();
-            if (decorView == null) return;
 
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                WindowInsetsController controller = getWindow().getInsetsController();
-                if (controller != null) {
-                    controller.hide(WindowInsets.Type.statusBars() | WindowInsets.Type.navigationBars());
-                    controller.setSystemBarsBehavior(WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE);
-                }
-            } else {
-                getWindow().setFlags(
-                    WindowManager.LayoutParams.FLAG_FULLSCREEN,
-                    WindowManager.LayoutParams.FLAG_FULLSCREEN
-                );
-                decorView.setSystemUiVisibility(
-                    View.SYSTEM_UI_FLAG_FULLSCREEN
-                    | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                    | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
-                );
+            WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
+
+            WindowInsetsControllerCompat controller = WindowCompat.getInsetsController(getWindow(), getWindow().getDecorView());
+            if (controller != null) {
+                controller.hide(WindowInsetsCompat.Type.systemBars());
+                controller.setSystemBarsBehavior(WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE);
             }
+
+            ViewCompat.setOnApplyWindowInsetsListener(splashRoot, (v, insets) -> {
+                Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+                v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
+                return WindowInsetsCompat.CONSUMED;
+            });
         } catch (Exception e) {
             e.printStackTrace();
         }
