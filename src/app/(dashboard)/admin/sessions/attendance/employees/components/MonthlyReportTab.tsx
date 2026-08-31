@@ -205,7 +205,43 @@ export function MonthlyReportTab({
   };
 
   const handleExportReport = () => {
-    toast.info("Export functionality not implemented yet");
+    if (!filteredEmployees || filteredEmployees.length === 0) {
+      toast.error("No employee attendance data to export");
+      return;
+    }
+
+    const headers = [
+      "Employee Name",
+      "Designation",
+      "Account Type",
+      ...Array.from({ length: daysInMonth }, (_, i) => `Day ${i + 1}`),
+    ];
+
+    const rows = filteredEmployees.map((emp) => {
+      const dayStatuses = Array.from({ length: daysInMonth }, (_, i) =>
+        getAttendanceStatus(emp.id, i + 1),
+      );
+      return [
+        `"${emp.name.replace(/"/g, '""')}"`,
+        `"${emp.designation}"`,
+        `"${emp.accountType}"`,
+        ...dayStatuses,
+      ].join(",");
+    });
+
+    const csvContent = [headers.join(","), ...rows].join("\n");
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute(
+      "download",
+      `Employee_Attendance_${monthName}_${currentYear}.csv`,
+    );
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    toast.success("Attendance report exported successfully");
   };
 
   // Handle errors

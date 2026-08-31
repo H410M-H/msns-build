@@ -34,6 +34,8 @@ const LazySessionList = lazy(() =>
   })),
 );
 
+import { AcademicCalendarTab } from "~/components/blocks/session/AcademicCalendarTab";
+
 // --- Loading Skeletons ---
 const DashboardSkeleton = () => (
   <div className="space-y-4">
@@ -240,19 +242,7 @@ export default function SessionFeePage() {
         </TabsContent>
 
         <TabsContent value="calendar" className="duration-300 animate-in fade-in-50">
-          <Card className="border border-slate-200 bg-white shadow-sm dark:border-emerald-500/10 dark:bg-card">
-            <CardHeader>
-              <CardTitle>Academic Calendar</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex h-64 items-center justify-center rounded-lg border border-dashed border-slate-200 dark:border-border">
-                <div className="text-center text-muted-foreground">
-                  <CalendarIcon className="mx-auto mb-2 h-8 w-8 opacity-20" />
-                  <p>Calendar view coming soon</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          <AcademicCalendarTab />
         </TabsContent>
 
         <TabsContent value="comparison" className="duration-300 animate-in fade-in-50">

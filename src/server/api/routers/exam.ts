@@ -436,5 +436,196 @@ export const examRouter = createTRPCRouter({
         throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Failed to fetch exam subjects" });
       }
     }),
+
+  getAllDatesheets: protectedProcedure
+    .input(
+      z.object({
+        sessionId: z.string().cuid(),
+        classId: z.string().cuid().optional(),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      try {
+        return await ctx.db.exam.findMany({
+          where: {
+            sessionId: input.sessionId,
+            ...(input.classId ? { classId: input.classId } : {}),
+          },
+          include: {
+            Grades: true,
+            ExamType: true,
+            ExamDatesheet: {
+              include: { Subject: true },
+              orderBy: { date: "asc" },
+            },
+          },
+          orderBy: [{ startDate: "asc" }, { Grades: { grade: "asc" } }],
+        });
+      } catch (error) {
+        console.error("Error fetching datesheets:", error);
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to fetch datesheets",
+        });
+      }
+    }),
+
+  getResultsAnalytics: protectedProcedure
+    .input(
+      z.object({
+        sessionId: z.string().cuid(),
+        classId: z.string().cuid().optional(),
+        examId: z.string().cuid().optional(),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      try {
+        const exams = await ctx.db.exam.findMany({
+          where: {
+            sessionId: input.sessionId,
+            ...(input.classId ? { classId: input.classId } : {}),
+            ...(input.examId ? { examId: input.examId } : {}),
+          },
+          include: {
+            Grades: true,
+            ExamType: true,
+            Marks: {
+              include: {
+                Subject: true,
+                Students: true,
+              },
+            },
+          },
+        });
+
+        let totalMarksCount = 0;
+        let totalObtainedMarks = 0;
+        let totalPossibleMarks = 0;
+        const studentScores: Record<
+          string,
+          { studentName: string; totalObtained: number; totalMax: number; rollNumber?: string }
+        > = {};
+        const subjectScores: Record<
+          string,
+          {
+            subjectName: string;
+            totalObtained: number;
+            totalMax: number;
+            count: number;
+            passed: number;
+          }
+        > = {};
+
+        const gradeDistribution = {
+          "A+ (90-100%)": 0,
+          "A (80-89%)": 0,
+          "B (70-79%)": 0,
+          "C (60-69%)": 0,
+          "D (50-59%)": 0,
+          "F (<50%)": 0,
+        };
+
+        for (const exam of exams) {
+          for (const mark of exam.Marks) {
+            totalMarksCount++;
+            totalObtainedMarks += mark.obtainedMarks;
+            totalPossibleMarks += mark.totalMarks;
+
+            const sId = mark.studentId;
+            const sName =
+              `${mark.Students.firstName} ${mark.Students.lastName}`.trim() ||
+              "Student";
+
+            if (!studentScores[sId]) {
+              studentScores[sId] = {
+                studentName: sName,
+                totalObtained: 0,
+                totalMax: 0,
+              };
+            }
+            studentScores[sId]!.totalObtained += mark.obtainedMarks;
+            studentScores[sId]!.totalMax += mark.totalMarks;
+
+            const subId = mark.subjectId;
+            const subName = mark.Subject.subjectName;
+            if (!subjectScores[subId]) {
+              subjectScores[subId] = {
+                subjectName: subName,
+                totalObtained: 0,
+                totalMax: 0,
+                count: 0,
+                passed: 0,
+              };
+            }
+            subjectScores[subId]!.totalObtained += mark.obtainedMarks;
+            subjectScores[subId]!.totalMax += mark.totalMarks;
+            subjectScores[subId]!.count++;
+            if (mark.obtainedMarks >= mark.totalMarks * 0.4) {
+              subjectScores[subId]!.passed++;
+            }
+          }
+        }
+
+        Object.values(studentScores).forEach((s) => {
+          if (s.totalMax > 0) {
+            const pct = (s.totalObtained / s.totalMax) * 100;
+            if (pct >= 90) gradeDistribution["A+ (90-100%)"]++;
+            else if (pct >= 80) gradeDistribution["A (80-89%)"]++;
+            else if (pct >= 70) gradeDistribution["B (70-79%)"]++;
+            else if (pct >= 60) gradeDistribution["C (60-69%)"]++;
+            else if (pct >= 50) gradeDistribution["D (50-59%)"]++;
+            else gradeDistribution["F (<50%)"]++;
+          }
+        });
+
+        const averageScorePct =
+          totalPossibleMarks > 0
+            ? Math.round((totalObtainedMarks / totalPossibleMarks) * 100)
+            : 0;
+        const totalStudents = Object.keys(studentScores).length;
+
+        const subjectStats = Object.values(subjectScores).map((sub) => ({
+          subjectName: sub.subjectName,
+          averagePct:
+            sub.totalMax > 0
+              ? Math.round((sub.totalObtained / sub.totalMax) * 100)
+              : 0,
+          passRate:
+            sub.count > 0 ? Math.round((sub.passed / sub.count) * 100) : 0,
+          totalEntries: sub.count,
+        }));
+
+        const topStudents = Object.values(studentScores)
+          .map((s) => ({
+            studentName: s.studentName,
+            percentage:
+              s.totalMax > 0
+                ? Math.round((s.totalObtained / s.totalMax) * 100)
+                : 0,
+            totalObtained: s.totalObtained,
+            totalMax: s.totalMax,
+          }))
+          .sort((a, b) => b.percentage - a.percentage)
+          .slice(0, 5);
+
+        return {
+          totalExams: exams.length,
+          totalStudents,
+          totalMarksCount,
+          averageScorePct,
+          subjectStats,
+          topStudents,
+          gradeDistribution: Object.entries(gradeDistribution).map(
+            ([name, count]) => ({ name, count }),
+          ),
+        };
+      } catch (error) {
+        console.error("Error fetching results analytics:", error);
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to calculate results analytics",
+        });
+      }
+    }),
 });
 

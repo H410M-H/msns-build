@@ -10,6 +10,7 @@ import { PageExportButton } from "~/components/shared/PageExportButton";
 import { api } from "~/trpc/react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
+import { RoleManagementTab } from "~/components/blocks/user/RoleManagementTab";
 
 export default function RegistrationPage() {
   const breadcrumbs = [
@@ -158,19 +159,7 @@ export default function RegistrationPage() {
         </TabsContent>
 
         <TabsContent value="roles" className="m-0 duration-300 animate-in fade-in-50">
-          <Card className="border border-slate-200 bg-white shadow-sm dark:border-emerald-500/10 dark:bg-card">
-            <CardHeader>
-              <CardTitle>Role Management</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex h-64 items-center justify-center rounded-lg border border-dashed border-slate-200 dark:border-border">
-                <div className="text-center text-muted-foreground">
-                  <Shield className="mx-auto mb-2 h-8 w-8 opacity-20" />
-                  <p>Advanced Role Management Coming Soon</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          <RoleManagementTab />
         </TabsContent>
       </Tabs>
     </div>
