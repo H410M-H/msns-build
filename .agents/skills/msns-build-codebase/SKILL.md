@@ -7,7 +7,7 @@ description: >
 # MSNS Build (LMS/ERP) Codebase Memory
 
 ## Overview
-- **Name:** `msns-lms` (v1.4.4) / MSNS LMS v2.0 — Enterprise ERP Edition
+- **Name:** `msns-lms` (v1.4.5) / MSNS LMS v2.0 — Enterprise ERP Edition
 - **Domain:** `lms.msns.edu.pk` / `msns.edu.pk`
 - **Purpose:** Comprehensive school ERP system covering academics, HR, finance, examinations, attendance, and student/parent portal functionality.
 - **Stack:** T3 Stack (Next.js 15 App Router, React 18, TypeScript 5.5, Node.js 20).
