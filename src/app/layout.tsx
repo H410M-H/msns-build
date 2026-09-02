@@ -4,7 +4,7 @@ import "~/styles/globals.css";
 export const dynamic = "force-dynamic";
 
 import { Geist_Mono, Inter } from "next/font/google";
-import { type Metadata } from "next";
+import { type Metadata, type Viewport } from "next";
 import Script from "next/script";
 import { Provider } from "./provider";
 import { Analytics } from "@vercel/analytics/react";
@@ -24,6 +24,18 @@ const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   display: "swap",
 });
+
+export const viewport: Viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
+    { media: "(prefers-color-scheme: dark)", color: "#020806" },
+  ],
+  viewportFit: "cover",
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+};
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://lms.msns.edu.pk"),

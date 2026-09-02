@@ -24,6 +24,11 @@ const config: CapacitorConfig = {
       backgroundColor: '#020806',
       showSpinner: false
     },
+    StatusBar: {
+      overlaysWebView: true,
+      backgroundColor: '#00000000',
+      style: 'DARK'
+    },
     CapacitorSQLite: {
       iosIsEncryption: true,
       iosBiometric: {

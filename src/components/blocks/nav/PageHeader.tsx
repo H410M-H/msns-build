@@ -136,7 +136,7 @@ export function PageHeader({ breadcrumbs }: PageHeaderProps) {
   }, [breadcrumbs, pathname, sessions, classes]);
 
   return (
-    <div className="sticky top-0 z-40 mb-4 flex w-full flex-col items-center pt-2 sm:pt-3">
+    <div className="sticky top-0 z-40 mb-4 flex w-full flex-col items-center pt-safe pt-2 sm:pt-3">
       <header className="flex h-14 sm:h-16 w-full items-center justify-between gap-3 sm:gap-4 rounded-xl border border-slate-200/90 bg-white/85 px-3 sm:px-6 shadow-sm backdrop-blur-xl transition-all dark:border-border dark:bg-card/90 dark:shadow-none">
         <div className="flex items-center gap-2 sm:gap-4 overflow-hidden">
           <SidebarTrigger className="text-slate-600 hover:bg-slate-100 dark:text-foreground dark:hover:bg-white/10 shrink-0" />

@@ -9,7 +9,7 @@ export default function StudentDashboardLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <SidebarProvider>
-      <div className="flex h-screen w-full overflow-hidden bg-card">
+      <div className="flex h-[100dvh] w-full overflow-hidden bg-card">
         <AppSidebar />
 
         <SidebarInset className="relative flex h-full flex-1 flex-col overflow-hidden bg-slate-50 text-slate-900 transition-colors duration-300 ease-in-out dark:bg-slate-950 dark:text-foreground">
@@ -21,7 +21,7 @@ export default function StudentDashboardLayout({
               <div className="absolute -bottom-20 right-1/4 h-[500px] w-[500px] animate-pulse rounded-full bg-teal-300/10 opacity-30 blur-[120px] delay-1000 dark:bg-teal-500/10 dark:opacity-50" />
             </div>
 
-            <main className="relative z-10 w-full flex-1 overflow-y-auto p-2 sm:p-4">
+            <main className="relative z-10 w-full flex-1 overflow-y-auto p-2 sm:p-4 pb-safe px-safe">
               <PageHeader />
               <div className="space-y-4">{children}</div>
             </main>

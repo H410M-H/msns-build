@@ -9,7 +9,7 @@ export default async function DashboardLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <SidebarProvider>
-      <div className="flex h-screen w-full overflow-hidden bg-card">
+      <div className="flex h-[100dvh] w-full overflow-hidden bg-card">
         <AppSidebar />
 
         <SidebarInset className="relative flex h-full flex-1 flex-col overflow-hidden bg-slate-50 text-slate-900 transition-colors duration-300 ease-in-out dark:bg-slate-950 dark:text-foreground">
@@ -29,7 +29,7 @@ export default async function DashboardLayout({
             </div>
 
             {/* Main Content Area with Sticky PageHeader and Minimal Mobile Padding */}
-            <main className="relative z-10 w-full flex-1 overflow-y-auto p-2 sm:p-4">
+            <main className="relative z-10 w-full flex-1 overflow-y-auto p-2 sm:p-4 pb-safe px-safe">
               <PageHeader />
               <div className="space-y-4">{children}</div>
             </main>

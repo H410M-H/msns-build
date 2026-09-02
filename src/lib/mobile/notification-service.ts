@@ -159,6 +159,57 @@ export const sendModuleActionNotification = async (
   });
 };
 
+export const sendExamDatesheetNotification = async (
+  examName: string,
+  startDate: string,
+  classGrade?: string
+): Promise<void> => {
+  const title = `📋 Exam Datesheet Published: ${examName}`;
+  const body = `${classGrade ? `For Class ${classGrade} - ` : ""}Examinations start on ${startDate}. View your datesheet schedule in the portal.`;
+
+  await sendLocalNotification({
+    title,
+    body,
+    category: "SYSTEM",
+    actionUrl: "/admin/exams",
+    data: { type: "EXAM_DATESHEET", examName, startDate, classGrade },
+  });
+};
+
+export const sendFeeReminderNotification = async (
+  studentName: string,
+  amount: number,
+  dueDate: string
+): Promise<void> => {
+  const title = `💳 Fee Due Reminder`;
+  const body = `Fee voucher for ${studentName} (Rs. ${amount.toLocaleString()}) is due on ${dueDate}. Please pay to avoid late fines.`;
+
+  await sendLocalNotification({
+    title,
+    body,
+    category: "SYSTEM",
+    actionUrl: "/admin/sessions/fee",
+    data: { type: "FEE_REMINDER", studentName, amount, dueDate },
+  });
+};
+
+export const sendAttendanceAlertNotification = async (
+  studentName: string,
+  status: string,
+  date: string
+): Promise<void> => {
+  const title = `🚨 Attendance Alert`;
+  const body = `${studentName} was marked as [${status.toUpperCase()}] on ${date}.`;
+
+  await sendLocalNotification({
+    title,
+    body,
+    category: "SYSTEM",
+    actionUrl: "/admin/attendance",
+    data: { type: "ATTENDANCE_ALERT", studentName, status, date },
+  });
+};
+
 export const triggerTestWelcomeNotification = async (): Promise<void> => {
   console.log("Triggering test welcome notification...");
   await sendWelcomeNotification("Test User / Administrator", "ADMIN");

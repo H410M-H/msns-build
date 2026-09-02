@@ -93,6 +93,11 @@ description: >
 ### 6. Staff Attendance Reporting
 - **Monthly Export (`MonthlyReportTab.tsx` / `clerk/monthly/page.tsx`):** Real-time CSV export of monthly staff attendance with day-by-day status breakdown.
 
+### 7. Mobile Architecture & Edge-to-Edge Experience
+- **Full Screen Edge-to-Edge Layout:** Next.js `viewportFit: "cover"`, Capacitor `StatusBar.overlaysWebView`, Android `shortEdges` display cutout mode, and safe area inset utilities (`pt-safe`, `pb-safe`, `pl-safe`, `pr-safe`, `h-[100dvh]`).
+- **Offline Caching (`src/lib/mobile/offline-cache.ts`):** Dual-tier offline persistence (Capacitor SQLite + LocalStorage fallback) for timetables, subject diaries, and exam datesheets.
+- **Notification Engine (`src/lib/mobile/notification-service.ts`):** Integrated Capacitor LocalNotifications and PushNotifications for exam datesheet publishes, fee due reminders, and attendance alerts.
+
 ## Utilities (`src/lib/`)
 - `utils.ts`: `cn()`, `userReg()` (`MSN-{type}-{year}-{number}`), role/theme checks.
 - `s3.ts`: CRUD operations for AWS S3.
