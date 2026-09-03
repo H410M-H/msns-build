@@ -1,15 +1,16 @@
 // File: src/components/blocks/dashboard/welcome.tsx
 "use client";
 
-import { Sparkles, Mail, User, CalendarDays, Shield } from "lucide-react";
+import { Sparkles, Mail, User, CalendarDays, Shield, Image as ImageIcon, ChevronRight } from "lucide-react";
 import { CalendarDialog } from "~/components/blocks/dashboard/calendar-dialog";
-import { GalleryDialog } from "~/components/blocks/dashboard/gallery-dialog";
 import { getRoleTheme } from "~/lib/utils";
 import { useSession } from "next-auth/react";
 import { api } from "~/trpc/react";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Badge } from "~/components/ui/badge";
 import { Skeleton } from "~/components/ui/skeleton";
+import Link from "next/link";
+import { Button } from "~/components/ui/button";
 
 export const WelcomeSection = () => {
   const { data: session } = useSession();
@@ -60,6 +61,9 @@ export const WelcomeSection = () => {
       day: "numeric",
     }).format(new Date(date));
   };
+
+  const rolePrefix = user.accountType ? user.accountType.toLowerCase() : "admin";
+  const galleryHref = `/${rolePrefix}/gallery`;
 
   return (
     <div className="w-full max-w-full">
@@ -147,7 +151,17 @@ export const WelcomeSection = () => {
           {/* Action Buttons */}
           <div className="mt-4 flex w-full flex-col sm:flex-row items-center gap-3 lg:mt-0 lg:w-auto lg:justify-end">
             <div className="w-full rounded-lg shadow-xl shadow-slate-200/50 dark:shadow-emerald-900/20 sm:w-auto">
-              <GalleryDialog />
+              <Button
+                asChild
+                size="lg"
+                className="group relative w-full transform rounded-xl border-2 border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-700 shadow-lg transition-all duration-300 hover:-translate-y-0.5 hover:scale-[1.01] hover:border-gray-300 hover:bg-gray-50 hover:shadow-xl active:scale-95 sm:w-auto sm:rounded-2xl sm:px-6 sm:py-3 sm:text-base sm:shadow-xl sm:hover:-translate-y-1 sm:hover:scale-105 sm:hover:shadow-2xl"
+              >
+                <Link href={galleryHref} className="flex w-full items-center justify-center">
+                  <ImageIcon className="mr-2 h-4 w-4 text-emerald-600 group-hover:animate-pulse sm:h-5 sm:w-5" />
+                  <span>View Gallery</span>
+                  <ChevronRight className="ml-2 h-3.5 w-3.5 text-gray-400 transition-transform group-hover:translate-x-1 sm:h-4 sm:w-4" />
+                </Link>
+              </Button>
             </div>
             <div className="w-full rounded-lg shadow-xl shadow-slate-200/50 dark:shadow-emerald-900/20 sm:w-auto">
               <CalendarDialog />
