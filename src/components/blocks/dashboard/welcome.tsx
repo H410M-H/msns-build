@@ -3,6 +3,7 @@
 
 import { Sparkles, Mail, User, CalendarDays, Shield } from "lucide-react";
 import { CalendarDialog } from "~/components/blocks/dashboard/calendar-dialog";
+import { GalleryDialog } from "~/components/blocks/dashboard/gallery-dialog";
 import { getRoleTheme } from "~/lib/utils";
 import { useSession } from "next-auth/react";
 import { api } from "~/trpc/react";
@@ -143,8 +144,11 @@ export const WelcomeSection = () => {
             </div>
           </div>
 
-          {/* Action Button */}
-          <div className="mt-4 flex w-full justify-center lg:mt-0 lg:w-auto lg:justify-end">
+          {/* Action Buttons */}
+          <div className="mt-4 flex w-full flex-col sm:flex-row items-center gap-3 lg:mt-0 lg:w-auto lg:justify-end">
+            <div className="w-full rounded-lg shadow-xl shadow-slate-200/50 dark:shadow-emerald-900/20 sm:w-auto">
+              <GalleryDialog />
+            </div>
             <div className="w-full rounded-lg shadow-xl shadow-slate-200/50 dark:shadow-emerald-900/20 sm:w-auto">
               <CalendarDialog />
             </div>
