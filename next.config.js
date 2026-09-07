@@ -9,11 +9,7 @@ const nextConfig = {
     ignoreDuringBuilds: true,
   },
   images: {
-    formats: ["image/avif", "image/webp"],
-    remotePatterns: [
-      // No external image domains needed - all images served via /api/images proxy
-    ],
-    minimumCacheTTL: 86400,
+    unoptimized: true,
   },
   async rewrites() {
     return [
