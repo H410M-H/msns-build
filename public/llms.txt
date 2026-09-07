@@ -1,0 +1,20 @@
+# MSNS-LMS (M. S. Naz High School Learning Management System)
+
+> Official institutional cloud portal and Learning Management System for M. S. Naz High School® (https://msns.edu.pk). Designed to streamline academic workflows, fee reconciliation, student grading, and parent communications.
+
+## Canonical Entities & URLs
+- Main Application URL: https://lms.msns.edu.pk
+- Secure Sign-In: https://lms.msns.edu.pk/sign-in
+- Official Institution: https://www.msns.edu.pk
+- Detailed Knowledge Base: https://lms.msns.edu.pk/llms-full.txt
+
+## Key Capabilities & User Roles
+- **Administrator Dashboard**: Full academic setup, session configuration, class and subject management, staff management, audit logging.
+- **Teacher Portal**: Class attendance recording, homework assignment creation, term exam marks entry, and student remarks.
+- **Student & Parent Portal**: Daily attendance alerts, homework diary, term report card downloads, and fee voucher verification.
+- **Clerk & Finance Portal**: Fee structure creation, student fee challan generation, discount applications, expense tracking, and profit/loss reports.
+
+## Technical & Operational Profile
+- **Provider**: M.S. Naz High School® (Ghakhar Mandi & Wazirabad, Punjab, Pakistan)
+- **Application Type**: WebApplication / EducationalApplication
+- **Supported Platforms**: Progressive Web App (PWA), Android (Capacitor), Modern Web Browsers

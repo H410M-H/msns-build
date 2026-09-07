@@ -1,0 +1,49 @@
+# MSNS-LMS — Comprehensive System & Architecture Knowledge Base
+
+## 1. System Overview
+MSNS-LMS is the dedicated web and mobile Learning Management System engineered specifically for M. S. Naz High School® (MSNS), located in Ghakhar Mandi and serving Wazirabad and the Gujranwala district in Punjab, Pakistan. It replaces paper-based administration with an automated, role-based cloud platform connecting school leadership, teachers, administrative clerks, students, and parents.
+
+- **Application Name**: MSNS-LMS (M. S. Naz High School ERP & LMS)
+- **Primary Domain**: https://lms.msns.edu.pk
+- **Authentication Route**: https://lms.msns.edu.pk/sign-in
+- **Parent Institution**: M. S. Naz High School® (https://www.msns.edu.pk)
+- **Campus Headquarters**: G.T. Road, Opposite Model Police Station, Ghakhar Mandi, Punjab, Pakistan (Postal Code: 52200)
+- **Contact / Support**: info@msns.edu.pk | +92-301-6233609
+
+---
+
+## 2. Core Modules & Functionality
+
+### 2.1 Academic Administration
+- Academic session management (yearly sessions, class terms, sections, and subject mapping).
+- Student enrollment lifecycle: admission tracking, roll number allocation, class promotion, and alumni records.
+- Faculty subject allocations and timetable tracking.
+
+### 2.2 Attendance Management
+- Real-time morning attendance tracking across all grades.
+- Automated instant alerts sent to parents regarding student arrivals, absences, and departures.
+- Monthly attendance percentages computed for board exam eligibility (BISE Gujranwala criteria).
+
+### 2.3 Homework, Assignments & Digital Diary
+- Daily digital diary entries populated by subject instructors.
+- Assignment submission tracking for high school science, AI, and computer science courses.
+- Reduction of paper diaries and missed assignments.
+
+### 2.4 Examination, Grading & Report Cards
+- Support for monthly tests, mid-term examinations, and annual final assessments.
+- Standardized grading scales aligned with BISE Gujranwala matriculation requirements.
+- Dynamic automated PDF report card generation for parents.
+
+### 2.5 Finance, Fee Vouchers & Accounting
+- Configurable fee categories (tuition, laboratory, transport, examinations).
+- Automatic generation of monthly and quarterly fee challan vouchers.
+- Clerk reconciliation workflow for fee receipts, scholarship concessions, and sibling discounts.
+- Comprehensive institutional expense tracking (utilities, salaries, lab supplies) and financial statements.
+
+---
+
+## 3. Technology Stack & Security
+- **Frontend / Framework**: Next.js (App Router), React, TypeScript, Tailwind CSS.
+- **Backend Architecture**: tRPC type-safe API, Prisma ORM, PostgreSQL database.
+- **Mobile Integration**: Capacitor-based Android native app packaging and Progressive Web App (PWA) with service worker offline support.
+- **Data Security**: Role-based access control (RBAC), encrypted sessions, and isolated tenant records.

@@ -9,9 +9,7 @@ import Script from "next/script";
 import { Provider } from "./provider";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
-
-// SEO component – uncomment and fix path if needed
-// import { SchoolSchema } from "~/components/SEOSchema";
+import { LMSApplicationSchema } from "~/components/SEOSchema";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -49,10 +47,10 @@ export const metadata: Metadata = {
     "ghakkhar", "wazirabad", "gujranwala", "msns-dev"
   ].join(", "),
   openGraph: {
-    title: "M.S. Naz High School®",
-    description: "Explore the premier educational experience at M.S. Naz High School® focused on excellence and student development.",
-    url: "https://msns.edu.pk/",
-    siteName: "M.S. Naz High School®",
+    title: "MSNS-LMS Portal | M. S. Naz High School®",
+    description: "Explore the premier educational portal and Learning Management System at M.S. Naz High School®.",
+    url: "https://lms.msns.edu.pk/",
+    siteName: "M.S. Naz High School® LMS",
     images: [
       {
         url: "/api/images/logos/Official_LOGO_grn_ic9ldd.png",
@@ -68,7 +66,7 @@ export const metadata: Metadata = {
     follow: true,
   },
   alternates: {
-    canonical: "https://msns.edu.pk",
+    canonical: "https://lms.msns.edu.pk",
   },
   manifest: "/manifest.json",
 };
@@ -92,8 +90,7 @@ export default function RootLayout({
             gtag('config', 'G-K3FXJTBQKM');
           `}
         </Script>
-        {/* Uncomment after fixing the import path */}
-        {/* <SchoolSchema /> */}
+        <LMSApplicationSchema />
       </head>
       <body
         className={`${inter.variable} ${geistMono.variable} h-full font-sans antialiased`}
