@@ -1,5 +1,3 @@
-import { isNative } from "./native-service";
-
 export interface StoredNotification {
   id: string;
   title: string;

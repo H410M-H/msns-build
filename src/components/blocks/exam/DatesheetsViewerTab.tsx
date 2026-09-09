@@ -32,7 +32,7 @@ export function DatesheetsViewerTab({
     { enabled: !sessionId },
   );
 
-  const effectiveSessionId = sessionId || activeSession?.sessionId || "";
+  const effectiveSessionId = sessionId ?? activeSession?.sessionId ?? "";
 
   const { data: classes } = api.class.getClasses.useQuery(undefined, {
     enabled: true,
@@ -46,7 +46,7 @@ export function DatesheetsViewerTab({
     { enabled: !!effectiveSessionId },
   );
 
-  const [activeFilterClass, setActiveFilterClass] = useState<string | "all">(
+  const [activeFilterClass, setActiveFilterClass] = useState<string>(
     selectedClassId ?? "all",
   );
 

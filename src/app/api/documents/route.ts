@@ -210,6 +210,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    if (file.type && !ALLOWED_MIME_TYPES.includes(file.type)) {
+      return NextResponse.json(
+        { error: "Invalid document type. Allowed types: PDF, Word, Excel, PowerPoint, Text, CSV, Images." },
+        { status: 400 }
+      );
+    }
+
     // Sanitize filename & title
     const timestamp = Date.now();
     const originalExt = file.name.split(".").pop()?.toLowerCase() ?? "pdf";
@@ -286,11 +293,11 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
-    const body = await request.json().catch(() => ({}));
+    const body = (await request.json().catch(() => ({}))) as Record<string, unknown>;
     const { searchParams } = new URL(request.url);
-    const key = (body?.key as string | undefined) ?? searchParams.get("key");
+    const key = (typeof body?.key === "string" ? body.key : undefined) ?? searchParams.get("key");
 
-    if (!key || !key.startsWith("documents/")) {
+    if (!key?.startsWith("documents/")) {
       return NextResponse.json(
         { error: "Valid document key starting with 'documents/' is required" },
         { status: 400 }

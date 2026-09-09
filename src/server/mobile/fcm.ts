@@ -10,7 +10,19 @@ export const sendPushNotification = async (
   console.log(`[FCM Push] Triggered alert: "${title}" - "${body}" for Users:`, userIds, "Parents:", parentGuardianIds);
 
   try {
-    const prismaDb = db as unknown as { deviceRegistration: { findMany: (args: any) => Promise<{ token: string }[]> } };
+    const prismaDb = db as unknown as {
+      deviceRegistration: {
+        findMany: (args: {
+          where: {
+            OR: (
+              | { userId: { in: string[] } }
+              | { parentGuardianId: { in: string[] } }
+            )[];
+          };
+          select: { token: boolean };
+        }) => Promise<{ token: string }[]>;
+      };
+    };
     const registrations = await prismaDb.deviceRegistration.findMany({
       where: {
         OR: [

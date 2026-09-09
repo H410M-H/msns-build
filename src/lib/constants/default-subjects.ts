@@ -161,13 +161,13 @@ export function getDefaultSubjectsForGrade(grade: string, category?: string): st
   const norm = grade.toUpperCase().replace(/\s+/g, " ").trim();
 
   if (norm.includes("PLAYGROUP") || norm.includes("PLAY GROUP") || norm.includes("PLAY")) {
-    return DEFAULT_CLASS_SUBJECTS["PLAYGROUP"]!;
+    return DEFAULT_CLASS_SUBJECTS.PLAYGROUP!;
   }
   if (norm.includes("NURSERY")) {
-    return DEFAULT_CLASS_SUBJECTS["NURSERY"]!;
+    return DEFAULT_CLASS_SUBJECTS.NURSERY!;
   }
   if (norm.includes("PREP")) {
-    return DEFAULT_CLASS_SUBJECTS["PREP"]!;
+    return DEFAULT_CLASS_SUBJECTS.PREP!;
   }
   if (norm.includes("ONE") || norm.includes("1ST") || norm.includes(" 1")) {
     return DEFAULT_CLASS_SUBJECTS["CLASS ONE"]!;
@@ -205,12 +205,13 @@ export function getDefaultSubjectsForGrade(grade: string, category?: string): st
   }
 
   if (category === "Montessori") {
-    return DEFAULT_CLASS_SUBJECTS["PLAYGROUP"]!;
+    return DEFAULT_CLASS_SUBJECTS.PLAYGROUP!;
   }
 
   return ["English", "Urdu", "Math", "Science", "Islamiyat", "Computer"];
 }
 
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call, @typescript-eslint/prefer-nullish-coalescing */
 export async function assignDefaultSubjectsToClass(
   db: any,
   classId: string,

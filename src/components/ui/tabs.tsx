@@ -58,8 +58,8 @@ const Tabs = React.forwardRef<
         containerRef.current = node;
         if (typeof ref === "function") {
           ref(node);
-        } else if (ref) {
-          (ref as React.MutableRefObject<HTMLDivElement | null>).current = node;
+        } else if (ref && "current" in ref) {
+          ref.current = node;
         }
       }}
       onTouchStart={handleTouchStart}

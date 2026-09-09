@@ -213,10 +213,11 @@ export default function ExamManagementPage() {
         startDate: "",
         endDate: "",
       });
-      alert(res.message || "Exams created successfully!");
-    } catch (error: any) {
+      alert(res.message ?? "Exams created successfully!");
+    } catch (error: unknown) {
       console.error("Error creating exam:", error);
-      alert(error?.message || "Failed to create exam");
+      const msg = error instanceof Error ? error.message : "Failed to create exam";
+      alert(msg);
     }
   };
 

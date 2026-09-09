@@ -71,7 +71,7 @@ export const AttendanceModal = () => {
           },
         );
 
-        if (response.data && response.data.ErrorCode === 0) {
+        if (response.data?.ErrorCode === 0) {
           capturedTemplate = response.data.ISOTemplateBase64;
           isHardwareAvailable = true;
         }

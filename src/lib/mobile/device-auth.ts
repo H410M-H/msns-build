@@ -1,4 +1,4 @@
-import { getSecureItem, setSecureItem, removeSecureItem, isNative } from "./native-service";
+import { getSecureItem, setSecureItem, removeSecureItem } from "./native-service";
 
 export interface DeviceAuthSessionData {
   userId: string;
@@ -23,7 +23,7 @@ export const getDeviceId = async (): Promise<string> => {
     let deviceId = await getSecureItem(DEVICE_ID_KEY);
     if (!deviceId) {
       const cryptoRandom = typeof crypto !== "undefined" && crypto.randomUUID ? crypto.randomUUID() : null;
-      deviceId = cryptoRandom || `device_${Date.now()}_${Math.random().toString(36).substring(2, 12)}`;
+      deviceId = cryptoRandom ?? `device_${Date.now()}_${Math.random().toString(36).substring(2, 12)}`;
       await setSecureItem(DEVICE_ID_KEY, deviceId);
     }
     return deviceId;
@@ -46,11 +46,11 @@ export const saveDeviceAuthSession = async (user: {
   try {
     const deviceId = await getDeviceId();
     const sessionData: DeviceAuthSessionData = {
-      userId: user.id || "",
-      email: user.email || "",
-      username: user.username || user.email || "User",
-      accountType: user.accountType || "ADMIN",
-      accountId: user.accountId || user.id || "",
+      userId: user.id ?? "",
+      email: user.email ?? "",
+      username: user.username ?? user.email ?? "User",
+      accountType: user.accountType ?? "ADMIN",
+      accountId: user.accountId ?? user.id ?? "",
       deviceId,
       lastLoginAt: new Date().toISOString(),
       keepLoggedIn: true,
@@ -66,13 +66,13 @@ export const saveDeviceAuthSession = async (user: {
 };
 
 /**
- * Retrieves the stored in-device auth session.
+ * Retrieves the currently active persistent device auth session if available.
  */
 export const getDeviceAuthSession = async (): Promise<DeviceAuthSessionData | null> => {
   try {
     const raw = await getSecureItem(DEVICE_AUTH_SESSION_KEY);
     if (!raw) return null;
-    const data: DeviceAuthSessionData = JSON.parse(raw);
+    const data = JSON.parse(raw) as DeviceAuthSessionData;
     return data;
   } catch (error) {
     console.error("[DeviceAuthSession] Failed to parse device auth session:", error);

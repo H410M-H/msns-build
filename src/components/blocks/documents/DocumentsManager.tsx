@@ -9,7 +9,6 @@ import {
   ExternalLink, 
   Trash2, 
   Search, 
-  Sparkles, 
   CheckCircle2, 
   AlertCircle, 
   Loader2, 
@@ -141,7 +140,7 @@ export function DocumentsManager() {
       const data = (await res.json()) as { success?: boolean; error?: string; document?: DocumentItem };
 
       if (!res.ok || data.error) {
-        throw new Error(data.error || "Upload failed");
+        throw new Error(data.error ?? "Upload failed");
       }
 
       setUploadProgress(100);
@@ -178,7 +177,7 @@ export function DocumentsManager() {
       const data = (await res.json()) as { success?: boolean; error?: string };
 
       if (!res.ok || data.error) {
-        throw new Error(data.error || "Delete failed");
+        throw new Error(data.error ?? "Delete failed");
       }
 
       toast.success("Document deleted successfully");
@@ -330,7 +329,7 @@ export function DocumentsManager() {
                   <Input
                     type="file"
                     onChange={(e) => {
-                      if (e.target.files && e.target.files[0]) {
+                      if (e.target.files?.[0]) {
                         setSelectedFile(e.target.files[0]);
                         if (!uploadTitle) {
                           setUploadTitle(e.target.files[0].name.replace(/\.[^/.]+$/, "").replace(/[-_]/g, " "));

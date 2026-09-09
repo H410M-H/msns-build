@@ -98,7 +98,7 @@ export const RegisterEmployeeBioMetric = ({
             },
           );
 
-          if (response.data && response.data.ErrorCode === 0) {
+          if (response.data?.ErrorCode === 0) {
             isoTemplate = response.data.ISOTemplateBase64;
           } else {
             throw new Error(`Scanner error code: ${response.data?.ErrorCode ?? "unknown"}`);
