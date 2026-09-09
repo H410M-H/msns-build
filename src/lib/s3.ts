@@ -12,7 +12,7 @@ const getEndpoint = () => {
   return rawEndpoint;
 };
 
-const getS3Client = () => {
+export const getS3Client = () => {
   const endpoint = getEndpoint();
   return new S3Client({
     region: process.env.S3_REGION ?? process.env.AWS_DEFAULT_REGION ?? "auto",
@@ -25,7 +25,7 @@ const getS3Client = () => {
   });
 };
 
-const getBucket = () => process.env.S3_BUCKET_NAME ?? process.env.AWS_S3_BUCKET_NAME ?? process.env.BUCKET ?? "msns";
+export const getBucket = () => process.env.S3_BUCKET_NAME ?? process.env.AWS_S3_BUCKET_NAME ?? process.env.BUCKET ?? "msns";
 
 export interface GalleryImage {
   key: string;
@@ -151,7 +151,7 @@ export async function findImageByFilename(filename: string): Promise<string | nu
 
   // 3. Special handling for notification social posts index (e.g. social_posts_1, social_posts_2)
   if (searchClean.startsWith("social_posts_") || searchClean.startsWith("notification_")) {
-    const indexMatch = searchClean.match(/\d+$/);
+    const indexMatch = /\d+$/.exec(searchClean);
     const index = indexMatch ? parseInt(indexMatch[0], 10) - 1 : 0;
     const matchingObjs = contents.filter((obj) => {
       if (!obj.Key || obj.Key.endsWith("/")) return false;

@@ -222,9 +222,9 @@ export function MonthlyReportTab({
         getAttendanceStatus(emp.id, i + 1),
       );
       return [
-        `"${emp.name.replace(/"/g, '""')}"`,
-        `"${emp.designation}"`,
+        `"${(emp.username || "").replace(/"/g, '""')}"`,
         `"${emp.accountType}"`,
+        `"${emp.accountId}"`,
         ...dayStatuses,
       ].join(",");
     });

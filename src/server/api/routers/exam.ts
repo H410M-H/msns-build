@@ -545,36 +545,30 @@ export const examRouter = createTRPCRouter({
             totalPossibleMarks += mark.totalMarks;
 
             const sId = mark.studentId;
-            const sName =
-              `${mark.Students.firstName} ${mark.Students.lastName}`.trim() ||
-              "Student";
+            const sName = mark.Students.studentName?.trim() || "Student";
 
-            if (!studentScores[sId]) {
-              studentScores[sId] = {
-                studentName: sName,
-                totalObtained: 0,
-                totalMax: 0,
-              };
-            }
-            studentScores[sId]!.totalObtained += mark.obtainedMarks;
-            studentScores[sId]!.totalMax += mark.totalMarks;
+            const currentStudent = (studentScores[sId] ??= {
+              studentName: sName,
+              totalObtained: 0,
+              totalMax: 0,
+            });
+            currentStudent.totalObtained += mark.obtainedMarks;
+            currentStudent.totalMax += mark.totalMarks;
 
             const subId = mark.subjectId;
             const subName = mark.Subject.subjectName;
-            if (!subjectScores[subId]) {
-              subjectScores[subId] = {
-                subjectName: subName,
-                totalObtained: 0,
-                totalMax: 0,
-                count: 0,
-                passed: 0,
-              };
-            }
-            subjectScores[subId]!.totalObtained += mark.obtainedMarks;
-            subjectScores[subId]!.totalMax += mark.totalMarks;
-            subjectScores[subId]!.count++;
+            const currentSub = (subjectScores[subId] ??= {
+              subjectName: subName,
+              totalObtained: 0,
+              totalMax: 0,
+              count: 0,
+              passed: 0,
+            });
+            currentSub.totalObtained += mark.obtainedMarks;
+            currentSub.totalMax += mark.totalMarks;
+            currentSub.count++;
             if (mark.obtainedMarks >= mark.totalMarks * 0.4) {
-              subjectScores[subId]!.passed++;
+              currentSub.passed++;
             }
           }
         }

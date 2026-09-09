@@ -66,8 +66,8 @@ export function AcademicCalendarTab({ initialDate = new Date() }: AcademicCalend
 
     // Session checks
     sessions?.forEach((s) => {
-      const sStart = new Date(s.startDate);
-      const sEnd = new Date(s.endDate);
+      const sStart = new Date(s.sessionFrom);
+      const sEnd = new Date(s.sessionTo);
       if (isSameDay(date, sStart)) {
         items.push({
           id: `session-start-${s.sessionId}`,
@@ -90,7 +90,7 @@ export function AcademicCalendarTab({ initialDate = new Date() }: AcademicCalend
 
     // Event checks
     events.forEach((e) => {
-      const eStart = new Date(e.startDate);
+      const eStart = new Date(e.startDateTime);
       if (isSameDay(date, eStart)) {
         items.push({
           id: `event-${e.id}`,
@@ -335,18 +335,18 @@ export function AcademicCalendarTab({ initialDate = new Date() }: AcademicCalend
                         {session.sessionName}
                       </span>
                       <Badge
-                        variant={session.status === "ACTIVE" ? "default" : "secondary"}
+                        variant={session.isActive ? "default" : "secondary"}
                         className={cn(
                           "text-[10px]",
-                          session.status === "ACTIVE" && "bg-emerald-600 text-white",
+                          session.isActive && "bg-emerald-600 text-white",
                         )}
                       >
-                        {session.status}
+                        {session.isActive ? "ACTIVE" : "INACTIVE"}
                       </Badge>
                     </div>
                     <p className="text-[11px] text-muted-foreground mt-1">
-                      {format(new Date(session.startDate), "MMM yyyy")} –{" "}
-                      {format(new Date(session.endDate), "MMM yyyy")}
+                      {format(new Date(session.sessionFrom), "MMM yyyy")} –{" "}
+                      {format(new Date(session.sessionTo), "MMM yyyy")}
                     </p>
                   </div>
                 ))}
