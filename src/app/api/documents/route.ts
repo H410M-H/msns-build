@@ -132,12 +132,20 @@ export async function GET() {
           }
         }
 
-        // Fallback to catalog or clean basename
+        // Fallback to catalog, smart pattern match, or clean basename
         if (!title) {
           const catalogItem = DOCUMENT_CATALOG[rawFilename];
           if (catalogItem) {
             title = catalogItem.title;
             category = catalogItem.category;
+          } else if (rawFilename.startsWith("msns-class-") && rawFilename.endsWith("-notes.pdf")) {
+            const match = rawFilename.match(/^msns-class-(\d+)-(.+)-notes\.pdf$/);
+            if (match) {
+              const grade = match[1];
+              const sub = match[2]?.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()) ?? "";
+              title = `Class ${grade} ${sub} (Syllabus & High-Yield Notes)`;
+              category = "Academic";
+            }
           } else {
             // Clean up standard filename
             title = rawFilename
