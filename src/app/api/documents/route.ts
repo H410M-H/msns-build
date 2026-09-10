@@ -12,7 +12,7 @@ export const dynamic = "force-dynamic";
 const UPLOAD_ROLES = ["ADMIN", "PRINCIPAL", "HEAD", "CLERK", "TEACHER"];
 const DELETE_ROLES = ["ADMIN", "PRINCIPAL", "HEAD"];
 
-const MAX_DOCUMENT_SIZE = 50 * 1024 * 1024; // 50MB
+const MAX_DOCUMENT_SIZE = 250 * 1024 * 1024; // 250MB
 
 const ALLOWED_MIME_TYPES = [
   "application/pdf",
@@ -58,6 +58,10 @@ const DOCUMENT_CATALOG: Record<string, { title: string; category: string }> = {
   "msns-bise-matric-resource-guide.pdf": {
     title: "BISE Matric Exam Preparation & Model Papers Resource Directory",
     category: "Academic",
+  },
+  "uniform-leadership-guidelines.jpg": {
+    title: "Student Uniform & Visual Leadership Guidelines (Photo Guide)",
+    category: "Policy",
   },
   // Textbooks
   "pctb-class-9-physics.pdf": { title: "Class 9 Physics (PCTB E-Book)", category: "Academic" },
@@ -106,13 +110,25 @@ export async function GET() {
     });
 
     const response = await s3.send(command);
-    const contents = response.Contents ?? [];
-
-    const documents: DocumentResponseItem[] = contents
+    const seenFiles = new Set<string>();
+    const filteredContents = (response.Contents ?? [])
       .filter((obj) => obj.Key && !obj.Key.endsWith("/") && obj.Size && obj.Size > 0)
+      .sort((a, b) => (a.Key?.split("/").length ?? 0) - (b.Key?.split("/").length ?? 0))
+      .filter((obj) => {
+        const rawFilename = obj.Key!.replace(/^documents\//, "");
+        const baseName = rawFilename.split("/").pop()!;
+        if (seenFiles.has(baseName)) {
+          return false;
+        }
+        seenFiles.add(baseName);
+        return true;
+      });
+
+    const documents: DocumentResponseItem[] = filteredContents
       .map((obj) => {
         const key = obj.Key!;
         const rawFilename = key.replace(/^documents\//, "");
+        const baseName = rawFilename.split("/").pop()!;
 
         let title = "";
         let category = "General";
@@ -120,8 +136,8 @@ export async function GET() {
 
         // Check if filename has our structured naming format:
         // documents/${timestamp}__${category}__${title}__${cleanFilename}
-        if (rawFilename.includes("__")) {
-          const parts = rawFilename.split("__");
+        if (baseName.includes("__")) {
+          const parts = baseName.split("__");
           if (parts.length >= 4) {
             category = parts[1]?.replace(/_/g, " ") ?? "General";
             title = parts[2]?.replace(/_/g, " ") ?? "";
@@ -134,12 +150,12 @@ export async function GET() {
 
         // Fallback to catalog, smart pattern match, or clean basename
         if (!title) {
-          const catalogItem = DOCUMENT_CATALOG[rawFilename];
+          const catalogItem = DOCUMENT_CATALOG[rawFilename] ?? DOCUMENT_CATALOG[baseName];
           if (catalogItem) {
             title = catalogItem.title;
             category = catalogItem.category;
-          } else if (rawFilename.startsWith("msns-class-") && rawFilename.endsWith("-notes.pdf")) {
-            const match = rawFilename.match(/^msns-class-(\d+)-(.+)-notes\.pdf$/);
+          } else if (baseName.startsWith("msns-class-") && baseName.endsWith("-notes.pdf")) {
+            const match = /^msns-class-(\d+)-(.+)-notes\.pdf$/.exec(baseName);
             if (match) {
               const grade = match[1];
               const sub = match[2]?.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()) ?? "";
@@ -148,7 +164,7 @@ export async function GET() {
             }
           } else {
             // Clean up standard filename
-            title = rawFilename
+            title = baseName
               .replace(/\.[^/.]+$/, "")
               .replace(/^[0-9]+[-_]/, "")
               .replace(/[-_]/g, " ")
@@ -160,14 +176,14 @@ export async function GET() {
 
         return {
           key,
-          filename: rawFilename,
+          filename: baseName,
           title,
           category,
           size: obj.Size ?? 0,
           lastModified,
           uploadedBy,
           uploadedAt: lastModified,
-          url: `/api/documents/${encodeURIComponent(rawFilename)}`,
+          url: `/api/documents/${encodeURIComponent(baseName)}`,
         };
       })
       .sort((a, b) => {
