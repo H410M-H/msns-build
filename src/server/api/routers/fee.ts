@@ -536,6 +536,7 @@ export const feeRouter = createTRPCRouter({
               registrationNumber: f.StudentClass.Students.registrationNumber,
               fatherName: f.StudentClass.Students.fatherName,
               fatherMobile: f.StudentClass.Students.fatherMobile,
+              gender: f.StudentClass.Students.gender,
             },
             class: {
               grade: f.StudentClass.Grades.grade,

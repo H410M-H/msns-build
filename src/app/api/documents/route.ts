@@ -10,7 +10,7 @@ import { auth } from "~/server/auth";
 export const dynamic = "force-dynamic";
 
 const UPLOAD_ROLES = ["ADMIN", "PRINCIPAL", "HEAD", "CLERK", "TEACHER"];
-const DELETE_ROLES = ["ADMIN", "PRINCIPAL", "HEAD"];
+const DELETE_ROLES = ["ADMIN", "PRINCIPAL", "HEAD", "CLERK"];
 
 const MAX_DOCUMENT_SIZE = 250 * 1024 * 1024; // 250MB
 
@@ -312,7 +312,7 @@ export async function DELETE(request: NextRequest) {
     const role = (session.user.accountType ?? "").toUpperCase();
     if (!DELETE_ROLES.includes(role)) {
       return NextResponse.json(
-        { error: "Forbidden. Only administrators, principals, and heads can delete documents." },
+        { error: "Forbidden. Only administrators, principals, heads, and clerks can delete documents." },
         { status: 403 }
       );
     }

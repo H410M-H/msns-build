@@ -43,7 +43,7 @@ export const directExpenseRouter = createTRPCRouter({
           try {
             const approvers = await ctx.db.user.findMany({
               where: {
-                accountType: { in: ["ADMIN", "PRINCIPAL", "HEAD"] }
+                accountType: { in: ["ADMIN", "PRINCIPAL", "HEAD", "CLERK"] }
               },
               select: { id: true }
             });

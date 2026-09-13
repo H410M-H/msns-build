@@ -28,6 +28,7 @@ import AllotmentDialog from "../forms/class/StudentAlotment";
 import { toast } from "~/hooks/use-toast";
 import { Badge } from "~/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
+import { getParentagePrefix } from "~/lib/utils";
 
 // The type for our table's transformed data
 type StudentAllotmentProps = {
@@ -35,6 +36,7 @@ type StudentAllotmentProps = {
   studentId: string;
   studentName: string;
   fatherName: string;
+  gender?: string;
   grade: string;
   employeeName: string;
   sessionName: string;
@@ -49,6 +51,7 @@ type APIStudentAllotment = {
     studentId: string;
     studentName: string;
     fatherName: string;
+    gender?: string;
   };
   Grades: {
     grade: string;
@@ -124,6 +127,7 @@ export function StudentAllotmentTable({
           studentId: item.Students.studentId,
           studentName: item.Students.studentName,
           fatherName: item.Students.fatherName,
+          gender: item.Students.gender,
           grade: item.Grades.grade,
           employeeName: item.Employees?.employeeName ?? "Not Assigned",
           sessionName: item.Sessions.sessionName,
@@ -188,6 +192,13 @@ export function StudentAllotmentTable({
       id: "fatherName",
       accessorFn: (row: StudentAllotmentProps) => row.fatherName,
       header: "Father Name",
+      cell: ({ row }) => (
+        <span className="text-slate-600 dark:text-foreground">
+          {row.original.fatherName
+            ? `${getParentagePrefix(row.original.gender)} ${row.original.fatherName}`
+            : "-"}
+        </span>
+      ),
     },
     {
       id: "employeeName",

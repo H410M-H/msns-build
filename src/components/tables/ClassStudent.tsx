@@ -28,7 +28,7 @@ import {
 import { Badge } from "~/components/ui/badge";
 import { Skeleton } from "~/components/ui/skeleton";
 import { api } from "~/trpc/react";
-import { cn } from "~/lib/utils";
+import { cn, getParentagePrefix } from "~/lib/utils";
 
 // --- Types ---
 type StudentClassProps = {
@@ -187,7 +187,9 @@ export function ClassStudentTable({
       header: "Father Name",
       cell: ({ row }) => (
         <span className="text-slate-600 dark:text-foreground">
-          {row.original.ClassStudent.student.fatherName}
+          {row.original.ClassStudent.student.fatherName
+            ? `${getParentagePrefix(row.original.ClassStudent.student.gender)} ${row.original.ClassStudent.student.fatherName}`
+            : "-"}
         </span>
       ),
     },

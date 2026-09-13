@@ -7,7 +7,7 @@ import { db } from "~/server/db";
 import { auth } from "~/server/auth";
 import { z } from "zod";
 
-const ALLOWED_ROLES = ["ADMIN", "PRINCIPAL"];
+const ALLOWED_ROLES = ["ADMIN", "PRINCIPAL", "HEAD", "CLERK"];
 
 const registerSchema = z.object({
   accountType: z.enum([
@@ -36,11 +36,11 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Role-based authorization — only ADMIN and PRINCIPAL can register users
+    // Role-based authorization — ADMIN, PRINCIPAL, HEAD, and CLERK can register users
     const userRole = session.user.accountType;
     if (!ALLOWED_ROLES.includes(userRole)) {
       return NextResponse.json(
-        { message: "Forbidden — only administrators can register new users" },
+        { message: "Forbidden — you do not have permission to register new users" },
         { status: 403 },
       );
     }

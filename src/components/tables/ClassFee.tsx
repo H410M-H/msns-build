@@ -95,7 +95,9 @@ export type ClassFeeProps = {
       studentId: string;
       registrationNumber: string;
       studentName: string;
+      fatherName?: string;
       fatherMobile?: string;
+      gender?: string;
     };
     class?: {
       grade: string;
@@ -528,10 +530,12 @@ export function ClassFeeTable({
                         row.original.studentClass.student.studentName,
                       registrationNumber:
                         row.original.studentClass.student.registrationNumber,
-                      fatherName: "-",
+                      fatherName:
+                        row.original.studentClass.student.fatherName ?? "-",
                       fatherMobile:
                         row.original.studentClass.student.fatherMobile ??
                         "0000-000000000",
+                      gender: row.original.studentClass.student.gender,
                     }}
                     entry={{
                       sfcId: row.original.sfcId,

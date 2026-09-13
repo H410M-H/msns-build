@@ -14,10 +14,16 @@
   - Any request from unauthorized roles (`STUDENT`, `PARENT`, `WORKER`, unauthenticated) must be rejected with HTTP `403 Forbidden` at the server API layer (`/api/documents` POST).
   - The client UI (`DocumentsManager.tsx`) must only render the upload interface for authorized roles.
 - **Deleting Documents**:
-  - **Permitted Roles**: `ADMIN`, `PRINCIPAL`, and `HEAD` only.
-  - Any deletion attempt by `TEACHER`, `CLERK`, `STUDENT`, `PARENT`, or `WORKER` must be rejected with HTTP `403 Forbidden` at `/api/documents` DELETE.
+  - **Permitted Roles**: `ADMIN`, `PRINCIPAL`, `HEAD`, and `CLERK` only.
+  - Any deletion attempt by `TEACHER`, `STUDENT`, `PARENT`, or `WORKER` must be rejected with HTTP `403 Forbidden` at `/api/documents` DELETE.
 
-## 3. Metadata & Key Formatting
+## 3. Institutional Administration & ERP Modules RBAC
+- **Administrative Tier (`ADMIN`, `PRINCIPAL`, `HEAD`, `CLERK`)**:
+  - Full access to institutional ERP modules (Revenue, Fee Management, Salary, Bulk Salary, Expenses, Budget & Cost Centres, Purchase Orders, Inventory & Stock, Asset Management, Petty Cash, Financial Ledger).
+  - Full access to Examinations (Datesheets, Results Analytics, Promotions, Marking Centre), Sessions & Timetable, Student & Employee Attendance, and Document Management.
+  - All administrative tRPC procedures (`adminProcedure`, `managementProcedure`, `teacherProcedure`) and corresponding mobile navigation elements must provide full access to all four roles.
+
+## 4. Metadata & Key Formatting
 - New uploads must generate a structured key:
   `documents/${timestamp}__${category}__${sanitizedTitle}__${sanitizedFilename}`
 - Standard S3 object metadata headers (`title`, `category`, `uploadedby`, `uploadedat`) must accompany every PutObject command.

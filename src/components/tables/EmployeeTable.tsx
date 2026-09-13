@@ -50,6 +50,7 @@ import type { Employees } from "@prisma/client";
 import { EmployeeEditDialog } from "../forms/employee/EmployeeEditDialog";
 import { useAttendance } from "~/hooks/use-attendance";
 import { AttendanceModal } from "~/components/attendance/attendance/attendance-dialog";
+import { getParentagePrefix } from "~/lib/utils";
 
 // Define the shape of data including relations
 type EmployeeData = Employees & {
@@ -114,7 +115,9 @@ export function EmployeeTable() {
       header: "Father Name",
       cell: ({ row }) => (
         <span className="text-slate-600 dark:text-foreground">
-          {row.original.fatherName}
+          {row.original.fatherName
+            ? `${getParentagePrefix(row.original.gender)} ${row.original.fatherName}`
+            : "-"}
         </span>
       ),
     },

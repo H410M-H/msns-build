@@ -21,6 +21,7 @@ import {
   Hash,
 } from "lucide-react";
 import Image from "next/image";
+import { getParentagePrefix } from "~/lib/utils";
 
 export default function StudentProfilePage() {
   const params = useParams();
@@ -87,7 +88,7 @@ export default function StudentProfilePage() {
 
             <p className="flex items-center justify-center gap-2 text-base font-medium text-foreground sm:text-lg md:justify-start">
               <Users className="h-5 w-5 text-emerald-400" />
-              S/O {student.fatherName}
+              {getParentagePrefix(student.gender)} {student.fatherName}
             </p>
 
             <div className="flex flex-wrap justify-center gap-3 pt-2 md:justify-start">
@@ -226,7 +227,10 @@ export default function StudentProfilePage() {
                   Family Details
                 </h4>
                 <div className="grid gap-4">
-                  <InfoItem label="Father Name" value={student.fatherName} />
+                  <InfoItem
+                    label={student.gender?.toUpperCase() === "FEMALE" ? "Father Name (D/O)" : "Father Name (S/O)"}
+                    value={student.fatherName}
+                  />
                   <InfoItem label="Father CNIC" value={student.fatherCNIC} />
                 </div>
               </div>

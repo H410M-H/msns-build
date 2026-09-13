@@ -1,7 +1,7 @@
 import React from "react";
 import { Separator } from "~/components/ui/separator";
 import { format } from "date-fns";
-import { cn } from "~/lib/utils";
+import { cn, getParentagePrefix } from "~/lib/utils";
 
 // [FIX] Added 'export' keyword here
 export const MONTH_NAMES = [
@@ -24,6 +24,7 @@ export interface VoucherData {
   studentName: string;
   registrationNumber: string;
   fatherName: string;
+  gender?: string;
   className: string;
   section: string;
 
@@ -93,7 +94,9 @@ export const FeeVoucher = React.forwardRef<
             <span className="font-semibold uppercase">{data.studentName}</span>
           </div>
           <div className="flex text-sm">
-            <span className="w-24 text-muted-foreground">Father:</span>
+            <span className="w-24 text-muted-foreground">
+              {getParentagePrefix(data.gender)}:
+            </span>
             <span className="font-medium uppercase">{data.fatherName}</span>
           </div>
           <div className="flex text-sm">

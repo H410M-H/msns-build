@@ -39,7 +39,7 @@ export interface DocumentItem {
 }
 
 const UPLOAD_ROLES = ["ADMIN", "PRINCIPAL", "HEAD", "CLERK", "TEACHER"];
-const DELETE_ROLES = ["ADMIN", "PRINCIPAL", "HEAD"];
+const DELETE_ROLES = ["ADMIN", "PRINCIPAL", "HEAD", "CLERK"];
 
 const CATEGORIES = [
   "All",

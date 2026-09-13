@@ -4,6 +4,10 @@ import {
   BarChartIcon,
   DollarSignIcon,
   HandshakeIcon,
+  BarChart3,
+  ShoppingCart,
+  Package,
+  Coins,
   type LucideIcon,
 } from "lucide-react";
 import Link from "next/link";
@@ -20,6 +24,15 @@ interface Service {
 
 const services: Service[] = [
   {
+    title: "ERP Overview",
+    description: "Enterprise operations, analytics, budgets & ledger",
+    icon: BarChart3,
+    iconColor: "text-purple-500",
+    gradientFrom: "from-purple-400",
+    gradientTo: "to-indigo-700",
+    href: "/admin/erp",
+  },
+  {
     title: "Salary Management",
     description: "Manage employee salaries and compensation packages",
     icon: HandshakeIcon,
@@ -30,7 +43,7 @@ const services: Service[] = [
   },
   {
     title: "Fee Management",
-    description: "Handle student fees and payment tracking",
+    description: "Handle student fees, challans, and payment tracking",
     icon: BarChartIcon,
     iconColor: "text-blue-500",
     gradientFrom: "from-blue-400",
@@ -39,12 +52,39 @@ const services: Service[] = [
   },
   {
     title: "Expenses Management",
-    description: "Create and manage billing invoices",
+    description: "Create and manage billing invoices and direct expenses",
     icon: DollarSignIcon,
-    iconColor: "text-purple-500",
-    gradientFrom: "from-purple-400",
-    gradientTo: "to-purple-700",
+    iconColor: "text-rose-500",
+    gradientFrom: "from-rose-400",
+    gradientTo: "to-rose-700",
     href: "/admin/erp/revenue/expense",
+  },
+  {
+    title: "Purchase Orders",
+    description: "Procurement, vendor orders, and L1/L2 approvals",
+    icon: ShoppingCart,
+    iconColor: "text-amber-500",
+    gradientFrom: "from-amber-400",
+    gradientTo: "to-amber-700",
+    href: "/admin/erp/purchase-orders",
+  },
+  {
+    title: "Inventory & Stock",
+    description: "Track warehouse inventory, stock items, and assets",
+    icon: Package,
+    iconColor: "text-teal-500",
+    gradientFrom: "from-teal-400",
+    gradientTo: "to-teal-700",
+    href: "/admin/erp/stock",
+  },
+  {
+    title: "Petty Cash",
+    description: "Daily institutional petty cash registers and disbursements",
+    icon: Coins,
+    iconColor: "text-cyan-500",
+    gradientFrom: "from-cyan-400",
+    gradientTo: "to-cyan-700",
+    href: "/admin/erp/petty-cash",
   },
 ];
 

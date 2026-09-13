@@ -6,6 +6,7 @@ import { Button } from "~/components/ui/button";
 import { Checkbox } from "~/components/ui/checkbox";
 import { api } from "~/trpc/react";
 import Link from "next/link";
+import { getParentagePrefix } from "~/lib/utils";
 import { DotsHorizontalIcon } from "@radix-ui/react-icons";
 import {
   DropdownMenu,
@@ -405,7 +406,7 @@ export const StudentTable = () => {
               {row.getValue("studentName")}
             </span>
             <span className="text-xs text-muted-foreground md:hidden">
-              {row.original.fatherName}
+              {getParentagePrefix(row.original.gender)} {row.original.fatherName}
             </span>
           </div>
         ),
@@ -428,7 +429,9 @@ export const StudentTable = () => {
         },
         cell: ({ row }) => (
           <span className="text-slate-600 dark:text-foreground">
-            {row.getValue("fatherName")}
+            {row.original.fatherName
+              ? `${getParentagePrefix(row.original.gender)} ${row.original.fatherName}`
+              : "-"}
           </span>
         ),
         meta: { className: "hidden md:table-cell" },

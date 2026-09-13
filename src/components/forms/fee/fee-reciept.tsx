@@ -7,6 +7,7 @@ import { Printer, Download, Loader2 } from "lucide-react";
 import { format } from "date-fns";
 import * as jsPDF from "jspdf";
 import * as html2canvas from "html2canvas-pro";
+import { getParentagePrefix } from "~/lib/utils";
 
 interface FeeReceiptProps {
   student: {
@@ -15,6 +16,7 @@ interface FeeReceiptProps {
     registrationNumber: string;
     fatherName: string;
     fatherMobile: string;
+    gender?: string;
   };
   entry: {
     sfcId: string;
@@ -189,7 +191,9 @@ export function FeeReceipt({
               </span>
             </div>
             <div className="flex justify-between border-b border-slate-200 pb-1">
-              <span className="text-muted-foreground">Father Name</span>
+              <span className="text-muted-foreground">
+                {getParentagePrefix(student.gender)}
+              </span>
               <span className="font-medium text-slate-900">
                 {student.fatherName}
               </span>

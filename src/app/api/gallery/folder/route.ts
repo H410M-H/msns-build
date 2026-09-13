@@ -3,7 +3,7 @@ import { createS3Folder, deleteS3Folder, renameS3Folder } from "~/lib/s3";
 import { auth } from "~/server/auth";
 
 const ALLOWED_ROLES = ["ADMIN", "PRINCIPAL", "HEAD", "CLERK", "TEACHER"];
-const DELETE_ALLOWED_ROLES = ["ADMIN", "PRINCIPAL", "HEAD"];
+const DELETE_ALLOWED_ROLES = ["ADMIN", "PRINCIPAL", "HEAD", "CLERK"];
 
 export async function POST(req: Request) {
   try {

@@ -125,6 +125,7 @@ export const StudentRouter = createTRPCRouter({
               studentName: true,
               admissionNumber: true,
               fatherName: true,
+              gender: true,
               studentMobile: true,
               createdAt: true,
             },

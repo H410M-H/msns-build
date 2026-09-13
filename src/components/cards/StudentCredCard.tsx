@@ -29,6 +29,7 @@ import { StudentEditDialog } from "../forms/student/StudentEdit";
 import Link from "next/link";
 import type { Students } from "@prisma/client";
 import { toast } from "sonner";
+import { getParentagePrefix } from "~/lib/utils";
 
 export default function StudentCredDetails() {
   const [students, setStudents] = useState<Students[]>([]);
@@ -275,7 +276,7 @@ export default function StudentCredDetails() {
                             {student.studentName}
                           </h2>
                           <p className="truncate text-sm text-muted-foreground">
-                            <span className="opacity-60">Father:</span>{" "}
+                            <span className="opacity-60">{getParentagePrefix(student.gender)}:</span>{" "}
                             {student.fatherName}
                           </p>
                           <div className="flex flex-wrap gap-2 pt-1">

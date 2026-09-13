@@ -86,11 +86,11 @@ export const enforceRoles = (allowedRoles: string[]) =>
 
 /** Procedures restricted by role */
 export const adminProcedure = protectedProcedure.use(
-  enforceRoles(["ADMIN"])
+  enforceRoles(["ADMIN", "PRINCIPAL", "HEAD", "CLERK"])
 );
 
 export const managementProcedure = protectedProcedure.use(
-  enforceRoles(["ADMIN", "PRINCIPAL", "HEAD"])
+  enforceRoles(["ADMIN", "PRINCIPAL", "HEAD", "CLERK"])
 );
 
 export const clerkProcedure = protectedProcedure.use(
@@ -98,7 +98,7 @@ export const clerkProcedure = protectedProcedure.use(
 );
 
 export const teacherProcedure = protectedProcedure.use(
-  enforceRoles(["ADMIN", "PRINCIPAL", "HEAD", "TEACHER"])
+  enforceRoles(["ADMIN", "PRINCIPAL", "HEAD", "CLERK", "TEACHER"])
 );
 
 export const staffProcedure = protectedProcedure.use(

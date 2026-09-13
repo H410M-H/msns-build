@@ -2,7 +2,7 @@ import { type NextRequest, NextResponse } from "next/server";
 import { deleteFromS3 } from "~/lib/s3";
 import { auth } from "~/server/auth";
 
-const DELETE_ALLOWED_ROLES = ["ADMIN", "PRINCIPAL", "HEAD"];
+const DELETE_ALLOWED_ROLES = ["ADMIN", "PRINCIPAL", "HEAD", "CLERK"];
 
 export async function DELETE(
   _request: NextRequest,

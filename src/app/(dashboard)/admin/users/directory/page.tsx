@@ -4,6 +4,7 @@ import { useState } from "react";
 import { api } from "~/trpc/react";
 import { Search, Phone, Droplet, ShieldCheck } from "lucide-react";
 import { Input } from "~/components/ui/input";
+import { getParentagePrefix } from "~/lib/utils";
 
 interface StudentDirectoryItem {
   studentId: string;
@@ -13,6 +14,7 @@ interface StudentDirectoryItem {
   fatherMobile: string;
   currentAddress: string;
   bloodGroup?: string | null;
+  gender?: string;
 }
 
 export default function EmergencyDirectoryPage() {
@@ -70,7 +72,7 @@ export default function EmergencyDirectoryPage() {
 
               <div className="space-y-1 text-xs text-slate-300 border-t border-slate-800/80 pt-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-slate-400">Father Name:</span>
+                  <span className="text-slate-400">{getParentagePrefix(s.gender)}:</span>
                   <span className="font-semibold">{s.fatherName}</span>
                 </div>
                 <div className="flex items-center justify-between">

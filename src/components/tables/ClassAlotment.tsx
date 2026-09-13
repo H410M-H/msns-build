@@ -9,7 +9,7 @@ import {
   getFilteredRowModel,
 } from "@tanstack/react-table";
 import { api } from "~/trpc/react";
-import { cn } from "~/lib/utils";
+import { cn, getParentagePrefix } from "~/lib/utils";
 
 // --- Components ---
 import { Button } from "~/components/ui/button";
@@ -47,6 +47,7 @@ interface StudentClassWithRelations {
     studentName: string;
     fatherName: string;
     guardianName?: string | null;
+    gender?: string;
   };
   Grades: {
     grade: string;
@@ -463,7 +464,7 @@ export const ClassAllotmentTable = ({
                         {row.original.Students.studentName}
                       </h3>
                       <p className="mt-0.5 text-xs text-muted-foreground">
-                        S/O {row.original.Students.fatherName}
+                        {getParentagePrefix(row.original.Students.gender)} {row.original.Students.fatherName}
                       </p>
                     </div>
                   </div>

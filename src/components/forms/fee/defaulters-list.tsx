@@ -30,6 +30,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { exportToCSV, generateDefaultersReportData } from "~/lib/export-utils";
+import { getParentagePrefix } from "~/lib/utils";
 import { SendReminderDialog } from "./send-reminder-dialog";
 
 interface DefaultersListProps {
@@ -201,7 +202,9 @@ export function DefaultersList({ sessionId, year }: DefaultersListProps) {
                         </Badge>
                       </TableCell>
                       <TableCell className="text-slate-600">
-                        {d.student.fatherName}
+                        {d.student.fatherName
+                          ? `${getParentagePrefix(d.student.gender)} ${d.student.fatherName}`
+                          : "-"}
                       </TableCell>
                       <TableCell>
                         <a

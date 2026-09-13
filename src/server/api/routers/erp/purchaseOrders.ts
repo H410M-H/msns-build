@@ -98,7 +98,7 @@ export const purchaseOrdersRouter = createTRPCRouter({
         try {
           const approvers = await ctx.db.user.findMany({
             where: {
-              accountType: { in: ["ADMIN", "PRINCIPAL", "HEAD"] }
+              accountType: { in: ["ADMIN", "PRINCIPAL", "HEAD", "CLERK"] }
             },
             select: { id: true }
           });
@@ -164,7 +164,7 @@ export const purchaseOrdersRouter = createTRPCRouter({
           try {
             const approvers = await ctx.db.user.findMany({
               where: {
-                accountType: { in: ["ADMIN", "PRINCIPAL"] }
+                accountType: { in: ["ADMIN", "PRINCIPAL", "HEAD", "CLERK"] }
               },
               select: { id: true }
             });

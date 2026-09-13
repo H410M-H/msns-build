@@ -42,85 +42,100 @@ type NavItem = {
 
 type NavigationConfig = Record<string, NavItem[] | undefined>;
 
+const erpNav: NavItem = {
+  title: "ERP",
+  url: "/admin/erp",
+  icon: BarChart3,
+  items: [
+    { title: "ERP Overview", url: "/admin/erp" },
+    { title: "Revenue Overview", url: "/admin/erp/revenue" },
+    { title: "Fee Management", url: "/admin/erp/revenue/fee" },
+    { title: "Salary", url: "/admin/erp/revenue/salary" },
+    { title: "Bulk Salary", url: "/admin/erp/revenue/bulk-salary" },
+    { title: "Expenses", url: "/admin/erp/revenue/expense" },
+    { title: "Budget & Cost Centres", url: "/admin/erp/budget" },
+    { title: "Purchase Orders", url: "/admin/erp/purchase-orders" },
+    { title: "Inventory & Stock", url: "/admin/erp/stock" },
+    { title: "Asset Management", url: "/admin/erp/assets" },
+    { title: "Petty Cash", url: "/admin/erp/petty-cash" },
+    { title: "Financial Ledger", url: "/admin/erp/ledger" },
+  ],
+};
+
+const examinationsNav: NavItem = {
+  title: "Examinations",
+  url: "/admin/exams",
+  icon: FileText,
+  items: [
+    { title: "Exams Overview", url: "/admin/exams" },
+    { title: "Marking Centre", url: "/admin/exams/marking-centre" },
+    { title: "Promotions", url: "/admin/exams/promotion" },
+  ],
+};
+
+const adminAttendanceNav: NavItem = {
+  title: "Attendance",
+  url: "/admin/attendance",
+  icon: ClipboardList,
+  items: [
+    { title: "Student Attendance", url: "/admin/attendance" },
+    { title: "Employee Attendance", url: "/admin/sessions/attendance/employees/monthly" },
+  ],
+};
+
+const adminSessionsNav: NavItem = {
+  title: "Sessions & Classes",
+  url: "/admin/sessions",
+  icon: Calendar,
+  items: [
+    { title: "All Sessions", url: "/admin/sessions" },
+    { title: "Timetable", url: "/admin/sessions/timetable" },
+    { title: "Fee Ledger", url: "/admin/sessions/fee" },
+  ],
+};
+
 const data: NavigationConfig = {
   ADMIN: [
     { title: "Dashboard", url: "/admin", icon: LayoutDashboard },
-    {
-      title: "Sessions & Classes",
-      url: "/admin/sessions",
-      icon: Calendar,
-      items: [
-        { title: "All Sessions", url: "/admin/sessions" },
-        { title: "Timetable", url: "/admin/sessions/timetable" },
-        { title: "Fee Ledger", url: "/admin/sessions/fee" },
-      ],
-    },
-    {
-      title: "Examinations",
-      url: "/admin/exams",
-      icon: FileText,
-      items: [
-        { title: "Exams Overview", url: "/admin/exams" },
-        { title: "Marking Centre", url: "/admin/exams/marking-centre" },
-        { title: "Promotions", url: "/admin/exams/promotion" },
-      ],
-    },
-    {
-      title: "Attendance",
-      url: "/admin/attendance",
-      icon: ClipboardList,
-      items: [
-        { title: "Student Attendance", url: "/admin/attendance" },
-        { title: "Employee Attendance", url: "/admin/sessions/attendance/employees/monthly" },
-      ],
-    },
+    adminSessionsNav,
+    examinationsNav,
+    adminAttendanceNav,
     { title: "Faculty", url: "/admin/users/faculty/view", icon: Briefcase },
     { title: "Students", url: "/admin/users/student/view", icon: GraduationCap },
     { title: "Documents", url: "/documents", icon: FileText },
     { title: "Profile", url: "/admin/users/profile", icon: User },
     { title: "Gallery", url: "/admin/gallery", icon: Images },
-    {
-      title: "ERP",
-      url: "/admin/erp",
-      icon: BarChart3,
-      items: [
-        { title: "ERP Overview", url: "/admin/erp" },
-        { title: "Revenue Overview", url: "/admin/erp/revenue" },
-        { title: "Fee Management", url: "/admin/erp/revenue/fee" },
-        { title: "Salary", url: "/admin/erp/revenue/salary" },
-        { title: "Bulk Salary", url: "/admin/erp/revenue/bulk-salary" },
-        { title: "Expenses", url: "/admin/erp/revenue/expense" },
-        { title: "Budget & Cost Centres", url: "/admin/erp/budget" },
-        { title: "Purchase Orders", url: "/admin/erp/purchase-orders" },
-        { title: "Inventory & Stock", url: "/admin/erp/stock" },
-        { title: "Asset Management", url: "/admin/erp/assets" },
-        { title: "Petty Cash", url: "/admin/erp/petty-cash" },
-        { title: "Financial Ledger", url: "/admin/erp/ledger" },
-      ],
-    },
+    erpNav,
   ],
 
   HEAD: [
     { title: "Dashboard", url: "/head", icon: LayoutDashboard },
-    { title: "Sessions", url: "/admin/sessions", icon: Calendar },
+    adminSessionsNav,
+    examinationsNav,
+    adminAttendanceNav,
     { title: "Faculty", url: "/admin/users/faculty/view", icon: Briefcase },
     { title: "Students", url: "/admin/users/student/view", icon: GraduationCap },
     { title: "Documents", url: "/documents", icon: FileText },
     { title: "Profile", url: "/head/profile", icon: User },
     { title: "Gallery", url: "/head/gallery", icon: Images },
+    erpNav,
   ],
 
   PRINCIPAL: [
     { title: "Dashboard", url: "/principal", icon: LayoutDashboard },
-    { title: "Sessions", url: "/admin/sessions", icon: Calendar },
+    adminSessionsNav,
+    examinationsNav,
+    adminAttendanceNav,
     { title: "Faculty", url: "/admin/users/faculty/view", icon: Briefcase },
     { title: "Students", url: "/admin/users/student/view", icon: GraduationCap },
     { title: "Documents", url: "/documents", icon: FileText },
     { title: "Profile", url: "/principal/profile", icon: User },
     { title: "Gallery", url: "/principal/gallery", icon: Images },
+    erpNav,
   ],
 
   CLERK: [
+    { title: "Dashboard", url: "/clerk", icon: LayoutDashboard },
     {
       title: "Sessions & Classes",
       url: "/clerk/sessions",
@@ -131,8 +146,7 @@ const data: NavigationConfig = {
         { title: "Fee Ledger", url: "/clerk/sessions/fee" },
       ],
     },
-    { title: "Students", url: "/clerk/users/student/view", icon: GraduationCap },
-    { title: "Faculty", url: "/clerk/users/faculty/view", icon: Briefcase },
+    examinationsNav,
     {
       title: "Attendance",
       url: "/clerk/attendance",
@@ -142,10 +156,13 @@ const data: NavigationConfig = {
         { title: "Employee Attendance", url: "/clerk/sessions/attendance/employees/monthly" },
       ],
     },
+    { title: "Faculty", url: "/clerk/users/faculty/view", icon: Briefcase },
+    { title: "Students", url: "/clerk/users/student/view", icon: GraduationCap },
     { title: "Transactions", url: "/clerk/sessions/fee", icon: Receipt },
     { title: "Documents", url: "/documents", icon: FileText },
     { title: "Profile", url: "/clerk/users/profile", icon: User },
     { title: "Gallery", url: "/clerk/gallery", icon: Images },
+    erpNav,
   ],
 
   TEACHER: [

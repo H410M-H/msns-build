@@ -86,6 +86,7 @@ description: >
 
 ### 4. Role Governance & Access Control
 - **Role Management (`RoleManagementTab`):** 8 system roles (`ADMIN`, `PRINCIPAL`, `HEAD`, `CLERK`, `TEACHER`, `STUDENT`, `PARENT`, `WORKER`), modular permissions matrix (User Governance, Academics, Attendance, Exams, Finance, System Settings), and live searchable user directory.
+- **Administrative Access Tier:** `ADMIN`, `PRINCIPAL`, `HEAD`, and `CLERK` share unified access to all ERP modules (Revenue, Fees, Salaries, Expenses, Budget, POs, Stock, Assets, Petty Cash, Ledger) and administrative management tools (Examinations & Marking Centre, Sessions & Timetables, Attendance, Documents).
 
 ### 5. Student Dashboard
 - **Enrolled Courses (`student.tsx`):** Course cards with gradient accents, core course tags, enrollment verification, and direct timetable routing.
@@ -99,7 +100,7 @@ description: >
 - **Notification Engine (`src/lib/mobile/notification-service.ts`):** Integrated Capacitor LocalNotifications and PushNotifications for exam datesheet publishes, fee due reminders, and attendance alerts.
 
 ## Utilities (`src/lib/`)
-- `utils.ts`: `cn()`, `userReg()` (`MSN-{type}-{year}-{number}`), role/theme checks.
+- `utils.ts`: `cn()`, `userReg()` (`MSN-{type}-{year}-{number}`), `getParentagePrefix(gender)` (returns `"D/O"` for female, `"S/O"` for male), `checkIsAdmin` (`ADMIN`, `PRINCIPAL`, `HEAD`, `CLERK`), role/theme checks.
 - `s3.ts`: CRUD operations for AWS S3.
 - `pdf-reports.ts`: pdf-lib generation.
 - `timetable-types.ts`: Timetable definitions, `DAYS_OF_WEEK`, `LECTURE_NUMBERS`.

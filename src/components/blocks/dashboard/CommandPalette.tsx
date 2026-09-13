@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
-import { Calculator, Calendar, CreditCard, Settings, Search, User } from "lucide-react";
+import { Calculator, Calendar, CreditCard, Settings, Search, User, BarChart3 } from "lucide-react";
 import {
   CommandDialog,
   CommandEmpty,
@@ -46,16 +46,24 @@ export function CommandPalette() {
       case "ADMIN":
       case "HEAD":
       case "PRINCIPAL":
-        return "/admin/erp/revenue";
       case "CLERK":
-        return "/clerk/sessions/fee";
+        return "/admin/erp/revenue";
       default:
         return null;
     }
   }, [role]);
 
   const profileUrl = React.useMemo(() => {
-    return role === "CLERK" ? "/clerk/users/profile" : "/admin/users/profile";
+    switch (role) {
+      case "CLERK":
+        return "/clerk/users/profile";
+      case "HEAD":
+        return "/head/profile";
+      case "PRINCIPAL":
+        return "/principal/profile";
+      default:
+        return "/admin/users/profile";
+    }
   }, [role]);
 
   React.useEffect(() => {
@@ -97,6 +105,12 @@ export function CommandPalette() {
               <CommandItem onSelect={() => runCommand(() => router.push(sessionsUrl))}>
                 <Calendar className="mr-2 h-4 w-4" />
                 <span>Calendar / Sessions</span>
+              </CommandItem>
+            )}
+            {["ADMIN", "HEAD", "PRINCIPAL", "CLERK"].includes(role) && (
+              <CommandItem onSelect={() => runCommand(() => router.push("/admin/erp"))}>
+                <BarChart3 className="mr-2 h-4 w-4" />
+                <span>Enterprise Resource Planning (ERP)</span>
               </CommandItem>
             )}
             {revenueUrl && (

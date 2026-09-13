@@ -5,6 +5,7 @@ import {
   CalendarCog,
   NotebookPen,
   Wallet,
+  BarChart3,
   ChevronRight,
   ArrowRight,
   type LucideIcon,
@@ -79,13 +80,28 @@ const services: Services[] = [
       { label: "Fee Ledger/Transactions", href: "/clerk/sessions/fee" },
     ],
   },
+  {
+    title: "ERP & Operations",
+    description: "Enterprise resources, inventory, budgets & procurement.",
+    icon: BarChart3,
+    href: "/admin/erp",
+    gradient: "from-purple-500/20 to-pink-600/5",
+    iconColor: "text-purple-400",
+    subActions: [
+      { label: "ERP Overview", href: "/admin/erp" },
+      { label: "Revenue", href: "/admin/erp/revenue" },
+      { label: "Stock", href: "/admin/erp/stock" },
+      { label: "Petty Cash", href: "/admin/erp/petty-cash" },
+      { label: "POs", href: "/admin/erp/purchase-orders" },
+    ],
+  },
 ];
 
 export default function AlumniCard() {
   const { data: activeSession } = api.session.getActiveSession.useQuery();
 
   return (
-    <div className="grid h-full grid-cols-1 gap-3 sm:gap-4 md:grid-cols-2 lg:grid-cols-3">
+    <div className="grid h-full grid-cols-1 gap-3 sm:gap-4 md:grid-cols-2 lg:grid-cols-4">
       {services.map((service, index) => {
         const Icon = service.icon;
         return (

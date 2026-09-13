@@ -90,6 +90,7 @@ export default function BulkPrintPage() {
         studentName: sc.Students.studentName,
         registrationNumber: sc.Students.registrationNumber,
         fatherName: sc.Students.fatherName,
+        gender: sc.Students.gender,
         className: gradeDisplay,
         section: sectionDisplay,
 
