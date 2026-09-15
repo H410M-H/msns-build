@@ -2,6 +2,7 @@ import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "../../trpc";
 import { TRPCError } from "@trpc/server";
 import { type Prisma } from "@prisma/client";
+import { getSessionEmployee } from "~/server/utils/credential-generator";
 
 export const ledgerRouter = createTRPCRouter({
   // FR-ERP-34/35: Create immutable double-entry ledger record
@@ -34,9 +35,7 @@ export const ledgerRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      const employeeRecord = await ctx.db.employees.findFirst({
-        where: { admissionNumber: ctx.session.user.id },
-      });
+      const employeeRecord = await getSessionEmployee(ctx);
       if (!employeeRecord) throw new TRPCError({ code: "UNAUTHORIZED", message: "Employee not found" });
 
       const created = await ctx.db.$transaction(

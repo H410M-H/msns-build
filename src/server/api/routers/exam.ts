@@ -135,7 +135,7 @@ export const examRouter = createTRPCRouter({
           const exam = await ctx.db.exam.create({
             data: {
               examTypeId: examType.examTypeId,
-              examTypeEnum: input.examTypeEnum,
+              examTypeEnum: input.examTypeEnum as any,
               sessionId: input.sessionId,
               classId,
               startDate: input.startDate,
@@ -351,21 +351,44 @@ export const examRouter = createTRPCRouter({
     .input(z.object({ examId: z.string().cuid() }))
     .mutation(async ({ ctx, input }) => {
       try {
-        await ctx.db.marks.deleteMany({ where: { examId: input.examId } });
+        await ctx.db.$transaction(async (tx) => {
+          // 1. Delete marks
+          await tx.marks.deleteMany({ where: { examId: input.examId } });
 
-        const reportCards = await ctx.db.reportCard.findMany({
-          where: { examId: input.examId },
-          select: { reportCardId: true },
-        });
-
-        for (const report of reportCards) {
-          await ctx.db.reportCardDetail.deleteMany({
-            where: { reportCardId: report.reportCardId },
+          // 2. Delete report cards and details
+          const reportCards = await tx.reportCard.findMany({
+            where: { examId: input.examId },
+            select: { reportCardId: true },
           });
-        }
 
-        await ctx.db.reportCard.deleteMany({ where: { examId: input.examId } });
-        await ctx.db.exam.delete({ where: { examId: input.examId } });
+          if (reportCards.length > 0) {
+            const reportCardIds = reportCards.map((r) => r.reportCardId);
+            await tx.reportCardDetail.deleteMany({
+              where: { reportCardId: { in: reportCardIds } },
+            });
+            await tx.reportCard.deleteMany({
+              where: { reportCardId: { in: reportCardIds } },
+            });
+          }
+
+          // 3. Delete examination marking sessions
+          await tx.examinationMarkingSession.deleteMany({
+            where: { examId: input.examId },
+          });
+
+          // 4. Delete promotion eligibility results
+          await tx.promotionEligibilityResult.deleteMany({
+            where: { examId: input.examId },
+          });
+
+          // 5. Delete exam datesheet
+          await tx.examDatesheet.deleteMany({
+            where: { examId: input.examId },
+          });
+
+          // 6. Delete exam
+          await tx.exam.delete({ where: { examId: input.examId } });
+        });
 
         return { success: true, message: "Exam deleted successfully" };
       } catch (error) {

@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "../../trpc";
 import { TRPCError } from "@trpc/server";
+import { getSessionEmployee } from "~/server/utils/credential-generator";
 
 export const stockRouter = createTRPCRouter({
   // FR-ERP-18: Inventory item management
@@ -87,9 +88,7 @@ export const stockRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      const employeeRecord = await ctx.db.employees.findFirst({
-        where: { admissionNumber: ctx.session.user.id },
-      });
+      const employeeRecord = await getSessionEmployee(ctx);
       if (!employeeRecord) throw new TRPCError({ code: "UNAUTHORIZED", message: "Employee not found" });
 
       const item = await ctx.db.inventoryItem.findUnique({

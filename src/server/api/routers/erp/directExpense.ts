@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "../../trpc";
 import { TRPCError } from "@trpc/server";
+import { getSessionEmployee } from "~/server/utils/credential-generator";
 
 export const directExpenseRouter = createTRPCRouter({
   // FR-ERP-13: Record direct expense
@@ -18,9 +19,7 @@ export const directExpenseRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      const employeeRecord = await ctx.db.employees.findFirst({
-        where: { admissionNumber: ctx.session.user.id },
-      });
+      const employeeRecord = await getSessionEmployee(ctx);
       if (!employeeRecord) throw new TRPCError({ code: "UNAUTHORIZED", message: "Employee not found" });
 
       // FR-ERP-14: Auto-approve if below threshold (PKR 5,000)
@@ -70,9 +69,7 @@ export const directExpenseRouter = createTRPCRouter({
   approve: protectedProcedure
     .input(z.object({ directExpenseId: z.string().cuid() }))
     .mutation(async ({ ctx, input }) => {
-      const employeeRecord = await ctx.db.employees.findFirst({
-        where: { admissionNumber: ctx.session.user.id },
-      });
+      const employeeRecord = await getSessionEmployee(ctx);
       if (!employeeRecord) throw new TRPCError({ code: "UNAUTHORIZED", message: "Employee not found" });
 
       const expense = await ctx.db.directExpense.findUnique({

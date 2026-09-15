@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "../../trpc";
 import { TRPCError } from "@trpc/server";
+import { getSessionEmployee } from "~/server/utils/credential-generator";
 
 export const pettyCashRouter = createTRPCRouter({
   // FR-ERP-30: Initialize petty cash register for a session
@@ -46,9 +47,7 @@ export const pettyCashRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      const employeeRecord = await ctx.db.employees.findFirst({
-        where: { admissionNumber: ctx.session.user.id },
-      });
+      const employeeRecord = await getSessionEmployee(ctx);
       if (!employeeRecord) throw new TRPCError({ code: "UNAUTHORIZED", message: "Employee not found" });
 
       const register = await ctx.db.pettyCashRegister.findUnique({
@@ -117,9 +116,7 @@ export const pettyCashRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      const employeeRecord = await ctx.db.employees.findFirst({
-        where: { admissionNumber: ctx.session.user.id },
-      });
+      const employeeRecord = await getSessionEmployee(ctx);
       if (!employeeRecord) throw new TRPCError({ code: "UNAUTHORIZED", message: "Employee not found" });
 
       const register = await ctx.db.pettyCashRegister.findUnique({

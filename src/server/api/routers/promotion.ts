@@ -1,6 +1,7 @@
 import { TRPCError } from "@trpc/server";
 import { createTRPCRouter, protectedProcedure, managementProcedure } from "../trpc";
 import { z } from "zod";
+import { getSessionEmployee } from "~/server/utils/credential-generator";
 
 const promoteStudentSchema = z.object({
   studentId: z.string().cuid(),
@@ -24,13 +25,14 @@ export const promotionRouter = createTRPCRouter({
     .input(promoteStudentSchema)
     .mutation(async ({ ctx, input }) => {
       try {
-        const promotedBy = ctx.session?.user?.id;
-        if (!promotedBy) {
+        const sessionEmployee = await getSessionEmployee(ctx);
+        if (!sessionEmployee) {
           throw new TRPCError({
             code: "UNAUTHORIZED",
-            message: "User must be authenticated",
+            message: "Active employee profile not found for user",
           });
         }
+        const promotedBy = sessionEmployee.employeeId;
 
         // Verify student exists
         const student = await ctx.db.students.findUnique({
@@ -128,13 +130,14 @@ export const promotionRouter = createTRPCRouter({
     .input(batchPromoteSchema)
     .mutation(async ({ ctx, input }) => {
       try {
-        const promotedBy = ctx.session?.user?.id;
-        if (!promotedBy) {
+        const sessionEmployee = await getSessionEmployee(ctx);
+        if (!sessionEmployee) {
           throw new TRPCError({
             code: "UNAUTHORIZED",
-            message: "User must be authenticated",
+            message: "Active employee profile not found for user",
           });
         }
+        const promotedBy = sessionEmployee.employeeId;
 
         // Get the final exam to check passing status
         const finalExam = await ctx.db.exam.findUnique({
@@ -596,12 +599,7 @@ export const promotionRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      const promotedBy = ctx.session?.user?.id;
-      if (!promotedBy) throw new TRPCError({ code: "UNAUTHORIZED", message: "Not authenticated" });
-
-      const initiatorEmployee = await ctx.db.employees.findFirst({
-        where: { admissionNumber: promotedBy },
-      });
+      const initiatorEmployee = await getSessionEmployee(ctx);
       if (!initiatorEmployee) throw new TRPCError({ code: "UNAUTHORIZED", message: "Employee not found" });
 
       // Get eligibility results for override validation
@@ -772,9 +770,8 @@ export const promotionRouter = createTRPCRouter({
         });
       }
 
-      const initiatorEmployee = await ctx.db.employees.findFirst({
-        where: { admissionNumber: reversedBy },
-      });
+      const initiatorEmployee = await getSessionEmployee(ctx);
+      if (!initiatorEmployee) throw new TRPCError({ code: "UNAUTHORIZED", message: "Employee not found" });
 
       await ctx.db.$transaction(async (tx) => {
         // Remove from current (promoted-to) class

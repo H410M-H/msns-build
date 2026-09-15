@@ -212,23 +212,43 @@ export const SessionRouter = createTRPCRouter({
               await tx.classSubject.deleteMany({ where: { sessionId } });
             }
 
-            // Delete Fees
-            // Note: Fees do not belong to a session, they are global. Do not delete them.
+            // Delete StudentAttendance
+            await tx.studentAttendance.deleteMany({ where: { sessionId } });
 
-            // Delete Exams
+            // Delete FeeStudentClass before StudentClass
+            const studentClasses = await tx.studentClass.findMany({
+              where: { sessionId },
+              select: { scId: true },
+            });
+            const scIds = studentClasses.map(sc => sc.scId);
+            if (scIds.length > 0) {
+              await tx.feeStudentClass.deleteMany({ where: { studentClassId: { in: scIds } } });
+            }
+            await tx.studentClass.deleteMany({ where: { sessionId } });
+
+            // Delete Exams and their relations
             const exams = await tx.exam.findMany({ where: { sessionId } });
             const examIds = exams.map(e => e.examId);
             if (examIds.length > 0) {
               await tx.marks.deleteMany({ where: { examId: { in: examIds } } });
               await tx.examDatesheet.deleteMany({ where: { examId: { in: examIds } } });
               await tx.examinationMarkingSession.deleteMany({ where: { examId: { in: examIds } } });
+              await tx.promotionEligibilityResult.deleteMany({ where: { examId: { in: examIds } } });
               await tx.exam.deleteMany({ where: { sessionId } });
+            }
+
+            // Delete ReportCard
+            const reportCards = await tx.reportCard.findMany({ where: { sessionId } });
+            const rcIds = reportCards.map(rc => rc.reportCardId);
+            if (rcIds.length > 0) {
+              await tx.reportCardDetail.deleteMany({ where: { reportCardId: { in: rcIds } } });
+              await tx.reportCard.deleteMany({ where: { sessionId } });
             }
 
             // Delete LeaveBalances
             await tx.leaveBalance.deleteMany({ where: { sessionId } });
 
-            // Delete SalaryAssignment
+            // Delete SalaryAssignment & Salary
             await tx.salaryAssignment.deleteMany({ where: { sessionId } });
             await tx.salary.deleteMany({ where: { sessionId } });
 
@@ -255,8 +275,27 @@ export const SessionRouter = createTRPCRouter({
               await tx.bulkSalaryCreationBatch.deleteMany({ where: { batchId: { in: bulkSalaryBatchIds } } });
             }
 
-            // Note: Classes (Grades) do NOT belong to a session, they are master data.
-            // Do not delete classes when a session is deleted.
+            // Delete BudgetPlans and allocations
+            const budgetPlans = await tx.budgetPlan.findMany({
+              where: { sessionId },
+              select: { budgetPlanId: true },
+            });
+            const planIds = budgetPlans.map(bp => bp.budgetPlanId);
+            if (planIds.length > 0) {
+              await tx.budgetAllocation.deleteMany({ where: { budgetPlanId: { in: planIds } } });
+              await tx.budgetReallocation.deleteMany({ where: { budgetPlanId: { in: planIds } } });
+              await tx.budgetPlan.deleteMany({ where: { sessionId } });
+            }
+
+            // Delete PettyCashRegister
+            const pettyCash = await tx.pettyCashRegister.findUnique({
+              where: { sessionId },
+            });
+            if (pettyCash) {
+              await tx.pettyCashDisbursement.deleteMany({ where: { registerId: pettyCash.registerId } });
+              await tx.pettyCashReconciliation.deleteMany({ where: { registerId: pettyCash.registerId } });
+              await tx.pettyCashRegister.delete({ where: { sessionId } });
+            }
           }
 
           const result = await tx.sessions.deleteMany({

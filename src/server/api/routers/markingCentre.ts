@@ -6,6 +6,7 @@
 import { TRPCError } from "@trpc/server";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
 import { z } from "zod";
+import { getSessionEmployee } from "~/server/utils/credential-generator";
 
 const markingGridCellSchema = z.object({
   studentId: z.string().cuid(),
@@ -194,10 +195,7 @@ export const markingCentreRouter = createTRPCRouter({
       if (!userId) throw new TRPCError({ code: "UNAUTHORIZED", message: "Not authenticated" });
 
       // Resolve to employeeId for the Marks relation
-      const employeeRecord = await ctx.db.employees.findFirst({
-        where: { admissionNumber: userId },
-        select: { employeeId: true },
-      });
+      const employeeRecord = await getSessionEmployee(ctx);
       if (!employeeRecord) throw new TRPCError({ code: "UNAUTHORIZED", message: "Employee not found" });
 
       const exam = await ctx.db.exam.findUnique({ where: { examId: input.examId } });
@@ -255,10 +253,7 @@ export const markingCentreRouter = createTRPCRouter({
       const userId = ctx.session?.user?.id;
       if (!userId) throw new TRPCError({ code: "UNAUTHORIZED", message: "Not authenticated" });
 
-      const employeeRecord = await ctx.db.employees.findFirst({
-        where: { admissionNumber: userId },
-        select: { employeeId: true },
-      });
+      const employeeRecord = await getSessionEmployee(ctx);
       if (!employeeRecord) throw new TRPCError({ code: "UNAUTHORIZED", message: "Employee not found" });
 
       const exam = await ctx.db.exam.findUnique({ where: { examId: input.examId } });

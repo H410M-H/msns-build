@@ -493,3 +493,8 @@ type FingerPrintResponseProps = {
   ISOTemplateBase64: string;
   TemplateBase64: string;
 };
+
+declare module "@vercel/speed-insights/next" {
+  import type { ComponentType } from "react";
+  export const SpeedInsights: ComponentType<any>;
+}

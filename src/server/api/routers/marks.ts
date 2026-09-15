@@ -2,6 +2,7 @@ import { TRPCError } from "@trpc/server";
 import { createTRPCRouter, protectedProcedure, teacherProcedure } from "../trpc";
 import { z } from "zod";
 import type { Prisma } from "@prisma/client";
+import { getSessionEmployee } from "~/server/utils/credential-generator";
 
 const uploadMarksSchema = z.object({
   examId: z.string().cuid(),
@@ -52,13 +53,9 @@ export const marksRouter = createTRPCRouter({
           });
         }
 
-        const uploadedBy = ctx.session?.user?.id;
-        if (!uploadedBy) {
-          throw new TRPCError({
-            code: "UNAUTHORIZED",
-            message: "User must be authenticated",
-          });
-        }
+        const sessionEmployee = await getSessionEmployee(ctx);
+        const uploadedBy =
+          sessionEmployee?.employeeId ?? classSubject.Employees.employeeId;
 
         // Batch create marks
         const marksData = input.marks.map((mark) => ({

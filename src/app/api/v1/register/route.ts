@@ -2,10 +2,11 @@ import { TRPCClientError } from "@trpc/client";
 import { TRPCError } from "@trpc/server";
 import { hash } from "bcryptjs";
 import { type NextRequest, NextResponse } from "next/server";
-import { userReg } from "~/lib/utils";
+import { generateUniqueUserCredentials } from "~/server/utils/credential-generator";
 import { db } from "~/server/db";
 import { auth } from "~/server/auth";
 import { z } from "zod";
+import type { Designation } from "@prisma/client";
 
 const ALLOWED_ROLES = ["ADMIN", "PRINCIPAL", "HEAD", "CLERK"];
 
@@ -56,29 +57,25 @@ export async function POST(request: NextRequest) {
     }
 
     const input = parseResult.data;
-    const usersCount = await db.user.count({
-      where: {
-        accountType: input.accountType as AccountTypeEnum,
-      },
-    });
-    const userInfo = userReg(usersCount, input.accountType);
     const password = await hash(input.password, 10);
-    const account = await db.user.create({
-      data: {
-        accountId: userInfo.accountId,
-        username: userInfo.username,
-        email: userInfo.email,
-        password,
-        accountType: input.accountType as AccountTypeEnum,
-      },
-      select: {
-        id: true,
-        accountId: true,
-        username: true,
-        email: true,
-        accountType: true,
-        // Explicitly exclude password from response
-      },
+    const account = await db.$transaction(async (tx) => {
+      const userInfo = await generateUniqueUserCredentials(tx, input.accountType);
+      return tx.user.create({
+        data: {
+          accountId: userInfo.accountId,
+          username: userInfo.username,
+          email: userInfo.email,
+          password,
+          accountType: input.accountType as Designation,
+        },
+        select: {
+          id: true,
+          accountId: true,
+          username: true,
+          email: true,
+          accountType: true,
+        },
+      });
     });
     return NextResponse.json(
       { message: "User added successfully", data: account },

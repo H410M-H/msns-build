@@ -234,8 +234,35 @@ export const ClassRouter = createTRPCRouter({
               await tx.classSubject.deleteMany({ where: { classId } });
             }
 
+            // Delete StudentAttendance
+            await tx.studentAttendance.deleteMany({ where: { classId } });
+
+            // Delete FeeStudentClass before StudentClass
+            const studentClasses = await tx.studentClass.findMany({
+              where: { classId },
+              select: { scId: true },
+            });
+            const scIds = studentClasses.map(sc => sc.scId);
+            if (scIds.length > 0) {
+              await tx.feeStudentClass.deleteMany({ where: { studentClassId: { in: scIds } } });
+            }
+
             // Delete StudentClass relations
             await tx.studentClass.deleteMany({ where: { classId } });
+
+            // Delete Exams and their relations for this class
+            const exams = await tx.exam.findMany({
+              where: { classId },
+              select: { examId: true },
+            });
+            const examIds = exams.map(e => e.examId);
+            if (examIds.length > 0) {
+              await tx.marks.deleteMany({ where: { examId: { in: examIds } } });
+              await tx.examinationMarkingSession.deleteMany({ where: { examId: { in: examIds } } });
+              await tx.promotionEligibilityResult.deleteMany({ where: { examId: { in: examIds } } });
+              await tx.examDatesheet.deleteMany({ where: { examId: { in: examIds } } });
+              await tx.exam.deleteMany({ where: { examId: { in: examIds } } });
+            }
 
             // Delete ReportCard
             const reportCards = await tx.reportCard.findMany({ where: { classId } });

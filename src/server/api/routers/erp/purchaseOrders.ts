@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { createTRPCRouter, protectedProcedure, managementProcedure } from "../../trpc";
 import { TRPCError } from "@trpc/server";
+import { getSessionEmployee } from "~/server/utils/credential-generator";
 
 const poLineItemSchema = z.object({
   description: z.string().min(1),
@@ -34,9 +35,7 @@ export const purchaseOrdersRouter = createTRPCRouter({
   create: managementProcedure
     .input(createPOSchema)
     .mutation(async ({ ctx, input }) => {
-      const employeeRecord = await ctx.db.employees.findFirst({
-        where: { admissionNumber: ctx.session.user.id },
-      });
+      const employeeRecord = await getSessionEmployee(ctx);
       if (!employeeRecord) {
         throw new TRPCError({ code: "UNAUTHORIZED", message: "Employee record not found" });
       }
@@ -124,9 +123,7 @@ export const purchaseOrdersRouter = createTRPCRouter({
   approveL1: managementProcedure
     .input(z.object({ poId: z.string().cuid(), comments: z.string().optional() }))
     .mutation(async ({ ctx, input }) => {
-      const employeeRecord = await ctx.db.employees.findFirst({
-        where: { admissionNumber: ctx.session.user.id },
-      });
+      const employeeRecord = await getSessionEmployee(ctx);
       if (!employeeRecord) throw new TRPCError({ code: "UNAUTHORIZED", message: "Employee not found" });
 
       const po = await ctx.db.purchaseOrder.findUnique({ where: { poId: input.poId } });
@@ -191,9 +188,7 @@ export const purchaseOrdersRouter = createTRPCRouter({
   approveL2: managementProcedure
     .input(z.object({ poId: z.string().cuid(), comments: z.string().optional() }))
     .mutation(async ({ ctx, input }) => {
-      const employeeRecord = await ctx.db.employees.findFirst({
-        where: { admissionNumber: ctx.session.user.id },
-      });
+      const employeeRecord = await getSessionEmployee(ctx);
       if (!employeeRecord) throw new TRPCError({ code: "UNAUTHORIZED", message: "Employee not found" });
 
       const po = await ctx.db.purchaseOrder.findUnique({ where: { poId: input.poId } });
@@ -230,9 +225,7 @@ export const purchaseOrdersRouter = createTRPCRouter({
   reject: managementProcedure
     .input(z.object({ poId: z.string().cuid(), reason: z.string().min(1) }))
     .mutation(async ({ ctx, input }) => {
-      const employeeRecord = await ctx.db.employees.findFirst({
-        where: { admissionNumber: ctx.session.user.id },
-      });
+      const employeeRecord = await getSessionEmployee(ctx);
       if (!employeeRecord) throw new TRPCError({ code: "UNAUTHORIZED", message: "Employee not found" });
 
       const po = await ctx.db.purchaseOrder.findUnique({ where: { poId: input.poId } });
@@ -283,9 +276,7 @@ export const purchaseOrdersRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      const employeeRecord = await ctx.db.employees.findFirst({
-        where: { admissionNumber: ctx.session.user.id },
-      });
+      const employeeRecord = await getSessionEmployee(ctx);
       if (!employeeRecord) throw new TRPCError({ code: "UNAUTHORIZED", message: "Employee not found" });
 
       const po = await ctx.db.purchaseOrder.findUnique({

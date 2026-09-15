@@ -6,6 +6,7 @@
 import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
 import { TRPCError } from "@trpc/server";
+import { getSessionEmployee } from "~/server/utils/credential-generator";
 
 const bulkSalaryItemSchema = z.object({
   employeeId: z.string().cuid(),
@@ -123,9 +124,7 @@ export const bulkSalaryRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      const initiatorEmployee = await ctx.db.employees.findFirst({
-        where: { admissionNumber: ctx.session.user.id },
-      });
+      const initiatorEmployee = await getSessionEmployee(ctx);
       if (!initiatorEmployee) {
         throw new TRPCError({ code: "UNAUTHORIZED", message: "Employee record not found" });
       }

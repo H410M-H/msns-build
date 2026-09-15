@@ -1,8 +1,10 @@
-// File: user.ts (unchanged, as no errors reported)
+// File: user.ts
 import { TRPCError } from "@trpc/server";
 import { createTRPCRouter, protectedProcedure, adminProcedure } from "../trpc";
 import { z } from "zod";
 import { generatePdf } from "~/lib/pdf-reports";
+import { generateUniqueUserCredentials } from "~/server/utils/credential-generator";
+import type { Designation } from "@prisma/client";
 
 import dayjs from "dayjs";
 import { hash } from "bcryptjs";
@@ -96,22 +98,47 @@ export const UserRouter = createTRPCRouter({
     .input(userSchema)
     .mutation(async ({ ctx, input }) => {
       try {
-        const currentYear = dayjs().year().toString().slice(-2);
-        const usersCount = await ctx.db.user.count({
-          where: {
-            accountType: input.accountType as AccountTypeEnum,
-          },
-        });
         const password = await hash(input.password, 10);
-        await ctx.db.user.create({
-          data: {
-            accountId: `msn-${input.accountType[0]}-${currentYear}-${usersCount + 1}`,
-            username: `msn-${input.accountType}-${currentYear}-${usersCount + 1}`,
-            email: `msn-${input.accountType}-${currentYear}-${usersCount + 1}@msns.edu.pk`,
-            password,
-          },
+        return await ctx.db.$transaction(async (tx) => {
+          const existing = await tx.user.findFirst({
+            where: {
+              OR: [
+                { username: input.username },
+                { email: input.email },
+              ],
+            },
+          });
+          if (existing) {
+            throw new TRPCError({
+              code: "CONFLICT",
+              message: "User with this username or email already exists.",
+            });
+          }
+
+          const credentials = await generateUniqueUserCredentials(tx, input.accountType);
+          const username = input.username?.trim() || credentials.username;
+          const email = input.email?.trim() || credentials.email;
+
+          return await tx.user.create({
+            data: {
+              accountId: credentials.accountId,
+              username,
+              email: email.toLowerCase(),
+              password,
+              accountType: input.accountType as Designation,
+            },
+            select: {
+              id: true,
+              accountId: true,
+              username: true,
+              email: true,
+              accountType: true,
+              createdAt: true,
+            },
+          });
         });
       } catch (error) {
+        if (error instanceof TRPCError) throw error;
         console.error(error);
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
@@ -139,6 +166,12 @@ export const UserRouter = createTRPCRouter({
           },
         });
         const regNumbers = employeesToDelete.map((e) => e.registrationNumber);
+
+        const classSubjectsToDelete = await ctx.db.classSubject.findMany({
+          where: { employeeId: { in: input.employeeIds } },
+          select: { csId: true },
+        });
+        const csIdsToDelete = classSubjectsToDelete.map((c) => c.csId);
 
         const bulkPromoBatches = await ctx.db.bulkPromotionBatch.findMany({
           where: { initiatedBy: { in: input.employeeIds } },
@@ -170,6 +203,12 @@ export const UserRouter = createTRPCRouter({
         });
         const poIds = pos.map((p) => p.poId);
 
+        const poLineItems = await ctx.db.purchaseOrderLineItem.findMany({
+          where: { poId: { in: poIds } },
+          select: { lineItemId: true },
+        });
+        const poLineItemIds = poLineItems.map((p) => p.lineItemId);
+
         const grns = await ctx.db.goodsReceiptNote.findMany({
           where: {
             OR: [
@@ -183,6 +222,8 @@ export const UserRouter = createTRPCRouter({
 
         const [
           bioMetricDel,
+          marksDel,
+          subjectDiaryDel,
           classSubjectDel,
           timetableDel,
           salaryDel,
@@ -190,16 +231,16 @@ export const UserRouter = createTRPCRouter({
           salaryIncrementDel,
           employeeAttendanceDel,
           leaveBalanceDel,
-          marksDel,
           promotionHistoryDel,
-          subjectDiaryDel,
           bulkPromoBatchItemDel,
           bulkPromoBatchDel,
           bulkSalaryCreationItemDel,
           bulkSalaryCreationBatchDel,
           leaveApprovalDel,
           leaveApplicationDel,
+          grnLineItemDel,
           goodsReceiptNoteDel,
+          purchaseOrderLineItemDel,
           purchaseOrderDel,
           directExpenseDel,
           budgetReallocationDel,
@@ -217,6 +258,22 @@ export const UserRouter = createTRPCRouter({
           employeeDel
         ] = await ctx.db.$transaction([
           ctx.db.bioMetric.deleteMany({ where: { employeeId: { in: input.employeeIds } } }),
+          ctx.db.marks.deleteMany({
+            where: {
+              OR: [
+                { uploadedBy: { in: input.employeeIds } },
+                { classSubjectId: { in: csIdsToDelete } },
+              ],
+            },
+          }),
+          ctx.db.subjectDiary.deleteMany({
+            where: {
+              OR: [
+                { teacherId: { in: input.employeeIds } },
+                { classSubjectId: { in: csIdsToDelete } },
+              ],
+            },
+          }),
           ctx.db.classSubject.deleteMany({ where: { employeeId: { in: input.employeeIds } } }),
           ctx.db.timetable.deleteMany({ where: { employeeId: { in: input.employeeIds } } }),
           ctx.db.salary.deleteMany({ where: { employeeId: { in: input.employeeIds } } }),
@@ -224,9 +281,7 @@ export const UserRouter = createTRPCRouter({
           ctx.db.salaryIncrement.deleteMany({ where: { employeeId: { in: input.employeeIds } } }),
           ctx.db.employeeAttendance.deleteMany({ where: { employeeId: { in: input.employeeIds } } }),
           ctx.db.leaveBalance.deleteMany({ where: { employeeId: { in: input.employeeIds } } }),
-          ctx.db.marks.deleteMany({ where: { uploadedBy: { in: input.employeeIds } } }),
           ctx.db.promotionHistory.deleteMany({ where: { promotedBy: { in: input.employeeIds } } }),
-          ctx.db.subjectDiary.deleteMany({ where: { teacherId: { in: input.employeeIds } } }),
           
           ctx.db.bulkPromotionBatchItem.deleteMany({ where: { batchId: { in: bulkPromoBatchIds } } }),
           ctx.db.bulkPromotionBatch.deleteMany({ where: { batchId: { in: bulkPromoBatchIds } } }),
@@ -250,16 +305,24 @@ export const UserRouter = createTRPCRouter({
           }),
           ctx.db.leaveApplication.deleteMany({ where: { applicationId: { in: leaveAppIds } } }),
           
+          ctx.db.gRNLineItem.deleteMany({
+            where: {
+              OR: [
+                { poLineItemId: { in: poLineItemIds } },
+                { grnId: { in: grnIds } },
+              ],
+            },
+          }),
           ctx.db.goodsReceiptNote.deleteMany({ where: { grnId: { in: grnIds } } }),
+          ctx.db.purchaseOrderLineItem.deleteMany({ where: { poId: { in: poIds } } }),
           ctx.db.purchaseOrder.deleteMany({ where: { poId: { in: poIds } } }),
-          
           ctx.db.directExpense.deleteMany({
             where: {
               OR: [
                 { createdBy: { in: input.employeeIds } },
-                { approvedBy: { in: input.employeeIds } }
-              ]
-            }
+                { approvedBy: { in: input.employeeIds } },
+              ],
+            },
           }),
           ctx.db.budgetReallocation.deleteMany({ where: { authorisedBy: { in: input.employeeIds } } }),
           ctx.db.stockReconciliation.deleteMany({ where: { performedBy: { in: input.employeeIds } } }),
@@ -272,22 +335,22 @@ export const UserRouter = createTRPCRouter({
             where: {
               OR: [
                 { delegatorId: { in: input.employeeIds } },
-                { delegateId: { in: input.employeeIds } }
-              ]
-            }
+                { delegateId: { in: input.employeeIds } },
+              ],
+            },
           }),
           
           ctx.db.costCentre.updateMany({
             where: { managerId: { in: input.employeeIds } },
-            data: { managerId: null }
+            data: { managerId: null },
           }),
           ctx.db.stockTransaction.updateMany({
             where: { recipientId: { in: input.employeeIds } },
-            data: { recipientId: null }
+            data: { recipientId: null },
           }),
           ctx.db.asset.updateMany({
             where: { assignedToId: { in: input.employeeIds } },
-            data: { assignedToId: null }
+            data: { assignedToId: null },
           }),
           
           ctx.db.user.deleteMany({ where: { accountId: { in: regNumbers } } }),

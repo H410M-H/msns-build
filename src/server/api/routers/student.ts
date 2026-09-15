@@ -6,6 +6,7 @@ import { type Prisma } from "@prisma/client";
 import { userReg } from "~/lib/utils";
 import { hash } from "bcryptjs";
 import { studentSchema, studentCSVSchema } from "~/lib/schemas/student";
+import { generateUniqueStudentCredentials } from "~/server/utils/credential-generator";
 
 type StudentReportData = {
   studentId: string;
@@ -216,37 +217,38 @@ export const StudentRouter = createTRPCRouter({
     .input(studentSchema)
     .mutation(async ({ ctx, input }) => {
       try {
-        const usersCount = await ctx.db.user.count({
-          where: { accountType: "STUDENT" },
-        });
-        const userInfo = userReg(usersCount, "STUDENT");
+        return await ctx.db.$transaction(async (tx) => {
+          const credentials = await generateUniqueStudentCredentials(tx);
 
-        const newStudent = await ctx.db.students.create({
-          data: {
-            ...input,
-            studentId: undefined, // Let DB generate ID
-            registrationNumber: userInfo.accountId,
-            admissionNumber: userInfo.admissionNumber,
-          },
-        });
+          const newStudent = await tx.students.create({
+            data: {
+              ...input,
+              studentId: undefined, // Let DB generate ID
+              registrationNumber: credentials.accountId,
+              admissionNumber: credentials.admissionNumber,
+            },
+          });
 
-        const password = await hash(userInfo.admissionNumber, 10);
-        await ctx.db.user.create({
-          data: {
-            accountId: userInfo.accountId,
-            username: userInfo.username,
-            email: userInfo.email.toLowerCase(),
-            password,
-            accountType: "STUDENT",
-          },
-        });
+          const password = await hash(credentials.admissionNumber, 10);
+          await tx.user.create({
+            data: {
+              accountId: credentials.accountId,
+              username: credentials.username,
+              email: credentials.email.toLowerCase(),
+              password,
+              accountType: "STUDENT",
+            },
+          });
 
-        return newStudent;
+          return newStudent;
+        });
       } catch (error) {
         console.error("Error creating student:", error);
+        if (error instanceof TRPCError) throw error;
+        const msg = error instanceof Error ? error.message : "Failed to create student record";
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
-          message: "Failed to create student record",
+          message: msg,
         });
       }
     }),

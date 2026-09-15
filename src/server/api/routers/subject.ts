@@ -295,6 +295,9 @@ export const subjectRouter = createTRPCRouter({
           include: {
             ClassSubject: true,
             Timetable: true,
+            Marks: { take: 1 },
+            ReportCardDetail: { take: 1 },
+            ExamDatesheet: { take: 1 },
           },
         });
 
@@ -320,6 +323,14 @@ export const subjectRouter = createTRPCRouter({
             code: "CONFLICT",
             message:
               "Cannot delete subject that is used in timetables. Remove it from timetables first.",
+          });
+        }
+
+        if (existingSubject.Marks.length > 0 || existingSubject.ReportCardDetail.length > 0 || existingSubject.ExamDatesheet.length > 0) {
+          throw new TRPCError({
+            code: "CONFLICT",
+            message:
+              "Cannot delete subject that has recorded marks, report cards, or datesheet entries.",
           });
         }
 
@@ -454,8 +465,18 @@ export const subjectRouter = createTRPCRouter({
           });
         }
 
-        await ctx.db.classSubject.delete({
-          where: { csId: input.csId },
+        await ctx.db.$transaction(async (tx) => {
+          await tx.marks.deleteMany({
+            where: { classSubjectId: input.csId },
+          });
+
+          await tx.subjectDiary.deleteMany({
+            where: { classSubjectId: input.csId },
+          });
+
+          await tx.classSubject.delete({
+            where: { csId: input.csId },
+          });
         });
 
         return {
