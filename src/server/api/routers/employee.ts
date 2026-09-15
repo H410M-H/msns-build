@@ -81,10 +81,89 @@ export const EmployeeRouter = createTRPCRouter({
       });
     }
   }),
-  getEmployees: protectedProcedure.query(async ({ ctx }) => {
+  getEmployees: protectedProcedure
+    .input(
+      z
+        .object({
+          status: z.string().optional(),
+          excludeWorkers: z.boolean().optional(),
+          activeOnly: z.boolean().optional(),
+        })
+        .optional(),
+    )
+    .query(async ({ ctx, input }) => {
+      try {
+        const whereClause: Record<string, unknown> = {};
+
+        if (input?.activeOnly || input?.status === "Active") {
+          whereClause.status = "Active";
+        } else if (input?.status === "Inactive" || input?.status === "Past") {
+          whereClause.status = { in: ["Left", "Retired"] };
+        } else if (input?.status && input.status !== "ALL") {
+          whereClause.status = input.status;
+        }
+
+        if (input?.excludeWorkers) {
+          whereClause.designation = { not: "WORKER" };
+        }
+
+        const employees = await ctx.db.employees.findMany({
+          where: Object.keys(whereClause).length > 0 ? whereClause : undefined,
+          orderBy: { employeeName: "asc" },
+          include: {
+            BioMetric: {
+              select: {
+                fingerId: true,
+              },
+            },
+          },
+        });
+
+        return employees.map((employee) => {
+          if (employee.profilePic?.startsWith("/uploads/")) {
+            return { ...employee, profilePic: `/api${employee.profilePic}` };
+          }
+          return employee;
+        });
+      } catch (error) {
+        console.error(error);
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Something went wrong.",
+        });
+      }
+    }),
+
+  getAllEmployeesForTimeTable: protectedProcedure.query(async ({ ctx }) => {
+    try {
+      return await ctx.db.employees.findMany({
+        where: {
+          status: "Active",
+          designation: { not: "WORKER" },
+        },
+        select: {
+          employeeId: true,
+          employeeName: true,
+          designation: true,
+          education: true,
+        },
+        orderBy: { employeeName: "asc" },
+      });
+    } catch (error) {
+      console.error(error);
+      throw new TRPCError({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "Something went wrong.",
+      });
+    }
+  }),
+
+  getInactiveEmployees: protectedProcedure.query(async ({ ctx }) => {
     try {
       const employees = await ctx.db.employees.findMany({
-        // FIX: Changed from 'createdAt' (which doesn't exist) to 'employeeName'
+        where: {
+          status: { in: ["Left", "Retired"] },
+        },
         orderBy: { employeeName: "asc" },
         include: {
           BioMetric: {
@@ -105,26 +184,7 @@ export const EmployeeRouter = createTRPCRouter({
       console.error(error);
       throw new TRPCError({
         code: "INTERNAL_SERVER_ERROR",
-        message: "Something went wrong.",
-      });
-    }
-  }),
-
-  getAllEmployeesForTimeTable: protectedProcedure.query(async ({ ctx }) => {
-    try {
-      return await ctx.db.employees.findMany({
-        select: {
-          employeeId: true,
-          employeeName: true,
-          designation: true,
-          education: true,
-        },
-      });
-    } catch (error) {
-      console.error(error);
-      throw new TRPCError({
-        code: "INTERNAL_SERVER_ERROR",
-        message: "Something went wrong.",
+        message: "Failed to fetch inactive/past employees.",
       });
     }
   }),
@@ -705,25 +765,6 @@ export const EmployeeRouter = createTRPCRouter({
       throw new TRPCError({
         code: "INTERNAL_SERVER_ERROR",
         message: "Failed to generate report",
-      });
-    }
-  }),
-
-  getInactiveEmployees: protectedProcedure.query(async ({ ctx }) => {
-    try {
-      return await ctx.db.employees.findMany({
-        where: {
-          status: {
-            in: ["Retired", "Left"],
-          },
-        },
-        orderBy: { employeeName: "asc" },
-      });
-    } catch (error) {
-      console.error(error);
-      throw new TRPCError({
-        code: "INTERNAL_SERVER_ERROR",
-        message: "Failed to fetch inactive employees",
       });
     }
   }),

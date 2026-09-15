@@ -12,10 +12,22 @@ export type ReportType =
   | "employees"
   | "classes"
   | "fees"
-  | "sessions";
+  | "sessions"
+  | "timetable"
+  | "attendance"
+  | "salary"
+  | "expenses";
+
+export type ReportPeriod = "all" | "annual" | "monthly" | "weekly" | "daily";
 
 interface DownloadPdfButtonProps {
   reportType: ReportType;
+  period?: ReportPeriod;
+  sessionId?: string;
+  classId?: string;
+  month?: number;
+  year?: number;
+  date?: string;
   label?: string;
   className?: string;
   variant?:
@@ -27,7 +39,6 @@ interface DownloadPdfButtonProps {
     | "link";
 }
 
-// Explicitly define the response type
 interface ReportResponse {
   pdf: string;
   filename: string;
@@ -35,6 +46,12 @@ interface ReportResponse {
 
 export function DownloadPdfButton({
   reportType,
+  period = "all",
+  sessionId,
+  classId,
+  month,
+  year,
+  date,
   label,
   className,
   variant = "outline",
@@ -56,7 +73,7 @@ export function DownloadPdfButton({
 
         const link = document.createElement("a");
         link.href = url;
-        link.download = data.filename ?? `${reportType}-report.pdf`;
+        link.download = data.filename ?? `${reportType}-${period}-report.pdf`;
 
         document.body.appendChild(link);
         link.click();
@@ -64,7 +81,9 @@ export function DownloadPdfButton({
         document.body.removeChild(link);
         window.URL.revokeObjectURL(url);
 
-        toast.success(`${label ?? reportType} report downloaded`);
+        toast.success(
+          `${label ?? `${reportType.charAt(0).toUpperCase() + reportType.slice(1)} (${period})`} report downloaded`,
+        );
       } catch (error) {
         console.error("PDF processing error:", error);
         toast.error("Failed to process the report file");
@@ -72,7 +91,6 @@ export function DownloadPdfButton({
         setIsDownloading(false);
       }
     },
-    // Fix: Use a structural type that matches TRPCClientErrorLike
     onError: (error: { message: string }) => {
       console.error("Report generation error:", error);
       toast.error(error.message ?? "Failed to generate report");
@@ -82,8 +100,22 @@ export function DownloadPdfButton({
 
   const handleDownload = () => {
     setIsDownloading(true);
-    generateReport.mutate({ reportType });
+    generateReport.mutate({
+      reportType,
+      period,
+      sessionId,
+      classId,
+      month,
+      year,
+      date,
+    });
   };
+
+  const displayLabel =
+    label ??
+    `Download ${reportType.charAt(0).toUpperCase() + reportType.slice(1)}${
+      period !== "all" ? ` (${period})` : ""
+    } PDF`;
 
   return (
     <Button
@@ -98,8 +130,7 @@ export function DownloadPdfButton({
       ) : (
         <FileDown className="h-4 w-4" />
       )}
-      {label ??
-        `Download ${reportType.charAt(0).toUpperCase() + reportType.slice(1)} Report`}
+      {displayLabel}
     </Button>
   );
 }

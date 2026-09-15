@@ -66,7 +66,10 @@ export function ClassSubjectsTab({ classId, sessionId }: ClassSubjectsTabProps) 
   );
 
   const globalSubjects = api.subject.getAllSubjects.useQuery(undefined, { enabled: open });
-  const globalEmployees = api.employee.getEmployees.useQuery(undefined, { enabled: open || editOpen });
+  const globalEmployees = api.employee.getEmployees.useQuery(
+    { activeOnly: true, excludeWorkers: true },
+    { enabled: open || editOpen },
+  );
 
   const assignMutation = api.class.assignSubject.useMutation({
     onSuccess: () => {
@@ -171,7 +174,13 @@ export function ClassSubjectsTab({ classId, sessionId }: ClassSubjectsTabProps) 
                       </SelectTrigger>
                       <SelectContent>
                         {globalEmployees.data
-                          ?.filter((e) => e.employeeName && e.employeeName.trim() !== "")
+                          ?.filter(
+                            (e) =>
+                              e.employeeName &&
+                              e.employeeName.trim() !== "" &&
+                              e.status === "Active" &&
+                              e.designation !== "WORKER",
+                          )
                           .map((e) => (
                             <SelectItem key={e.employeeId} value={e.employeeId}>
                               {e.employeeName} ({e.designation})
@@ -229,7 +238,13 @@ export function ClassSubjectsTab({ classId, sessionId }: ClassSubjectsTabProps) 
                   </SelectTrigger>
                   <SelectContent>
                     {globalEmployees.data
-                      ?.filter((e) => e.employeeName && e.employeeName.trim() !== "")
+                      ?.filter(
+                        (e) =>
+                          e.employeeName &&
+                          e.employeeName.trim() !== "" &&
+                          e.status === "Active" &&
+                          e.designation !== "WORKER",
+                      )
                       .map((e) => (
                         <SelectItem key={e.employeeId} value={e.employeeId}>
                           {e.employeeName} ({e.designation})

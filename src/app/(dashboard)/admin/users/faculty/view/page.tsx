@@ -154,7 +154,11 @@ export default function EmployeesDashboard() {
                 </Select>
               </div>
 
-              <PageExportButton exportData={exportData} csvFilename="faculty-directory" />
+              <PageExportButton
+                exportData={exportData}
+                csvFilename="faculty-directory"
+                pdfReportType="employees"
+              />
             </div>
           </div>
 

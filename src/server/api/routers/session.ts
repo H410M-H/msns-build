@@ -406,4 +406,185 @@ export const SessionRouter = createTRPCRouter({
         });
       }
     }),
+
+  // Validate all relational logics for all modules within a session
+  validateSessionRelations: protectedProcedure
+    .input(z.object({ sessionId: z.string().min(1) }))
+    .query(async ({ ctx, input }) => {
+      try {
+        const session = await ctx.db.sessions.findUnique({
+          where: { sessionId: input.sessionId },
+        });
+        if (!session) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Session not found",
+          });
+        }
+
+        const issues: Array<{
+          module: string;
+          severity: "error" | "warning";
+          message: string;
+          count?: number;
+        }> = [];
+
+        // 1. Validate Timetable & ClassSubject Relations
+        const timetableEntries = await ctx.db.timetable.findMany({
+          where: { sessionId: input.sessionId },
+          include: { Grades: true, Subject: true, Employees: true },
+        });
+
+        for (const entry of timetableEntries) {
+          if (!entry.Grades) {
+            issues.push({
+              module: "Timetable",
+              severity: "error",
+              message: `Timetable slot ${entry.timetableId} refers to non-existent class (${entry.classId}).`,
+            });
+          }
+          if (!entry.Subject) {
+            issues.push({
+              module: "Timetable",
+              severity: "error",
+              message: `Timetable slot ${entry.timetableId} refers to non-existent subject (${entry.subjectId}).`,
+            });
+          }
+          if (!entry.Employees) {
+            issues.push({
+              module: "Timetable",
+              severity: "error",
+              message: `Timetable slot ${entry.timetableId} refers to non-existent employee (${entry.employeeId}).`,
+            });
+          } else {
+            if (entry.Employees.status !== "Active") {
+              issues.push({
+                module: "Timetable",
+                severity: "warning",
+                message: `Timetable slot (${entry.dayOfWeek} L${entry.lectureNumber}) assigned to inactive employee ${entry.Employees.employeeName} (${entry.Employees.status}).`,
+              });
+            }
+            if (entry.Employees.designation === "WORKER") {
+              issues.push({
+                module: "Timetable",
+                severity: "error",
+                message: `Timetable slot assigned to WORKER (${entry.Employees.employeeName}).`,
+              });
+            }
+          }
+        }
+
+        // 2. Validate ClassSubject Allotments
+        const classSubjects = await ctx.db.classSubject.findMany({
+          where: { sessionId: input.sessionId },
+          include: { Grades: true, Subject: true, Employees: true },
+        });
+
+        for (const cs of classSubjects) {
+          if (!cs.Employees) {
+            issues.push({
+              module: "ClassSubject",
+              severity: "error",
+              message: `ClassSubject ${cs.csId} has invalid employee reference.`,
+            });
+          } else if (cs.Employees.designation === "WORKER") {
+            issues.push({
+              module: "ClassSubject",
+              severity: "error",
+              message: `Subject allotment assigned to employee with WORKER designation: ${cs.Employees.employeeName}.`,
+            });
+          }
+        }
+
+        // 3. Validate StudentClass Enrollments
+        const studentEnrollments = await ctx.db.studentClass.findMany({
+          where: { sessionId: input.sessionId },
+          include: { Students: true, Grades: true },
+        });
+
+        const orphanEnrollments = studentEnrollments.filter(
+          (e) => !e.Students || !e.Grades,
+        );
+        if (orphanEnrollments.length > 0) {
+          issues.push({
+            module: "Enrollments",
+            severity: "error",
+            message: `Found ${orphanEnrollments.length} orphan enrollment records in session.`,
+            count: orphanEnrollments.length,
+          });
+        }
+
+        // 4. Validate Fee Assignments
+        const feeAssignments = await ctx.db.feeStudentClass.findMany({
+          where: { StudentClass: { sessionId: input.sessionId } },
+          include: {
+            fees: true,
+            StudentClass: {
+              include: {
+                Students: true,
+                Grades: true,
+              },
+            },
+          },
+        });
+
+        const orphanFees = feeAssignments.filter(
+          (f) => !f.StudentClass?.Students || !f.StudentClass?.Grades || !f.fees,
+        );
+        if (orphanFees.length > 0) {
+          issues.push({
+            module: "Fees",
+            severity: "error",
+            message: `Found ${orphanFees.length} fee records with broken relational links.`,
+            count: orphanFees.length,
+          });
+        }
+
+        // 5. Validate Exams
+        const exams = await ctx.db.exam.findMany({
+          where: { sessionId: input.sessionId },
+          include: { ExamType: true, Grades: true, ExamDatesheet: true },
+        });
+
+        for (const exam of exams) {
+          if (!exam.ExamType) {
+            issues.push({
+              module: "Exams",
+              severity: "error",
+              message: `Exam ${exam.examId} has invalid examType reference.`,
+            });
+          }
+          if (!exam.Grades) {
+            issues.push({
+              module: "Exams",
+              severity: "error",
+              message: `Exam ${exam.examId} has invalid class reference.`,
+            });
+          }
+        }
+
+        return {
+          sessionId: session.sessionId,
+          sessionName: session.sessionName,
+          isValid: issues.filter((i) => i.severity === "error").length === 0,
+          summary: {
+            timetableSlots: timetableEntries.length,
+            classSubjectAllotments: classSubjects.length,
+            studentEnrollments: studentEnrollments.length,
+            feeAssignments: feeAssignments.length,
+            examsCount: exams.length,
+            totalErrors: issues.filter((i) => i.severity === "error").length,
+            totalWarnings: issues.filter((i) => i.severity === "warning").length,
+          },
+          issues,
+        };
+      } catch (error) {
+        console.error("Error validating session relations:", error);
+        if (error instanceof TRPCError) throw error;
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to validate session relations",
+        });
+      }
+    }),
 });

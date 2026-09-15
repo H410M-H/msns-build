@@ -103,7 +103,11 @@ function TimetableContent() {
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
-          <PageExportButton exportData={exportData} csvFilename="teachers-list" />
+          <PageExportButton
+            exportData={exportData}
+            csvFilename="teachers-list"
+            pdfReportType="timetable"
+          />
           <Button variant="outline" size="sm" className="gap-2">
             <UploadCloud className="h-4 w-4" />
             Import

@@ -29,7 +29,10 @@ import {
   XCircle,
   SlidersHorizontal,
   X,
+  Users,
+  UserX,
 } from "lucide-react";
+import { cn } from "~/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Input } from "~/components/ui/input";
 import { Button } from "~/components/ui/button";
@@ -172,6 +175,7 @@ export default function EmployeeCredDetails() {
   const [selectedDesignation, setSelectedDesignation] = useState<string>("ALL");
   const [selectedGender, setSelectedGender] = useState<string>("ALL");
   const [selectedStatus, setSelectedStatus] = useState<string>("ALL");
+  const [viewMode, setViewMode] = useState<"active" | "inactive">("active");
 
   // Dialog states
   const [editingEmployee, setEditingEmployee] = useState<Employees | null>(null);
@@ -185,8 +189,22 @@ export default function EmployeeCredDetails() {
     }
   }, [data]);
 
+  const activeCount = useMemo(() => {
+    return employees.filter((e) => e.status === "Active" || (!e.status && e.status !== "Left" && e.status !== "Retired")).length;
+  }, [employees]);
+
+  const inactiveCount = useMemo(() => {
+    return employees.filter((e) => e.status === "Left" || e.status === "Retired").length;
+  }, [employees]);
+
   const filteredEmployees = useMemo(() => {
     return employees.filter((employee) => {
+      // Active vs Inactive list separation
+      const status = employee.status ?? "Active";
+      const isInactive = status === "Left" || status === "Retired";
+      if (viewMode === "active" && isInactive) return false;
+      if (viewMode === "inactive" && !isInactive) return false;
+
       // Search match
       const query = searchQuery.toLowerCase().trim();
       const matchesSearch =
@@ -206,8 +224,7 @@ export default function EmployeeCredDetails() {
         selectedGender === "ALL" ||
         employee.gender?.toUpperCase() === selectedGender;
 
-      // Status match
-      const status = employee.status ?? "Active";
+      // Status match (sub-filter)
       const matchesStatus =
         selectedStatus === "ALL" ||
         (selectedStatus === "ACTIVE" && status === "Active") ||
@@ -216,7 +233,7 @@ export default function EmployeeCredDetails() {
 
       return matchesSearch && matchesDesignation && matchesGender && matchesStatus;
     });
-  }, [employees, searchQuery, selectedDesignation, selectedGender, selectedStatus]);
+  }, [employees, searchQuery, selectedDesignation, selectedGender, selectedStatus, viewMode]);
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -260,6 +277,47 @@ export default function EmployeeCredDetails() {
     <div className="relative w-full space-y-6 pb-20">
       {/* === Header Controls Bar === */}
       <div className="sticky top-4 z-40 flex flex-col gap-3 rounded-2xl border border-emerald-500/20 bg-card p-4 shadow-2xl backdrop-blur-xl transition-all duration-300">
+        {/* Top-Level Mode Selector (Active vs Inactive/Past) */}
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-emerald-500/10 pb-3">
+          <div className="flex items-center gap-2">
+            <Button
+              size="sm"
+              variant={viewMode === "active" ? "default" : "outline"}
+              onClick={() => setViewMode("active")}
+              className={cn(
+                "h-9 gap-2 rounded-xl text-xs font-semibold shadow-sm transition-all",
+                viewMode === "active"
+                  ? "bg-emerald-600 text-white hover:bg-emerald-700 shadow-emerald-900/20"
+                  : "border-slate-200 bg-muted/30 text-muted-foreground hover:bg-muted dark:border-slate-800",
+              )}
+            >
+              <Users className="h-4 w-4" />
+              Active Faculty Cards ({activeCount})
+            </Button>
+
+            <Button
+              size="sm"
+              variant={viewMode === "inactive" ? "default" : "outline"}
+              onClick={() => setViewMode("inactive")}
+              className={cn(
+                "h-9 gap-2 rounded-xl text-xs font-semibold shadow-sm transition-all",
+                viewMode === "inactive"
+                  ? "bg-amber-600 text-white hover:bg-amber-700 shadow-amber-900/20"
+                  : "border-slate-200 bg-muted/30 text-muted-foreground hover:bg-muted dark:border-slate-800",
+              )}
+            >
+              <UserX className="h-4 w-4" />
+              Inactive / Past Staff Cards ({inactiveCount})
+            </Button>
+          </div>
+
+          <div className="text-[11px] text-muted-foreground font-medium hidden sm:block">
+            {viewMode === "active"
+              ? "Showing current active faculty profiles"
+              : "Showing archived past/retired personnel"}
+          </div>
+        </div>
+
         <div className="flex flex-col items-stretch justify-between gap-3 lg:flex-row lg:items-center">
           {/* Search Bar */}
           <div className="group relative min-w-0 flex-1">

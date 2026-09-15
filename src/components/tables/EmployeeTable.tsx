@@ -45,9 +45,12 @@ import {
   LayoutGrid,
   Fingerprint,
   Shield,
+  Users,
+  UserX,
 } from "lucide-react";
 import type { Employees } from "@prisma/client";
 import { EmployeeEditDialog } from "../forms/employee/EmployeeEditDialog";
+import { cn } from "~/lib/utils";
 import { useAttendance } from "~/hooks/use-attendance";
 import { AttendanceModal } from "~/components/attendance/attendance/attendance-dialog";
 import { getParentagePrefix } from "~/lib/utils";
@@ -245,13 +248,26 @@ export function EmployeeTable() {
     },
   ];
 
+  const [employeeTab, setEmployeeTab] = useState<"active" | "inactive">("active");
+
   const activeEmployees = useMemo(() => {
     if (!employees) return [];
-    return (employees as EmployeeData[]).filter((e) => e.status !== "Left");
+    return (employees as EmployeeData[]).filter(
+      (e) => e.status === "Active" || (!e.status && e.status !== "Left" && e.status !== "Retired"),
+    );
   }, [employees]);
 
+  const inactiveEmployees = useMemo(() => {
+    if (!employees) return [];
+    return (employees as EmployeeData[]).filter(
+      (e) => e.status === "Left" || e.status === "Retired",
+    );
+  }, [employees]);
+
+  const currentData = employeeTab === "active" ? activeEmployees : inactiveEmployees;
+
   const table = useReactTable({
-    data: activeEmployees,
+    data: currentData,
     columns,
     onSortingChange: setSorting,
     getCoreRowModel: getCoreRowModel(),
@@ -264,6 +280,53 @@ export function EmployeeTable() {
 
   return (
     <div className="w-full space-y-4">
+      {/* Active vs Inactive/Past Employees Tab Selector */}
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-200 bg-white/70 p-2.5 shadow-sm backdrop-blur-md dark:border-emerald-500/20 dark:bg-card">
+        <div className="flex items-center gap-2">
+          <Button
+            size="sm"
+            variant={employeeTab === "active" ? "default" : "outline"}
+            onClick={() => {
+              setEmployeeTab("active");
+              table.resetRowSelection();
+            }}
+            className={cn(
+              "h-8 gap-2 rounded-lg text-xs font-semibold shadow-sm transition-all",
+              employeeTab === "active"
+                ? "bg-emerald-600 text-white hover:bg-emerald-700 dark:bg-emerald-600 dark:text-white"
+                : "border-slate-200 text-muted-foreground hover:bg-slate-100 dark:border-slate-800",
+            )}
+          >
+            <Users className="h-3.5 w-3.5" />
+            Active Faculty & Staff ({activeEmployees.length})
+          </Button>
+
+          <Button
+            size="sm"
+            variant={employeeTab === "inactive" ? "default" : "outline"}
+            onClick={() => {
+              setEmployeeTab("inactive");
+              table.resetRowSelection();
+            }}
+            className={cn(
+              "h-8 gap-2 rounded-lg text-xs font-semibold shadow-sm transition-all",
+              employeeTab === "inactive"
+                ? "bg-amber-600 text-white hover:bg-amber-700 dark:bg-amber-600 dark:text-white"
+                : "border-slate-200 text-muted-foreground hover:bg-slate-100 dark:border-slate-800",
+            )}
+          >
+            <UserX className="h-3.5 w-3.5" />
+            Inactive / Past Employees ({inactiveEmployees.length})
+          </Button>
+        </div>
+
+        <div className="text-[11px] text-muted-foreground font-medium">
+          {employeeTab === "active"
+            ? "Showing currently active staff (Left/Retired excluded)"
+            : "Archive of resigned and retired staff members"}
+        </div>
+      </div>
+
       {/* Table Controls */}
       <div className="flex flex-col items-center justify-between gap-4 rounded-xl border border-slate-200 bg-white p-4 shadow-sm backdrop-blur-md transition-colors dark:border-emerald-500/20 dark:bg-card dark:shadow-lg xl:flex-row">
         <div className="flex w-full items-center gap-2 xl:max-w-md">
