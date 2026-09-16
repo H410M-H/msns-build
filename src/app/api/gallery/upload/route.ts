@@ -1,6 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { uploadToS3 } from "~/lib/s3";
 import { auth } from "~/server/auth";
+import { optimizeImageForUpload } from "~/lib/image-optimizer";
 
 const MAX_IMAGE_SIZE = 10 * 1024 * 1024; // 10MB
 const MAX_VIDEO_SIZE = 100 * 1024 * 1024; // 100MB
@@ -61,7 +62,8 @@ export async function POST(request: NextRequest) {
     const folder = (formData.get("folder") as string | null) ?? "";
     const customName = (formData.get("customName") as string | null) ?? file.name;
 
-    const buffer = Buffer.from(await file.arrayBuffer());
+    const rawBuffer = Buffer.from(await file.arrayBuffer());
+    const optimized = await optimizeImageForUpload(rawBuffer, file.type);
     const timestamp = Date.now();
     const sanitizedName = customName.replace(/[^a-zA-Z0-9._-]/g, "_");
     
@@ -92,14 +94,15 @@ export async function POST(request: NextRequest) {
 
     const key = `${prefix}${sanitizedFolder}${timestamp}_${finalName}`;
 
-    await uploadToS3(key, buffer, file.type);
+    await uploadToS3(key, optimized.buffer, optimized.contentType);
 
     return NextResponse.json({
       key,
       url: `/api/images/${key}`,
       filename: file.name,
-      size: file.size,
-      contentType: file.type,
+      size: optimized.size,
+      contentType: optimized.contentType,
+      isOptimized: optimized.isOptimized,
     });
   } catch (error) {
     console.error("Error uploading file:", error);

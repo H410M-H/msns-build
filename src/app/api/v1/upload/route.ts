@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { uploadToS3 } from "~/lib/s3";
 import { auth } from "~/server/auth";
+import { optimizeImageForUpload } from "~/lib/image-optimizer";
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 const ALLOWED_TYPES = [
@@ -65,7 +66,8 @@ export async function POST(request: Request) {
       );
     }
 
-    const buffer = Buffer.from(await file.arrayBuffer());
+    const rawBuffer = Buffer.from(await file.arrayBuffer());
+    const optimized = await optimizeImageForUpload(rawBuffer, file.type);
 
     // Sanitize filename — remove path traversal and special characters
     const baseName = file.name ? file.name.split("/").pop()?.split("\\").pop() ?? "file" : "file";
@@ -73,14 +75,15 @@ export async function POST(request: Request) {
     const key = `uploads/${Date.now()}_${sanitizedName}`;
 
     // Upload to Cloudflare R2 bucket
-    await uploadToS3(key, buffer, file.type);
+    await uploadToS3(key, optimized.buffer, optimized.contentType);
 
     return NextResponse.json({
       url: `/api/images/${key}`,
       key,
       filename: file.name,
-      size: file.size,
-      contentType: file.type,
+      size: optimized.size,
+      contentType: optimized.contentType,
+      isOptimized: optimized.isOptimized,
     });
   } catch (error) {
     console.error("Error uploading file to Cloudflare R2:", error);

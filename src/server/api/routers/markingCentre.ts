@@ -34,9 +34,15 @@ export const markingCentreRouter = createTRPCRouter({
       // Get exam details
       const exam = await ctx.db.exam.findUnique({
         where: { examId: input.examId },
-        include: {
+        select: {
+          examId: true,
+          examTypeEnum: true,
+          status: true,
+          totalMarks: true,
+          passingMarks: true,
           ExamDatesheet: {
-            include: {
+            select: {
+              subjectId: true,
               Subject: { select: { subjectId: true, subjectName: true } },
             },
           },
@@ -51,7 +57,8 @@ export const markingCentreRouter = createTRPCRouter({
           sessionId: input.sessionId,
           ...(input.subjectFilter && { subjectId: input.subjectFilter }),
         },
-        include: {
+        select: {
+          csId: true,
           Subject: { select: { subjectId: true, subjectName: true } },
           Employees: { select: { employeeName: true } },
         },
@@ -69,7 +76,8 @@ export const markingCentreRouter = createTRPCRouter({
             },
           }),
         },
-        include: {
+        select: {
+          scId: true,
           Students: {
             select: {
               studentId: true,
@@ -316,7 +324,16 @@ export const markingCentreRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       const exam = await ctx.db.exam.findUnique({
         where: { examId: input.examId },
-        include: { ExamDatesheet: { include: { Subject: true } } },
+        select: {
+          examId: true,
+          totalMarks: true,
+          ExamDatesheet: {
+            select: {
+              subjectId: true,
+              Subject: { select: { subjectId: true, subjectName: true } },
+            },
+          },
+        },
       });
       if (!exam) throw new TRPCError({ code: "NOT_FOUND", message: "Exam not found" });
 

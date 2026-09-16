@@ -16,8 +16,8 @@ description: >
 ## Technology Stack
 - **API Layer:** tRPC v11, TanStack React Query v5, SuperJSON, Zod.
 - **Database:** External PostgreSQL, Prisma 6.16 (with singleton client).
-- **Authentication:** NextAuth.js v5 (beta.29), bcryptjs, JWT sessions.
-- **File Storage:** AWS S3 SDK (via External S3 Bucket & proxy API routes).
+- **File Storage:** AWS S3 SDK (via Cloudflare R2 Bucket & proxy API routes).
+- **Media & Image Optimization:** Dual-Tier Pipeline — Sharp server-side upload compression (`src/lib/image-optimizer.ts`), auto-orient, 2048px clamping, and Next.js edge AVIF/WebP transcoding (`minimumCacheTTL: 31536000`).
 - **UI & Styling:** Tailwind CSS 3.4, shadcn/ui (51+ components), Framer Motion, Lucide React, Recharts, Embla Carousel, Sonner, cmdk, vaul, react-resizable-panels.
 - **Analytics & Observability:** Vercel Web Analytics (`@vercel/analytics`), Vercel Speed Insights (`@vercel/speed-insights`), Google Analytics (`gtag.js`).
 - **PDF/Export:** pdf-lib (server), jspdf + jspdf-autotable (client), html2canvas-pro, papaparse (client CSV exports).
@@ -102,6 +102,7 @@ description: >
 ## Utilities (`src/lib/`)
 - `utils.ts`: `cn()`, `userReg()` (`MSN-{type}-{year}-{number}`), `getParentagePrefix(gender)` (returns `"D/O"` for female, `"S/O"` for male), `checkIsAdmin` (`ADMIN`, `PRINCIPAL`, `HEAD`, `CLERK`), role/theme checks.
 - `s3.ts`: CRUD operations for AWS S3.
+- `image-optimizer.ts`: Sharp pre-upload compressor and dimension normalizer (`optimizeImageForUpload`).
 - `pdf-reports.ts`: pdf-lib generation.
 - `timetable-types.ts`: Timetable definitions, `DAYS_OF_WEEK`, `LECTURE_NUMBERS`.
 
@@ -110,3 +111,5 @@ description: >
 - Append-only ledger pattern for all financial movements.
 - Session-scoped queries (filtering by active academic session).
 - `globalForPrisma` pattern to prevent connection exhaustion.
+- Dual-tier image optimization invariant: pre-compress uploads via Sharp; never set `images.unoptimized: true` in production.
+- Prisma query optimization: strictly use `select` instead of `include` to prevent over-fetching and fetch only required data.
