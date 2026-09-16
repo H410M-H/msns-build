@@ -16,6 +16,7 @@ import {
   SidebarMenuSub,
   SidebarMenuSubButton,
   SidebarMenuSubItem,
+  useSidebar,
 } from "~/components/ui/sidebar";
 import { cn } from "~/lib/utils";
 
@@ -37,6 +38,7 @@ type UnifiedNavProps = {
 
 export const NavMain = ({ items }: UnifiedNavProps) => {
   const pathname = usePathname();
+  const { closeSidebar } = useSidebar();
 
   return (
     <SidebarGroup>
@@ -89,7 +91,7 @@ export const NavMain = ({ items }: UnifiedNavProps) => {
                                 "bg-emerald-500/10 font-semibold text-emerald-600 dark:text-emerald-400",
                             )}
                           >
-                            <Link href={subItem.url}>
+                            <Link href={subItem.url} onClick={closeSidebar}>
                               <span>{subItem.title}</span>
                             </Link>
                           </SidebarMenuSubButton>
@@ -112,7 +114,7 @@ export const NavMain = ({ items }: UnifiedNavProps) => {
                     "bg-emerald-500/10 font-semibold text-emerald-600 shadow-[inset_3px_0_0_0_rgba(16,185,129,1)] dark:text-emerald-400",
                 )}
               >
-                <Link href={item.url}>
+                <Link href={item.url} onClick={closeSidebar}>
                   {item.icon && (
                     <item.icon
                       className={cn(

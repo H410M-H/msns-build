@@ -11,7 +11,6 @@ import {
   ClipboardList,
   BookOpen,
   Briefcase,
-  Receipt,
   Images,
   BarChart3,
 } from "lucide-react";
@@ -90,7 +89,6 @@ const adminSessionsNav: NavItem = {
   items: [
     { title: "All Sessions", url: "/admin/sessions" },
     { title: "Timetable", url: "/admin/sessions/timetable" },
-    { title: "Fee Ledger", url: "/admin/sessions/fee" },
   ],
 };
 
@@ -143,7 +141,6 @@ const data: NavigationConfig = {
       items: [
         { title: "All Sessions", url: "/clerk/sessions" },
         { title: "Timetable", url: "/clerk/sessions/timetable" },
-        { title: "Fee Ledger", url: "/clerk/sessions/fee" },
       ],
     },
     examinationsNav,
@@ -158,7 +155,6 @@ const data: NavigationConfig = {
     },
     { title: "Faculty", url: "/clerk/users/faculty/view", icon: Briefcase },
     { title: "Students", url: "/clerk/users/student/view", icon: GraduationCap },
-    { title: "Transactions", url: "/clerk/sessions/fee", icon: Receipt },
     { title: "Documents", url: "/documents", icon: FileText },
     { title: "Profile", url: "/clerk/users/profile", icon: User },
     { title: "Gallery", url: "/clerk/gallery", icon: Images },

@@ -26,8 +26,10 @@ import { markingCentreRouter } from "./routers/markingCentre";
 import { bulkSalaryRouter } from "./routers/bulkSalary";
 import { mobileRouter } from "./routers/mobile";
 import { parentRouter } from "./routers/parent";
+import { notificationRouter } from "./routers/notification";
 
 export const appRouter = createTRPCRouter({
+  notification: notificationRouter,
   user: UserRouter,
   profile: ProfileRouter,
   allotment: AllotmentRouter,

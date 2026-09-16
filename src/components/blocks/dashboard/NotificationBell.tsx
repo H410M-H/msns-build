@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useTransition } from "react";
+import { useEffect, useRef, useState, useTransition, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import {
   Bell,
@@ -12,6 +12,9 @@ import {
   Info,
   Trash2,
   Check,
+  CreditCard,
+  ClipboardCheck,
+  GraduationCap,
 } from "lucide-react";
 import {
   Popover,
@@ -23,58 +26,172 @@ import { Badge } from "~/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import {
   getStoredNotifications,
-  markAllNotificationsAsRead,
-  markNotificationAsRead,
-  clearAllNotifications,
+  markAllNotificationsAsRead as markLocalAllRead,
+  markNotificationAsRead as markLocalRead,
+  clearAllNotifications as clearLocalAll,
   type StoredNotification,
 } from "~/lib/mobile/notification-store";
+import { api } from "~/trpc/react";
 import { formatDistanceToNow } from "date-fns";
+import { playNotificationChime } from "~/lib/audio-chime";
+
+export type DisplayNotification = {
+  id: string;
+  title: string;
+  body: string;
+  category: string;
+  actionUrl?: string | null;
+  read: boolean;
+  createdAt: string | Date;
+  isServer: boolean;
+};
 
 export function NotificationBell() {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<string>("ALL");
-  const [notifications, setNotifications] = useState<StoredNotification[]>([]);
+  const [localNotifications, setLocalNotifications] = useState<StoredNotification[]>([]);
   const [, startTransition] = useTransition();
 
-  const reloadNotifications = () => {
-    setNotifications(getStoredNotifications());
+  // tRPC query with auto-refresh every 30s
+  const { data: serverNotifications, refetch: refetchNotifications } =
+    api.notification.getAll.useQuery(undefined, {
+      refetchInterval: 30000,
+      staleTime: 10000,
+    });
+
+  const { data: serverUnreadCount, refetch: refetchUnread } =
+    api.notification.getUnreadCount.useQuery(undefined, {
+      refetchInterval: 30000,
+      staleTime: 10000,
+    });
+
+  const markAsReadMutation = api.notification.markAsRead.useMutation({
+    onSuccess: () => {
+      void refetchNotifications();
+      void refetchUnread();
+    },
+  });
+
+  const markAllAsReadMutation = api.notification.markAllAsRead.useMutation({
+    onSuccess: () => {
+      void refetchNotifications();
+      void refetchUnread();
+    },
+  });
+
+  const deleteMutation = api.notification.delete.useMutation({
+    onSuccess: () => {
+      void refetchNotifications();
+      void refetchUnread();
+    },
+  });
+
+  const clearAllMutation = api.notification.clearAll.useMutation({
+    onSuccess: () => {
+      void refetchNotifications();
+      void refetchUnread();
+    },
+  });
+
+  // Sync offline/local store notifications
+  const reloadLocalNotifications = () => {
+    setLocalNotifications(getStoredNotifications());
   };
 
   useEffect(() => {
-    reloadNotifications();
-
+    reloadLocalNotifications();
     const handleUpdate = () => {
-      reloadNotifications();
+      reloadLocalNotifications();
+      void refetchNotifications();
+      void refetchUnread();
     };
-
     window.addEventListener("msns_notifications_updated", handleUpdate);
     return () => {
       window.removeEventListener("msns_notifications_updated", handleUpdate);
     };
-  }, []);
+  }, [refetchNotifications, refetchUnread]);
 
-  const unreadCount = notifications.filter((n) => !n.read).length;
+  // Combine server and local notifications seamlessly (de-duplicating by title + body)
+  const combinedNotifications = useMemo<DisplayNotification[]>(() => {
+    const list: DisplayNotification[] = [];
+    const seen = new Set<string>();
 
-  const filteredNotifications = notifications.filter((n) => {
-    if (activeTab === "ALL") return true;
-    return n.category === activeTab;
-  });
+    if (serverNotifications) {
+      for (const sn of serverNotifications) {
+        const key = `${sn.title}_${sn.body}`;
+        seen.add(key);
+        list.push({
+          id: sn.id,
+          title: sn.title,
+          body: sn.body,
+          category: sn.category,
+          actionUrl: sn.actionUrl,
+          read: sn.read,
+          createdAt: sn.createdAt,
+          isServer: true,
+        });
+      }
+    }
+
+    for (const ln of localNotifications) {
+      const key = `${ln.title}_${ln.body}`;
+      if (!seen.has(key)) {
+        list.push({
+          id: ln.id,
+          title: ln.title,
+          body: ln.body,
+          category: ln.category,
+          actionUrl: ln.actionUrl,
+          read: ln.read,
+          createdAt: ln.timestamp,
+          isServer: false,
+        });
+      }
+    }
+
+    return list.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  }, [serverNotifications, localNotifications]);
+
+  const totalUnreadCount = useMemo(() => {
+    const localUnread = localNotifications.filter((n) => !n.read).length;
+    return (serverUnreadCount ?? 0) + localUnread;
+  }, [serverUnreadCount, localNotifications]);
+
+  // Audio chime trigger on incoming unread count increase
+  const prevUnreadRef = useRef<number>(totalUnreadCount);
+  useEffect(() => {
+    if (totalUnreadCount > prevUnreadRef.current) {
+      playNotificationChime();
+    }
+    prevUnreadRef.current = totalUnreadCount;
+  }, [totalUnreadCount]);
+
+  const filteredNotifications = useMemo(() => {
+    if (activeTab === "ALL") return combinedNotifications;
+    return combinedNotifications.filter((n) => n.category === activeTab);
+  }, [combinedNotifications, activeTab]);
 
   const handleMarkAllRead = () => {
-    markAllNotificationsAsRead();
-    reloadNotifications();
+    markLocalAllRead();
+    reloadLocalNotifications();
+    markAllAsReadMutation.mutate();
   };
 
   const handleClearAll = () => {
-    clearAllNotifications();
-    reloadNotifications();
+    clearLocalAll();
+    reloadLocalNotifications();
+    clearAllMutation.mutate();
   };
 
-  const handleItemClick = (notif: StoredNotification) => {
+  const handleItemClick = (notif: DisplayNotification) => {
     if (!notif.read) {
-      markNotificationAsRead(notif.id);
-      reloadNotifications();
+      if (notif.isServer) {
+        markAsReadMutation.mutate({ id: notif.id });
+      } else {
+        markLocalRead(notif.id);
+        reloadLocalNotifications();
+      }
     }
     if (notif.actionUrl) {
       setOpen(false);
@@ -84,10 +201,26 @@ export function NotificationBell() {
     }
   };
 
-  const getCategoryIcon = (category: StoredNotification["category"]) => {
+  const handleDeleteItem = (e: React.MouseEvent, notif: DisplayNotification) => {
+    e.stopPropagation();
+    if (notif.isServer) {
+      deleteMutation.mutate({ id: notif.id });
+    } else {
+      markLocalRead(notif.id);
+      reloadLocalNotifications();
+    }
+  };
+
+  const getCategoryIcon = (category: string) => {
     switch (category) {
       case "BROADCAST":
         return <Megaphone className="h-4 w-4 text-amber-500" />;
+      case "FEE":
+        return <CreditCard className="h-4 w-4 text-emerald-500" />;
+      case "ATTENDANCE":
+        return <ClipboardCheck className="h-4 w-4 text-rose-500" />;
+      case "EXAM":
+        return <GraduationCap className="h-4 w-4 text-indigo-500" />;
       case "FEATURE_EXPLORE":
         return <Sparkles className="h-4 w-4 text-blue-500" />;
       case "DAILY_TASK":
@@ -107,9 +240,9 @@ export function NotificationBell() {
           aria-label="Notifications"
         >
           <Bell className="h-5 w-5 text-slate-600 transition-colors group-hover:text-emerald-600 dark:text-emerald-100 dark:group-hover:text-emerald-400" />
-          {unreadCount > 0 && (
-            <span className="absolute -right-0.5 -top-0.5 flex h-5 min-w-[20px] items-center justify-center rounded-full bg-rose-500 px-1 text-[11px] font-bold text-white shadow-md ring-2 ring-white dark:ring-slate-900">
-              {unreadCount > 9 ? "9+" : unreadCount}
+          {totalUnreadCount > 0 && (
+            <span className="absolute -right-0.5 -top-0.5 flex h-5 min-w-[20px] items-center justify-center rounded-full bg-rose-500 px-1 text-[11px] font-bold text-white shadow-md ring-2 ring-white dark:ring-slate-900 animate-in fade-in zoom-in duration-200">
+              {totalUnreadCount > 9 ? "9+" : totalUnreadCount}
             </span>
           )}
         </Button>
@@ -117,23 +250,23 @@ export function NotificationBell() {
 
       <PopoverContent
         align="end"
-        className="w-[360px] sm:w-[420px] p-0 shadow-2xl rounded-2xl border border-slate-200 dark:border-border bg-white dark:bg-slate-900 overflow-hidden"
+        className="w-[360px] sm:w-[440px] p-0 shadow-2xl rounded-2xl border border-slate-200 dark:border-border bg-white dark:bg-slate-900 overflow-hidden z-50"
       >
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-slate-100 dark:border-border/60 bg-slate-50/50 dark:bg-slate-900/50">
+        <div className="flex items-center justify-between p-4 border-b border-slate-100 dark:border-border/60 bg-slate-50/70 dark:bg-slate-900/70 backdrop-blur-md">
           <div className="flex items-center gap-2">
             <h3 className="font-semibold text-slate-800 dark:text-slate-100 text-base">
-              Notifications & Broadcasts
+              Notifications & Alerts
             </h3>
-            {unreadCount > 0 && (
+            {totalUnreadCount > 0 && (
               <Badge className="bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300 border-none text-[11px] font-semibold">
-                {unreadCount} new
+                {totalUnreadCount} new
               </Badge>
             )}
           </div>
 
           <div className="flex items-center gap-1">
-            {unreadCount > 0 && (
+            {totalUnreadCount > 0 && (
               <Button
                 variant="ghost"
                 size="sm"
@@ -142,10 +275,10 @@ export function NotificationBell() {
                 title="Mark all as read"
               >
                 <CheckCheck className="h-3.5 w-3.5 mr-1" />
-                Mark read
+                Mark all
               </Button>
             )}
-            {notifications.length > 0 && (
+            {combinedNotifications.length > 0 && (
               <Button
                 variant="ghost"
                 size="icon"
@@ -159,34 +292,37 @@ export function NotificationBell() {
           </div>
         </div>
 
-        {/* Filter Tabs */}
-        <div className="px-4 pt-3 pb-2 border-b border-slate-100 dark:border-border/40 bg-white dark:bg-slate-900">
+        {/* Category Tabs */}
+        <div className="px-3 pt-2.5 pb-2 border-b border-slate-100 dark:border-border/40 bg-white dark:bg-slate-900">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="w-full grid grid-cols-4 h-8 bg-slate-100 dark:bg-slate-800 p-0.5 rounded-lg text-[11px]">
-              <TabsTrigger value="ALL" className="text-[11px] px-1 py-1">
-                All ({notifications.length})
+            <TabsList className="w-full flex overflow-x-auto scrollbar-none h-8 bg-slate-100 dark:bg-slate-800 p-0.5 rounded-lg text-[11px] gap-1">
+              <TabsTrigger value="ALL" className="text-[11px] px-2 py-1 flex-1 min-w-fit">
+                All ({combinedNotifications.length})
               </TabsTrigger>
-              <TabsTrigger value="BROADCAST" className="text-[11px] px-1 py-1">
+              <TabsTrigger value="BROADCAST" className="text-[11px] px-2 py-1 flex-1 min-w-fit">
                 📢 Alerts
               </TabsTrigger>
-              <TabsTrigger value="DAILY_TASK" className="text-[11px] px-1 py-1">
-                📋 Tasks
+              <TabsTrigger value="FEE" className="text-[11px] px-2 py-1 flex-1 min-w-fit">
+                💳 Fee
               </TabsTrigger>
-              <TabsTrigger value="FEATURE_EXPLORE" className="text-[11px] px-1 py-1">
-                💡 Explore
+              <TabsTrigger value="ATTENDANCE" className="text-[11px] px-2 py-1 flex-1 min-w-fit">
+                📋 Attendance
+              </TabsTrigger>
+              <TabsTrigger value="EXAM" className="text-[11px] px-2 py-1 flex-1 min-w-fit">
+                🎓 Exams
               </TabsTrigger>
             </TabsList>
           </Tabs>
         </div>
 
         {/* Notification List */}
-        <div className="max-h-[360px] overflow-y-auto divide-y divide-slate-100 dark:divide-border/40">
+        <div className="max-h-[380px] overflow-y-auto divide-y divide-slate-100 dark:divide-border/40">
           {filteredNotifications.length > 0 ? (
             filteredNotifications.map((notif) => (
               <div
                 key={notif.id}
                 onClick={() => handleItemClick(notif)}
-                className={`group relative p-3.5 flex gap-3 cursor-pointer transition-colors ${
+                className={`group relative p-3.5 flex gap-3 cursor-pointer transition-all duration-150 ${
                   notif.read
                     ? "bg-white hover:bg-slate-50 dark:bg-slate-900 dark:hover:bg-slate-800/60"
                     : "bg-emerald-50/40 hover:bg-emerald-50/70 dark:bg-emerald-950/20 dark:hover:bg-emerald-950/40"
@@ -196,12 +332,12 @@ export function NotificationBell() {
                   {getCategoryIcon(notif.category)}
                 </div>
 
-                <div className="flex-1 min-w-0 pr-4">
+                <div className="flex-1 min-w-0 pr-2">
                   <div className="flex items-center justify-between gap-1">
                     <h4
-                      className={`text-xs font-semibold truncate ${
+                      className={`text-xs truncate ${
                         notif.read
-                          ? "text-slate-700 dark:text-slate-300"
+                          ? "text-slate-700 dark:text-slate-300 font-medium"
                           : "text-slate-900 dark:text-slate-100 font-bold"
                       }`}
                     >
@@ -218,23 +354,37 @@ export function NotificationBell() {
 
                   <div className="flex items-center justify-between mt-2">
                     <span className="text-[10px] text-slate-400 dark:text-slate-500 font-medium">
-                      {formatTimeAgo(notif.timestamp)}
+                      {formatTimeAgo(notif.createdAt)}
                     </span>
-                    {!notif.read && (
+                    <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      {!notif.read && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (notif.isServer) {
+                              markAsReadMutation.mutate({ id: notif.id });
+                            } else {
+                              markLocalRead(notif.id);
+                              reloadLocalNotifications();
+                            }
+                          }}
+                          className="h-5 px-1.5 text-[10px] text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400"
+                        >
+                          <Check className="h-3 w-3 mr-1" />
+                          Read
+                        </Button>
+                      )}
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          markNotificationAsRead(notif.id);
-                          reloadNotifications();
-                        }}
-                        className="h-5 px-1.5 text-[10px] text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400"
+                        onClick={(e) => handleDeleteItem(e, notif)}
+                        className="h-5 px-1.5 text-[10px] text-slate-400 hover:text-rose-600 dark:hover:text-rose-400"
                       >
-                        <Check className="h-3 w-3 mr-1" />
-                        Read
+                        <Trash2 className="h-3 w-3" />
                       </Button>
-                    )}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -256,9 +406,10 @@ export function NotificationBell() {
   );
 }
 
-function formatTimeAgo(isoString: string): string {
+function formatTimeAgo(dateInput: string | Date): string {
   try {
-    return formatDistanceToNow(new Date(isoString), { addSuffix: true });
+    const d = typeof dateInput === "string" ? new Date(dateInput) : dateInput;
+    return formatDistanceToNow(d, { addSuffix: true });
   } catch {
     return "Recently";
   }

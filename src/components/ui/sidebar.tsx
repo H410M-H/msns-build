@@ -34,6 +34,9 @@ type SidebarContext = {
   setOpenMobile: (open: boolean) => void;
   isMobile: boolean;
   toggleSidebar: () => void;
+  isPeeking: boolean;
+  setIsPeeking: (open: boolean) => void;
+  closeSidebar: () => void;
 };
 
 const SidebarContext = React.createContext<SidebarContext | null>(null);
@@ -68,6 +71,7 @@ const SidebarProvider = React.forwardRef<
   ) => {
     const isMobile = useIsMobile();
     const [openMobile, setOpenMobile] = React.useState(false);
+    const [isPeeking, setIsPeeking] = React.useState(false);
 
     const [_open, _setOpen] = React.useState(defaultOpen);
     const open = openProp ?? _open;
@@ -83,6 +87,15 @@ const SidebarProvider = React.forwardRef<
       },
       [setOpenProp, open],
     );
+
+    const closeSidebar = React.useCallback(() => {
+      setIsPeeking(false);
+      if (isMobile) {
+        setOpenMobile(false);
+      } else {
+        setOpen(false);
+      }
+    }, [isMobile, setOpenMobile, setOpen]);
 
     const toggleSidebar = React.useCallback(() => {
       return isMobile
@@ -104,7 +117,8 @@ const SidebarProvider = React.forwardRef<
       return () => window.removeEventListener("keydown", handleKeyDown);
     }, [toggleSidebar]);
 
-    const state = open ? "expanded" : "collapsed";
+    // Effective state: expanded if open OR currently peeking
+    const state = open || isPeeking ? "expanded" : "collapsed";
 
     const contextValue = React.useMemo<SidebarContext>(
       () => ({
@@ -115,6 +129,9 @@ const SidebarProvider = React.forwardRef<
         openMobile,
         setOpenMobile,
         toggleSidebar,
+        isPeeking,
+        setIsPeeking,
+        closeSidebar,
       }),
       [
         state,
@@ -124,6 +141,9 @@ const SidebarProvider = React.forwardRef<
         openMobile,
         setOpenMobile,
         toggleSidebar,
+        isPeeking,
+        setIsPeeking,
+        closeSidebar,
       ],
     );
 
@@ -182,7 +202,37 @@ const Sidebar = React.forwardRef<
     },
     ref,
   ) => {
-    const { isMobile, state, openMobile, setOpenMobile } = useSidebar();
+    const { isMobile, state, open, openMobile, setOpenMobile, isPeeking, setIsPeeking } = useSidebar();
+    const leaveTimeoutRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+
+    const handleMouseEnter = React.useCallback(() => {
+      if (leaveTimeoutRef.current) {
+        clearTimeout(leaveTimeoutRef.current);
+        leaveTimeoutRef.current = null;
+      }
+      if (!open) {
+        setIsPeeking(true);
+      }
+    }, [open, setIsPeeking]);
+
+    const handleMouseLeave = React.useCallback(() => {
+      if (!open) {
+        if (leaveTimeoutRef.current) {
+          clearTimeout(leaveTimeoutRef.current);
+        }
+        leaveTimeoutRef.current = setTimeout(() => {
+          setIsPeeking(false);
+        }, 250);
+      }
+    }, [open, setIsPeeking]);
+
+    React.useEffect(() => {
+      return () => {
+        if (leaveTimeoutRef.current) {
+          clearTimeout(leaveTimeoutRef.current);
+        }
+      };
+    }, []);
 
     if (collapsible === "none") {
       return (
@@ -220,47 +270,68 @@ const Sidebar = React.forwardRef<
     }
 
     return (
-      <div
-        ref={ref}
-        className="group peer hidden text-slate-100 md:block"
-        data-state={state}
-        data-collapsible={state === "collapsed" ? collapsible : ""}
-        data-variant={variant}
-        data-side={side}
-      >
-        {/* Gap filler for transition */}
-        <div
-          className={cn(
-            "relative h-svh w-[--sidebar-width] bg-transparent transition-[width] duration-300 ease-in-out",
-            "group-data-[collapsible=offcanvas]:w-0",
-            "group-data-[side=right]:rotate-180",
-            variant === "floating" || variant === "inset"
-              ? "group-data-[collapsible=icon]:w-[calc(var(--sidebar-width-icon)_+_theme(spacing.4))]"
-              : "group-data-[collapsible=icon]:w-[--sidebar-width-icon]",
-          )}
-        />
-        <div
-          className={cn(
-            "fixed inset-y-0 z-10 hidden h-svh w-[--sidebar-width] transition-[left,right,width] duration-300 ease-in-out md:flex",
-            side === "left"
-              ? "left-0 group-data-[collapsible=offcanvas]:left-[calc(var(--sidebar-width)*-1)]"
-              : "right-0 group-data-[collapsible=offcanvas]:right-[calc(var(--sidebar-width)*-1)]",
-            // Variant Styling
-            variant === "floating" || variant === "inset"
-              ? "p-2 group-data-[collapsible=icon]:w-[calc(var(--sidebar-width-icon)_+_theme(spacing.4)_+2px)]"
-              : "border-emerald-500/20 bg-slate-950 group-data-[collapsible=icon]:w-[--sidebar-width-icon] group-data-[side=left]:border-r group-data-[side=right]:border-l",
-            className,
-          )}
-          {...props}
-        >
+      <>
+        {/* Desktop Edge Hover Hit Zone (Left 0-20px) to trigger Peek */}
+        {!open && (
           <div
-            data-sidebar="sidebar"
-            className="flex h-full w-full flex-col bg-slate-900/40 backdrop-blur-xl group-data-[variant=floating]:rounded-lg group-data-[variant=floating]:border group-data-[variant=floating]:border-emerald-500/20 group-data-[variant=floating]:shadow-2xl"
+            className="fixed inset-y-0 left-0 z-30 hidden w-5 md:block pointer-events-auto"
+            onMouseEnter={handleMouseEnter}
+            aria-hidden="true"
+          />
+        )}
+
+        <div
+          ref={ref}
+          className="group peer hidden text-slate-100 md:block"
+          data-state={state}
+          data-collapsible={state === "collapsed" ? collapsible : ""}
+          data-variant={variant}
+          data-side={side}
+        >
+          {/* Gap filler for transition - only reserves full width when pinned open, so peek never shifts page layout */}
+          <div
+            className={cn(
+              "relative h-svh bg-transparent transition-[width] duration-300 ease-in-out",
+              open
+                ? "w-[--sidebar-width]"
+                : (variant === "floating" || variant === "inset"
+                    ? "w-[calc(var(--sidebar-width-icon)_+_theme(spacing.4))]"
+                    : "w-[--sidebar-width-icon]"),
+              "group-data-[collapsible=offcanvas]:w-0",
+              "group-data-[side=right]:rotate-180",
+            )}
+          />
+          <div
+            onMouseEnter={handleMouseEnter}
+            onMouseLeave={handleMouseLeave}
+            className={cn(
+              "fixed inset-y-0 z-10 hidden h-svh transition-[left,right,width,box-shadow] duration-300 ease-in-out md:flex",
+              open || isPeeking
+                ? "w-[--sidebar-width]"
+                : (variant === "floating" || variant === "inset"
+                    ? "w-[calc(var(--sidebar-width-icon)_+_theme(spacing.4)_+2px)]"
+                    : "w-[--sidebar-width-icon]"),
+              isPeeking && !open && "z-50 shadow-[12px_0_36px_rgba(0,0,0,0.6)] border-r border-emerald-500/30",
+              side === "left"
+                ? "left-0 group-data-[collapsible=offcanvas]:left-[calc(var(--sidebar-width)*-1)]"
+                : "right-0 group-data-[collapsible=offcanvas]:right-[calc(var(--sidebar-width)*-1)]",
+              // Variant Styling
+              variant === "floating" || variant === "inset"
+                ? "p-2"
+                : "border-emerald-500/20 bg-slate-950 group-data-[side=left]:border-r group-data-[side=right]:border-l",
+              className,
+            )}
+            {...props}
           >
-            {children}
+            <div
+              data-sidebar="sidebar"
+              className="flex h-full w-full flex-col bg-slate-900/40 backdrop-blur-xl group-data-[variant=floating]:rounded-lg group-data-[variant=floating]:border group-data-[variant=floating]:border-emerald-500/20 group-data-[variant=floating]:shadow-2xl"
+            >
+              {children}
+            </div>
           </div>
         </div>
-      </div>
+      </>
     );
   },
 );

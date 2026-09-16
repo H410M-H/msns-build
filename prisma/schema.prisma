@@ -26,6 +26,7 @@ model User {
   EventAttendee      Attendee[]
   Event              Event[]     @relation("EventCreator")
   DeviceRegistration DeviceRegistration[]
+  Notification       Notification[]
 }
 
 model Timetable {
@@ -1451,3 +1452,34 @@ model DeviceRegistration {
   User             User?           @relation(fields: [userId], references: [id], onDelete: Cascade)
   ParentGuardian   ParentGuardian? @relation(fields: [parentGuardianId], references: [guardentId], onDelete: Cascade)
 }
+
+enum NotificationCategory {
+  BROADCAST
+  DAILY_TASK
+  SYSTEM
+  FEATURE_EXPLORE
+  FEE
+  ATTENDANCE
+  EXAM
+}
+
+model Notification {
+  id         String               @id @default(cuid())
+  userId     String?
+  targetRole Designation?
+  title      String
+  body       String
+  category   NotificationCategory @default(SYSTEM)
+  actionUrl  String?
+  read       Boolean              @default(false)
+  data       Json?
+  createdAt  DateTime             @default(now())
+  updatedAt  DateTime             @updatedAt
+
+  User       User?                @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, read])
+  @@index([targetRole])
+  @@index([createdAt])
+}
+
