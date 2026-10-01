@@ -2,11 +2,15 @@ import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: {
-    template: "%s | User Management",
-    default: "Directory | MSNS Admin",
+    template: "%s | Clerk Directory",
+    default: "Clerk Student & Staff Directory | MSNS LMS",
   },
   description:
-    "Comprehensive management dashboard for students, faculty, and administrative staff registrations.",
+    "Clerk administrative directory for student admission record verification, employee biometric logs, and guardian contact detail maintenance.",
+  robots: {
+    index: false,
+    follow: false,
+  },
 };
 
 export default function UsersLayout({

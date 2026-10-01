@@ -4,10 +4,14 @@ import { TooltipProvider } from "~/components/ui/tooltip";
 import { SessionProvider } from "next-auth/react";
 
 export const metadata: Metadata = {
-  title: "Session Management | Admin Dashboard",
+  title: "Clerk Session Billing & Student Enrollment",
   description:
-    "Manage academic sessions, view statistics, and handle session fees",
-  keywords: ["sessions", "academic", "dashboard", "management", "fees"],
+    "Front-desk clerk portal to verify student session enrollments, generate monthly tuition challans, and record fee voucher receipts at MSNS.",
+  robots: {
+    index: false,
+    follow: false,
+  },
+  keywords: ["clerk", "sessions", "challans", "enrollment", "fees"],
 };
 
 export default function SessionsLayout({

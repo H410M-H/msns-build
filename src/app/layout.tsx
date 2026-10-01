@@ -37,8 +37,11 @@ export const viewport: Viewport = {
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://lms.msns.edu.pk"),
-  title: "MSNS-LMS Portal | M. S. NAZ HIGH SCHOOL®",
-  description: "Access the M.S. Naz High School Learning Management System. Sign in to view grades, assignments, fee structures, and administrative dashboard panels.",
+  title: {
+    default: "MSNS-LMS Portal | M. S. Naz High School®",
+    template: "%s | MSNS-LMS",
+  },
+  description: "Official MSNS Learning Management System portal. Secure dashboard for students, parents, and faculty to access attendance records, homework, and fee vouchers.",
   verification: {
     google: "UEssQjRtMsHt_ioT8H5RUA2Rnl0_9QEl0d8tL6JBi1E",
   },
@@ -48,7 +51,7 @@ export const metadata: Metadata = {
   ].join(", "),
   openGraph: {
     title: "MSNS-LMS Portal | M. S. Naz High School®",
-    description: "Explore the premier educational portal and Learning Management System at M.S. Naz High School®.",
+    description: "Official MSNS Learning Management System portal. Secure dashboard for students, parents, and faculty to access attendance records, homework, and fee vouchers.",
     url: "https://lms.msns.edu.pk/",
     siteName: "M.S. Naz High School® LMS",
     images: [

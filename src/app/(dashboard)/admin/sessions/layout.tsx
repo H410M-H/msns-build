@@ -4,9 +4,13 @@ import { TooltipProvider } from "~/components/ui/tooltip";
 import { SessionProvider } from "next-auth/react";
 
 export const metadata: Metadata = {
-  title: "Session Management | Admin Dashboard",
+  title: "Admin Academic Session Management",
   description:
-    "Manage academic sessions, view statistics, and handle session fees",
+    "Configure academic sessions, term calendars, fee schedules, and student class promotions across M. S. Naz High School administrative branches.",
+  robots: {
+    index: false,
+    follow: false,
+  },
   keywords: ["sessions", "academic", "dashboard", "management", "fees"],
 };
 

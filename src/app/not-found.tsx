@@ -3,7 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { motion } from "framer-motion";
-import { ArrowLeft, Home, Users, Calendar, BarChart3 } from "lucide-react";
+import { ArrowLeft, Home, LogIn, Globe, ShieldCheck } from "lucide-react";
 import { Button } from "~/components/ui/button";
 
 export default function NotFound() {
@@ -63,40 +63,40 @@ export default function NotFound() {
           className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-4 text-left"
         >
           <Link
-            href="/admin"
+            href="/"
             className="group flex flex-col gap-1.5 rounded-2xl border border-emerald-500/20 bg-slate-900/60 p-4 backdrop-blur-md transition-all hover:border-emerald-500/50 hover:bg-emerald-950/30"
           >
             <Home className="h-5 w-5 text-emerald-400 group-hover:scale-110 transition-transform" />
-            <span className="text-xs font-bold text-slate-200">Dashboard</span>
-            <span className="text-[10px] text-slate-500">Main hub</span>
+            <span className="text-xs font-bold text-slate-200">LMS Home</span>
+            <span className="text-[10px] text-slate-500">Main portal</span>
           </Link>
 
           <Link
-            href="/admin/users/faculty/view"
+            href="/sign-in"
             className="group flex flex-col gap-1.5 rounded-2xl border border-emerald-500/20 bg-slate-900/60 p-4 backdrop-blur-md transition-all hover:border-emerald-500/50 hover:bg-emerald-950/30"
           >
-            <Users className="h-5 w-5 text-emerald-400 group-hover:scale-110 transition-transform" />
-            <span className="text-xs font-bold text-slate-200">Faculty</span>
-            <span className="text-[10px] text-slate-500">Staff records</span>
+            <LogIn className="h-5 w-5 text-emerald-400 group-hover:scale-110 transition-transform" />
+            <span className="text-xs font-bold text-slate-200">Sign In</span>
+            <span className="text-[10px] text-slate-500">Student & staff</span>
           </Link>
 
           <Link
-            href="/admin/sessions"
+            href="/privacy-policy"
             className="group flex flex-col gap-1.5 rounded-2xl border border-emerald-500/20 bg-slate-900/60 p-4 backdrop-blur-md transition-all hover:border-emerald-500/50 hover:bg-emerald-950/30"
           >
-            <Calendar className="h-5 w-5 text-emerald-400 group-hover:scale-110 transition-transform" />
-            <span className="text-xs font-bold text-slate-200">Sessions</span>
-            <span className="text-[10px] text-slate-500">Academic terms</span>
+            <ShieldCheck className="h-5 w-5 text-emerald-400 group-hover:scale-110 transition-transform" />
+            <span className="text-xs font-bold text-slate-200">Privacy Policy</span>
+            <span className="text-[10px] text-slate-500">Data protection</span>
           </Link>
 
-          <Link
-            href="/admin/erp"
+          <a
+            href="https://www.msns.edu.pk"
             className="group flex flex-col gap-1.5 rounded-2xl border border-emerald-500/20 bg-slate-900/60 p-4 backdrop-blur-md transition-all hover:border-emerald-500/50 hover:bg-emerald-950/30"
           >
-            <BarChart3 className="h-5 w-5 text-emerald-400 group-hover:scale-110 transition-transform" />
-            <span className="text-xs font-bold text-slate-200">ERP</span>
-            <span className="text-[10px] text-slate-500">Finance & assets</span>
-          </Link>
+            <Globe className="h-5 w-5 text-emerald-400 group-hover:scale-110 transition-transform" />
+            <span className="text-xs font-bold text-slate-200">Main Website</span>
+            <span className="text-[10px] text-slate-500">msns.edu.pk</span>
+          </a>
         </motion.div>
 
         {/* Action Buttons */}
@@ -118,8 +118,8 @@ export default function NotFound() {
             asChild
             className="w-full sm:w-auto rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-lg shadow-emerald-900/30 hover:from-emerald-500 hover:to-teal-500"
           >
-            <Link href="/admin">
-              <Home className="mr-2 h-4 w-4" /> Return to Dashboard
+            <Link href="/">
+              <Home className="mr-2 h-4 w-4" /> Return to Portal
             </Link>
           </Button>
         </motion.div>

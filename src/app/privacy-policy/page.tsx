@@ -2,8 +2,15 @@ import React from "react";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Privacy Policy | MSNS LMS",
-  description: "Privacy Policy for M.S. Naz High School Learning Management System",
+  title: "LMS Privacy Policy & Student Data Protection",
+  description: "Privacy Policy and security protocols governing student academic records, parent communications, and authentication data on the MSNS Learning Management System.",
+  alternates: {
+    canonical: "https://lms.msns.edu.pk/privacy-policy",
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
 };
 
 export default function PrivacyPolicyPage() {
