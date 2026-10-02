@@ -73,6 +73,7 @@ const services: Services[] = [
       { label: "Students", href: "/admin/users/student/view" },
       { label: "Faculty", href: "/admin/users/faculty/view" },
       { label: "Student Attendance", href: "/admin/attendance" },
+      { label: "Reports Vault", href: "/admin/reports" },
     ],
   },
   {
@@ -88,7 +89,7 @@ const services: Services[] = [
       { label: "Overview", href: "/admin/erp/revenue" },
       { label: "Fees", href: "/admin/erp/revenue/fee" },
       { label: "Salaries", href: "/admin/erp/revenue/salary" },
-      { label: "Expenses", href: "/admin/erp/revenue/expense" },
+      { label: "Reports", href: "/admin/reports" },
     ],
   },
 ];

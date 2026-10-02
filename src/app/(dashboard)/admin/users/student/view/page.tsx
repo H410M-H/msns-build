@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
+import Link from "next/link";
 import { PageHeader } from "~/components/blocks/nav/PageHeader";
 import { StudentTable } from "~/components/tables/StudentTable";
 import { Separator } from "~/components/ui/separator";
@@ -9,7 +10,8 @@ import { GradientStatCard } from "~/components/shared/GradientStatCard";
 import { PageExportButton } from "~/components/shared/PageExportButton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
-import { Users, UserCheck, UserMinus, Percent, BarChart3, PieChartIcon } from "lucide-react";
+import { Button } from "~/components/ui/button";
+import { Users, UserCheck, UserMinus, Percent, BarChart3, PieChartIcon, FileText } from "lucide-react";
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, PieChart, Pie, Cell } from "recharts";
 
 const COLORS = ["#059669", "#0284c7", "#7c3aed", "#ea580c", "#db2777", "#eab308"];
@@ -103,6 +105,12 @@ export default function StudentsTablePage() {
               </p>
             </div>
             <div className="flex items-center gap-2">
+              <Link href="/admin/reports">
+                <Button variant="outline" size="sm" className="gap-1.5 border-emerald-500/30 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10">
+                  <FileText className="h-4 w-4" />
+                  Reports Center
+                </Button>
+              </Link>
               <PageExportButton exportData={exportData} csvFilename="student-directory" />
             </div>
           </div>

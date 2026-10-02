@@ -3,6 +3,7 @@
 
 import type React from "react";
 import { useState } from "react";
+import Link from "next/link";
 import { api } from "~/trpc/react";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import {
@@ -151,6 +152,16 @@ export function FeeDashboard() {
           </Button>
 
           <ExportDialog sessionId={selectedSessionId} year={selectedYear} />
+
+          <Link href="/admin/reports">
+            <Button
+              variant="outline"
+              className="gap-2 border-emerald-500/30 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10"
+            >
+              <FileText className="h-4 w-4" />
+              Financial Reports
+            </Button>
+          </Link>
 
           <FeeAssignmentDialog />
         </div>

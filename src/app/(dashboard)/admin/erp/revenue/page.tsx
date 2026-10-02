@@ -18,11 +18,13 @@ import {
   SelectValue,
 } from "~/components/ui/select";
 import { motion, type Variants } from "framer-motion";
-import { Calendar, TrendingUp, Wallet, Filter, DollarSign, Receipt } from "lucide-react";
+import { Calendar, TrendingUp, Wallet, Filter, DollarSign, Receipt, FileText } from "lucide-react";
 import { Separator } from "~/components/ui/separator";
 import { api } from "~/trpc/react";
 import { GradientStatCard } from "~/components/shared/GradientStatCard";
 import { PageExportButton } from "~/components/shared/PageExportButton";
+import { Button } from "~/components/ui/button";
+import Link from "next/link";
 
 export default function RevenuePage() {
   const [selectedSessionId, setSelectedSessionId] = useState<string>("");
@@ -194,6 +196,18 @@ export default function RevenuePage() {
                 pdfReportType="fees"
                 buttonLabel="Export Report"
               />
+
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-10 border-emerald-500/20 bg-muted text-foreground hover:bg-emerald-500/10 gap-2"
+                asChild
+              >
+                <Link href="/admin/reports?report=revenue-expense-summary">
+                  <FileText className="h-4 w-4 text-emerald-400" />
+                  Detailed Reports
+                </Link>
+              </Button>
             </div>
           </motion.div>
 

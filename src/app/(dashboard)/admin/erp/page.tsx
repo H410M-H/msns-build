@@ -131,6 +131,16 @@ const ERP_MODULES = [
     badgeClass: "border-teal-500/20 bg-teal-500/5 text-teal-600 dark:text-teal-400",
     cardClass: "hover:border-teal-300 dark:hover:border-teal-500/30",
   },
+  {
+    title: "Reports & Registers",
+    description: "Generate and export official regulatory registers, student rosters, admissions statistics, and revenue ledgers in PDF, XLSX, CSV, and DOCX.",
+    href: "/admin/reports",
+    icon: BarChart3,
+    color: "emerald",
+    accentClass: "border-emerald-200 bg-emerald-100 text-emerald-600 dark:border-emerald-500/20 dark:bg-emerald-500/10 dark:text-emerald-400",
+    badgeClass: "border-emerald-500/20 bg-emerald-500/5 text-emerald-600 dark:text-emerald-400",
+    cardClass: "hover:border-emerald-300 dark:hover:border-emerald-500/30",
+  },
 ];
 
 export default function ErpHubPage() {

@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { UserPlus, Users, type LucideIcon, ArrowRight } from "lucide-react";
+import { UserPlus, Users, type LucideIcon, ArrowRight, FileText } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -64,6 +64,16 @@ const services: Service[] = [
     borderColor: "border-amber-500/20",
     hoverShadow: "hover:shadow-amber-500/10",
   },
+  {
+    title: "Reports & Registers",
+    description: "Export enrolled rosters, contact lists, and A&W register.",
+    icon: FileText,
+    href: "/admin/reports",
+    iconColor: "text-blue-400",
+    bgColor: "bg-blue-500/10",
+    borderColor: "border-blue-500/20",
+    hoverShadow: "hover:shadow-blue-500/10",
+  },
 ];
 
 export default function RegistrationCards() {
@@ -72,7 +82,7 @@ export default function RegistrationCards() {
   const prefix = isClerk ? "/clerk" : "/admin";
 
   return (
-    <div className="mx-auto grid w-full max-w-7xl gap-6 md:grid-cols-2 lg:grid-cols-4">
+    <div className="mx-auto grid w-full max-w-7xl gap-5 md:grid-cols-3 lg:grid-cols-5">
       {services.map((service, _index) => {
         const Icon = service.icon;
         const href = service.href.replace("/admin", prefix);

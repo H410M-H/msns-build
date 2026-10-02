@@ -322,6 +322,17 @@ export default function ExamManagementPage() {
             className="shrink-0 border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 hover:text-emerald-800 dark:border-emerald-500/20 dark:bg-emerald-500/5 dark:text-emerald-300 dark:hover:bg-emerald-500/10 gap-2"
             asChild
           >
+            <Link href="/admin/reports?report=student-marks-percentage">
+              <FileText className="h-3.5 w-3.5" />
+              Marks Reports
+            </Link>
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            className="shrink-0 border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 hover:text-emerald-800 dark:border-emerald-500/20 dark:bg-emerald-500/5 dark:text-emerald-300 dark:hover:bg-emerald-500/10 gap-2"
+            asChild
+          >
             <Link href="/admin/exams/promotion">
               <ArrowUpRight className="h-3.5 w-3.5" />
               Student Promotion

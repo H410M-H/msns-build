@@ -1,0 +1,696 @@
+export type ExportFormat = "pdf" | "xlsx" | "csv" | "docx";
+
+export type ReportCategory = "students" | "admissions" | "academics" | "finance";
+
+export interface ReportColumn {
+  key: string;
+  label: string;
+  width?: number; // relative width or pixel estimate
+  format?: "text" | "currency" | "percent" | "date" | "badge";
+  align?: "left" | "center" | "right";
+}
+
+export interface ReportFilterConfig {
+  session?: boolean;
+  class?: boolean;
+  section?: boolean;
+  gender?: boolean;
+  dateRange?: boolean;
+  month?: boolean;
+  year?: boolean;
+  exam?: boolean;
+  city?: boolean;
+}
+
+export interface ReportDefinition {
+  id: string;
+  title: string;
+  shortTitle: string;
+  category: ReportCategory;
+  description: string;
+  columns: ReportColumn[];
+  filters: ReportFilterConfig;
+  defaultSort?: { key: string; order: "asc" | "desc" };
+}
+
+export const REPORT_DEFINITIONS: Record<string, ReportDefinition> = {
+  // ================= 1. ENROLLED STUDENTS & DIRECTORY =================
+  "enrolled-students": {
+    id: "enrolled-students",
+    title: "Enrolled Students List",
+    shortTitle: "Enrolled List",
+    category: "students",
+    description: "Official comprehensive roster of actively enrolled students with academic and bio-data details.",
+    filters: { session: true, class: true, section: true, gender: true, dateRange: true },
+    columns: [
+      { key: "srNo", label: "Sr #", width: 50, align: "center" },
+      { key: "registrationNumber", label: "Reg #", width: 120 },
+      { key: "admissionNumber", label: "Roll #", width: 90 },
+      { key: "studentName", label: "Student Name", width: 160 },
+      { key: "fatherName", label: "Father Name", width: 160 },
+      { key: "grade", label: "Class", width: 80 },
+      { key: "section", label: "Section", width: 70 },
+      { key: "gender", label: "Gender", width: 70 },
+      { key: "dateOfBirth", label: "DOB", width: 90 },
+      { key: "studentMobile", label: "Student Mobile", width: 110 },
+      { key: "fatherMobile", label: "Father Mobile", width: 110 },
+      { key: "status", label: "Status", width: 80, format: "badge" },
+    ],
+  },
+
+  "enrolled-students-ref-no": {
+    id: "enrolled-students-ref-no",
+    title: "Enrolled Students Ref No Wise",
+    shortTitle: "Ref No Wise",
+    category: "students",
+    description: "Enrolled students indexed and sequentially ordered by Reference / Registration Number.",
+    filters: { session: true, class: true, section: true, gender: true, dateRange: true },
+    defaultSort: { key: "registrationNumber", order: "asc" },
+    columns: [
+      { key: "registrationNumber", label: "Ref / Reg #", width: 130 },
+      { key: "admissionNumber", label: "Adm #", width: 90 },
+      { key: "studentName", label: "Student Name", width: 160 },
+      { key: "fatherName", label: "Father Name", width: 160 },
+      { key: "studentCNIC", label: "B-Form / CNIC", width: 130 },
+      { key: "grade", label: "Class", width: 80 },
+      { key: "section", label: "Section", width: 70 },
+      { key: "gender", label: "Gender", width: 70 },
+      { key: "enrolledDate", label: "Enrolled Date", width: 100, format: "date" },
+      { key: "studentMobile", label: "Contact", width: 110 },
+    ],
+  },
+
+  "enrolled-students-board": {
+    id: "enrolled-students-board",
+    title: "Enrolled Students Board Wise",
+    shortTitle: "Board Wise",
+    category: "students",
+    description: "Classification of secondary and matric students by Examination Board affiliation (BISE Gujranwala / Federal).",
+    filters: { session: true, class: true, section: true, gender: true, dateRange: true },
+    columns: [
+      { key: "srNo", label: "Sr #", width: 50, align: "center" },
+      { key: "boardName", label: "Board Affiliation", width: 140 },
+      { key: "registrationNumber", label: "Reg #", width: 120 },
+      { key: "admissionNumber", label: "Roll #", width: 90 },
+      { key: "studentName", label: "Student Name", width: 160 },
+      { key: "fatherName", label: "Father Name", width: 160 },
+      { key: "grade", label: "Class", width: 80 },
+      { key: "stream", label: "Group / Stream", width: 110 },
+      { key: "studentCNIC", label: "B-Form #", width: 130 },
+      { key: "biseRollNo", label: "BISE Roll #", width: 100 },
+    ],
+  },
+
+  "enrolled-students-religion": {
+    id: "enrolled-students-religion",
+    title: "Enrolled Students Religion Wise",
+    shortTitle: "Religion Wise",
+    category: "students",
+    description: "Demographic student distribution categorized by religious affiliation and community denomination.",
+    filters: { session: true, class: true, section: true, gender: true, dateRange: true },
+    columns: [
+      { key: "srNo", label: "Sr #", width: 50, align: "center" },
+      { key: "religion", label: "Religion", width: 100 },
+      { key: "registrationNumber", label: "Reg #", width: 120 },
+      { key: "admissionNumber", label: "Adm #", width: 90 },
+      { key: "studentName", label: "Student Name", width: 160 },
+      { key: "fatherName", label: "Father Name", width: 160 },
+      { key: "gender", label: "Gender", width: 70 },
+      { key: "grade", label: "Class", width: 80 },
+      { key: "section", label: "Section", width: 70 },
+      { key: "caste", label: "Caste / Tribe", width: 100 },
+    ],
+  },
+
+  "enrolled-students-marks": {
+    id: "enrolled-students-marks",
+    title: "Enrolled Students Marks Wise",
+    shortTitle: "Marks Wise",
+    category: "students",
+    description: "Students ranked by examination score, aggregate marks, and academic standing.",
+    filters: { session: true, class: true, section: true, gender: true, exam: true, dateRange: true },
+    defaultSort: { key: "percentage", order: "desc" },
+    columns: [
+      { key: "rank", label: "Rank", width: 60, align: "center" },
+      { key: "registrationNumber", label: "Reg #", width: 120 },
+      { key: "studentName", label: "Student Name", width: 160 },
+      { key: "fatherName", label: "Father Name", width: 150 },
+      { key: "grade", label: "Class", width: 80 },
+      { key: "section", label: "Section", width: 70 },
+      { key: "examName", label: "Exam Title", width: 120 },
+      { key: "totalMarks", label: "Max Marks", width: 80, align: "right" },
+      { key: "obtainedMarks", label: "Obtained", width: 80, align: "right" },
+      { key: "percentage", label: "Percentage", width: 90, format: "percent", align: "right" },
+      { key: "gradeLetter", label: "Grade", width: 70, align: "center" },
+      { key: "resultStatus", label: "Status", width: 80, format: "badge" },
+    ],
+  },
+
+  "student-count-section": {
+    id: "student-count-section",
+    title: "Student Count Section Wise",
+    shortTitle: "Section Counts",
+    category: "students",
+    description: "Statistical summary grid of enrolled student strength grouped by Class, Section, and Category.",
+    filters: { session: true, class: true, section: true, gender: true, dateRange: true },
+    columns: [
+      { key: "grade", label: "Class", width: 120 },
+      { key: "section", label: "Section", width: 90 },
+      { key: "category", label: "Category", width: 110 },
+      { key: "boysCount", label: "Boys", width: 90, align: "right" },
+      { key: "girlsCount", label: "Girls", width: 90, align: "right" },
+      { key: "totalStudents", label: "Total Students", width: 110, align: "right" },
+      { key: "capacity", label: "Class Capacity", width: 100, align: "right" },
+      { key: "occupancyRate", label: "Occupancy %", width: 100, format: "percent", align: "right" },
+    ],
+  },
+
+  "enrolled-student-contact": {
+    id: "enrolled-student-contact",
+    title: "Enrolled Student Contact List",
+    shortTitle: "Contact Directory",
+    category: "students",
+    description: "Complete parent/guardian communication directory with primary, secondary, and emergency contacts.",
+    filters: { session: true, class: true, section: true, gender: true, dateRange: true },
+    columns: [
+      { key: "srNo", label: "Sr #", width: 50, align: "center" },
+      { key: "registrationNumber", label: "Reg #", width: 120 },
+      { key: "studentName", label: "Student Name", width: 160 },
+      { key: "fatherName", label: "Father Name", width: 160 },
+      { key: "grade", label: "Class", width: 80 },
+      { key: "section", label: "Section", width: 70 },
+      { key: "studentMobile", label: "Student Mobile", width: 120 },
+      { key: "fatherMobile", label: "Father / Primary WhatsApp", width: 140 },
+      { key: "guardianName", label: "Guardian", width: 130 },
+      { key: "emergencyContact", label: "Emergency Contact", width: 120 },
+    ],
+  },
+
+  "student-contact-address": {
+    id: "student-contact-address",
+    title: "Student Contact List Address Wise",
+    shortTitle: "Address-wise Contact",
+    category: "students",
+    description: "Student contact directory sorted and categorized by residential locality, city, and address.",
+    filters: { session: true, class: true, section: true, gender: true, city: true, dateRange: true },
+    columns: [
+      { key: "srNo", label: "Sr #", width: 50, align: "center" },
+      { key: "cityOrArea", label: "Town / Area", width: 130 },
+      { key: "studentName", label: "Student Name", width: 160 },
+      { key: "fatherName", label: "Father Name", width: 160 },
+      { key: "grade", label: "Class", width: 80 },
+      { key: "section", label: "Section", width: 70 },
+      { key: "currentAddress", label: "Current Address", width: 220 },
+      { key: "permanentAddress", label: "Permanent Address", width: 200 },
+      { key: "primaryPhone", label: "Contact Phone", width: 120 },
+    ],
+  },
+
+  "student-credentials": {
+    id: "student-credentials",
+    title: "Student Username and Password",
+    shortTitle: "Portal Credentials",
+    category: "students",
+    description: "School ERP portal user credentials register for student and parent self-service logins.",
+    filters: { session: true, class: true, section: true, gender: true, dateRange: true },
+    columns: [
+      { key: "srNo", label: "Sr #", width: 50, align: "center" },
+      { key: "registrationNumber", label: "Account ID (Reg #)", width: 130 },
+      { key: "studentName", label: "Student Name", width: 160 },
+      { key: "grade", label: "Class", width: 80 },
+      { key: "section", label: "Section", width: 70 },
+      { key: "username", label: "Login Username", width: 160 },
+      { key: "email", label: "Portal Email", width: 180 },
+      { key: "initialPassword", label: "Default Key / Password", width: 140 },
+      { key: "accountStatus", label: "Portal Status", width: 90, format: "badge" },
+      { key: "lastLogin", label: "Last Active", width: 100, format: "date" },
+    ],
+  },
+
+  "struck-off-students": {
+    id: "struck-off-students",
+    title: "Struck Off Students",
+    shortTitle: "Struck Off List",
+    category: "students",
+    description: "Students whose names have been struck off school rolls due to prolonged absence, fee default, or migration.",
+    filters: { session: true, class: true, section: true, gender: true, dateRange: true },
+    columns: [
+      { key: "srNo", label: "Sr #", width: 50, align: "center" },
+      { key: "registrationNumber", label: "Reg #", width: 120 },
+      { key: "admissionNumber", label: "Adm #", width: 90 },
+      { key: "studentName", label: "Student Name", width: 160 },
+      { key: "fatherName", label: "Father Name", width: 160 },
+      { key: "grade", label: "Last Class", width: 80 },
+      { key: "section", label: "Section", width: 70 },
+      { key: "struckOffDate", label: "Struck Off Date", width: 110, format: "date" },
+      { key: "reason", label: "Struck Off Reason", width: 160 },
+      { key: "duesRemaining", label: "Outstanding Dues", width: 110, format: "currency", align: "right" },
+      { key: "slcIssued", label: "SLC Issued", width: 90, format: "badge" },
+    ],
+  },
+
+  "admission-withdrawal-register": {
+    id: "admission-withdrawal-register",
+    title: "Admission WithDrawl Register",
+    shortTitle: "A&W Register",
+    category: "students",
+    description: "Statutory, permanent Admission and Withdrawal (A&W) official register of the school.",
+    filters: { session: true, class: true, section: true, gender: true, dateRange: true },
+    columns: [
+      { key: "serialNo", label: "A&W Sr #", width: 70, align: "center" },
+      { key: "admissionDate", label: "Adm Date", width: 95, format: "date" },
+      { key: "admissionNumber", label: "Adm #", width: 85 },
+      { key: "registrationNumber", label: "Reg #", width: 115 },
+      { key: "studentName", label: "Pupil Name", width: 160 },
+      { key: "fatherName", label: "Father Name & Occupation", width: 180 },
+      { key: "dateOfBirth", label: "DOB (Figures & Words)", width: 150 },
+      { key: "classOnAdmission", label: "Class on Adm", width: 95 },
+      { key: "dateOfLeaving", label: "Date of Leaving", width: 100, format: "date" },
+      { key: "classOnLeaving", label: "Class on Leaving", width: 100 },
+      { key: "reasonOfWithdrawal", label: "Reason for Withdrawal", width: 160 },
+      { key: "conductRemarks", label: "Conduct & Remarks", width: 140 },
+    ],
+  },
+
+  "mailing-labels": {
+    id: "mailing-labels",
+    title: "Mailing Labels Report",
+    shortTitle: "Mailing Labels",
+    category: "students",
+    description: "Postal mailing address labels formatted for envelope dispatch, circulars, and dispatch parcels.",
+    filters: { session: true, class: true, section: true, gender: true, city: true, dateRange: true },
+    columns: [
+      { key: "srNo", label: "Label #", width: 60, align: "center" },
+      { key: "addressee", label: "Addressee / Student", width: 170 },
+      { key: "fatherOrGuardian", label: "Parent / Guardian", width: 160 },
+      { key: "studentId", label: "Ref / Reg #", width: 120 },
+      { key: "classSection", label: "Class & Section", width: 110 },
+      { key: "fullAddress", label: "Complete Postal Address", width: 280 },
+      { key: "city", label: "City / Postal Code", width: 110 },
+      { key: "contactNumber", label: "Contact Phone", width: 120 },
+    ],
+  },
+
+  "sms-summary": {
+    id: "sms-summary",
+    title: "Sms Summary Report",
+    shortTitle: "SMS Summary",
+    category: "students",
+    description: "Log and dispatch audit of SMS broadcasts, fee reminders, and attendance notifications.",
+    filters: { session: true, class: true, section: true, gender: true, dateRange: true },
+    columns: [
+      { key: "srNo", label: "Sr #", width: 50, align: "center" },
+      { key: "timestamp", label: "Date & Time", width: 130, format: "date" },
+      { key: "recipientName", label: "Recipient Name", width: 150 },
+      { key: "recipientRole", label: "Role", width: 80 },
+      { key: "phoneNumber", label: "Phone Number", width: 120 },
+      { key: "category", label: "Category", width: 110 },
+      { key: "messageSnippet", label: "Message Body", width: 260 },
+      { key: "deliveryStatus", label: "Status", width: 90, format: "badge" },
+    ],
+  },
+
+  // ================= 2. ADMISSIONS & FORM COLLECTION =================
+  "form-collection-checklist": {
+    id: "form-collection-checklist",
+    title: "Form Collection Checklist",
+    shortTitle: "Form Checklist",
+    category: "admissions",
+    description: "Document verification checklist ensuring mandatory admission paperwork is intact for applicants.",
+    filters: { session: true, class: true, section: true, gender: true, dateRange: true },
+    columns: [
+      { key: "formNumber", label: "Form #", width: 100 },
+      { key: "applicantName", label: "Applicant Name", width: 160 },
+      { key: "gradeApplying", label: "Class Applied", width: 100 },
+      { key: "bFormStatus", label: "B-Form / CNIC", width: 100, format: "badge" },
+      { key: "parentCnicStatus", label: "Father CNIC", width: 100, format: "badge" },
+      { key: "photosStatus", label: "4 Photos", width: 90, format: "badge" },
+      { key: "slcStatus", label: "SLC / TC", width: 90, format: "badge" },
+      { key: "resultCardStatus", label: "Report Card", width: 95, format: "badge" },
+      { key: "medicalCertStatus", label: "Medical Cert", width: 95, format: "badge" },
+      { key: "overallStatus", label: "Verification", width: 110, format: "badge" },
+    ],
+  },
+
+  "form-collection-board": {
+    id: "form-collection-board",
+    title: "Form Collection Board Wise",
+    shortTitle: "Forms: Board Wise",
+    category: "admissions",
+    description: "Admission applications categorized by target Examination Board and previous schooling board.",
+    filters: { session: true, class: true, section: true, gender: true, dateRange: true },
+    columns: [
+      { key: "srNo", label: "Sr #", width: 50, align: "center" },
+      { key: "boardName", label: "Examination Board", width: 140 },
+      { key: "formNumber", label: "Form #", width: 110 },
+      { key: "applicantName", label: "Applicant Name", width: 160 },
+      { key: "fatherName", label: "Father Name", width: 160 },
+      { key: "gradeApplying", label: "Class Applied", width: 100 },
+      { key: "previousSchool", label: "Previous School Attended", width: 180 },
+      { key: "submissionDate", label: "Submitted Date", width: 105, format: "date" },
+    ],
+  },
+
+  "form-collection-passing-year": {
+    id: "form-collection-passing-year",
+    title: "Form Collection Passing Year Wise",
+    shortTitle: "Forms: Passing Year",
+    category: "admissions",
+    description: "Admission applications grouped by applicant's previous academic passing graduation year.",
+    filters: { session: true, class: true, section: true, gender: true, year: true, dateRange: true },
+    columns: [
+      { key: "passingYear", label: "Passing Year", width: 100, align: "center" },
+      { key: "formNumber", label: "Form #", width: 110 },
+      { key: "applicantName", label: "Applicant Name", width: 160 },
+      { key: "fatherName", label: "Father Name", width: 160 },
+      { key: "previousClass", label: "Previous Class", width: 100 },
+      { key: "obtainedMarks", label: "Marks / %", width: 90, align: "right" },
+      { key: "gradeApplying", label: "Class Applied", width: 100 },
+      { key: "stream", label: "Subject Stream", width: 110 },
+    ],
+  },
+
+  "form-collection-address": {
+    id: "form-collection-address",
+    title: "Form Collection Address Wise",
+    shortTitle: "Forms: Address Wise",
+    category: "admissions",
+    description: "Spatial distribution of admission forms sold and received by residential area and town.",
+    filters: { session: true, class: true, section: true, gender: true, city: true, dateRange: true },
+    columns: [
+      { key: "srNo", label: "Sr #", width: 50, align: "center" },
+      { key: "townOrCity", label: "Town / Sector", width: 130 },
+      { key: "formNumber", label: "Form #", width: 110 },
+      { key: "applicantName", label: "Applicant Name", width: 160 },
+      { key: "fatherName", label: "Father Name", width: 160 },
+      { key: "gradeApplying", label: "Class Applied", width: 100 },
+      { key: "residentialAddress", label: "Full Residential Address", width: 220 },
+      { key: "contactNo", label: "Contact Phone", width: 120 },
+    ],
+  },
+
+  "admission-statics-city": {
+    id: "admission-statics-city",
+    title: "Admission Statics City Wise",
+    shortTitle: "City Statistics",
+    category: "admissions",
+    description: "Statistical city-wide aggregated performance of student applications, tests, and enrollment rates.",
+    filters: { session: true, class: true, section: true, gender: true, city: true, dateRange: true },
+    columns: [
+      { key: "cityName", label: "City / Region", width: 130 },
+      { key: "totalForms", label: "Forms Issued", width: 100, align: "right" },
+      { key: "submittedCount", label: "Forms Submitted", width: 110, align: "right" },
+      { key: "boysCount", label: "Boys", width: 80, align: "right" },
+      { key: "girlsCount", label: "Girls", width: 80, align: "right" },
+      { key: "testsPassed", label: "Test Cleared", width: 95, align: "right" },
+      { key: "enrolledCount", label: "Final Enrolled", width: 105, align: "right" },
+      { key: "conversionRate", label: "Conversion Rate", width: 110, format: "percent", align: "right" },
+    ],
+  },
+
+  "form-report-summary-city": {
+    id: "form-report-summary-city",
+    title: "Form Report Summary(City Wise Total)",
+    shortTitle: "City Form Summary",
+    category: "admissions",
+    description: "City totals summary covering prospectuses sold, fees collected, and active enrollment totals.",
+    filters: { session: true, class: true, section: true, gender: true, city: true, dateRange: true },
+    columns: [
+      { key: "cityName", label: "City Name", width: 130 },
+      { key: "formsIssued", label: "Prospectus Sold", width: 110, align: "right" },
+      { key: "formFeeUnit", label: "Unit Fee (PKR)", width: 105, format: "currency", align: "right" },
+      { key: "totalRevenue", label: "Total Form Revenue", width: 130, format: "currency", align: "right" },
+      { key: "formsProcessed", label: "Verified Forms", width: 110, align: "right" },
+      { key: "seatsAllotted", label: "Seats Allotted", width: 100, align: "right" },
+    ],
+  },
+
+  "step-form-collection-summary": {
+    id: "step-form-collection-summary",
+    title: "Step Form Collection Summary",
+    shortTitle: "Step Collection Funnel",
+    category: "admissions",
+    description: "Admission progression funnel tracking applicant advancement across four operational stages.",
+    filters: { session: true, class: true, section: true, gender: true, dateRange: true },
+    columns: [
+      { key: "stepNumber", label: "Step #", width: 70, align: "center" },
+      { key: "stepTitle", label: "Roadmap Stage", width: 160 },
+      { key: "stageDescription", label: "Operational Milestone", width: 220 },
+      { key: "boysCount", label: "Male Count", width: 90, align: "right" },
+      { key: "girlsCount", label: "Female Count", width: 90, align: "right" },
+      { key: "totalCount", label: "Total Applicants", width: 110, align: "right" },
+      { key: "funnelPercentage", label: "% of Funnel", width: 100, format: "percent", align: "right" },
+      { key: "actionStatus", label: "Stage Action", width: 110, format: "badge" },
+    ],
+  },
+
+  "admission-status": {
+    id: "admission-status",
+    title: "Admission Status Report",
+    shortTitle: "Admission Status",
+    category: "admissions",
+    description: "Real-time pipeline monitoring showing application status (Review, Test, Interview, Enrolled).",
+    filters: { session: true, class: true, section: true, gender: true, dateRange: true },
+    columns: [
+      { key: "formNumber", label: "Form #", width: 110 },
+      { key: "applicantName", label: "Applicant Name", width: 160 },
+      { key: "fatherName", label: "Father Name", width: 160 },
+      { key: "gradeApplying", label: "Class Applied", width: 100 },
+      { key: "submissionDate", label: "Applied On", width: 100, format: "date" },
+      { key: "testScore", label: "Test ( / 75)", width: 90, align: "center" },
+      { key: "interviewResult", label: "Interview", width: 95, format: "badge" },
+      { key: "currentStatus", label: "Admission Status", width: 120, format: "badge" },
+      { key: "feeChallanStatus", label: "Fee Challan", width: 100, format: "badge" },
+    ],
+  },
+
+  "admission-aging": {
+    id: "admission-aging",
+    title: "Admission Aging Report",
+    shortTitle: "Admission Aging",
+    category: "admissions",
+    description: "Aging analysis of unresolved admission applications to identify bottlenecks and speed up enrollment.",
+    filters: { session: true, class: true, section: true, gender: true, dateRange: true },
+    columns: [
+      { key: "agingBracket", label: "Pending Aging Bracket", width: 150 },
+      { key: "applicationsCount", label: "Pending Applications", width: 130, align: "right" },
+      { key: "boysCount", label: "Boys", width: 80, align: "right" },
+      { key: "girlsCount", label: "Girls", width: 80, align: "right" },
+      { key: "actionRequired", label: "Required Follow-up Action", width: 220 },
+      { key: "oldestApplicationDays", label: "Max Days Pending", width: 120, align: "center" },
+    ],
+  },
+
+  "source-of-information": {
+    id: "source-of-information",
+    title: "Source of Information Report",
+    shortTitle: "Marketing Source",
+    category: "admissions",
+    description: "Marketing and awareness attribution report tracking inquiries by channel (Walk-in, Social, Referrals).",
+    filters: { session: true, class: true, section: true, gender: true, dateRange: true },
+    columns: [
+      { key: "sourceName", label: "Information Channel", width: 160 },
+      { key: "inquiriesCount", label: "Initial Inquiries", width: 110, align: "right" },
+      { key: "formsTaken", label: "Forms Procured", width: 110, align: "right" },
+      { key: "admissionsConfirmed", label: "Admissions Confirmed", width: 130, align: "right" },
+      { key: "conversionRate", label: "Conversion %", width: 105, format: "percent", align: "right" },
+      { key: "marketingBudgetPk", label: "Ad Spend (PKR)", width: 115, format: "currency", align: "right" },
+      { key: "cac", label: "Cost Per Student", width: 115, format: "currency", align: "right" },
+    ],
+  },
+
+  "admission-report": {
+    id: "admission-report",
+    title: "Admission Report",
+    shortTitle: "Master Admissions",
+    category: "admissions",
+    description: "Executive master log of all granted student admissions for the active academic cycle.",
+    filters: { session: true, class: true, section: true, gender: true, dateRange: true },
+    columns: [
+      { key: "srNo", label: "Sr #", width: 50, align: "center" },
+      { key: "admissionDate", label: "Adm Date", width: 95, format: "date" },
+      { key: "registrationNumber", label: "Reg #", width: 120 },
+      { key: "admissionNumber", label: "Adm #", width: 85 },
+      { key: "studentName", label: "Student Name", width: 160 },
+      { key: "fatherName", label: "Father Name", width: 160 },
+      { key: "grade", label: "Class", width: 80 },
+      { key: "section", label: "Section", width: 70 },
+      { key: "gender", label: "Gender", width: 70 },
+      { key: "studentMobile", label: "Contact", width: 110 },
+      { key: "admissionFee", label: "Adm Fee (PKR)", width: 105, format: "currency", align: "right" },
+      { key: "feeStatus", label: "Fee Status", width: 90, format: "badge" },
+    ],
+  },
+
+  "form-collection-fee-paid": {
+    id: "form-collection-fee-paid",
+    title: "Form Collections Fee Paid Report",
+    shortTitle: "Form Fee Ledger",
+    category: "admissions",
+    description: "Audit register of prospectus and admission registration processing fees paid by applicants.",
+    filters: { session: true, class: true, section: true, gender: true, dateRange: true },
+    columns: [
+      { key: "receiptNumber", label: "Receipt / Challan #", width: 130 },
+      { key: "formNumber", label: "Form #", width: 100 },
+      { key: "applicantName", label: "Applicant Name", width: 160 },
+      { key: "gradeApplying", label: "Class Applied", width: 100 },
+      { key: "feeAmount", label: "Amount Paid", width: 100, format: "currency", align: "right" },
+      { key: "paymentMode", label: "Payment Mode", width: 100 },
+      { key: "paymentDate", label: "Payment Date", width: 100, format: "date" },
+      { key: "receivedBy", label: "Cashier / Clerk", width: 120 },
+      { key: "paymentStatus", label: "Status", width: 85, format: "badge" },
+    ],
+  },
+
+  "form-collection-summary": {
+    id: "form-collection-summary",
+    title: "Form Collection Summary",
+    shortTitle: "Forms Overview",
+    category: "admissions",
+    description: "High-level summary of total admission forms issued, returned, verified, and admitted.",
+    filters: { session: true, class: true, section: true, gender: true, dateRange: true },
+    columns: [
+      { key: "gradeName", label: "Grade / Class", width: 130 },
+      { key: "formsIssued", label: "Forms Issued", width: 100, align: "right" },
+      { key: "formsReceived", label: "Forms Received", width: 105, align: "right" },
+      { key: "boysCount", label: "Boys", width: 80, align: "right" },
+      { key: "girlsCount", label: "Girls", width: 80, align: "right" },
+      { key: "feeCollected", label: "Revenue (PKR)", width: 120, format: "currency", align: "right" },
+      { key: "seatsAvailable", label: "Seat Capacity", width: 100, align: "right" },
+      { key: "finalEnrolled", label: "Enrolled", width: 90, align: "right" },
+    ],
+  },
+
+  // ================= 3. ACADEMICS & MARKS =================
+  "student-marks-percentage": {
+    id: "student-marks-percentage",
+    title: "Student Marks Percentage",
+    shortTitle: "Marks Percentage",
+    category: "academics",
+    description: "Detailed grade distribution across academic percentage brackets (A+, A, B, C, D, Fail).",
+    filters: { session: true, class: true, section: true, gender: true, exam: true, dateRange: true },
+    defaultSort: { key: "percentage", order: "desc" },
+    columns: [
+      { key: "rank", label: "Rank", width: 60, align: "center" },
+      { key: "registrationNumber", label: "Reg #", width: 120 },
+      { key: "studentName", label: "Student Name", width: 160 },
+      { key: "grade", label: "Class", width: 80 },
+      { key: "section", label: "Section", width: 70 },
+      { key: "gender", label: "Gender", width: 70 },
+      { key: "totalObtained", label: "Obtained Marks", width: 100, align: "right" },
+      { key: "totalMax", label: "Max Marks", width: 90, align: "right" },
+      { key: "percentage", label: "Percentage %", width: 100, format: "percent", align: "right" },
+      { key: "gradeBracket", label: "Letter Grade", width: 90, align: "center" },
+      { key: "standing", label: "Academic Standing", width: 120, format: "badge" },
+    ],
+  },
+
+  "student-gender-count": {
+    id: "student-gender-count",
+    title: "Student GenderWise Count",
+    shortTitle: "Gender Distribution",
+    category: "academics",
+    description: "Gender ratio and demographic balance breakdown by academic class, grade, and section.",
+    filters: { session: true, class: true, section: true, gender: true, dateRange: true },
+    columns: [
+      { key: "grade", label: "Class", width: 120 },
+      { key: "section", label: "Section", width: 80 },
+      { key: "boysCount", label: "Male (Boys)", width: 95, align: "right" },
+      { key: "girlsCount", label: "Female (Girls)", width: 100, align: "right" },
+      { key: "totalCount", label: "Total Students", width: 105, align: "right" },
+      { key: "boysRatio", label: "Boys %", width: 85, format: "percent", align: "right" },
+      { key: "girlsRatio", label: "Girls %", width: 85, format: "percent", align: "right" },
+      { key: "genderRatioText", label: "Ratio (B : G)", width: 100, align: "center" },
+    ],
+  },
+
+  // ================= 4. REVENUE, FEES & PAYROLL =================
+  "fee-collection": {
+    id: "fee-collection",
+    title: "Fee Collection Report",
+    shortTitle: "Fee Collections",
+    category: "finance",
+    description: "Detailed student fee collection records including tuition, exam fund, discounts, and payments.",
+    filters: { session: true, class: true, section: true, gender: true, month: true, year: true, dateRange: true },
+    columns: [
+      { key: "period", label: "Period", width: 90 },
+      { key: "registrationNumber", label: "Reg #", width: 120 },
+      { key: "studentName", label: "Student Name", width: 160 },
+      { key: "gradeSection", label: "Class & Sec", width: 95 },
+      { key: "tuitionFee", label: "Tuition Fee", width: 95, format: "currency", align: "right" },
+      { key: "examFund", label: "Exam Fund", width: 85, format: "currency", align: "right" },
+      { key: "otherCharges", label: "Other Fees", width: 85, format: "currency", align: "right" },
+      { key: "discount", label: "Discount", width: 85, format: "currency", align: "right" },
+      { key: "netPaid", label: "Net Paid", width: 95, format: "currency", align: "right" },
+      { key: "paymentStatus", label: "Status", width: 80, format: "badge" },
+      { key: "paidAt", label: "Paid Date", width: 95, format: "date" },
+    ],
+  },
+
+  "fee-defaulters": {
+    id: "fee-defaulters",
+    title: "Fee Defaulters & Outstanding Report",
+    shortTitle: "Fee Defaulters",
+    category: "finance",
+    description: "Outstanding student fees and dues with months pending, late fees, and guardian contact details.",
+    filters: { session: true, class: true, section: true, gender: true, month: true, year: true, dateRange: true },
+    defaultSort: { key: "totalOutstanding", order: "desc" },
+    columns: [
+      { key: "srNo", label: "Sr #", width: 50, align: "center" },
+      { key: "registrationNumber", label: "Reg #", width: 120 },
+      { key: "studentName", label: "Student Name", width: 160 },
+      { key: "fatherName", label: "Father Name", width: 160 },
+      { key: "gradeSection", label: "Class & Sec", width: 95 },
+      { key: "fatherMobile", label: "Contact Phone", width: 120 },
+      { key: "unpaidMonthsCount", label: "Months Due", width: 90, align: "center" },
+      { key: "tuitionDue", label: "Tuition Dues", width: 95, format: "currency", align: "right" },
+      { key: "lateFee", label: "Late Surcharge", width: 95, format: "currency", align: "right" },
+      { key: "totalOutstanding", label: "Total Payable", width: 110, format: "currency", align: "right" },
+      { key: "defaulterSeverity", label: "Aging Alert", width: 100, format: "badge" },
+    ],
+  },
+
+  "revenue-expense-summary": {
+    id: "revenue-expense-summary",
+    title: "Revenue vs Expense Summary Report",
+    shortTitle: "Revenue & Expense",
+    category: "finance",
+    description: "Macro-level institutional financial health ledger comparing collections against operational expenditures.",
+    filters: { session: true, year: true, dateRange: true },
+    columns: [
+      { key: "period", label: "Month / Period", width: 110 },
+      { key: "tuitionRevenue", label: "Fee Revenue", width: 120, format: "currency", align: "right" },
+      { key: "admissionRevenue", label: "Admission Dues", width: 120, format: "currency", align: "right" },
+      { key: "otherIncome", label: "Other Income", width: 110, format: "currency", align: "right" },
+      { key: "totalRevenue", label: "Total Inflow", width: 125, format: "currency", align: "right" },
+      { key: "salaryExpense", label: "Payroll Outflow", width: 125, format: "currency", align: "right" },
+      { key: "directExpenses", label: "Direct Expenses", width: 120, format: "currency", align: "right" },
+      { key: "totalExpenses", label: "Total Outflow", width: 125, format: "currency", align: "right" },
+      { key: "netOperatingSurplus", label: "Net Balance", width: 130, format: "currency", align: "right" },
+    ],
+  },
+
+  "salary-disbursement": {
+    id: "salary-disbursement",
+    title: "Salary Disbursement Report",
+    shortTitle: "Salary Payroll",
+    category: "finance",
+    description: "Faculty and staff payroll register with base salaries, increments, deductions, and payment status.",
+    filters: { session: true, month: true, year: true, gender: true, dateRange: true },
+    columns: [
+      { key: "srNo", label: "Sr #", width: 50, align: "center" },
+      { key: "registrationNumber", label: "Emp Reg #", width: 115 },
+      { key: "employeeName", label: "Staff Name", width: 160 },
+      { key: "designation", label: "Designation", width: 110 },
+      { key: "monthYear", label: "Month / Year", width: 95 },
+      { key: "baseSalary", label: "Base Salary", width: 95, format: "currency", align: "right" },
+      { key: "increment", label: "Increment", width: 85, format: "currency", align: "right" },
+      { key: "bonus", label: "Bonus", width: 80, format: "currency", align: "right" },
+      { key: "deductions", label: "Deductions", width: 85, format: "currency", align: "right" },
+      { key: "netSalary", label: "Net Payable", width: 105, format: "currency", align: "right" },
+      { key: "status", label: "Disbursement", width: 95, format: "badge" },
+    ],
+  },
+};
+
+export const ALL_REPORTS_LIST = Object.values(REPORT_DEFINITIONS);

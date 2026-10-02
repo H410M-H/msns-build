@@ -13,6 +13,7 @@ import {
   Briefcase,
   Images,
   BarChart3,
+  FileSpreadsheet,
 } from "lucide-react";
 import {
   Sidebar,
@@ -58,7 +59,20 @@ const erpNav: NavItem = {
     { title: "Asset Management", url: "/admin/erp/assets" },
     { title: "Petty Cash", url: "/admin/erp/petty-cash" },
     { title: "Financial Ledger", url: "/admin/erp/ledger" },
+    { title: "Reports & Registers", url: "/admin/reports" },
   ],
+};
+
+const reportsNav: NavItem = {
+  title: "Reports",
+  url: "/admin/reports",
+  icon: FileSpreadsheet,
+};
+
+const clerkReportsNav: NavItem = {
+  title: "Reports",
+  url: "/clerk/reports",
+  icon: FileSpreadsheet,
 };
 
 const examinationsNav: NavItem = {
@@ -98,6 +112,7 @@ const data: NavigationConfig = {
     adminSessionsNav,
     examinationsNav,
     adminAttendanceNav,
+    reportsNav,
     { title: "Faculty", url: "/admin/users/faculty/view", icon: Briefcase },
     { title: "Students", url: "/admin/users/student/view", icon: GraduationCap },
     { title: "Documents", url: "/documents", icon: FileText },
@@ -111,6 +126,7 @@ const data: NavigationConfig = {
     adminSessionsNav,
     examinationsNav,
     adminAttendanceNav,
+    reportsNav,
     { title: "Faculty", url: "/admin/users/faculty/view", icon: Briefcase },
     { title: "Students", url: "/admin/users/student/view", icon: GraduationCap },
     { title: "Documents", url: "/documents", icon: FileText },
@@ -124,6 +140,7 @@ const data: NavigationConfig = {
     adminSessionsNav,
     examinationsNav,
     adminAttendanceNav,
+    reportsNav,
     { title: "Faculty", url: "/admin/users/faculty/view", icon: Briefcase },
     { title: "Students", url: "/admin/users/student/view", icon: GraduationCap },
     { title: "Documents", url: "/documents", icon: FileText },
@@ -153,6 +170,7 @@ const data: NavigationConfig = {
         { title: "Employee Attendance", url: "/clerk/sessions/attendance/employees/monthly" },
       ],
     },
+    clerkReportsNav,
     { title: "Faculty", url: "/clerk/users/faculty/view", icon: Briefcase },
     { title: "Students", url: "/clerk/users/student/view", icon: GraduationCap },
     { title: "Documents", url: "/documents", icon: FileText },
