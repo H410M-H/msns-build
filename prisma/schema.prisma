@@ -154,27 +154,109 @@ model EmployeeAttendance {
 }
 
 model FeeStudentClass {
-  sfcId               String       @id @default(cuid())
-  studentClassId      String
-  feeId               String
-  tuitionPaid         Boolean      @default(false)
-  examFundPaid        Boolean      @default(false)
-  computerLabPaid     Boolean      @default(false)
-  studentIdCardPaid   Boolean      @default(false)
-  infoAndCallsPaid    Boolean      @default(false)
-  discount            Float        @default(0)
-  discountByPercent   Float        @default(0)
-  discountDescription String
-  month               Int          @default(1)
-  year                Int          @default(2024)
-  lateFee             Float        @default(0)
-  paidAt              DateTime?
-  createdAt           DateTime     @default(now())
-  updatedAt           DateTime     @updatedAt
-  fees                Fees         @relation(fields: [feeId], references: [feeId])
-  StudentClass        StudentClass @relation(fields: [studentClassId], references: [scId])
+  sfcId                String             @id @default(cuid())
+  studentClassId       String
+  feeId                String
+  month                Int                @default(1)
+  year                 Int                @default(2024)
+  installmentNo        Int                @default(1)
+  voucherNumber        String             @unique @default(cuid())
+  voucherType          VoucherType        @default(REGULAR_INSTALLMENT)
 
-  @@unique([studentClassId, feeId, month, year])
+  // Validity & Confirmation
+  issueDate            DateTime           @default(now())
+  dueDate              DateTime           @default(now())
+  paidAt               DateTime?
+  confirmedByUserId    String?
+  collectingBank       String?            @default("CASH_COUNTER")
+  collectorName        String?
+
+  // Concession (Policy/Merit) vs Exemption (Principal Discretion)
+  concessionCategory   ConcessionCategory @default(NONE)
+  concessionScope      ConcessionScope?
+  concessionAmount     Float              @default(0)
+  exemptionAmount      Float              @default(0)
+  exemptionApprovedBy  String?
+  exemptionReason      String?
+
+  // Legacy & Total Discount Compatibility
+  discount             Float              @default(0)
+  discountByPercent    Float              @default(0)
+  discountDescription  String?
+
+  // Sub-Installment & Merging Hierarchy
+  parentVoucherId      String?
+  parentVoucher        FeeStudentClass?   @relation("SubInstallmentHierarchy", fields: [parentVoucherId], references: [sfcId], onDelete: Restrict)
+  subInstallments      FeeStudentClass[]  @relation("SubInstallmentHierarchy")
+  subInstallmentIndex  Int                @default(1)
+  totalSubInstallments Int                @default(1)
+  isSplitLocked        Boolean            @default(false)
+  mergedIntoVoucherId  String?
+
+  // Fine & Adjustment Metadata
+  lateFee              Float              @default(0)
+  fineNature           FineNature?
+  adjustmentAmount     Float              @default(0)
+  adjustmentReason     String?
+
+  // Payment Status & Ledger Flags
+  tuitionPaid          Boolean            @default(false)
+  examFundPaid         Boolean            @default(false)
+  computerLabPaid      Boolean            @default(false)
+  studentIdCardPaid    Boolean            @default(false)
+  infoAndCallsPaid     Boolean            @default(false)
+  admissionFeePaid     Boolean            @default(false)
+  paymentStatus        PaymentStatus      @default(PENDING)
+  amountPaid           Float              @default(0)
+  paymentHistory       Json?              @default("[]")
+
+  createdAt            DateTime           @default(now())
+  updatedAt            DateTime           @updatedAt
+
+  fees                 Fees               @relation(fields: [feeId], references: [feeId])
+  StudentClass         StudentClass       @relation(fields: [studentClassId], references: [scId])
+
+  @@unique([studentClassId, feeId, month, year, subInstallmentIndex])
+  @@index([studentClassId])
+  @@index([feeId])
+  @@index([month, year])
+  @@index([paymentStatus])
+  @@index([voucherNumber])
+  @@index([parentVoucherId])
+  @@index([mergedIntoVoucherId])
+}
+
+model ChallanValidity {
+  challanValidityId String   @id @default(cuid())
+  sessionId         String
+  gradeId           String
+  installmentNo     Int
+  month             Int?
+  year              Int
+  fromDate          DateTime
+  toDate            DateTime
+  isActive          Boolean  @default(true)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  session           Sessions @relation(fields: [sessionId], references: [sessionId], onDelete: Cascade)
+  grade             Grades   @relation(fields: [gradeId], references: [classId], onDelete: Cascade)
+
+  @@unique([sessionId, gradeId, installmentNo])
+  @@index([sessionId, gradeId])
+}
+
+model SchoolBankDetails {
+  bankId        String   @id @default(cuid())
+  bankName      String
+  accountTitle  String
+  accountNumber String
+  iban          String?
+  branchCode    String?
+  branchName    String?
+  isDefault     Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 }
 
 model Fees {
@@ -222,6 +304,7 @@ model Grades {
   // v2.0 relations
   BulkPromotionFromClass BulkPromotionBatch[] @relation("BulkPromotionFromClass")
   BulkPromotionToClass   BulkPromotionBatch[] @relation("BulkPromotionToClass")
+  ChallanValidity        ChallanValidity[]
 }
 
 model Salary {
@@ -289,6 +372,7 @@ model Sessions {
   BulkPromotionToSession   BulkPromotionBatch[]      @relation("BulkPromotionToSession")
   BulkSalaryBatches        BulkSalaryCreationBatch[] @relation("BulkSalaryToSession")
   LeaveBalances            LeaveBalance[]
+  ChallanValidity          ChallanValidity[]
 }
 
 model Event {
@@ -1213,6 +1297,56 @@ enum FeeType {
 enum FeeCategory {
   MonthlyFee
   AnnualFee
+}
+
+enum VoucherType {
+  REGULAR_INSTALLMENT
+  SUB_INSTALLMENT
+  FULL_YEAR_MERGED
+  FEE_ADJUSTMENT
+  FINE_CHALLAN
+}
+
+enum PaymentStatus {
+  PENDING
+  PARTIALLY_PAID
+  PAID
+  OVERDUE
+  CANCELLED
+  LOCKED_MERGED
+}
+
+enum ConcessionCategory {
+  NONE
+  RS_10_SCHOLARSHIP
+  A_PLUS_PLUS
+  A_PLUS
+  A_GRADE
+  B_PLUS
+  B_GRADE
+  C_PLUS
+  C_GRADE
+  D_PLUS
+  D_GRADE
+  SIBLING_CONCESSION
+  STAFF_CHILD
+  ORPHAN_WELFARE
+  SUSPENDED_LOW_ATTENDANCE
+}
+
+enum ConcessionScope {
+  SPECIAL_TWO_YEAR
+  GENERAL_ONE_YEAR
+  REFERRAL_ONE_INSTALLMENT
+}
+
+enum FineNature {
+  LATE_FEE
+  DISCIPLINE
+  ABSENTEEISM
+  LIBRARY_DAMAGE
+  LAB_BREAKAGE
+  OTHER
 }
 
 enum SalaryStatus {
