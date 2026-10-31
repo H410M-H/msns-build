@@ -1,4 +1,7 @@
 import React from "react";
+import Image from "next/image";
+import { SCHOOL_LOGO_URL, resolveVoucherBanks } from "./voucher-branding";
+import { VoucherBankDetails } from "./VoucherBankDetails";
 import { Separator } from "~/components/ui/separator";
 import { format } from "date-fns";
 import { cn, getParentagePrefix } from "~/lib/utils";
@@ -70,9 +73,12 @@ export const FeeVoucher = React.forwardRef<
       {/* Header */}
       <div className="mb-6 flex items-start justify-between border-b border-emerald-900/30 pb-4">
         <div className="flex items-center gap-3">
-          <img
-            src="/logo.svg"
-            alt="MSNS Logo"
+          <Image
+            src={SCHOOL_LOGO_URL}
+            alt="M. S. Naz High School official logo"
+            width={48}
+            height={48}
+            priority
             className="w-12 h-12 object-contain print:w-12 print:h-12 flex-shrink-0"
           />
           <div>
@@ -240,6 +246,11 @@ export const FeeVoucher = React.forwardRef<
           </tr>
         </tbody>
       </table>
+
+      <section className="rounded border border-slate-200 bg-slate-50 p-3 text-xs text-slate-700">
+        <h2 className="mb-2 font-bold text-slate-900">School Bank Details</h2>
+        <VoucherBankDetails banks={resolveVoucherBanks()} />
+      </section>
 
       {/* Footer Signature Area */}
       <div className="mt-12 flex items-end justify-between border-t pt-8 text-sm text-muted-foreground">
