@@ -2,6 +2,7 @@ import { TRPCError } from "@trpc/server";
 import { createTRPCRouter, protectedProcedure, managementProcedure } from "../trpc";
 import { z } from "zod";
 import { getSessionEmployee } from "~/server/utils/credential-generator";
+import { PaymentStatus } from "@prisma/client";
 
 const promoteStudentSchema = z.object({
   studentId: z.string().cuid(),
@@ -10,6 +11,7 @@ const promoteStudentSchema = z.object({
   fromClassId: z.string().cuid(),
   toClassId: z.string().cuid(),
   remarks: z.string().optional(),
+  clearanceBypassCode: z.string().optional(),
 });
 
 const batchPromoteSchema = z.object({
@@ -18,6 +20,7 @@ const batchPromoteSchema = z.object({
   fromClassId: z.string().cuid(),
   toClassId: z.string().cuid(),
   examIdForFinalCheck: z.string().cuid(),
+  clearanceBypassCode: z.string().optional(),
 });
 
 export const promotionRouter = createTRPCRouter({
@@ -80,22 +83,50 @@ export const promotionRouter = createTRPCRouter({
           });
         }
 
-        // Remove student from current class
-        await ctx.db.studentClass.deleteMany({
+        // Enforce Pre-flight Fee Clearance Check
+        const unpaidVouchers = await ctx.db.feeStudentClass.findMany({
           where: {
-            studentId: input.studentId,
-            classId: input.fromClassId,
+            StudentClass: {
+              studentId: input.studentId,
+              sessionId: input.fromSessionId,
+            },
+            paymentStatus: { in: [PaymentStatus.PENDING, PaymentStatus.PARTIALLY_PAID, PaymentStatus.OVERDUE] },
           },
         });
 
-        // Add student to new class
-        await ctx.db.studentClass.create({
-          data: {
+        if (unpaidVouchers.length > 0) {
+          const isBypassed = !!input.clearanceBypassCode && input.clearanceBypassCode.trim().length > 0;
+          if (!isBypassed) {
+            throw new TRPCError({
+              code: "PRECONDITION_FAILED",
+              message: "Promotion blocked: Student has outstanding fee arrears for the current session. Financial clearance or authorized Principal bypass code required.",
+            });
+          }
+        }
+
+        // Zero Deletion: PRESERVE prior session StudentClass record intact
+        // Upsert student-class association for the new session
+        const existingAssignment = await ctx.db.studentClass.findFirst({
+          where: {
             studentId: input.studentId,
-            classId: input.toClassId,
             sessionId: input.toSessionId,
           },
         });
+
+        if (existingAssignment) {
+          await ctx.db.studentClass.update({
+            where: { scId: existingAssignment.scId },
+            data: { classId: input.toClassId },
+          });
+        } else {
+          await ctx.db.studentClass.create({
+            data: {
+              studentId: input.studentId,
+              classId: input.toClassId,
+              sessionId: input.toSessionId,
+            },
+          });
+        }
 
         // Create promotion history
         const promotion = await ctx.db.promotionHistory.create({
@@ -106,7 +137,9 @@ export const promotionRouter = createTRPCRouter({
             fromSessionId: input.fromSessionId,
             toSessionId: input.toSessionId,
             promotionReason: "PASSED",
-            remarks: input.remarks,
+            remarks: input.clearanceBypassCode
+              ? `${input.remarks ? input.remarks + " | " : ""}Clearance Bypass: ${input.clearanceBypassCode}`
+              : input.remarks,
             promotedBy,
           },
         });
@@ -183,22 +216,47 @@ export const promotionRouter = createTRPCRouter({
 
         // Promote passed students
         for (const student of studentsToPromote) {
-          // Remove from current class
-          await ctx.db.studentClass.deleteMany({
+          // Fee clearance check
+          const studentArrears = await ctx.db.feeStudentClass.findMany({
             where: {
-              studentId: student.studentId,
-              classId: input.fromClassId,
+              StudentClass: {
+                studentId: student.studentId,
+                sessionId: input.fromSessionId,
+              },
+              paymentStatus: { in: [PaymentStatus.PENDING, PaymentStatus.PARTIALLY_PAID, PaymentStatus.OVERDUE] },
             },
           });
 
-          // Add to new class
-          await ctx.db.studentClass.create({
-            data: {
+          if (studentArrears.length > 0 && (!input.clearanceBypassCode || input.clearanceBypassCode.trim().length === 0)) {
+            throw new TRPCError({
+              code: "PRECONDITION_FAILED",
+              message: `Promotion blocked: Student ${student.studentId} has outstanding fee arrears for the session. Financial clearance or authorized bypass code required.`,
+            });
+          }
+
+          // Zero Deletion: PRESERVE prior session StudentClass record intact
+          // Upsert student-class association for target session
+          const existingAssignment = await ctx.db.studentClass.findFirst({
+            where: {
               studentId: student.studentId,
-              classId: input.toClassId,
               sessionId: input.toSessionId,
             },
           });
+
+          if (existingAssignment) {
+            await ctx.db.studentClass.update({
+              where: { scId: existingAssignment.scId },
+              data: { classId: input.toClassId },
+            });
+          } else {
+            await ctx.db.studentClass.create({
+              data: {
+                studentId: student.studentId,
+                classId: input.toClassId,
+                sessionId: input.toSessionId,
+              },
+            });
+          }
 
           // Create promotion history
           const promotion = await ctx.db.promotionHistory.create({
@@ -209,6 +267,9 @@ export const promotionRouter = createTRPCRouter({
               fromSessionId: input.fromSessionId,
               toSessionId: input.toSessionId,
               promotionReason: "PASSED",
+              remarks: input.clearanceBypassCode
+                ? `Batch Promotion | Clearance Bypass: ${input.clearanceBypassCode}`
+                : undefined,
               promotedBy,
             },
           });
@@ -594,8 +655,10 @@ export const promotionRouter = createTRPCRouter({
             action: z.enum(["Promote", "Withhold"]),
             isOverride: z.boolean().default(false),
             justification: z.string().optional(),
+            clearanceBypassCode: z.string().optional(),
           }),
         ),
+        clearanceBypassCode: z.string().optional(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
@@ -653,19 +716,50 @@ export const promotionRouter = createTRPCRouter({
           });
 
           if (s.action === "Promote") {
-            // Remove from current class (update enrollment status)
-            await tx.studentClass.deleteMany({
-              where: { studentId: s.studentId, classId: input.fromClassId },
+            // Fee clearance validation
+            const arrears = await tx.feeStudentClass.findMany({
+              where: {
+                StudentClass: {
+                  studentId: s.studentId,
+                  sessionId: input.fromSessionId,
+                },
+                paymentStatus: { in: [PaymentStatus.PENDING, PaymentStatus.PARTIALLY_PAID, PaymentStatus.OVERDUE] },
+              },
             });
+            const hasBypass =
+              s.isOverride ||
+              (s.clearanceBypassCode && s.clearanceBypassCode.trim().length > 0) ||
+              (input.clearanceBypassCode && input.clearanceBypassCode.trim().length > 0);
 
-            // Add to new class
-            await tx.studentClass.create({
-              data: {
+            if (arrears.length > 0 && !hasBypass) {
+              throw new TRPCError({
+                code: "PRECONDITION_FAILED",
+                message: `Promotion blocked for student ${s.studentId}: Outstanding fee arrears exist for session ${input.fromSessionId}. Provide clearanceBypassCode or override.`,
+              });
+            }
+
+            // Zero Deletion: PRESERVE prior session StudentClass record intact
+            const existingAssignment = await tx.studentClass.findFirst({
+              where: {
                 studentId: s.studentId,
-                classId: input.toClassId,
                 sessionId: input.toSessionId,
               },
             });
+
+            if (existingAssignment) {
+              await tx.studentClass.update({
+                where: { scId: existingAssignment.scId },
+                data: { classId: input.toClassId },
+              });
+            } else {
+              await tx.studentClass.create({
+                data: {
+                  studentId: s.studentId,
+                  classId: input.toClassId,
+                  sessionId: input.toSessionId,
+                },
+              });
+            }
 
             // Create promotion history
             await tx.promotionHistory.create({
@@ -804,5 +898,92 @@ export const promotionRouter = createTRPCRouter({
       });
 
       return { success: true };
+    }),
+
+  verifyPromotionFeeClearance: protectedProcedure
+    .input(
+      z.object({
+        studentId: z.string().cuid(),
+        fromSessionId: z.string().cuid(),
+        clearanceBypassCode: z.string().optional(),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      try {
+        const unpaidVouchers = await ctx.db.feeStudentClass.findMany({
+          where: {
+            StudentClass: {
+              studentId: input.studentId,
+              sessionId: input.fromSessionId,
+            },
+            paymentStatus: {
+              in: [
+                PaymentStatus.PENDING,
+                PaymentStatus.PARTIALLY_PAID,
+                PaymentStatus.OVERDUE,
+              ],
+            },
+          },
+          include: {
+            fees: true,
+            StudentClass: {
+              include: {
+                Grades: true,
+              },
+            },
+          },
+          orderBy: [{ year: "asc" }, { month: "asc" }],
+        });
+
+        let totalOutstanding = 0;
+        const vouchersSummary = unpaidVouchers.map((v) => {
+          const tuition = v.fees?.tuitionFee ?? 0;
+          const discount = v.discount ?? 0;
+          const lateFee = v.lateFee ?? 0;
+          const adjustment = v.adjustmentAmount ?? 0;
+          const netPayable = Math.max(0, tuition - discount + lateFee + adjustment);
+          const balance = Math.max(0, netPayable - (v.amountPaid ?? 0));
+          totalOutstanding += balance;
+
+          return {
+            sfcId: v.sfcId,
+            voucherNumber: v.voucherNumber,
+            month: v.month,
+            year: v.year,
+            voucherType: v.voucherType,
+            paymentStatus: v.paymentStatus,
+            netPayable,
+            amountPaid: v.amountPaid,
+            balance,
+          };
+        });
+
+        const hasArrears = unpaidVouchers.length > 0 && totalOutstanding > 0;
+        const isBypassed = !!input.clearanceBypassCode && input.clearanceBypassCode.trim().length > 0;
+        const isCleared = !hasArrears || isBypassed;
+
+        return {
+          studentId: input.studentId,
+          fromSessionId: input.fromSessionId,
+          isCleared,
+          hasArrears,
+          isBypassed,
+          totalOutstanding,
+          unpaidVouchersCount: unpaidVouchers.length,
+          vouchers: vouchersSummary,
+          message: isCleared
+            ? isBypassed
+              ? "Promotion permitted via clearance bypass code"
+              : "Student has no outstanding arrears; fee clearance approved"
+            : `Promotion blocked: PKR ${totalOutstanding} outstanding across ${unpaidVouchers.length} unpaid fee voucher(s)`,
+        };
+      } catch (error) {
+        console.error("Error verifying promotion fee clearance:", error);
+        if (error instanceof TRPCError) throw error;
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to verify promotion fee clearance",
+        });
+      }
     }),
 });

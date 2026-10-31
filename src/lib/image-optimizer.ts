@@ -1,4 +1,18 @@
-import sharp from "sharp";
+let _sharpModule: any = null;
+let _sharpAttempted = false;
+
+async function getSharpInstance() {
+  if (_sharpAttempted) return _sharpModule;
+  _sharpAttempted = true;
+  try {
+    const mod = await import("sharp");
+    _sharpModule = (mod as any).default || mod;
+    return _sharpModule;
+  } catch {
+    _sharpModule = null;
+    return null;
+  }
+}
 
 export interface ImageOptimizationOptions {
   maxWidth?: number;
@@ -41,6 +55,16 @@ export async function optimizeImageForUpload(
 
   // If not a raster image, pass through immediately
   if (!RASTER_IMAGE_TYPES.has(contentType)) {
+    return {
+      buffer: inputBuffer,
+      contentType: originalContentType,
+      size: inputBuffer.length,
+      isOptimized: false,
+    };
+  }
+
+  const sharp = await getSharpInstance();
+  if (!sharp) {
     return {
       buffer: inputBuffer,
       contentType: originalContentType,

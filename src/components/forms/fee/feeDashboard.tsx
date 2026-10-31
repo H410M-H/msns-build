@@ -28,6 +28,8 @@ import {
   GraduationCap,
   RefreshCw,
   BookOpen,
+  Receipt,
+  CalendarDays,
 } from "lucide-react";
 import { cn } from "~/lib/utils";
 import { ExportDialog } from "./export-dialog";
@@ -38,6 +40,8 @@ import { FeeTable } from "~/components/tables/FeeTable";
 import { DefaultersList } from "./defaulters-list";
 import { FeeAnalyticsDashboard } from "./fee-analytics-dashboard";
 import { StudentFeeLedger } from "./student-fee-ledger";
+import { MonthlyVoucherHub } from "./MonthlyVoucherHub";
+import { ChallanValidityManager } from "./dialogs/ChallanValidityManager";
 
 const currentYear = new Date().getFullYear();
 const years = Array.from({ length: 5 }, (_, i) => currentYear - 2 + i);
@@ -205,8 +209,22 @@ export function FeeDashboard() {
       </div>
 
       {/* Main Content Tabs */}
-      <Tabs defaultValue="classes" className="space-y-6">
+      <Tabs defaultValue="vouchers" className="space-y-6">
         <TabsList className="h-auto w-full flex-wrap justify-start gap-1 border border-slate-200 bg-slate-100 p-1 dark:border-border dark:bg-card">
+          <TabsTrigger
+            value="vouchers"
+            className="gap-2 data-[state=active]:bg-white data-[state=active]:text-emerald-700 dark:data-[state=active]:bg-emerald-600 dark:data-[state=active]:text-foreground"
+          >
+            <Receipt className="h-4 w-4" />
+            Vouchers
+          </TabsTrigger>
+          <TabsTrigger
+            value="validity"
+            className="gap-2 data-[state=active]:bg-white data-[state=active]:text-emerald-700 dark:data-[state=active]:bg-emerald-600 dark:data-[state=active]:text-foreground"
+          >
+            <CalendarDays className="h-4 w-4" />
+            Validity Schedule
+          </TabsTrigger>
           <TabsTrigger
             value="classes"
             className="gap-2 data-[state=active]:bg-white data-[state=active]:text-emerald-700 dark:data-[state=active]:bg-emerald-600 dark:data-[state=active]:text-foreground"
@@ -250,6 +268,24 @@ export function FeeDashboard() {
             Fee Structure
           </TabsTrigger>
         </TabsList>
+
+        <TabsContent
+          value="vouchers"
+          className="duration-300 animate-in fade-in-50"
+        >
+          <MonthlyVoucherHub sessionId={selectedSessionId} year={selectedYear} />
+        </TabsContent>
+
+        <TabsContent
+          value="validity"
+          className="duration-300 animate-in fade-in-50"
+        >
+          <ChallanValidityManager
+            isDialog={false}
+            defaultSessionId={selectedSessionId}
+            year={selectedYear}
+          />
+        </TabsContent>
 
         <TabsContent
           value="classes"

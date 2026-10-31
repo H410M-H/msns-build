@@ -27,6 +27,10 @@ import { bulkSalaryRouter } from "./routers/bulkSalary";
 import { mobileRouter } from "./routers/mobile";
 import { parentRouter } from "./routers/parent";
 import { notificationRouter } from "./routers/notification";
+// Fee Management & Monthly Voucher System
+import { challanValidityRouter } from "./routers/challanValidity";
+import { voucherRouter } from "./routers/voucher";
+import { concessionRouter } from "./routers/concession";
 
 export const appRouter = createTRPCRouter({
   notification: notificationRouter,
@@ -57,6 +61,10 @@ export const appRouter = createTRPCRouter({
   bulkSalary: bulkSalaryRouter,
   mobile: mobileRouter,
   parent: parentRouter,
+  // Mounted Fee Management Routers
+  challanValidity: challanValidityRouter,
+  voucher: voucherRouter,
+  concession: concessionRouter,
 });
 
 export type AppRouter = typeof appRouter;

@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { useSession } from "next-auth/react";
 import { api } from "~/trpc/react";
@@ -20,10 +21,14 @@ import {
   TableRow,
 } from "~/components/ui/table";
 import { Badge } from "~/components/ui/badge";
-import { Loader2, Receipt, AlertCircle, CheckCircle2 } from "lucide-react";
+import { Button } from "~/components/ui/button";
+import { Loader2, Receipt, AlertCircle, CheckCircle2, Printer } from "lucide-react";
+import { VoucherPrintSheet } from "~/components/forms/fee/VoucherPrintSheet";
 
 export default function StudentFeesPage() {
   const { data: session } = useSession();
+  const [selectedVoucherId, setSelectedVoucherId] = useState<string | null>(null);
+
   const breadcrumbs = [
     { href: "/student", label: "Dashboard" },
     { href: "/student/fees", label: "Fees", current: true },
@@ -40,6 +45,12 @@ export default function StudentFeesPage() {
     api.fee.getStudentFees.useQuery(
       { studentId },
       { enabled: !!studentId }
+    );
+
+  const { data: voucherPrintData, isLoading: isVoucherPrintLoading } =
+    api.voucher.getVoucherPrintData.useQuery(
+      { sfcId: selectedVoucherId! },
+      { enabled: !!selectedVoucherId }
     );
 
   const getMonthName = (monthNum: number) => {
@@ -69,6 +80,7 @@ export default function StudentFeesPage() {
   }
 
   const ledger = feeData?.ledger ?? [];
+  const activeUnpaidVoucher = ledger.find((f) => f.outstanding > 0) ?? ledger[0];
 
   return (
     <div className="w-full space-y-8 p-6 font-sans">
@@ -79,11 +91,22 @@ export default function StudentFeesPage() {
         animate={{ opacity: 1, y: 0 }}
         className="space-y-6"
       >
-        <div className="flex flex-col gap-2">
-          <h1 className="text-3xl font-bold tracking-tight">Fee Ledger</h1>
-          <p className="text-muted-foreground">
-            View your fee status, payment history, and outstanding balances
-          </p>
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex flex-col gap-1">
+            <h1 className="text-3xl font-bold tracking-tight">Fee Ledger</h1>
+            <p className="text-muted-foreground">
+              View your fee status, payment history, and download printable fee challans
+            </p>
+          </div>
+          {activeUnpaidVoucher && (
+            <Button
+              onClick={() => setSelectedVoucherId(activeUnpaidVoucher.sfcId)}
+              className="gap-2 bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs"
+            >
+              <Printer className="h-4 w-4" />
+              <span>Download Active Challan ({getMonthName(activeUnpaidVoucher.month)})</span>
+            </Button>
+          )}
         </div>
 
         {/* Overview Cards */}
@@ -138,7 +161,7 @@ export default function StudentFeesPage() {
             <div>
               <CardTitle className="text-xl">Payment History</CardTitle>
               <CardDescription>
-                Detailed month-by-month record of your fee payments
+                Detailed month-by-month record of your fee payments and challan copies
               </CardDescription>
             </div>
             <Receipt className="h-5 w-5 text-emerald-500" />
@@ -161,7 +184,8 @@ export default function StudentFeesPage() {
                       <TableHead>Total Due</TableHead>
                       <TableHead>Amount Paid</TableHead>
                       <TableHead>Remaining</TableHead>
-                      <TableHead className="text-right">Status</TableHead>
+                      <TableHead className="text-center">Status</TableHead>
+                      <TableHead className="text-right">Action</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -190,7 +214,7 @@ export default function StudentFeesPage() {
                         >
                           Rs. {record.outstanding.toLocaleString()}
                         </TableCell>
-                        <TableCell className="text-right">
+                        <TableCell className="text-center">
                           <Badge
                             className={
                               record.isPaid
@@ -202,6 +226,17 @@ export default function StudentFeesPage() {
                             {record.isPaid ? "Paid" : "Pending"}
                           </Badge>
                         </TableCell>
+                        <TableCell className="text-right">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setSelectedVoucherId(record.sfcId)}
+                            className="h-8 gap-1.5 border-emerald-500/30 text-emerald-600 hover:bg-emerald-500/10 hover:text-emerald-700 dark:text-emerald-400"
+                          >
+                            <Printer className="h-3.5 w-3.5" />
+                            <span>Challan</span>
+                          </Button>
+                        </TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
@@ -211,6 +246,30 @@ export default function StudentFeesPage() {
           </CardContent>
         </Card>
       </motion.div>
+
+      {/* Printable Challan Modal / Overlay */}
+      {selectedVoucherId && (
+        <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-xs print:static print:bg-white print:overflow-visible">
+          {isVoucherPrintLoading ? (
+            <div className="flex h-screen items-center justify-center">
+              <Loader2 className="h-10 w-10 animate-spin text-white" />
+            </div>
+          ) : voucherPrintData ? (
+            <VoucherPrintSheet
+              vouchers={[voucherPrintData as any]}
+              onClose={() => setSelectedVoucherId(null)}
+              title={`Fee Challan — ${(voucherPrintData as any)?.voucherNumber || "Print Preview"}`}
+            />
+          ) : (
+            <div className="flex h-screen flex-col items-center justify-center p-6 text-white">
+              <p className="mb-4">Failed to load fee challan data.</p>
+              <Button variant="secondary" onClick={() => setSelectedVoucherId(null)}>
+                Close
+              </Button>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
