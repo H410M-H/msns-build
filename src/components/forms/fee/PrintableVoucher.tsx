@@ -104,20 +104,21 @@ export interface PrintableVoucherProps {
 // ==========================================
 
 export const DEFAULT_SCHOOL_INFO: SchoolInfo = {
-  name: "MUHAMMADAN SCIENCE NATIONAL SCHOOL",
-  campus: "Main Campus • Excellence in Education",
-  phone: "055-3882200",
+  name: "M. S. NAZ HIGH SCHOOL®",
+  campus: "Know Thyself • Pursuit of Excellence",
+  phone: "0318-7625415 / 0301-6233609",
   email: "info@msns.edu.pk",
-  address: "Ghakhar, Gujranwala",
+  address: "G.T. Road, Opp. Model Police Station, Ghakhar Mandi",
+  logoUrl: "/logo.svg",
 };
 
 export const DEFAULT_BANK_DETAILS: SchoolBankDetails = {
   bankName: "Meezan Bank Limited",
-  accountTitle: "Muhammadan Science National School",
+  accountTitle: "M. S. Naz High School",
   accountNumber: "02130104859682",
   iban: "PK45MEZN0002130104859682",
   branchCode: "0213",
-  branchName: "Main Branch",
+  branchName: "Ghakhar Mandi Branch",
   isDefault: true,
 };
 
@@ -278,42 +279,117 @@ export function normalizePrintableVoucherData(raw: any): PrintableVoucherData {
 }
 
 // ==========================================
-// School Crest SVG Graphic
+// School Crest SVG Graphic (Authentic MSNS Vector)
 // ==========================================
 
-function SchoolCrestSVG({ className = "w-9 h-9" }: { className?: string }) {
+export function MSNSOfficialCrest({ className = "w-10 h-10" }: { className?: string }) {
   return (
     <svg
-      viewBox="0 0 100 100"
+      viewBox="0 0 512 512"
       className={className}
-      fill="none"
       xmlns="http://www.w3.org/2000/svg"
       aria-hidden="true"
     >
-      {/* Outer Shield Border */}
+      {/* Outer Shield Border (Gold) */}
       <path
-        d="M50 4L88 20V48C88 72 50 96 50 96C50 96 12 72 12 48V20L50 4Z"
-        fill="#0f172a"
-        stroke="#1e293b"
-        strokeWidth="3"
+        d="M256 16 C140 16 48 40 48 40 L48 240 C48 360 256 496 256 496 C256 496 464 360 464 240 L464 40 C464 40 372 16 256 16 Z"
+        fill="#8B6914"
       />
-      {/* Inner Accent Infill */}
+      {/* Inner Shield (White) */}
       <path
-        d="M50 9L82 22V46C82 67 50 89 50 89C50 89 18 67 18 46V22L50 9Z"
+        d="M256 32 C148 32 64 54 64 54 L64 236 C64 348 256 476 256 476 C256 476 448 348 448 236 L448 54 C448 54 364 32 256 32 Z"
+        fill="#FFFFFF"
+      />
+      {/* Radiating Rays (Ruby Crimson) */}
+      <g opacity="0.22" fill="#C41E3A">
+        <polygon points="256,180 200,50 212,50" />
+        <polygon points="256,180 140,70 155,60" />
+        <polygon points="256,180 90,110 108,98" />
+        <polygon points="256,180 70,170 78,155" />
+        <polygon points="256,180 80,240 70,225" />
+        <polygon points="256,180 312,50 300,50" />
+        <polygon points="256,180 372,70 357,60" />
+        <polygon points="256,180 422,110 404,98" />
+        <polygon points="256,180 442,170 434,155" />
+        <polygon points="256,180 432,240 442,225" />
+        <polygon points="256,180 120,290 100,275" />
+        <polygon points="256,180 392,290 412,275" />
+      </g>
+      {/* Emerald Green Waves */}
+      <path
+        d="M128 360 Q180 345 220 360 Q256 375 292 360 Q332 345 384 360 L384 380 Q332 365 292 380 Q256 395 220 380 Q180 365 128 380 Z"
         fill="#047857"
+        opacity="0.9"
       />
-      {/* Open Book Motif */}
       <path
-        d="M50 40C44 36 34 36 28 38V64C34 62 44 62 50 66C56 62 66 62 72 64V38C66 36 56 36 50 40Z"
-        fill="#ffffff"
+        d="M112 385 Q165 370 210 385 Q256 400 302 385 Q345 370 400 385 L400 405 Q345 390 302 405 Q256 420 210 405 Q165 390 112 405 Z"
+        fill="#065f46"
+        opacity="0.75"
       />
-      {/* Book Center Spine */}
-      <line x1="50" y1="40" x2="50" y2="66" stroke="#047857" strokeWidth="2" />
-      {/* Guiding Star */}
-      <polygon
-        points="50,20 53,27 60,28 55,33 56,40 50,36 44,40 45,33 40,28 47,27"
-        fill="#fbbf24"
+      <path
+        d="M100 410 Q155 395 205 410 Q256 425 307 410 Q355 395 412 410 L412 430 Q355 415 307 430 Q256 445 205 430 Q155 415 100 430 Z"
+        fill="#064e3b"
+        opacity="0.5"
       />
+      {/* Torch of Knowledge */}
+      <rect x="248" y="220" width="16" height="80" rx="3" fill="#5A4A3A" />
+      <rect x="240" y="295" width="32" height="8" rx="2" fill="#5A4A3A" />
+      <path d="M236 220 L244 190 L268 190 L276 220 Z" fill="#8B6914" />
+      {/* Torch Flame */}
+      <path
+        d="M256 120 C256 120 235 160 240 180 C243 188 248 192 256 192 C264 192 269 188 272 180 C277 160 256 120 256 120 Z"
+        fill="#FF6B00"
+      />
+      <path
+        d="M256 135 C256 135 245 160 248 175 C250 182 253 186 256 186 C259 186 262 182 264 175 C267 160 256 135 256 135 Z"
+        fill="#FFD700"
+      />
+      {/* Open Book of Wisdom */}
+      <path
+        d="M180 240 L180 310 Q218 295 254 310 L254 240 Q218 225 180 240 Z"
+        fill="#FDF8F0"
+        stroke="#5A4A3A"
+        strokeWidth="2"
+      />
+      <path
+        d="M258 240 L258 310 Q294 295 332 310 L332 240 Q294 225 258 240 Z"
+        fill="#FDF8F0"
+        stroke="#5A4A3A"
+        strokeWidth="2"
+      />
+      <rect x="253" y="238" width="6" height="74" fill="#3A2A1A" />
+      {/* Book Inscription Lines */}
+      <line x1="195" y1="260" x2="245" y2="252" stroke="#C4A882" strokeWidth="1.5" />
+      <line x1="195" y1="272" x2="245" y2="264" stroke="#C4A882" strokeWidth="1.5" />
+      <line x1="195" y1="284" x2="245" y2="276" stroke="#C4A882" strokeWidth="1.5" />
+      <line x1="267" y1="252" x2="317" y2="260" stroke="#C4A882" strokeWidth="1.5" />
+      <line x1="267" y1="264" x2="317" y2="272" stroke="#C4A882" strokeWidth="1.5" />
+      <line x1="267" y1="276" x2="317" y2="284" stroke="#C4A882" strokeWidth="1.5" />
+      {/* Official Motto Inscription */}
+      <text
+        x="256"
+        y="85"
+        textAnchor="middle"
+        fontFamily="serif"
+        fontWeight="bold"
+        fontSize="28"
+        fill="#064e3b"
+        letterSpacing="2"
+      >
+        PURSUIT OF
+      </text>
+      <text
+        x="256"
+        y="115"
+        textAnchor="middle"
+        fontFamily="serif"
+        fontWeight="bold"
+        fontSize="28"
+        fill="#064e3b"
+        letterSpacing="2"
+      >
+        EXCELLENCE
+      </text>
     </svg>
   );
 }
@@ -377,13 +453,22 @@ function VoucherCopy({
         });
 
   return (
-    <div className="relative flex flex-col justify-between bg-white text-slate-900 border border-slate-300 rounded p-2.5 text-[10px] leading-tight select-none print:border-slate-400">
-      {/* Watermark for Paid Status */}
-      {isPaid && (
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-10">
-          <span className="text-7xl font-black tracking-widest text-emerald-800 rotate-[-25deg] uppercase">
-            PAID RECEIPT
-          </span>
+    <div className="relative flex flex-col justify-between bg-white text-slate-900 border border-emerald-900/30 rounded p-2.5 text-[10px] leading-tight select-none print:border-emerald-950/40">
+      {/* Background Watermark: Anti-Counterfeit Crest or Paid Stamp */}
+      {isPaid ? (
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-15">
+          <div className="border-4 border-dashed border-emerald-800 rounded-xl px-6 py-2 rotate-[-22deg] text-center">
+            <span className="block text-4xl font-black tracking-widest text-emerald-800 uppercase leading-none">
+              FEE PAID
+            </span>
+            <span className="block text-[10px] font-bold text-emerald-900 tracking-wider mt-0.5">
+              M.S. NAZ HIGH SCHOOL • ACCOUNTS VERIFIED
+            </span>
+          </div>
+        </div>
+      ) : (
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-[0.04]">
+          <MSNSOfficialCrest className="w-56 h-56" />
         </div>
       )}
 
@@ -391,17 +476,39 @@ function VoucherCopy({
       {/* 1. Header Section */}
       {/* ========================================================= */}
       <div>
-        <div className="border-b border-slate-700 pb-1.5 mb-1.5">
+        <div className="border-b-2 border-emerald-900 pb-1.5 mb-1.5">
           <div className="flex items-center justify-between gap-2">
             {/* School Crest & Identity */}
-            <div className="flex items-center gap-2">
-              <SchoolCrestSVG className="w-8 h-8 flex-shrink-0" />
+            <div className="flex items-center gap-2.5">
+              <div className="relative flex-shrink-0">
+                <img
+                  src={school.logoUrl || "/logo.svg"}
+                  alt="MSNS Logo"
+                  className="w-10 h-10 object-contain drop-shadow-xs print:w-10 print:h-10"
+                  onError={(e) => {
+                    e.currentTarget.style.display = "none";
+                    const svgEl = e.currentTarget.nextElementSibling as HTMLElement;
+                    if (svgEl) svgEl.style.display = "block";
+                  }}
+                />
+                <div style={{ display: "none" }} className="w-10 h-10">
+                  <MSNSOfficialCrest className="w-10 h-10" />
+                </div>
+              </div>
               <div className="text-left">
-                <h2 className="text-[12px] font-black tracking-wide text-slate-900 uppercase leading-none">
-                  {school.name}
-                </h2>
-                <p className="text-[8px] text-slate-600 font-medium mt-0.5">
-                  {school.campus} • Tel: {school.phone}
+                <div className="flex items-center gap-1.5">
+                  <h2 className="text-[13px] font-black tracking-wide text-emerald-950 uppercase leading-none font-serif">
+                    {school.name}
+                  </h2>
+                  <span className="text-[8px] font-bold text-amber-800 bg-amber-50 px-1 py-0.2 rounded border border-amber-300">
+                    Est. 2004
+                  </span>
+                </div>
+                <p className="text-[8px] text-emerald-800 font-bold tracking-wider uppercase font-serif mt-0.5">
+                  {school.campus || "Know Thyself • Pursuit of Excellence"}
+                </p>
+                <p className="text-[7.5px] text-slate-600 font-medium">
+                  {school.address} • Tel: {school.phone} • Web: {school.email?.replace("info@", "www.") || "www.msns.edu.pk"}
                 </p>
               </div>
             </div>
@@ -410,7 +517,7 @@ function VoucherCopy({
             <div className="text-right flex flex-col items-end">
               <span
                 className={cn(
-                  "inline-block font-bold text-[8.5px] px-2 py-0.5 rounded tracking-wider uppercase text-white shadow-xs",
+                  "inline-block font-bold text-[8.5px] px-2.5 py-0.5 rounded tracking-wider uppercase text-white shadow-xs",
                   copyBadgeColor
                 )}
               >
@@ -423,12 +530,17 @@ function VoucherCopy({
           </div>
 
           {/* Sub-header Banner */}
-          <div className="flex items-center justify-between mt-1 pt-1 border-t border-slate-200">
-            <div className="font-mono font-bold text-[9px] text-slate-800 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-300">
-              Challan #: <span className="text-slate-950 font-black">{voucher.voucherNumber}</span>
+          <div className="flex items-center justify-between mt-1 pt-1 border-t border-emerald-900/20">
+            <div className="flex items-center gap-1.5">
+              <div className="font-mono font-bold text-[9px] text-slate-900 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-300">
+                Challan #: <span className="text-emerald-950 font-black">{voucher.voucherNumber}</span>
+              </div>
+              <span className="text-[7.5px] font-bold text-slate-600 bg-slate-50 px-1.5 py-0.5 rounded border border-slate-200">
+                BISE GRW Code: 112199
+              </span>
             </div>
-            <div className="inline-block bg-emerald-50 text-emerald-900 border border-emerald-300 px-2 py-0.5 rounded text-[8.5px] font-bold uppercase">
-              Fee Challan • {monthName} {voucher.year} ({installmentLabel})
+            <div className="inline-block bg-emerald-100/90 text-emerald-950 border border-emerald-400 px-2 py-0.5 rounded text-[8.5px] font-black uppercase tracking-wide">
+              Monthly Tuition Challan • {monthName} {voucher.year} ({installmentLabel})
             </div>
           </div>
         </div>
@@ -668,12 +780,12 @@ function VoucherCopy({
           {/* Right: Dual Signatures (3.5 cols) */}
           <div className="col-span-4 flex flex-col justify-end space-y-3 text-center text-[7.5px]">
             <div className="border-t border-slate-400 pt-0.5">
-              <span className="font-semibold text-slate-700 block">Bank Cashier / Stamp</span>
-              <span className="text-[6.5px] text-slate-400 block">Collecting Branch Stamp</span>
+              <span className="font-semibold text-slate-700 block">Bank Cashier / Counter Officer</span>
+              <span className="text-[6.5px] text-slate-400 block">Collecting Branch / Counter Stamp</span>
             </div>
             <div className="border-t border-slate-400 pt-0.5">
-              <span className="font-semibold text-slate-700 block">Authorized Accounts Officer</span>
-              <span className="text-[6.5px] text-slate-400 block">MSNS Finance Division</span>
+              <span className="font-semibold text-emerald-950 block">Authorized Accounts Officer</span>
+              <span className="text-[6.5px] text-slate-500 block">M.S. Naz High School Finance Division</span>
             </div>
           </div>
         </div>
@@ -726,8 +838,8 @@ export const PrintableVoucher = React.forwardRef<HTMLDivElement, PrintableVouche
             bank={bank}
             school={school}
             copyTitle="SCHOOL COPY"
-            copySubtitle="Accounts & Finance Record"
-            copyBadgeColor="bg-slate-900"
+            copySubtitle="Accounts & Audit Record"
+            copyBadgeColor="bg-emerald-950"
           />
         </div>
 
@@ -736,11 +848,11 @@ export const PrintableVoucher = React.forwardRef<HTMLDivElement, PrintableVouche
         {/* ========================================================= */}
         <div className="relative my-2.5 flex items-center justify-center print:my-2">
           {/* Dashed Perforation Line */}
-          <div className="w-full border-b-2 border-dashed border-slate-400" />
+          <div className="w-full border-b-2 border-dashed border-emerald-700/40" />
 
           {/* Centered Scissors Marker & Perforation Text */}
-          <div className="absolute bg-white px-2.5 py-0.5 text-slate-500 font-mono text-[8.5px] uppercase tracking-wider flex items-center gap-1.5 border border-dashed border-slate-300 rounded shadow-2xs">
-            <Scissors className="w-3 h-3 text-slate-600 rotate-90" />
+          <div className="absolute bg-white px-2.5 py-0.5 text-emerald-950 font-mono text-[8px] font-bold uppercase tracking-wider flex items-center gap-1.5 border border-dashed border-emerald-400 rounded shadow-2xs">
+            <Scissors className="w-3 h-3 text-emerald-700 rotate-90" />
             <span>✂ TEAR / PERFORATION LINE — SCHOOL COPY (TOP) / STUDENT COPY (BOTTOM) ✂</span>
           </div>
         </div>
@@ -754,7 +866,7 @@ export const PrintableVoucher = React.forwardRef<HTMLDivElement, PrintableVouche
             bank={bank}
             school={school}
             copyTitle="STUDENT COPY"
-            copySubtitle="Student / Parent Receipt"
+            copySubtitle="Student / Parent Official Receipt"
             copyBadgeColor="bg-emerald-800"
           />
         </div>

@@ -68,16 +68,33 @@ export const FeeVoucher = React.forwardRef<
     >
       {/* ... (Keep the rest of your JSX exactly the same as before) ... */}
       {/* Header */}
-      <div className="mb-6 flex items-start justify-between">
-        <div>
-          <h1 className="text-2xl font-bold uppercase tracking-tight text-slate-900">
-            M.S. Naz High School
-          </h1>
-          <p className="text-sm text-muted-foreground">Ghakhar, Gujranwala</p>
+      <div className="mb-6 flex items-start justify-between border-b border-emerald-900/30 pb-4">
+        <div className="flex items-center gap-3">
+          <img
+            src="/logo.svg"
+            alt="MSNS Logo"
+            className="w-12 h-12 object-contain print:w-12 print:h-12 flex-shrink-0"
+          />
+          <div>
+            <div className="flex items-center gap-2">
+              <h1 className="text-xl font-black uppercase tracking-tight text-emerald-950 font-serif">
+                M.S. Naz High School®
+              </h1>
+              <span className="text-[10px] font-bold text-amber-800 bg-amber-50 px-1.5 py-0.5 rounded border border-amber-300">
+                Est. 2004
+              </span>
+            </div>
+            <p className="text-xs font-bold uppercase tracking-wider text-emerald-800 font-serif mt-0.5">
+              Know Thyself • Pursuit of Excellence
+            </p>
+            <p className="text-[11px] text-muted-foreground">
+              G.T. Road, Opp. Model Police Station, Ghakhar Mandi • BISE Gujranwala Code: 112199
+            </p>
+          </div>
         </div>
         <div className="text-right">
-          <div className="text-xl font-bold text-slate-900">{voucherTitle}</div>
-          <div className="text-sm text-muted-foreground">
+          <div className="text-lg font-black text-emerald-900">{voucherTitle}</div>
+          <div className="text-xs font-semibold text-muted-foreground">
             {MONTH_NAMES[data.month - 1]} {data.year}
           </div>
         </div>

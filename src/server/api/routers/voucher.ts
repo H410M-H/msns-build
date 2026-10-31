@@ -1168,11 +1168,11 @@ export const voucherRouter = createTRPCRouter({
               {
                 bankId: "default-bank",
                 bankName: "Meezan Bank Limited",
-                accountTitle: "Muhammadan Science National School",
+                accountTitle: "M. S. Naz High School",
                 accountNumber: "02130104859682",
                 iban: "PK45MEZN0002130104859682",
                 branchCode: "0213",
-                branchName: "Main Branch",
+                branchName: "Ghakhar Mandi Branch",
                 isDefault: true,
                 createdAt: new Date(),
                 updatedAt: new Date(),

@@ -138,12 +138,35 @@ export function FeeReceipt({
         className="mx-auto max-w-[210mm] rounded-lg border bg-white p-8 shadow-sm"
       >
         {/* Header */}
-        <div className="mb-6 text-center">
-          <h1 className="text-2xl font-bold uppercase tracking-wide text-slate-900">
-            School Management System
-          </h1>
-          <p className="text-slate-600">Fee Payment Receipt</p>
-          <Separator className="my-4" />
+        <div className="mb-6 flex items-center justify-between border-b border-emerald-900/30 pb-4">
+          <div className="flex items-center gap-3">
+            <img
+              src="/logo.svg"
+              alt="MSNS Logo"
+              className="w-12 h-12 object-contain print:w-12 print:h-12 flex-shrink-0"
+            />
+            <div className="text-left">
+              <div className="flex items-center gap-2">
+                <h1 className="text-xl font-black uppercase tracking-tight text-emerald-950 font-serif">
+                  M.S. Naz High School®
+                </h1>
+                <span className="text-[10px] font-bold text-amber-800 bg-amber-50 px-1.5 py-0.5 rounded border border-amber-300">
+                  Est. 2004
+                </span>
+              </div>
+              <p className="text-xs font-bold uppercase tracking-wider text-emerald-800 font-serif mt-0.5">
+                Know Thyself • Pursuit of Excellence
+              </p>
+              <p className="text-[11px] text-slate-600">
+                G.T. Road, Opp. Model Police Station, Ghakhar Mandi • Tel: +92-318-7625415
+              </p>
+            </div>
+          </div>
+          <div className="text-right">
+            <span className="inline-block bg-emerald-100 text-emerald-950 font-bold text-xs px-2.5 py-1 rounded border border-emerald-300 uppercase tracking-wider">
+              Fee Payment Receipt
+            </span>
+          </div>
         </div>
 
         {/* Receipt Info */}

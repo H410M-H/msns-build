@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" version="1.2" baseProfile="tiny-ps"
+     viewBox="0 0 512 512" width="512" height="512">
+  <title>M.S. Naz High School</title>
+  <!-- Shield background -->
+  <path d="M256 16 C140 16 48 40 48 40 L48 240 C48 360 256 496 256 496 C256 496 464 360 464 240 L464 40 C464 40 372 16 256 16 Z" fill="#8B6914"/>
+  <!-- Shield inner -->
+  <path d="M256 32 C148 32 64 54 64 54 L64 236 C64 348 256 476 256 476 C256 476 448 348 448 236 L448 54 C448 54 364 32 256 32 Z" fill="#FFFFFF"/>
+  <!-- Radiating rays -->
+  <g opacity="0.18" fill="#C41E3A">
+    <polygon points="256,180 200,50 212,50"/>
+    <polygon points="256,180 140,70 155,60"/>
+    <polygon points="256,180 90,110 108,98"/>
+    <polygon points="256,180 70,170 78,155"/>
+    <polygon points="256,180 80,240 70,225"/>
+    <polygon points="256,180 312,50 300,50"/>
+    <polygon points="256,180 372,70 357,60"/>
+    <polygon points="256,180 422,110 404,98"/>
+    <polygon points="256,180 442,170 434,155"/>
+    <polygon points="256,180 432,240 442,225"/>
+    <polygon points="256,180 120,290 100,275"/>
+    <polygon points="256,180 392,290 412,275"/>
+  </g>
+  <!-- Green waves at bottom -->
+  <path d="M128 360 Q180 345 220 360 Q256 375 292 360 Q332 345 384 360 L384 380 Q332 365 292 380 Q256 395 220 380 Q180 365 128 380 Z" fill="#2E5A1C" opacity="0.8"/>
+  <path d="M112 385 Q165 370 210 385 Q256 400 302 385 Q345 370 400 385 L400 405 Q345 390 302 405 Q256 420 210 405 Q165 390 112 405 Z" fill="#2E5A1C" opacity="0.6"/>
+  <path d="M100 410 Q155 395 205 410 Q256 425 307 410 Q355 395 412 410 L412 430 Q355 415 307 430 Q256 445 205 430 Q155 415 100 430 Z" fill="#2E5A1C" opacity="0.4"/>
+  <!-- Torch base -->
+  <rect x="248" y="220" width="16" height="80" rx="3" fill="#5A4A3A"/>
+  <rect x="240" y="295" width="32" height="8" rx="2" fill="#5A4A3A"/>
+  <!-- Torch cup -->
+  <path d="M236 220 L244 190 L268 190 L276 220 Z" fill="#8B6914"/>
+  <!-- Flame -->
+  <path d="M256 120 C256 120 235 160 240 180 C243 188 248 192 256 192 C264 192 269 188 272 180 C277 160 256 120 256 120 Z" fill="#FF6B00"/>
+  <path d="M256 135 C256 135 245 160 248 175 C250 182 253 186 256 186 C259 186 262 182 264 175 C267 160 256 135 256 135 Z" fill="#FFD700"/>
+  <!-- Open book left page -->
+  <path d="M180 240 L180 310 Q218 295 254 310 L254 240 Q218 225 180 240 Z" fill="#F5E6C8" stroke="#5A4A3A" stroke-width="2"/>
+  <!-- Open book right page -->
+  <path d="M258 240 L258 310 Q294 295 332 310 L332 240 Q294 225 258 240 Z" fill="#F5E6C8" stroke="#5A4A3A" stroke-width="2"/>
+  <!-- Book spine -->
+  <rect x="253" y="238" width="6" height="74" fill="#3A2A1A"/>
+  <!-- Book lines left -->
+  <line x1="195" y1="260" x2="245" y2="252" stroke="#C4A882" stroke-width="1"/>
+  <line x1="195" y1="272" x2="245" y2="264" stroke="#C4A882" stroke-width="1"/>
+  <line x1="195" y1="284" x2="245" y2="276" stroke="#C4A882" stroke-width="1"/>
+  <!-- Book lines right -->
+  <line x1="267" y1="252" x2="317" y2="260" stroke="#C4A882" stroke-width="1"/>
+  <line x1="267" y1="264" x2="317" y2="272" stroke="#C4A882" stroke-width="1"/>
+  <line x1="267" y1="276" x2="317" y2="284" stroke="#C4A882" stroke-width="1"/>
+  <!-- PURSUIT OF EXCELLENCE text -->
+  <text x="256" y="85" text-anchor="middle" font-family="serif" font-weight="bold" font-size="28" fill="#2E3A1C" letter-spacing="2">PURSUIT OF</text>
+  <text x="256" y="115" text-anchor="middle" font-family="serif" font-weight="bold" font-size="28" fill="#2E3A1C" letter-spacing="2">EXCELLENCE</text>
+</svg>
