@@ -16,7 +16,7 @@ export interface VoucherPrintSheetProps {
   data?: PrintableVoucherData[]; // alias for vouchers
   onClose?: () => void;
   title?: string;
-  bankDetails?: SchoolBankDetails | null;
+  bankDetails?: SchoolBankDetails | SchoolBankDetails[] | null;
   schoolInfo?: Partial<SchoolInfo>;
   autoPrint?: boolean;
   className?: string;

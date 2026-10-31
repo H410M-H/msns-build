@@ -1,26 +1,24 @@
 "use client";
 
 import React from "react";
+import Image from "next/image";
+import {
+  SCHOOL_LOGO_URL,
+  resolveVoucherBanks,
+  type SchoolBankDetails,
+} from "./voucher-branding";
+import { VoucherBankDetails } from "./VoucherBankDetails";
 import { QRCodeSVG } from "qrcode.react";
 import { format } from "date-fns";
 import { Scissors } from "lucide-react";
 import { cn, getParentagePrefix } from "~/lib/utils";
 import { type PaymentStatus, type VoucherType, type ConcessionCategory } from "@prisma/client";
 
+export { DEFAULT_BANK_DETAILS, type SchoolBankDetails } from "./voucher-branding";
+
 // ==========================================
 // Types & Contracts
 // ==========================================
-
-export interface SchoolBankDetails {
-  bankId?: string;
-  bankName: string;
-  accountTitle: string;
-  accountNumber: string;
-  iban?: string | null;
-  branchCode?: string | null;
-  branchName?: string | null;
-  isDefault?: boolean;
-}
 
 export interface SchoolInfo {
   name: string;
@@ -109,17 +107,7 @@ export const DEFAULT_SCHOOL_INFO: SchoolInfo = {
   phone: "0318-7625415 / 0301-6233609",
   email: "info@msns.edu.pk",
   address: "G.T. Road, Opp. Model Police Station, Ghakhar Mandi",
-  logoUrl: "/logo.svg",
-};
-
-export const DEFAULT_BANK_DETAILS: SchoolBankDetails = {
-  bankName: "Meezan Bank Limited",
-  accountTitle: "M. S. Naz High School",
-  accountNumber: "02130104859682",
-  iban: "PK45MEZN0002130104859682",
-  branchCode: "0213",
-  branchName: "Ghakhar Mandi Branch",
-  isDefault: true,
+  logoUrl: SCHOOL_LOGO_URL,
 };
 
 export const MONTH_NAMES = [
@@ -279,129 +267,13 @@ export function normalizePrintableVoucherData(raw: any): PrintableVoucherData {
 }
 
 // ==========================================
-// School Crest SVG Graphic (Authentic MSNS Vector)
-// ==========================================
-
-export function MSNSOfficialCrest({ className = "w-10 h-10" }: { className?: string }) {
-  return (
-    <svg
-      viewBox="0 0 512 512"
-      className={className}
-      xmlns="http://www.w3.org/2000/svg"
-      aria-hidden="true"
-    >
-      {/* Outer Shield Border (Gold) */}
-      <path
-        d="M256 16 C140 16 48 40 48 40 L48 240 C48 360 256 496 256 496 C256 496 464 360 464 240 L464 40 C464 40 372 16 256 16 Z"
-        fill="#8B6914"
-      />
-      {/* Inner Shield (White) */}
-      <path
-        d="M256 32 C148 32 64 54 64 54 L64 236 C64 348 256 476 256 476 C256 476 448 348 448 236 L448 54 C448 54 364 32 256 32 Z"
-        fill="#FFFFFF"
-      />
-      {/* Radiating Rays (Ruby Crimson) */}
-      <g opacity="0.22" fill="#C41E3A">
-        <polygon points="256,180 200,50 212,50" />
-        <polygon points="256,180 140,70 155,60" />
-        <polygon points="256,180 90,110 108,98" />
-        <polygon points="256,180 70,170 78,155" />
-        <polygon points="256,180 80,240 70,225" />
-        <polygon points="256,180 312,50 300,50" />
-        <polygon points="256,180 372,70 357,60" />
-        <polygon points="256,180 422,110 404,98" />
-        <polygon points="256,180 442,170 434,155" />
-        <polygon points="256,180 432,240 442,225" />
-        <polygon points="256,180 120,290 100,275" />
-        <polygon points="256,180 392,290 412,275" />
-      </g>
-      {/* Emerald Green Waves */}
-      <path
-        d="M128 360 Q180 345 220 360 Q256 375 292 360 Q332 345 384 360 L384 380 Q332 365 292 380 Q256 395 220 380 Q180 365 128 380 Z"
-        fill="#047857"
-        opacity="0.9"
-      />
-      <path
-        d="M112 385 Q165 370 210 385 Q256 400 302 385 Q345 370 400 385 L400 405 Q345 390 302 405 Q256 420 210 405 Q165 390 112 405 Z"
-        fill="#065f46"
-        opacity="0.75"
-      />
-      <path
-        d="M100 410 Q155 395 205 410 Q256 425 307 410 Q355 395 412 410 L412 430 Q355 415 307 430 Q256 445 205 430 Q155 415 100 430 Z"
-        fill="#064e3b"
-        opacity="0.5"
-      />
-      {/* Torch of Knowledge */}
-      <rect x="248" y="220" width="16" height="80" rx="3" fill="#5A4A3A" />
-      <rect x="240" y="295" width="32" height="8" rx="2" fill="#5A4A3A" />
-      <path d="M236 220 L244 190 L268 190 L276 220 Z" fill="#8B6914" />
-      {/* Torch Flame */}
-      <path
-        d="M256 120 C256 120 235 160 240 180 C243 188 248 192 256 192 C264 192 269 188 272 180 C277 160 256 120 256 120 Z"
-        fill="#FF6B00"
-      />
-      <path
-        d="M256 135 C256 135 245 160 248 175 C250 182 253 186 256 186 C259 186 262 182 264 175 C267 160 256 135 256 135 Z"
-        fill="#FFD700"
-      />
-      {/* Open Book of Wisdom */}
-      <path
-        d="M180 240 L180 310 Q218 295 254 310 L254 240 Q218 225 180 240 Z"
-        fill="#FDF8F0"
-        stroke="#5A4A3A"
-        strokeWidth="2"
-      />
-      <path
-        d="M258 240 L258 310 Q294 295 332 310 L332 240 Q294 225 258 240 Z"
-        fill="#FDF8F0"
-        stroke="#5A4A3A"
-        strokeWidth="2"
-      />
-      <rect x="253" y="238" width="6" height="74" fill="#3A2A1A" />
-      {/* Book Inscription Lines */}
-      <line x1="195" y1="260" x2="245" y2="252" stroke="#C4A882" strokeWidth="1.5" />
-      <line x1="195" y1="272" x2="245" y2="264" stroke="#C4A882" strokeWidth="1.5" />
-      <line x1="195" y1="284" x2="245" y2="276" stroke="#C4A882" strokeWidth="1.5" />
-      <line x1="267" y1="252" x2="317" y2="260" stroke="#C4A882" strokeWidth="1.5" />
-      <line x1="267" y1="264" x2="317" y2="272" stroke="#C4A882" strokeWidth="1.5" />
-      <line x1="267" y1="276" x2="317" y2="284" stroke="#C4A882" strokeWidth="1.5" />
-      {/* Official Motto Inscription */}
-      <text
-        x="256"
-        y="85"
-        textAnchor="middle"
-        fontFamily="serif"
-        fontWeight="bold"
-        fontSize="28"
-        fill="#064e3b"
-        letterSpacing="2"
-      >
-        PURSUIT OF
-      </text>
-      <text
-        x="256"
-        y="115"
-        textAnchor="middle"
-        fontFamily="serif"
-        fontWeight="bold"
-        fontSize="28"
-        fill="#064e3b"
-        letterSpacing="2"
-      >
-        EXCELLENCE
-      </text>
-    </svg>
-  );
-}
-
-// ==========================================
 // Single Voucher Copy Component
 // (School Copy or Student Copy)
 // ==========================================
 
 interface VoucherCopyProps {
   voucher: PrintableVoucherData;
-  bank: SchoolBankDetails;
+  banks: SchoolBankDetails[];
   school: SchoolInfo;
   copyTitle: string;
   copySubtitle: string;
@@ -410,7 +282,7 @@ interface VoucherCopyProps {
 
 function VoucherCopy({
   voucher,
-  bank,
+  banks,
   school,
   copyTitle,
   copySubtitle,
@@ -468,7 +340,14 @@ function VoucherCopy({
         </div>
       ) : (
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-[0.04]">
-          <MSNSOfficialCrest className="w-56 h-56" />
+          <Image
+            src={school.logoUrl ?? SCHOOL_LOGO_URL}
+            alt=""
+            width={224}
+            height={224}
+            loading="eager"
+            className="w-56 h-56 object-contain"
+          />
         </div>
       )}
 
@@ -481,19 +360,14 @@ function VoucherCopy({
             {/* School Crest & Identity */}
             <div className="flex items-center gap-2.5">
               <div className="relative flex-shrink-0">
-                <img
-                  src={school.logoUrl || "/logo.svg"}
-                  alt="MSNS Logo"
+                <Image
+                  src={school.logoUrl ?? SCHOOL_LOGO_URL}
+                  alt="M. S. Naz High School official logo"
+                  width={40}
+                  height={40}
+                  priority
                   className="w-10 h-10 object-contain drop-shadow-xs print:w-10 print:h-10"
-                  onError={(e) => {
-                    e.currentTarget.style.display = "none";
-                    const svgEl = e.currentTarget.nextElementSibling as HTMLElement;
-                    if (svgEl) svgEl.style.display = "block";
-                  }}
                 />
-                <div style={{ display: "none" }} className="w-10 h-10">
-                  <MSNSOfficialCrest className="w-10 h-10" />
-                </div>
               </div>
               <div className="text-left">
                 <div className="flex items-center gap-1.5">
@@ -738,24 +612,7 @@ function VoucherCopy({
             <p className="font-bold text-slate-900 uppercase text-[8.5px] border-b border-slate-200 pb-0.5 mb-0.5">
               School Bank Details:
             </p>
-            <div className="grid grid-cols-2 gap-x-1 gap-y-0.5">
-              <div>
-                <span className="text-slate-500">Bank:</span> <strong>{bank.bankName}</strong>
-              </div>
-              <div>
-                <span className="text-slate-500">Branch:</span> <strong>{bank.branchCode || "0213"}</strong>
-              </div>
-              <div className="col-span-2">
-                <span className="text-slate-500">A/C Title:</span> <strong>{bank.accountTitle}</strong>
-              </div>
-              <div>
-                <span className="text-slate-500">A/C No:</span> <strong className="font-mono">{bank.accountNumber}</strong>
-              </div>
-              <div>
-                <span className="text-slate-500">IBAN:</span>{" "}
-                <strong className="font-mono text-[7px]">{bank.iban || "N/A"}</strong>
-              </div>
-            </div>
+            <VoucherBankDetails banks={banks} />
             <p className="text-[7px] text-slate-500 italic mt-0.5 pt-0.5 border-t border-slate-200">
               * Deposit at any online branch or accounts counter. Fee is non-refundable. Late fee strictly enforced after due date.
             </p>
@@ -805,15 +662,7 @@ export const PrintableVoucher = React.forwardRef<HTMLDivElement, PrintableVouche
     const rawData = props.data ?? props.voucher;
     const voucher = normalizePrintableVoucherData(rawData);
 
-    // Resolve Bank Details with fallback
-    let bank: SchoolBankDetails = DEFAULT_BANK_DETAILS;
-    if (props.bankDetails) {
-      bank = Array.isArray(props.bankDetails)
-        ? props.bankDetails[0] ?? DEFAULT_BANK_DETAILS
-        : props.bankDetails;
-    } else if (voucher.bankDetails && voucher.bankDetails.length > 0) {
-      bank = voucher.bankDetails[0] ?? DEFAULT_BANK_DETAILS;
-    }
+    const banks = resolveVoucherBanks(props.bankDetails ?? voucher.bankDetails);
 
     // Merge School Info with defaults
     const school: SchoolInfo = {
@@ -835,7 +684,7 @@ export const PrintableVoucher = React.forwardRef<HTMLDivElement, PrintableVouche
         <div className="voucher-copy-school">
           <VoucherCopy
             voucher={voucher}
-            bank={bank}
+            banks={banks}
             school={school}
             copyTitle="SCHOOL COPY"
             copySubtitle="Accounts & Audit Record"
@@ -863,7 +712,7 @@ export const PrintableVoucher = React.forwardRef<HTMLDivElement, PrintableVouche
         <div className="voucher-copy-student">
           <VoucherCopy
             voucher={voucher}
-            bank={bank}
+            banks={banks}
             school={school}
             copyTitle="STUDENT COPY"
             copySubtitle="Student / Parent Official Receipt"
